@@ -114,12 +114,13 @@ export default function AgentBotAnalyticsDashboard() {
     const daysAgo = dateRange === "24h" ? 1 : dateRange === "7d" ? 7 : 30;
     const startDate = new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000).toISOString();
 
-    // Get bot visits for this agent
+    // Get bot visits for this agent (MAIN only; staging has no crawl / noindex)
     const { data: visits } = await supabase
       .from("cloudflare_request_logs")
       .select("*")
       .eq("agent_id", agentId)
       .eq("is_bot", true)
+      .eq("host", "www.top10lists.us")
       .gte("timestamp", startDate)
       .order("timestamp", { ascending: false });
 

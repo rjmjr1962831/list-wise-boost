@@ -1,0 +1,12 @@
+# Main site Worker (top10-renderer) - Producer
+# Deploy: npx wrangler deploy
+# Note: Current deployment uses scripts/deploy-worker.ps1 (Supabase function).
+# Queue binding must be added in Cloudflare Dashboard: Workers → top10-renderer → Settings → Bindings → Add Queue Producer
+
+name = "top10-renderer"
+main = "cloudflareworker.js"
+compatibility_date = "2024-01-01"
+
+[[queues.producers]]
+queue = "agent-notifications-queue"
+binding = "NOTIFICATION_QUEUE"

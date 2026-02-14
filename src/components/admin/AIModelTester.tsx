@@ -33,7 +33,6 @@ const MODEL_OVERRIDES = [
   { value: 'claude-sonnet', label: 'Claude Sonnet 4.5' },
   { value: 'claude-opus', label: 'Claude Opus 4.1' },
   { value: 'deepseek-chat', label: 'DeepSeek Chat' },
-  { value: 'deepseek-reasoner', label: 'DeepSeek Reasoner' },
 ];
 
 interface AIResponse {

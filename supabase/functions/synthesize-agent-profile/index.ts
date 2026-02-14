@@ -14,8 +14,8 @@ const MAX_WEBSITE_CONTENT_CHARS = 8000;
 const SMTP_HOST = "mail.privateemail.com";
 const SMTP_PORT = 465;
 
-// Lovable AI Gateway for Gemini Flash (deduplication)
-const LOVABLE_AI_GATEWAY = "https://ai.gateway.lovable.dev/v1/chat/completions";
+// Vercel AI Gateway for Gemini Flash (deduplication)
+const VERCEL_AI_GATEWAY = "https://ai.gateway.vercel.dev/v1/chat/completions";
 
 // Gemini Flash tool schema for semantic deduplication
 const GEMINI_DEDUP_TOOL = {
@@ -66,16 +66,16 @@ const GEMINI_DEDUP_TOOL = {
   }
 };
 
-// Call Gemini Flash via Lovable AI for semantic deduplication
+// Call Gemini Flash via Vercel AI for semantic deduplication
 async function callGeminiForDeduplication(achievements: any[], pressMentions: any[], agentName: string): Promise<{
   achievements: any[];
   pressMentions: any[];
   mergeLog: string[];
 }> {
-  const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
+  const vercelApiKey = Deno.env.get('VERCEL_API_KEY');
   
-  if (!lovableApiKey) {
-    console.log('⚠️ LOVABLE_API_KEY not set, skipping Gemini deduplication');
+  if (!vercelApiKey) {
+    console.log('⚠️ VERCEL_API_KEY not set, skipping Gemini deduplication');
     return { achievements, pressMentions, mergeLog: ['Skipped: No API key'] };
   }
   
@@ -118,10 +118,10 @@ ${JSON.stringify(pressMentions, null, 2)}
 Return the deduplicated results using the tool.`;
 
   try {
-    const response = await fetch(LOVABLE_AI_GATEWAY, {
+    const response = await fetch(VERCEL_AI_GATEWAY, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${lovableApiKey}`,
+        'Authorization': `Bearer ${vercelApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({

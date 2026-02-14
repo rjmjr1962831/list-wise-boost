@@ -13,7 +13,7 @@ const OptInPolicy = () => {
       <Helmet>
         <title>SMS & Email Opt-In Policy | Top10Lists.us</title>
         <meta name="description" content="Learn about our SMS and email opt-in policy. We obtain explicit consent before sending any communications to real estate agents." />
-        <link rel="canonical" href="https://top10lists.us/opt-in" />
+        <link rel="canonical" href="https://www.top10lists.us/opt-in" />
       </Helmet>
 
       <div className="container mx-auto px-4 py-16 max-w-4xl">

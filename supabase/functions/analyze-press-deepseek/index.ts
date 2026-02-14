@@ -23,12 +23,12 @@ serve(async (req) => {
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
+    const vercelApiKey = Deno.env.get('VERCEL_API_KEY');
 
-    if (!lovableApiKey) {
-      console.error('LOVABLE_API_KEY not configured');
+    if (!vercelApiKey) {
+      console.error('VERCEL_API_KEY not configured');
       return new Response(
-        JSON.stringify({ error: 'Lovable API key not configured' }),
+        JSON.stringify({ error: 'Vercel API key not configured' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -101,11 +101,11 @@ Return a JSON object with this structure:
 
 Return ONLY the JSON object, no other text.`;
 
-    // Call Lovable AI Gateway
-    const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    // Call Vercel AI Gateway
+    const aiResponse = await fetch('https://ai.gateway.vercel.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${lovableApiKey}`,
+        'Authorization': `Bearer ${vercelApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -119,7 +119,7 @@ Return ONLY the JSON object, no other text.`;
 
     if (!aiResponse.ok) {
       const errorText = await aiResponse.text();
-      console.error('Lovable AI error:', aiResponse.status, errorText);
+      console.error('Vercel AI error:', aiResponse.status, errorText);
       
       if (aiResponse.status === 429) {
         return new Response(

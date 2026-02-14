@@ -1,5 +1,7 @@
 # Cloudflare Logpush Setup Guide
 
+**Note:** If Logpush is not available on your plan, use **Logpull** instead – see [cloudflare-logpull-setup.md](./cloudflare-logpull-setup.md).
+
 This guide explains how to configure Cloudflare to push HTTP request logs to Supabase for bot analytics.
 
 ## Overview
@@ -128,7 +130,30 @@ In Cloudflare Dashboard → Analytics & Logs → Logpush, you should see:
 - Recent deliveries shown
 - Success rate > 95%
 
+## Dual-Source Strategy: Logpush + Worker
+
+Bot crawl data comes from **two sources**:
+
+1. **log-bot-visit** (Worker) – Called by the Cloudflare Worker for each bot request (HIT or MISS). Adds rich data: `agent_id`, `list_page_type`, `agents_shown`.
+2. **cloudflare-logpush** – Receives batches of HTTP request logs from Cloudflare. Captures **all** requests that hit the zone, including any that bypass or fail the Worker path.
+
+**Why both matter:** If `log-bot-visit` fails (timeout, rate limit, cold start), we still get the request from Logpush. Logpush is the backup for request coverage.
+
+**Deduplication:** Both use `ray_id`. The first insert wins; duplicates are ignored. The Worker usually inserts first; Logpush batches arrive later.
+
+**To avoid missing >90% of bot crawls:**
+1. Ensure **Logpush is configured** and active (Cloudflare Dashboard → Logs → Logpush).
+2. Ensure the Logpush job targets the zone that receives bot traffic (e.g. `www.top10lists.us`).
+3. If the Worker is only on some routes, Logpush still captures everything that hits the zone.
+4. Add the secret to the Logpush URL: `?secret=t10l_logpush_2026`.
+
 ## Troubleshooting
+
+### Missing 90%+ of bot crawls?
+1. **Verify Logpush is active** – Cloudflare Dashboard → Analytics & Logs → Logpush. Status should be Active.
+2. **Check Worker route** – The Worker must be attached to the routes that receive bot traffic (e.g. `www.top10lists.us/*`).
+3. **Check for direct origin traffic** – Bots hitting `list-wise-boost.vercel.app` or other origins bypass Cloudflare and will not be logged.
+4. **Review log-bot-visit failures** – Supabase function logs: `npx supabase functions logs log-bot-visit`. Timeouts or errors mean lost logs; Logpush is the backup.
 
 ### No logs appearing?
 1. Check Edge Function is deployed: `npx supabase functions list`

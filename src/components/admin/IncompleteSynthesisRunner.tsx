@@ -191,7 +191,7 @@ export function IncompleteSynthesisRunner() {
           </CardTitle>
           <CardDescription>
             Re-run Claude Sonnet 4 synthesis for agents with short (≤600 chars) or missing bios. 
-            Updates synthesized_bio with rich 4-paragraph format, selection_rationale, and syncs to Pipedrive.
+            Updates synthesized_bio with rich 4-paragraph format and selection_rationale.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">

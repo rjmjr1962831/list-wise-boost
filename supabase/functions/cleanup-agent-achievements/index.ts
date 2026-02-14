@@ -6,7 +6,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const LOVABLE_AI_GATEWAY = 'https://ai.gateway.lovable.dev/v1/chat/completions';
+const VERCEL_AI_GATEWAY = 'https://ai.gateway.vercel.dev/v1/chat/completions';
 
 // Generic profile domains to filter from press_mentions
 const genericProfileDomains = [
@@ -61,10 +61,10 @@ async function callGeminiForDeduplication(
   pressMentions: any[],
   agentName: string
 ): Promise<{ achievements: any[]; press: any[] }> {
-  const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+  const VERCEL_API_KEY = Deno.env.get('VERCEL_API_KEY');
   
-  if (!LOVABLE_API_KEY) {
-    console.log('LOVABLE_API_KEY not found, using fallback deduplication');
+  if (!VERCEL_API_KEY) {
+    console.log('VERCEL_API_KEY not found, using fallback deduplication');
     return { 
       achievements: fallbackDedupeAchievements(achievements), 
       press: filterPressMentions(pressMentions) 
@@ -92,10 +92,10 @@ DEDUPLICATION RULES:
 Call the deduplicate_content function with the cleaned arrays.`;
 
   try {
-    const response = await fetch(LOVABLE_AI_GATEWAY, {
+    const response = await fetch(VERCEL_AI_GATEWAY, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+        'Authorization': `Bearer ${VERCEL_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({

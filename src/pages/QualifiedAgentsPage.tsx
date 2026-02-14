@@ -132,7 +132,8 @@ export default function QualifiedAgentsPage() {
   }
 
   // Build expert page URL - always use 5-segment format when ZIP is available
-  // Always use ZIP-less format (neighborhoods can span multiple ZIPs)
+  // zipCode is always defined when accessed via the 5-segment route
+  // Build expert page URL (4-segment format without ZIP)
   const expertPageUrl = `/${stateSlug}/${citySlug}/${neighborhoodSlug}/top10realestateagents`;
 
   return (

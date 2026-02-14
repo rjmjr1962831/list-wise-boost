@@ -147,3 +147,14 @@ All colors MUST be HSL.
     @apply inline-flex items-center gap-1 px-3 py-1 rounded-full bg-gradient-to-r from-primary to-accent text-white text-xs font-semibold shadow-lg;
   }
 }
+
+/* Machine-Native Artifact - Agent Profile (AI crawler optimized) */
+.artifact-page {
+  font-family: "SF Mono", "Roboto Mono", "Courier New", monospace;
+  background-color: #ffffff;
+  color: #000000;
+}
+.artifact-page * {
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}

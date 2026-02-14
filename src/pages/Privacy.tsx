@@ -19,7 +19,7 @@ const Privacy = () => {
       <Helmet>
         <title>Privacy Policy - Top10Lists.us</title>
         <meta name="description" content="Privacy policy for Top10Lists.us. Learn how we collect, use, and protect your personal information." />
-        <link rel="canonical" href="https://top10lists.us/privacy" />
+        <link rel="canonical" href="https://www.top10lists.us/privacy" />
         <meta property="og:title" content="Privacy Policy - Top10Lists.us" />
         <meta property="og:description" content="Privacy policy for Top10Lists.us. Learn how we collect, use, and protect your personal information." />
         <meta property="og:url" content="https://top10lists.us/privacy" />

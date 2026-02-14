@@ -181,7 +181,7 @@ export default function AgentDashboard() {
           .from('admin_users')
           .select('role')
           .eq('id', user.id)
-          .eq('role', 'admin')
+          .in('role', ['admin', 'superadmin'])
           .single();
 
         if (roleData) {

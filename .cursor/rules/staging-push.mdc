@@ -1,0 +1,24 @@
+---
+description: Push changes to staging after edits so Robert can see and test
+alwaysApply: true
+---
+
+# Staging Push Workflow
+
+**After making code changes:** Always commit and push to `origin/staging`.
+
+This lets Robert see what's going on and test on the staging environment before production.
+
+### Steps
+
+1. Stage the modified files (exclude `.env` and other secrets)
+2. Commit with a clear message
+3. `git push origin staging`
+
+### Example
+
+```bash
+git add path/to/changed/files
+git commit -m "Brief description of change"
+git push origin staging
+```

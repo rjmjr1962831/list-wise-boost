@@ -13,11 +13,31 @@ interface Professional {
   email: string | null;
   phone: string | null;
   company: string | null;
+  business_name?: string | null;
   website: string | null;
   license_number: string | null;
   years_experience: number | null;
   total_sales: number | null;
-  description: string | null;
+  title?: string | null;
+  headline?: string | null;
+  address?: string | null;
+  zip_code?: string | null;
+  specialty?: string[] | null;
+  zillow_profile_url?: string | null;
+  sidebar_video_url?: string | null;
+  social_facebook?: string | null;
+  social_instagram?: string | null;
+  social_linkedin?: string | null;
+  social_twitter?: string | null;
+  social_tiktok?: string | null;
+  image_url?: string | null;
+  profile_link?: string | null;
+  short_code?: string | null;
+  badges?: string[] | null;
+  review_stars_rating?: number | null;
+  num_total_reviews?: number | null;
+  agent_sales_stats?: { volumeAllTime?: number } | null;
+  average_value_3yr?: number | null;
 }
 
 export default function Step4ReviewFinal() {
@@ -107,7 +127,7 @@ export default function Step4ReviewFinal() {
                 <dl className="space-y-2 text-sm">
                   <div className="flex gap-2">
                     <dt className="font-medium w-24">Name:</dt>
-                    <dd>{professional.name}</dd>
+                    <dd><span className="text-muted-foreground">(Request review to change)</span> {professional.name}</dd>
                   </div>
                   <div className="flex gap-2">
                     <dt className="font-medium w-24">Email:</dt>
@@ -140,25 +160,103 @@ export default function Step4ReviewFinal() {
                 </div>
                 <dl className="space-y-2 text-sm">
                   <div className="flex gap-2">
+                    <dt className="font-medium w-32">License:</dt>
+                    <dd><span className="text-muted-foreground">(Request review to change)</span> {professional.license_number || 'Not provided'}</dd>
+                  </div>
+                  <div className="flex gap-2">
+                    <dt className="font-medium w-32">Experience:</dt>
+                    <dd><span className="text-muted-foreground">(Request review to change)</span> {professional.years_experience ? `${professional.years_experience} years` : 'Not provided'}</dd>
+                  </div>
+                  <div className="flex gap-2">
+                    <dt className="font-medium w-32">Total Sales:</dt>
+                    <dd><span className="text-muted-foreground">(Request review to change)</span> {professional.total_sales?.toLocaleString() || 'Not provided'}</dd>
+                  </div>
+                  <div className="flex gap-2">
                     <dt className="font-medium w-32">Website:</dt>
                     <dd>{professional.website || 'Not provided'}</dd>
                   </div>
                   <div className="flex gap-2">
-                    <dt className="font-medium w-32">License:</dt>
-                    <dd>{professional.license_number || 'Not provided'}</dd>
+                    <dt className="font-medium w-32">Title:</dt>
+                    <dd>{professional.title || 'Not provided'}</dd>
                   </div>
                   <div className="flex gap-2">
-                    <dt className="font-medium w-32">Experience:</dt>
-                    <dd>{professional.years_experience ? `${professional.years_experience} years` : 'Not provided'}</dd>
+                    <dt className="font-medium w-32">Headline:</dt>
+                    <dd>{professional.headline || 'Not provided'}</dd>
                   </div>
                   <div className="flex gap-2">
-                    <dt className="font-medium w-32">Total Sales:</dt>
-                    <dd>{professional.total_sales || 'Not provided'}</dd>
+                    <dt className="font-medium w-32">Address:</dt>
+                    <dd>{professional.address || 'Not provided'}</dd>
                   </div>
-                  {professional.description && (
-                    <div className="pt-2">
-                      <dt className="font-medium mb-1">About:</dt>
-                      <dd className="text-muted-foreground">{professional.description}</dd>
+                  <div className="flex gap-2">
+                    <dt className="font-medium w-32">ZIP Code:</dt>
+                    <dd>{professional.zip_code || 'Not provided'}</dd>
+                  </div>
+                  <div className="flex gap-2">
+                    <dt className="font-medium w-32">Specialties:</dt>
+                    <dd>{Array.isArray(professional.specialty) ? professional.specialty.join(', ') : 'Not provided'}</dd>
+                  </div>
+                  <div className="flex gap-2">
+                    <dt className="font-medium w-32">Zillow URL:</dt>
+                    <dd>{professional.zillow_profile_url || 'Not provided'}</dd>
+                  </div>
+                  <div className="flex gap-2">
+                    <dt className="font-medium w-32">YouTube Video:</dt>
+                    <dd>{professional.sidebar_video_url || 'Not provided'}</dd>
+                  </div>
+                  <div className="flex gap-2">
+                    <dt className="font-medium w-32">Social (FB/IG/LI):</dt>
+                    <dd>
+                      {[professional.social_facebook, professional.social_instagram, professional.social_linkedin].filter(Boolean).join(' · ') || 'Not provided'}
+                    </dd>
+                  </div>
+                  <div className="flex gap-2">
+                    <dt className="font-medium w-32">Twitter/X:</dt>
+                    <dd>{professional.social_twitter || 'Not provided'}</dd>
+                  </div>
+                  <div className="flex gap-2">
+                    <dt className="font-medium w-32">TikTok:</dt>
+                    <dd>{professional.social_tiktok || 'Not provided'}</dd>
+                  </div>
+                  <div className="flex gap-2">
+                    <dt className="font-medium w-32">Business Name:</dt>
+                    <dd>{professional.business_name || 'Not provided'}</dd>
+                  </div>
+                  <div className="flex gap-2">
+                    <dt className="font-medium w-32">Profile Image:</dt>
+                    <dd>{professional.image_url || 'Not provided'}</dd>
+                  </div>
+                  <div className="flex gap-2">
+                    <dt className="font-medium w-32">Profile Link:</dt>
+                    <dd>{professional.profile_link || 'Not provided'}</dd>
+                  </div>
+                  <div className="flex gap-2">
+                    <dt className="font-medium w-32">Short Code:</dt>
+                    <dd>{professional.short_code || 'Not provided'}</dd>
+                  </div>
+                  <div className="flex gap-2">
+                    <dt className="font-medium w-32">Badges:</dt>
+                    <dd>{Array.isArray(professional.badges) ? professional.badges.join(', ') : 'Not provided'}</dd>
+                  </div>
+                  <div className="flex gap-2">
+                    <dt className="font-medium w-32">Rating:</dt>
+                    <dd>{professional.review_stars_rating ?? 'Not provided'}</dd>
+                  </div>
+                  <div className="flex gap-2">
+                    <dt className="font-medium w-32">Review Count:</dt>
+                    <dd>{professional.num_total_reviews?.toLocaleString() ?? 'Not provided'}</dd>
+                  </div>
+                  {(professional.agent_sales_stats?.volumeAllTime ?? professional.average_value_3yr) && (
+                    <div className="flex gap-2">
+                      <dt className="font-medium w-32">Volume (3yr):</dt>
+                      <dd>
+                        {(() => {
+                          const v = professional.agent_sales_stats?.volumeAllTime ?? professional.average_value_3yr ?? 0;
+                          if (v >= 1000000000) return `$${(v / 1000000000).toFixed(1)}B`;
+                          if (v >= 1000000) return `$${(v / 1000000).toFixed(1)}M`;
+                          if (v >= 1000) return `$${(v / 1000).toFixed(0)}K`;
+                          return `$${v?.toLocaleString()}`;
+                        })()}
+                      </dd>
                     </div>
                   )}
                 </dl>

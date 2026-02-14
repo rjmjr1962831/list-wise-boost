@@ -108,10 +108,7 @@ export function NeighborhoodAgentList({
       {/* CTA to full qualified agents page with 5-segment URL when ZIP available */}
       <div className="flex justify-center pt-2">
         <Button asChild variant="default" size="lg">
-          <Link to={primaryZip
-            ? `/${stateSlug}/${citySlug}/${primaryZip}/${neighborhoodSlug}/qualified-real-estate-agents`
-            : `/${stateSlug}/${citySlug}/${neighborhoodSlug}/qualified-real-estate-agents`
-          }>
+          <Link to={`/${stateSlug}/${citySlug}/${neighborhoodSlug}/qualified-real-estate-agents`}>
             Continue to all qualified agents
             <ArrowRight className="h-4 w-4 ml-2" />
           </Link>

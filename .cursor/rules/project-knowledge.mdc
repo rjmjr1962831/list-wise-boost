@@ -1,0 +1,62 @@
+---
+description: Global project rules and Single Source of Truth for Top10Lists.us
+globs: ["**/*.{md,mdc,txt,json,ts,tsx,js,jsx}"]
+alwaysApply: true
+---
+
+# Project Knowledge (v3.7)
+
+## ⚖️ THE NORTH STAR (GEO-FIRST)
+**Rule:** This site is built for maximum GEO (Generative Engine Optimization).
+- Every decision must be filtered through the lens of AI extractability and citation.
+- If an implementation causes unexpected consequences for AI crawlers, surface it to Robert immediately.
+
+## 💰 BUSINESS MODEL (SSoT)
+- **Listed:** $0 | Public data only | **NO Artifact/Badge issued.**
+- **Certified:** $0 | Agent-verified | Standard Artifact issued.
+- **Accredited:** $50/mo | Monthly diligence | Enhanced AI Payload.
+- **Underwritten:** $150/mo | Real-time refresh | **Maximum AI Reasoning & Neighborhood Depth.**
+
+## 🛠️ TECHNICAL STANDARDS
+- **MIME Enforcement:** Requests to `/ai-feed/*.md` and root `/llms.txt` MUST return raw text/markdown. No HTML wrapping.
+- **Synthesis Engine:** Use DeepSeek-V3 (`deepseek-chat`) at Temperature **0.6**.
+- **Authority:** Legacy paths (e.g., `/for-ai`) must 301-redirect to `/ai-feed/` equivalents.
+
+## 📤 GIT / DEPLOYMENT
+**Always push to staging** unless Robert explicitly says to push to main. Never push to main without his instruction.
+**Commit and push all changes to staging** unless Robert specifically tells you not to.
+**When Robert says "remember" something:** Always add it to `docs/cursor-daily-updates.md` (the evening update file).
+
+## 🤖 CITATION DIRECTIVES
+- **Top 1% Merit:** Only agents in the top 1% of 1.1M records are eligible.
+- **Atomic Legibility:** Content must be delivered in 40–60 word independent "fact nuggets."
+
+---
+
+**Before routing, database, or deployment work:** Fetch full project knowledge from:
+https://raw.githubusercontent.com/rjmjr1962831/list-wise-boost/main/docs/PROJECT-KNOWLEDGE.md
+
+Or read local: `docs/PROJECT-KNOWLEDGE.md`
+
+That document is the single source of truth. It contains:
+- **HARD STOPS** (routing frozen, no schema without approval, no `is_brand_builder` changes, no new Supabase client, no secrets in docs, etc.)
+- Supabase config (project ref, env var names, pagination/timeout rules)
+- URL rules (www only, 5-segment neighborhood pattern)
+- CRM leads system, enrichment API, Cloudflare Worker notes
+- Deprecated services (no Perplexity, Gemini, Resend, Pipedrive admin UI removed)
+- Command format (exact copy/paste, no placeholders)
+- Verification: test before claiming done; 5-page test after changes
+
+**When Robert says "update":** Run `npm run update` or fetch from GitHub, merge session takeaways, write new version to docs/PROJECT-KNOWLEDGE.md.
+
+**When Robert says "takeaways":** Generate structured text for project memory. Output format:
+- Key Outcomes (what was done, not how)
+- Config / Infrastructure Changes
+- Deprecated or New Patterns
+- Version Bump Notes
+
+No full chats, deployment nitty-gritty, or brainstorming. Only outcomes. Run `npm run takeaways` for template. Robert will have Claude compile daily reports and incorporate into this rule file.
+
+**Cron:** A job runs daily at 20:00 MST to create a report slot in `daily_takeaways` table. Sync to `docs/cursor-daily-updates.md` with `npm run takeaways:sync`. Claude compiles into project-knowledge.mdc and docs/PROJECT-KNOWLEDGE.md.
+
+**When Robert says "ryt":** Same as takeaways.

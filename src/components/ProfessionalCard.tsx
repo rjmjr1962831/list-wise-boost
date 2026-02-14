@@ -158,7 +158,7 @@ export const ProfessionalCard = ({
           .from('admin_users')
           .select('role')
           .eq('id', user.id)
-          .eq('role', 'admin')
+          .in('role', ['admin', 'superadmin'])
           .maybeSingle();
         
         setIsAdmin(!!roleData);
@@ -1667,7 +1667,7 @@ export const ProfessionalCard = ({
                   // Split long text into logical paragraphs based on topic shifts
                   // Look for sentences that start new topics (credentials, achievements, community, etc.)
                   const sentences = text.split(/(?<=[.!?])\s+/);
-                  const paragraphs: string[] = [];
+                  let paragraphs: string[] = [];
                   let currentParagraph: string[] = [];
                   
                   const topicIndicators = [

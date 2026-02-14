@@ -192,6 +192,7 @@ serve(async (req) => {
     const { 
       url, 
       path,
+      host: payloadHost,
       user_agent, 
       bot_type: providedBotType,
       cache_status, 
@@ -264,6 +265,14 @@ serve(async (req) => {
       }
     }
     
+    let host: string | null = payloadHost && typeof payloadHost === "string" ? payloadHost : null;
+    if (!host && url) {
+      try {
+        const u = typeof url === "string" && url.startsWith("http") ? new URL(url) : new URL(url, "https://www.top10lists.us");
+        host = u.hostname || null;
+      } catch (_) {}
+    }
+
     const { error } = await supabase
       .from("cloudflare_request_logs")
       .insert({
@@ -279,6 +288,7 @@ serve(async (req) => {
         ray_id: ray_id || null,
         bot_type: finalBotType,
         is_bot: isBot,
+        host,
         agent_id: agentId,
         list_page_type,
         location_display,

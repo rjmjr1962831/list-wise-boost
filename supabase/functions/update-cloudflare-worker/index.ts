@@ -64,22 +64,27 @@ serve(async (req) => {
       });
     }
 
-    // Sync WARM_SECRET to Worker so /__warm endpoint can authenticate warm-cache
-    const WARM_SECRET = Deno.env.get("WARM_SECRET");
-    if (WARM_SECRET) {
-      const secretsUrl = `https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/workers/scripts/${scriptName}/secrets`;
-      const secretsRes = await fetch(secretsUrl, {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${CURSOR_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ name: "WARM_SECRET", text: WARM_SECRET, type: "secret_text" }),
-      });
-      if (!secretsRes.ok) {
-        console.warn("WARM_SECRET sync to Worker failed:", await secretsRes.text());
-      } else {
-        console.log("WARM_SECRET synced to Worker");
+    // Sync Worker secrets: WARM_SECRET and VERCEL_PROTECTION_BYPASS
+    const secretsUrl = `https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/workers/scripts/${scriptName}/secrets`;
+    const secretsToSync: Array<{ name: string; value: string | undefined }> = [
+      { name: "WARM_SECRET", value: Deno.env.get("WARM_SECRET") },
+      { name: "VERCEL_PROTECTION_BYPASS", value: Deno.env.get("VERCEL_PROTECTION_BYPASS") },
+    ];
+    for (const { name, value } of secretsToSync) {
+      if (value) {
+        const secretsRes = await fetch(secretsUrl, {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${CURSOR_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ name, text: value, type: "secret_text" }),
+        });
+        if (!secretsRes.ok) {
+          console.warn(`${name} sync to Worker failed:`, await secretsRes.text());
+        } else {
+          console.log(`${name} synced to Worker`);
+        }
       }
     }
 

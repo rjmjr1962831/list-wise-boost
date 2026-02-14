@@ -13,20 +13,13 @@ const AdminLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [debug, setDebug] = useState<string | null>(null);
   const navigate = useNavigate();
   
-  // This log will fire when component loads - confirms new code is deployed
-  console.log("[AdminLogin] Component loaded - v2.1");
-  console.log("[AdminLogin] Initial state - isLoading:", isLoading);
-
   const handleAuth = async (e?: React.FormEvent) => {
     if (e) {
       e.preventDefault();
     }
-    
-    console.log("[AdminLogin] handleAuth called");
-    console.log("[AdminLogin] Email:", email);
-    console.log("[AdminLogin] Password length:", password.length);
     
     if (!email || !password) {
       toast.error("Please enter email and password");
@@ -34,24 +27,14 @@ const AdminLogin = () => {
     }
     
     setIsLoading(true);
-    console.log("[AdminLogin] Starting sign in...");
 
     try {
-      // Sign in with password
-      console.log("[AdminLogin] Calling signInWithPassword...");
       const { data: authData, error: signInError } = await supabase.auth.signInWithPassword({
         email: email.trim(),
         password: password.trim(),
       });
       
-      console.log("[AdminLogin] Sign in response:", { 
-        hasData: !!authData, 
-        hasUser: !!authData?.user,
-        hasError: !!signInError 
-      });
-      
       if (signInError) {
-        console.error("[AdminLogin] Sign in error:", signInError);
         throw signInError;
       }
       
@@ -59,19 +42,14 @@ const AdminLogin = () => {
         throw new Error("No user data returned");
       }
       
-      console.log("[AdminLogin] User signed in successfully:", authData.user.id);
-      
-      // Check if user has admin role
-      console.log("[AdminLogin] Checking user roles...");
       const { data: roles, error: rolesError } = await supabase
         .from("admin_users")
         .select("role")
         .eq("id", authData.user.id);
       
-      console.log("[AdminLogin] Roles query result:", { roles, rolesError });
+      setDebug(`Auth: ${authData.user.id} | Roles: ${JSON.stringify(roles)} | Err: ${rolesError?.message || "none"}`);
       
       if (rolesError) {
-        console.error("[AdminLogin] Error fetching roles:", rolesError);
         throw new Error(`Failed to check admin access: ${rolesError.message}`);
       }
       
@@ -80,23 +58,14 @@ const AdminLogin = () => {
         throw new Error("No roles found for this user");
       }
       
-      const hasAdminRole = roles.some(r => r.role === "admin");
-      console.log("[AdminLogin] Has admin role:", hasAdminRole);
+      // Being in admin_users grants access (any role: admin, superadmin, owner, viewer)
       
-      if (!hasAdminRole) {
-        await supabase.auth.signOut();
-        throw new Error("You don't have admin access");
-      }
-      
-      console.log("[AdminLogin] Login successful! Redirecting...");
       toast.success("Welcome back!");
       navigate("/admin");
     } catch (error: any) {
-      console.error("[AdminLogin] Error:", error);
       toast.error(error.message || "Authentication failed");
     } finally {
       setIsLoading(false);
-      console.log("[AdminLogin] Loading state reset");
     }
   };
 
@@ -120,7 +89,12 @@ const AdminLogin = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleAuth} className="space-y-4">
+          <form
+            onSubmit={(e) => { e.preventDefault(); void handleAuth(); }}
+            onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); void handleAuth(); } }}
+            noValidate
+            className="space-y-4"
+          >
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -128,10 +102,7 @@ const AdminLogin = () => {
                 type="email"
                 placeholder="admin@example.com"
                 value={email}
-                onChange={(e) => {
-                  console.log("[AdminLogin] Email input changed:", e.target.value);
-                  setEmail(e.target.value);
-                }}
+                onChange={(e) => setEmail(e.target.value)}
                 required
               />
             </div>
@@ -142,60 +113,24 @@ const AdminLogin = () => {
                 type="password"
                 placeholder="••••••••"
                 value={password}
-                onChange={(e) => {
-                  console.log("[AdminLogin] Password input changed, length:", e.target.value.length);
-                  setPassword(e.target.value);
-                }}
+                onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={6}
               />
             </div>
             <Button 
-              type="submit" 
+              type="button"
               className="w-full" 
               disabled={isLoading}
-              onClick={(e) => {
-                console.log("[AdminLogin] Button onClick fired");
-                console.log("[AdminLogin] Event type:", e.type);
-                console.log("[AdminLogin] isLoading:", isLoading);
-              }}
-              onMouseDown={() => {
-                console.log("[AdminLogin] Button mouseDown fired");
-              }}
-              onPointerDown={() => {
-                console.log("[AdminLogin] Button pointerDown fired");
-              }}
+              onClick={() => void handleAuth()}
             >
               {isLoading ? "Signing in..." : "Sign In"}
             </Button>
-            
-            {/* Debug info - Shows in all environments */}
-            <div className="text-xs text-muted-foreground mt-2">
-              Debug: Email={email.length > 0 ? '✓' : '✗'} | Pass={password.length > 0 ? '✓' : '✗'} | Loading={isLoading ? '✓' : '✗'}
-            </div>
-            
-            {/* Direct login button - bypasses form submission */}
-            <button
-              type="button"
-              onClick={async () => {
-                console.log("[AdminLogin] Direct login button clicked!");
-                await handleAuth();
-              }}
-              disabled={isLoading}
-              style={{ 
-                padding: '12px 16px', 
-                marginTop: '8px', 
-                background: isLoading ? '#ccc' : '#10b981', 
-                color: 'white',
-                border: 'none', 
-                borderRadius: '6px',
-                cursor: isLoading ? 'not-allowed' : 'pointer', 
-                width: '100%',
-                fontWeight: '600'
-              }}
-            >
-              {isLoading ? "Signing in..." : "🔑 Sign In (Direct)"}
-            </button>
+            {debug && (
+              <div className="mt-4 p-3 bg-muted rounded text-xs font-mono break-all">
+                {debug}
+              </div>
+            )}
           </form>
         </CardContent>
         </Card>

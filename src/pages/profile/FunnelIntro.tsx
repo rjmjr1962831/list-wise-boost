@@ -25,7 +25,7 @@ export default function FunnelIntro() {
           .from('admin_users')
           .select('role')
           .eq('id', session.user.id)
-          .eq('role', 'admin')
+          .in('role', ['admin', 'superadmin'])
           .single();
         setIsAdmin(!!data);
       }
@@ -300,7 +300,7 @@ export default function FunnelIntro() {
           {/* How We Rank Section */}
           <div className="mb-16">
             <h2 className="text-2xl md:text-3xl font-bold text-center mb-2">
-              220,000+ Agents Analyzed.  882 Made the Cut.
+              750,000+ Agents Analyzed.  882 Made the Cut.
             </h2>
             <p className="text-xl text-muted-foreground text-center mb-8">
               That is the top 0.5% of all professionals in the market.

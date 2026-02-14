@@ -128,7 +128,7 @@ export default function AreaAgentsPage() {
   }
 
   // Build qualified agents page URL
-  // Always use ZIP-less format (neighborhoods can span multiple ZIPs)
+  // Build qualified agents URL (4-segment format without ZIP)
   const qualifiedAgentsUrl = `/${stateSlug}/${citySlug}/${neighborhoodSlug}/qualified-real-estate-agents`;
 
   return (

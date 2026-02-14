@@ -132,7 +132,7 @@ export default function VisibilityReviewPage() {
             .from('admin_users')
             .select('role')
             .eq('id', user.id)
-            .eq('role', 'admin')
+            .in('role', ['admin', 'superadmin'])
             .maybeSingle();
 
           if (adminRole) {

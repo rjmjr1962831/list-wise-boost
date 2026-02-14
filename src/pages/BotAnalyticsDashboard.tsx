@@ -31,6 +31,9 @@ interface ListPageView {
   agents_shown: { canonical_slug: string; name: string }[];
 }
 
+// Report only MAIN (www.top10lists.us). Staging has no crawl / noindex.
+const MAIN_HOST = "www.top10lists.us";
+
 /** Returns agent slug only when path is an agent profile URL (canonical or legacy); otherwise null. */
 function getAgentSlugFromPath(path: string | null | undefined): string | null {
   if (!path) return null;
@@ -76,11 +79,12 @@ export default function BotAnalyticsDashboard() {
     const daysAgo = dateRange === "24h" ? 1 : dateRange === "7d" ? 7 : 30;
     const startDate = new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000).toISOString();
 
-    // Summary stats
+    // Summary stats (MAIN only)
     const { data: summaryData } = await supabase
       .from("cloudflare_request_logs")
       .select("*")
       .eq("is_bot", true)
+      .eq("host", MAIN_HOST)
       .gte("timestamp", startDate);
 
     if (summaryData) {
@@ -109,11 +113,12 @@ export default function BotAnalyticsDashboard() {
       setBotStats(botData);
     }
 
-    // Agent-specific views: only paths that are agent profile URLs (canonical or legacy)
+    // Agent-specific views (MAIN only): only paths that are agent profile URLs
     const { data: agentData } = await supabase
       .from("cloudflare_request_logs")
       .select("path, bot_type, timestamp, cache_status, user_agent")
       .eq("is_bot", true)
+      .eq("host", MAIN_HOST)
       .gte("timestamp", startDate)
       .or("path.ilike.%/agents/%,path.ilike.%/top10realestateagents/%")
       .order("timestamp", { ascending: false })
@@ -137,11 +142,12 @@ export default function BotAnalyticsDashboard() {
       setAgentViews(views);
     }
 
-    // List page crawls (neighborhood/city pages with agents shown)
+    // List page crawls (MAIN only): neighborhood/city pages with agents shown
     const { data: listPageData } = await supabase
       .from("cloudflare_request_logs")
       .select("list_page_type, location_display, agents_shown, bot_type, timestamp, cache_status")
       .eq("is_bot", true)
+      .eq("host", MAIN_HOST)
       .gte("timestamp", startDate)
       .not("list_page_type", "is", null)
       .order("timestamp", { ascending: false })
@@ -194,7 +200,7 @@ export default function BotAnalyticsDashboard() {
         <div>
           <h1 className="text-3xl font-bold">Bot Analytics Dashboard</h1>
           <p className="text-muted-foreground mt-2">
-            Track AI bot visits and agent profile views
+            Track AI bot visits and cache hits on MAIN (www.top10lists.us) only
           </p>
         </div>
         

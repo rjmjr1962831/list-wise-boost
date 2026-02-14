@@ -44,21 +44,21 @@ serve(async (req) => {
       }
     }
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      console.error("LOVABLE_API_KEY is not configured");
+    const VERCEL_API_KEY = Deno.env.get("VERCEL_API_KEY");
+    if (!VERCEL_API_KEY) {
+      console.error("VERCEL_API_KEY is not configured");
       return new Response(
         JSON.stringify({ error: "AI service not configured" }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    console.log("Rewriting bio using Lovable AI...");
+    console.log("Rewriting bio using Vercel AI...");
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const response = await fetch("https://ai.gateway.vercel.dev/v1/chat/completions", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        Authorization: `Bearer ${VERCEL_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
@@ -78,7 +78,7 @@ serve(async (req) => {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("Lovable AI error:", response.status, errorText);
+      console.error("Vercel AI error:", response.status, errorText);
       
       if (response.status === 429) {
         return new Response(

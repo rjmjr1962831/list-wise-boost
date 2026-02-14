@@ -12,16 +12,16 @@ const corsHeaders = {
 };
 
 /**
- * Paraphrase a review using Lovable AI (Gemini Flash) to avoid verbatim copying
+ * Paraphrase a review using Vercel AI (Gemini Flash) to avoid verbatim copying
  */
-async function paraphraseReview(reviewText: string, reviewerName: string, lovableApiKey: string): Promise<string> {
+async function paraphraseReview(reviewText: string, reviewerName: string, vercelApiKey: string): Promise<string> {
   if (!reviewText || reviewText.length < 20) return reviewText;
   
   try {
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    const response = await fetch('https://ai.gateway.vercel.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${lovableApiKey}`,
+        'Authorization': `Bearer ${vercelApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -61,7 +61,7 @@ async function paraphraseReview(reviewText: string, reviewerName: string, lovabl
 /**
  * Paraphrase multiple reviews in parallel with rate limiting
  */
-async function paraphraseReviews(reviews: any[], lovableApiKey: string): Promise<any[]> {
+async function paraphraseReviews(reviews: any[], vercelApiKey: string): Promise<any[]> {
   const paraphrasedReviews = [];
   const batchSize = 5; // Process 5 reviews at a time to avoid rate limits
   
@@ -73,7 +73,7 @@ async function paraphraseReviews(reviews: any[], lovableApiKey: string): Promise
         const paraphrasedText = await paraphraseReview(
           review.reviewText || review.text || '',
           review.reviewerName || review.reviewer || 'Customer',
-          lovableApiKey
+          vercelApiKey
         );
         
         return {
@@ -108,7 +108,7 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const apifyToken = Deno.env.get('APIFY_API_TOKEN')!;
-    const lovableApiKey = Deno.env.get('LOVABLE_API_KEY')!;
+    const vercelApiKey = Deno.env.get('VERCEL_API_KEY')!;
     
     const supabase = createClient(supabaseUrl, supabaseKey);
 
@@ -256,7 +256,7 @@ serve(async (req) => {
               
               // PARAPHRASE REVIEWS to avoid verbatim copying
               console.log(`Paraphrasing ${reviews.length} reviews for ${agent.name}...`);
-              reviews = await paraphraseReviews(reviews, lovableApiKey);
+              reviews = await paraphraseReviews(reviews, vercelApiKey);
               console.log(`✓ Paraphrased ${reviews.length} reviews for ${agent.name}`);
               
               // Update reviews_data with zillow_reviews

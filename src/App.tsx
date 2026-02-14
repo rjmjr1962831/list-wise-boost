@@ -8,6 +8,8 @@ import { RateLimitGuard } from "@/components/RateLimitGuard";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Chatbot } from "@/components/Chatbot";
+import { StagingAdminLink } from "@/components/StagingAdminLink";
+import { AdminRouteGuard } from "@/components/AdminRouteGuard";
 import { Loader2 } from "lucide-react";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
@@ -20,6 +22,9 @@ const CanonicalAgentProfile = lazy(() => import("./pages/CanonicalAgentProfile")
 
 // Lazy load all pages except Index and NotFound for better initial load performance
 // NOTE: Loaded eagerly (not lazy) to avoid rare chunk-load hangs on public traffic.
+const UnifiedCRM = lazy(() => import("./pages/admin/UnifiedCRM"));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const BotAnalyticsDashboard = lazy(() => import("./pages/BotAnalyticsDashboard"));
 const AgentBotAnalyticsDashboard = lazy(() => import("./pages/AgentBotAnalyticsDashboard"));
 const Privacy = lazy(() => import("./pages/Privacy"));
 const AICompare = lazy(() => import("./pages/AICompare"));
@@ -39,9 +44,16 @@ const StateAgentOrCategoryRouter = lazy(() => import("./pages/StateAgentOrCatego
 const NeighborhoodCategoryRouter = lazy(() => import("./pages/NeighborhoodCategoryRouter"));
 const NeighborhoodZipCategoryRouter = lazy(() => import("./pages/NeighborhoodZipCategoryRouter"));
 
+const AdminLogin = lazy(() => import("./pages/AdminLogin"));
+const MobilePreview = lazy(() => import("./pages/MobilePreview"));
+const CRM = lazy(() => import("./pages/CRM"));
 
 // New CRM Dashboard
-const ProtectedRoute = lazy(() => import("@/components/admin/ProtectedRoute"));
+const CRMLogin = lazy(() => import("./pages/admin/crm/CRMLogin"));
+const CRMDashboard = lazy(() => import("./pages/admin/crm/CRMDashboard"));
+const CRMAgentList = lazy(() => import("./pages/admin/crm/AgentList"));
+const CRMLeads = lazy(() => import("./pages/admin/crm/Leads"));
+const CRMLayout = lazy(() => import("@/components/admin/AdminLayout"));
 const MigrateData = lazy(() => import("./pages/MigrateData"));
 const VerifyAgentListing = lazy(() => import("./pages/VerifyAgentListing"));
 const AgentOnboarding = lazy(() => import("./pages/AgentOnboarding"));
@@ -105,6 +117,7 @@ const StepSuccess = lazy(() => import("./pages/funnel/StepSuccess"));
 // Certification Artifact Pages
 const ArtifactPage = lazy(() => import("./pages/ArtifactPage"));
 
+const ClaimRedirect = lazy(() => import("./pages/ClaimRedirect"));
 const ShortLinkRedirect = lazy(() => import("./pages/ShortLinkRedirect"));
 const AzMagicLinkRedirect = lazy(() => import("./pages/AzMagicLinkRedirect"));
 const AzNeighborhoodRedirect = lazy(() => import("./pages/AzNeighborhoodRedirect"));
@@ -121,9 +134,9 @@ const ZillowPayToPlayPage = lazy(() => import("./pages/ZillowPayToPlayPage"));
 const Compare = lazy(() => import("./pages/Compare"));
 const Press = lazy(() => import("./pages/Press"));
 const ForAI = lazy(() => import("./pages/ForAI"));
+const ForAISystems = lazy(() => import("./pages/ForAISystems"));
 
 const Transparency = lazy(() => import("./pages/Transparency"));
-const EditorialUpdates = lazy(() => import("./pages/EditorialUpdates"));
 const Founder = lazy(() => import("./pages/Founder"));
 const AILiability = lazy(() => import("./pages/AILiability"));
 const AICitationWhitepaper = lazy(() => import("./pages/AICitationWhitepaper"));
@@ -171,11 +184,27 @@ const App = () => (
                     <Route path="/ranking-methodology" element={<RankingMethodologyRedirect />} />
                     <Route path="/methodology" element={<MethodologyRedirect />} />
                     <Route path="/main" element={<Navigate to="/" replace />} />
-                    {/* Admin routes */}                    
-                    <Route path="/agent/bot-analytics" element={<AgentBotAnalyticsDashboard />} />
-                    <Route path="/og-preview" element={<OGPreview />} />
-                    <Route path="/crm" element={<CRM />} />
-                    <Route path="/test-visibility-components" element={<TestVisibilityComponents />} />
+                    {/* Admin routes - Only accessible on staging */}
+                    <Route path="/admin/login" element={<AdminRouteGuard><AdminLogin /></AdminRouteGuard>} />
+                    <Route path="/admin" element={<AdminRouteGuard><AdminDashboard /></AdminRouteGuard>} />
+                    
+                    {/* New CRM Dashboard */}
+                    <Route path="/admin/crm/login" element={<AdminRouteGuard><CRMLogin /></AdminRouteGuard>} />
+                    <Route path="/admin/crm" element={<AdminRouteGuard><CRMLayout /></AdminRouteGuard>}>
+                      <Route path="dashboard" element={<CRMDashboard />} />
+                      <Route path="agents" element={<CRMAgentList />} />
+                      <Route path="leads" element={<CRMLeads />} />
+                    </Route>
+                    
+                    <Route path="/admin/mobile-preview" element={<AdminRouteGuard><MobilePreview /></AdminRouteGuard>} />
+                    <Route path="/a/bot-analytics" element={<AdminRouteGuard><BotAnalyticsDashboard /></AdminRouteGuard>} />
+                    <Route path="/agent/bot-analytics" element={<AdminRouteGuard><AgentBotAnalyticsDashboard /></AdminRouteGuard>} />
+                    <Route path="/og-preview" element={<AdminRouteGuard><OGPreview /></AdminRouteGuard>} />
+                    <Route path="/crm" element={<AdminRouteGuard><CRM /></AdminRouteGuard>} />
+                    <Route path="/admin/ingest-neighborhoods" element={<AdminRouteGuard><IngestNeighborhoods /></AdminRouteGuard>} />
+                    <Route path="/admin/neighborhood-writeups" element={<AdminRouteGuard><NeighborhoodWriteups /></AdminRouteGuard>} />
+                    <Route path="/admin/export-agents" element={<AdminRouteGuard><AdminExportAgents /></AdminRouteGuard>} />
+                    <Route path="/test-visibility-components" element={<AdminRouteGuard><TestVisibilityComponents /></AdminRouteGuard>} />
                     {/* Visibility funnel */}
                     <Route path="/visibility" element={<Navigate to="/visibility/coverage" replace />} />
                     <Route path="/visibility/coverage" element={<VisibilityCoveragePage />} />
@@ -193,8 +222,8 @@ const App = () => (
                     <Route path="/compare" element={<Compare />} />
                     <Route path="/press" element={<Press />} />
                     <Route path="/for-ai" element={<ForAI />} />
+                    <Route path="/for-ai-systems" element={<ForAISystems />} />
                     <Route path="/transparency" element={<Transparency />} />
-                    <Route path="/editorial-updates" element={<EditorialUpdates />} />
                     
                     <Route path="/ai-compare" element={<AICompare />} />
                     <Route path="/ai-liability" element={<AILiability />} />
@@ -232,6 +261,8 @@ const App = () => (
                     <Route path="/verify/:token/specialties" element={<VerifySpecialties />} />
                     <Route path="/verify/:token/cities" element={<VerifyCities />} />
                     <Route path="/verify-listing/:professionalId" element={<VerifyAgentListing />} />
+                    {/* Claim link redirect: /claim?token=xxx -> /funnel/xxx */}
+                    <Route path="/claim" element={<ClaimRedirect />} />
                     {/* Short link redirect for magic links */}
                     <Route path="/p/:shortCode" element={<ShortLinkRedirect />} />
                     {/* Simple funnel test page (no complex logic) */}

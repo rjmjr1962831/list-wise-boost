@@ -7,12 +7,12 @@ const corsHeaders = {
 
 // Model configuration
 const MODELS = {
-  // Lovable AI Gateway (Gemini/OpenAI)
-  'gemini-flash': { provider: 'lovable', model: 'google/gemini-2.5-flash' },
-  'gemini-pro': { provider: 'lovable', model: 'google/gemini-2.5-pro' },
-  'gpt5': { provider: 'lovable', model: 'openai/gpt-5' },
-  'gpt5-mini': { provider: 'lovable', model: 'openai/gpt-5-mini' },
-  'gpt5-nano': { provider: 'lovable', model: 'openai/gpt-5-nano' },
+  // Vercel AI Gateway (Gemini/OpenAI)
+  'gemini-flash': { provider: 'vercel', model: 'google/gemini-2.5-flash' },
+  'gemini-pro': { provider: 'vercel', model: 'google/gemini-2.5-pro' },
+  'gpt5': { provider: 'vercel', model: 'openai/gpt-5' },
+  'gpt5-mini': { provider: 'vercel', model: 'openai/gpt-5-mini' },
+  'gpt5-nano': { provider: 'vercel', model: 'openai/gpt-5-nano' },
   
   // Claude (Anthropic) - Best for complex reasoning, long docs, code
   'claude-sonnet': { provider: 'anthropic', model: 'claude-sonnet-4-5' },
@@ -20,7 +20,6 @@ const MODELS = {
   
   // DeepSeek - Cost-effective for coding and structured tasks
   'deepseek-chat': { provider: 'deepseek', model: 'deepseek-chat' },
-  'deepseek-reasoner': { provider: 'deepseek', model: 'deepseek-reasoner' },
 };
 
 // Task routing configuration - which model to use for each task type
@@ -61,14 +60,14 @@ interface AIRequest {
   maxTokens?: number;
 }
 
-async function callLovableAI(model: string, messages: any[], temperature?: number, maxTokens?: number) {
-  const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-  if (!LOVABLE_API_KEY) throw new Error('LOVABLE_API_KEY not configured');
+async function callVercelAI(model: string, messages: any[], temperature?: number, maxTokens?: number) {
+  const VERCEL_API_KEY = Deno.env.get('VERCEL_API_KEY');
+  if (!VERCEL_API_KEY) throw new Error('VERCEL_API_KEY not configured');
 
-  const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+  const response = await fetch('https://ai.gateway.vercel.dev/v1/chat/completions', {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+      'Authorization': `Bearer ${VERCEL_API_KEY}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
@@ -81,8 +80,8 @@ async function callLovableAI(model: string, messages: any[], temperature?: numbe
 
   if (!response.ok) {
     const error = await response.text();
-    console.error('Lovable AI error:', response.status, error);
-    throw new Error(`Lovable AI error: ${response.status}`);
+    console.error('Vercel AI error:', response.status, error);
+    throw new Error(`Vercel AI error: ${response.status}`);
   }
 
   return response.json();
@@ -193,9 +192,9 @@ serve(async (req) => {
     let result;
     
     switch (modelConfig.provider) {
-      case 'lovable':
-        result = await callLovableAI(modelConfig.model, fullMessages, temperature, maxTokens);
-        result.provider = 'lovable';
+      case 'vercel':
+        result = await callVercelAI(modelConfig.model, fullMessages, temperature, maxTokens);
+        result.provider = 'vercel';
         break;
       
       case 'anthropic':
