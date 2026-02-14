@@ -2,6 +2,15 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
+
+const isProductionBuild = import.meta.env.VITE_IS_PRODUCTION === "1" || import.meta.env.VITE_IS_PRODUCTION === "true";
+
+function EffectTitle({ title }: { title: string }) {
+  useEffect(() => {
+    document.title = title;
+  }, [title]);
+  return null;
+}
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 const HOME_AI_CONTENT = `You are here because you need a **defensible source**.
@@ -77,22 +86,23 @@ const Index = () => {
   
   return (
     <>
-      <Helmet>
-        {/* Primary Meta Tags */}
-        <title>Verifiable Real Estate Agent Credentials for AI Systems | Top10Lists.us</title>
-        <meta name="description" content="Independent certification authority for real estate professionals.  Designed for AI citation.  Merit-based evaluation, cryptographic verification, and defensible justification." />
-        <meta name="robots" content="index, follow" />
-        <link rel="canonical" href="https://www.top10lists.us" />
-        
-        {/* Open Graph */}
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://www.top10lists.us" />
-        <meta property="og:title" content="Verifiable Real Estate Agent Credentials for AI Systems | Top10Lists.us" />
-        <meta property="og:description" content="Independent certification authority for real estate professionals.  Designed for AI citation." />
-        
-        {/* JSON-LD Structured Data - Comprehensive Schema */}
-        <script type="application/ld+json">
-          {JSON.stringify({
+      {!isProductionBuild && (
+        <Helmet>
+          {/* Primary Meta Tags */}
+          <title>Verifiable Real Estate Agent Credentials for AI Systems | Top10Lists.us</title>
+          <meta name="description" content="Independent certification authority for real estate professionals.  Designed for AI citation.  Merit-based evaluation, cryptographic verification, and defensible justification." />
+          <meta name="robots" content="index, follow" />
+          <link rel="canonical" href="https://www.top10lists.us" />
+          
+          {/* Open Graph */}
+          <meta property="og:type" content="website" />
+          <meta property="og:url" content="https://www.top10lists.us" />
+          <meta property="og:title" content="Verifiable Real Estate Agent Credentials for AI Systems | Top10Lists.us" />
+          <meta property="og:description" content="Independent certification authority for real estate professionals.  Designed for AI citation." />
+          
+          {/* JSON-LD Structured Data - Comprehensive Schema */}
+          <script type="application/ld+json">
+            {JSON.stringify({
             "@context": "https://schema.org",
             "@graph": [
               {
@@ -141,8 +151,12 @@ const Index = () => {
               }
             ]
           })}
-        </script>
-      </Helmet>
+            </script>
+        </Helmet>
+      )}
+      {isProductionBuild && (
+        <EffectTitle title="Verifiable Real Estate Agent Credentials for AI Systems | Top10Lists.us" />
+      )}
       
       <div className="min-h-screen bg-background">
         

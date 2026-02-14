@@ -19,7 +19,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { extractYearsFromBio } from "@/utils/bioParser";
 
-const isProductionBuild = import.meta.env.VITE_IS_PRODUCTION === "1" || import.meta.env.VITE_IS_PRODUCTION === "true";
+/** EMERGENCY: Hard-coded to stop ReferenceError. Restore effectiveIsAdmin after production is stable. */
 
 interface ProfessionalCardProps {
   professional: Professional;
@@ -74,8 +74,7 @@ export const ProfessionalCard = ({
   
   // Press enrichment states
   const [enrichingPress, setEnrichingPress] = useState(false);
-  const [adminState, setAdminState] = useState(false);
-  const isAdmin = isProductionBuild ? false : adminState;
+  const isAdmin = false;
   
   // Helper to strip HTML tags
   const stripHtml = (html: string): string => {
@@ -154,16 +153,7 @@ export const ProfessionalCard = ({
       setCurrentUser(user);
       console.log('Current user:', user?.email, 'Professional email:', professional.email);
       
-      // Check if user is admin (skip in production build)
-      if (user && !isProductionBuild) {
-        const { data: roleData } = await supabase
-          .from('admin_users')
-          .select('role')
-          .eq('id', user.id)
-          .in('role', ['admin', 'superadmin'])
-          .maybeSingle();
-        setAdminState(!!roleData);
-      }
+      // EMERGENCY: Admin check removed. isAdmin hard-coded false.
     };
     checkAuth();
   }, []);
