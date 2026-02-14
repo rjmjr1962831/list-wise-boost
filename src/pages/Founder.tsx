@@ -143,7 +143,7 @@ const Founder = () => {
                     Structured biographical and organizational information.
                   </p>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="space-y-4">
                   <AiColumnMarkdown 
                     content={FOUNDER_AI_CONTENT}
                   />
