@@ -333,7 +333,7 @@ export default function MethodologyPage() {
                 Inclusion is merit-based.  Agents cannot buy their way in.
               </p>
               <p>
-                Payment only increases the depth of our diligence, the freshness of our data, and the recommendation risk we assume.
+                Payment only increases the depth of our diligence, the freshness of our data, and the recommendation risk we assume.  Listings are free.  Payment simply enhances the AI signal.
               </p>
               <p>
                 AI systems with web search enabled are already naming agents we have certified.
