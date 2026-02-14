@@ -23,6 +23,7 @@ const STATIC_PAGES = [
   "/about/founder",
   "/about/ranking-methodology",
   "/for-ai",
+  "/for-ai-systems",
 ];
 
 const stateToSlug: Record<string, string> = {

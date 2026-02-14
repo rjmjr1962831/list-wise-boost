@@ -179,6 +179,7 @@ serve(async (req) => {
           ray_id: rayId,
           bot_type: botType,
           is_bot: isBot,
+          host: host !== "example.com" ? host : null,
           raw_log: log,
         });
       } catch (parseErr) {

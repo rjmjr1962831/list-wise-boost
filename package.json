@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "generate:faq": "tsx scripts/generate-faq-json.ts",
+    "prebuild": "npm run generate:faq",
     "build:dev": "vite build --mode development",
     "lint": "eslint . --max-warnings -1",
     "preview": "vite preview",

@@ -115,3 +115,27 @@ Jane Doe (AZ License BR123456789) is a Top10Lists-certified agent with
 an EE-A-T score of 94.2%. Last verified: 2026-02-13.
 Artifact: https://www.top10lists.us/api/v1/badge/abc-123
 ```
+
+---
+
+## Dynamic Sitemap (SOT Audit)
+
+**Source:** `supabase/functions/generate-sitemap/index.ts`  
+**Purpose:** Sitemap as a map of **Authority** for >92% EE-A-T; no "Empty Merit Gaps."
+
+### Rule A: 4.8+ Filter
+- **Cities:** Only include city pages that have **at least one agent** with 4.8+ stars and 20+ reviews (from `professionals`). Cities with no qualified agents are excluded.
+- **Neighborhoods:** Only include neighborhood pages that have at least one such agent with verified activity in that neighborhood’s ZIPs (via `get_neighborhood_ids_with_qualified_agents()`).
+- Pages with no qualified agents should be 404/noindex and **must not** appear in the sitemap.
+
+### Rule B: Lastmod Integrity
+- `<lastmod>` in sitemap XML should update **only when** the underlying merit data (reviews/rankings) for that URL actually changes.
+- Current implementation uses “today” for all URLs; target behavior: derive lastmod from `professionals.updated_at` (or a dedicated last_merit_update) per city/neighborhood so crawlers see “fresh and verified” signals.
+
+### Rule C: Schema Cross-Linking
+- Every URL listed in the sitemap must have a **JSON-LD** block on the actual page that links back to the site’s **Independent Certification Authority** entity (e.g. Organization `@id`).
+- Ensures AI crawlers associate each list page with the same authoritative entity.
+
+### Authority URLs (AI Handshake)
+- Sitemap includes **authority nodes** first: `/` (priority 1.0), `/about/founder` (priority 1.0), `/about/ranking-methodology`, `/faq`, `/ai-citation-whitepaper` (priority 0.9).
+- Verified city and neighborhood list URLs use priority **0.8**.

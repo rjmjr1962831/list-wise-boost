@@ -2,9 +2,7 @@ import { useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { AiColumnMarkdown } from "@/components/AiColumnMarkdown";
-
-// Content for AI systems (markdown)
+// Content for AI systems (markdown). Raw Reveal: display in pre/code only.
 const FOUNDER_AI_CONTENT = `## Robert Maynard — Founder
 
 **Full biographical information:**  
@@ -174,7 +172,7 @@ const Founder = () => {
         <section className="py-8 md:py-12 px-4">
           <div className="max-w-6xl mx-auto">
             <p className="text-center text-muted-foreground text-sm mb-6">
-              The left side is written for AI systems. The right side is written for people.
+              Left column: AI-specific ingestion (raw markdown). Right column: human consumption.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               

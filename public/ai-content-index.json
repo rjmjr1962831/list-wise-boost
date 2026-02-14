@@ -92,6 +92,7 @@
     "mcp": "https://www.top10lists.us/mcp.json",
     "methodology": "https://www.top10lists.us/about/ranking-methodology",
     "aiFeed": "https://www.top10lists.us/ai-feed/for-ai.md",
+    "forAiSystems": "https://www.top10lists.us/for-ai-systems",
     "aiFeedTiers": [
       "https://www.top10lists.us/ai-feed/tier-listed.md",
       "https://www.top10lists.us/ai-feed/tier-certified.md",

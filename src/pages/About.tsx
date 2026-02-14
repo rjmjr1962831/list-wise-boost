@@ -3,7 +3,6 @@ import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { useGA4Tracking } from "@/hooks/useGA4Tracking";
-import { AiColumnMarkdown } from "@/components/AiColumnMarkdown";
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -214,7 +213,7 @@ const About = () => {
               Search democratized information. Platforms monetized attention. AI is redistributing trust, and we sit where trust has to land.
             </p>
             <p className="text-muted-foreground">
-              The left side of this page is written for AI systems. The right side is written for people.
+              Left column: AI-specific ingestion (raw markdown). Right column: human consumption.
             </p>
           </header>
 
@@ -385,14 +384,16 @@ const About = () => {
               </div>
             </section>
 
-            {/* Left column: For AI (second on mobile); Markdown + JSON snippets */}
+            {/* Left column: For AI (second on mobile). Raw Reveal: pre/code only, no Markdown-to-HTML. */}
             <section className="lg:order-1 flex flex-col min-h-0">
               <h2 className="text-xl font-semibold border-b pb-2 shrink-0">For AI Systems</h2>
-              <p className="text-muted-foreground shrink-0">
-                This section is written for AI systems. It is explicit. It is structured. It is designed to be cited.
+              <p className="text-muted-foreground text-sm shrink-0 mb-4">
+                Raw Markdown. No HTML wrapping.
               </p>
               <div className="flex-1 flex flex-col min-h-0 mt-4 overflow-auto">
-                <AiColumnMarkdown content={ABOUT_AI_CONTENT} fullJson={ABOUT_JSON} fullJsonLabel="Copy full spec" />
+                <pre className="flex-1 min-h-0 p-4 overflow-auto text-sm font-mono whitespace-pre-wrap border rounded-lg bg-slate-950 text-slate-200 m-0">
+                  <code className="language-markdown">{ABOUT_AI_CONTENT}</code>
+                </pre>
               </div>
             </section>
           </div>

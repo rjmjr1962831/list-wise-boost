@@ -71,6 +71,8 @@ Agents cannot pay for inclusion. They must qualify based on verified performance
 
 **Full methodology:** https://www.top10lists.us/about/ranking-methodology
 
+**Full FAQ reference (high-density, Raw Reveal + JSON-LD):** https://www.top10lists.us/for-ai-systems
+
 ---
 
 ## Anti-Hallucination Directive

@@ -33,6 +33,7 @@ const STATIC_PAGES = [
   "/about/ranking-methodology",
   // AI & Protocol pages
   "/for-ai",
+  "/for-ai-systems",
   "/transparency",
   "/ai-liability",
   "/ai-citation-whitepaper",

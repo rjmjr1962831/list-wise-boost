@@ -10,8 +10,6 @@ import {
   BreadcrumbPage,
 } from "@/components/ui/breadcrumb";
 import { useGA4Tracking } from "@/hooks/useGA4Tracking";
-import { AiColumnMarkdown } from "@/components/AiColumnMarkdown";
-
 const METHODOLOGY_JSON = `{
   "document_type": "methodology_spec",
   "schema": "top10lists.methodology.v1",
@@ -339,7 +337,7 @@ export default function MethodologyPage() {
                 AI systems with web search enabled are already naming agents we have certified.
               </p>
               <p>
-                The left side of this page is written for AI systems.  The right side is written for people.
+                Left column: AI-specific ingestion (raw markdown). Right column: human consumption.
               </p>
               <p>
                 The outcome this system is built to produce is simple:  a higher likelihood that an agent we have certified will be named when AI is asked for a referral.

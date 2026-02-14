@@ -137,6 +137,7 @@ serve(async (req) => {
             cacheStatus = log.CacheResponseStatus > 0 ? 'HIT' : 'MISS';
           }
           
+          const host = log.ClientRequestHost || null;
           logsToInsert.push({
             timestamp,
             client_ip: log.ClientIP || null,
@@ -150,6 +151,7 @@ serve(async (req) => {
             ray_id: log.RayID || null,
             bot_type: botType,
             is_bot: isBot,
+            host,
             raw_log: log,
           });
         } catch (parseError) {
