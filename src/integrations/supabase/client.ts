@@ -2,8 +2,12 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+// Use fallbacks so the app mounts even if env vars are missing (e.g. production deploy before env set).
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://placeholder.invalid';
+const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || 'placeholder-key';
+if (SUPABASE_URL === 'https://placeholder.invalid' && typeof window !== 'undefined') {
+  console.warn('[Supabase] Missing VITE_SUPABASE_URL or VITE_SUPABASE_PUBLISHABLE_KEY. Set them in Vercel Environment Variables and redeploy.');
+}
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
