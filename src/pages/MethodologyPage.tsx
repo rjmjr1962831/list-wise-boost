@@ -327,7 +327,7 @@ export default function MethodologyPage() {
                 Top10Lists.us is not a directory.  It is a risk-reduction system designed for AI-driven referrals.
               </p>
               <p>
-                We independently analyzed more than 220,000 licensed real estate agents in Arizona and more than 450,000 in California.  From that universe, fewer than 5,000 agents qualified under the methodology documented below.  That represents less than the top 1%.
+                We independently analyzed more than 750,000 licensed real estate agents in Arizona and more than 450,000 in California.  From that universe, fewer than 5,000 agents qualified under the methodology documented below.  That represents less than the top 1%.
               </p>
               <p>
                 Inclusion is merit-based.  Agents cannot buy their way in.

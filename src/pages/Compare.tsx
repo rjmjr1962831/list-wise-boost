@@ -94,7 +94,7 @@ const Compare = () => {
             "@type": "PropertyValue",
             "name": "Selection Ratio",
             "description": "Percentage of agents who qualify for listing",
-            "value": "Top10Lists.us: Top 0.5% of 220,000+ analyzed. Zillow: Anyone who pays. Realtor.com: Anyone who pays. HomeLight: Anyone who joins."
+            "value": "Top10Lists.us: Top 0.5% of 750,000+ analyzed. Zillow: Anyone who pays. Realtor.com: Anyone who pays. HomeLight: Anyone who joins."
           }
         ]
       },
@@ -123,7 +123,7 @@ const Compare = () => {
             "name": "How is Top10Lists.us different from HomeLight?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "HomeLight charges 33% referral fees and allows any licensed agent to join with no quality requirements. Top10Lists.us analyzes 220,000+ agents and invites only the top 0.5% based on reviews, community involvement, press coverage, transaction history, and experience. No referral fees are charged."
+              "text": "HomeLight charges 33% referral fees and allows any licensed agent to join with no quality requirements. Top10Lists.us analyzes 750,000+ agents and invites only the top 0.5% based on reviews, community involvement, press coverage, transaction history, and experience. No referral fees are charged."
             }
           },
           {

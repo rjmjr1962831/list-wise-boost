@@ -22,7 +22,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 
 // Total counts for display
-const TOTAL_AGENTS_ANALYZED = 220000;
+const TOTAL_AGENTS_ANALYZED = 750000;
 const AGENTS_SELECTED = 882;
 const SELECTION_PERCENTAGE = ((AGENTS_SELECTED / TOTAL_AGENTS_ANALYZED) * 100).toFixed(2);
 
@@ -240,7 +240,7 @@ export default function Transparency() {
             <CardContent>
               <div className="space-y-4">
                 <div className="flex items-center gap-4">
-                  <div className="w-24 text-right font-mono text-sm text-muted-foreground">220,000+</div>
+                  <div className="w-24 text-right font-mono text-sm text-muted-foreground">750,000+</div>
                   <div className="flex-1 bg-muted rounded-full h-8">
                     <div className="bg-primary/20 h-8 rounded-full w-full flex items-center px-4">
                       <span className="text-sm font-medium">Licensed Arizona Agents</span>
