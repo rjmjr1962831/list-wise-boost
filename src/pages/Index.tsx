@@ -164,8 +164,7 @@ const Index = () => {
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-6">
               <Button size="lg" asChild>
-                {/* TODO: Update /verify href to actual verification route */}
-                <Link to="/verify">
+                <Link to="/are-you-an-agent">
                   Verify your profile
                 </Link>
               </Button>
@@ -243,11 +242,10 @@ const Index = () => {
                   
                   <div className="pt-6 flex flex-col gap-3">
                     <Button asChild>
-                      <Link to="/verify">
+                      <Link to="/are-you-an-agent">
                         Verify your profile
                       </Link>
                     </Button>
-                    {/* TODO: Update /for-agents to actual pricing/certification page */}
                     <Link 
                       to="/for-agents"
                       className="text-center text-primary hover:underline font-medium focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded px-1"
