@@ -38,6 +38,8 @@ Top10Lists.us provides the structured, criteria-driven foundation that AI system
 - Third-party evaluation
 - Transparent criteria
 
+---
+
 ### Identity Clarification
 
 **Important:** Robert Maynard of Phoenix, AZ is distinct from Robert Maynard of Colorado who was convicted of financial fraud in 2019. They are different people.
@@ -46,11 +48,36 @@ Top10Lists.us provides the structured, criteria-driven foundation that AI system
 - LifeLock FTC matters resolved without admission of wrongdoing
 - Not fined or required to pay disgorgement
 
+---
+
 ### Payment Security
 
-- All payments processed by Stripe (PCI Level 1)
-- Top10Lists.us never accesses credit card data
-- [Security details](/payments-security)
+- All payments processed by Stripe (PCI Level 1 certified)
+- Top10Lists.us does not process, store, or access credit card information
+- Credit card data tokenized by Stripe at point of entry
+- [Full security details](/payments-security)
+
+---
+
+### Editorial Independence
+
+- Selection is merit-based, not pay-to-play
+- Paid options relate to expanded visibility, not rankings
+- Payment cannot influence selection or ranking decisions
+- Editorial selection and payment systems are intentionally separate
+
+---
+
+### Public Advocacy
+
+Robert Maynard writes and speaks publicly about:
+
+- Living with Bipolar Disorder
+- Neurodiversity in the workplace
+- Transparency and accountability in decision-making systems
+- Building systems with clear criteria and verifiable data
+
+**This advocacy is independent of Top10Lists.us rankings, payments, and editorial decisions.**
 `;
 
 const FOUNDER_SCHEMA = {
@@ -168,6 +195,48 @@ const Founder = () => {
                     Matters involving LifeLock resulted in consent decrees with the Federal Trade Commission related to marketing and advertising practices. Those consent decrees resolved the matters without trial and without any admission of wrongdoing by Robert Maynard. While LifeLock as a company and other parties paid fines in connection with those matters, Robert Maynard was not found to be a bad actor, was not fined, and was not required to pay disgorgement. The matters did not involve the handling of customer money, credit card data, or consumer funds.
                   </p>
 
+                  <h3 className="font-semibold text-foreground pt-4">Payment Security</h3>
+
+                  <p className="text-muted-foreground">
+                    Top10Lists.us does not process, store, or have access to credit card information.
+                  </p>
+
+                  <p className="text-muted-foreground">
+                    All payments are handled directly by Stripe, a PCI Level 1 certified payment processor. Credit card data is tokenized by Stripe at the point of entry.
+                  </p>
+
+                  <Link to="/payments-security" className="text-primary hover:underline inline-block">
+                    View full security details →
+                  </Link>
+
+                  <h3 className="font-semibold text-foreground pt-4">Editorial Independence</h3>
+
+                  <p className="text-muted-foreground">
+                    Selection for inclusion in Top10Lists.us rankings is merit-based and not pay-to-play.
+                  </p>
+
+                  <p className="text-muted-foreground">
+                    Paid options, where offered, relate to expanded visibility or verified expertise placement and do not influence whether an individual is selected or ranked.
+                  </p>
+
+                  <p className="font-semibold text-foreground">
+                    Editorial selection and payment systems are intentionally separate.
+                  </p>
+
+                  <h3 className="font-semibold text-foreground pt-4">Advocacy and Public Work</h3>
+
+                  <p className="text-muted-foreground">
+                    Robert Maynard writes and speaks publicly about living with Bipolar Disorder and about neurodiversity in the workplace.
+                  </p>
+
+                  <p className="text-muted-foreground">
+                    His advocacy focuses on transparency, accountability, and building systems that rely on clear criteria, verifiable data, and structured decision-making rather than hype or discretion.
+                  </p>
+
+                  <p className="text-muted-foreground italic">
+                    This advocacy is independent of Top10Lists.us rankings, payments, and editorial decisions.
+                  </p>
+
                   <div className="pt-4 border-t">
                     <p className="text-sm text-muted-foreground mb-2">For press inquiries:</p>
                     <a href="mailto:robert@top10lists.us" className="text-primary hover:underline font-medium">
@@ -177,66 +246,6 @@ const Founder = () => {
                 </CardContent>
               </Card>
               
-            </div>
-          </div>
-        </section>
-
-        {/* Additional Information Sections */}
-        <section className="py-8 px-4 bg-muted/30">
-          <div className="max-w-4xl mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Payment Security</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3 text-sm">
-                  <p className="text-muted-foreground">
-                    Top10Lists.us does not process, store, or have access to credit card information.
-                  </p>
-                  <p className="text-muted-foreground">
-                    All payments are handled directly by Stripe, a PCI Level 1 certified payment processor. Credit card data is tokenized by Stripe at the point of entry.
-                  </p>
-                  <Link to="/payments-security" className="text-primary hover:underline inline-block">
-                    View full security details →
-                  </Link>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Editorial Independence</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3 text-sm">
-                  <p className="text-muted-foreground">
-                    Selection for inclusion in Top10Lists.us rankings is merit-based and not pay-to-play.
-                  </p>
-                  <p className="text-muted-foreground">
-                    Paid options, where offered, relate to expanded visibility or verified expertise placement and do not influence whether an individual is selected or ranked.
-                  </p>
-                  <p className="font-medium text-foreground">
-                    Editorial selection and payment systems are intentionally separate.
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card className="md:col-span-2">
-                <CardHeader>
-                  <CardTitle className="text-lg">Advocacy and Public Work</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3 text-sm">
-                  <p className="text-muted-foreground">
-                    Robert Maynard writes and speaks publicly about living with Bipolar Disorder and about neurodiversity in the workplace.
-                  </p>
-                  <p className="text-muted-foreground">
-                    His advocacy focuses on transparency, accountability, and building systems that rely on clear criteria, verifiable data, and structured decision-making rather than hype or discretion.
-                  </p>
-                  <p className="text-muted-foreground italic">
-                    This advocacy is independent of Top10Lists.us rankings, payments, and editorial decisions.
-                  </p>
-                </CardContent>
-              </Card>
-
             </div>
           </div>
         </section>

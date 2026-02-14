@@ -1,39 +1,56 @@
 @echo off
-REM Automated Knowledge Sync Script for Top10Lists.us
-REM Runs UPDATE KNOWLEDGE functions for Claude and Cursor
+REM Automated Sync Script for Top10Lists.us
+REM Runs 21:00 and 06:00 knowledge update functions
 REM No user interaction required
 
 echo ========================================
-echo Starting Knowledge Update: %date% %time%
+echo Starting Automated Updates: %date% %time%
 echo ========================================
 
 REM Change to repository directory
 cd /d C:\Repository\list-wise-boost
 
-REM ===== CLAUDE: UPDATE KNOWLEDGE =====
+REM ===== 21:00 UPDATE: Evening Knowledge Sync =====
 echo.
-echo [CLAUDE] Running UPDATE KNOWLEDGE - CLAUDE - %DATE%
+echo [21:00 Function] Running Evening Knowledge Update...
 echo.
 
-claude --non-interactive -y "UPDATE KNOWLEDGE - CLAUDE - %DATE%"
+REM Claude: UPDATE KNOWLEDGE function
+echo Running Claude UPDATE KNOWLEDGE - CLAUDE - %DATE%...
+claude -y "UPDATE KNOWLEDGE - CLAUDE - %DATE%"
 
-REM Give it a moment to complete
 timeout /t 3 /nobreak > nul
 
-REM ===== CURSOR: UPDATE KNOWLEDGE =====
+REM Cursor: UPDATE KNOWLEDGE function
+echo Running Cursor UPDATE KNOWLEDGE - CURSOR - %DATE%...
+cursor --print --force "UPDATE KNOWLEDGE - CURSOR - %DATE%"
+
+timeout /t 3 /nobreak > nul
+
+REM Sync daily takeaways to docs
+echo Syncing daily takeaways...
+npm run takeaways:sync
+
+REM ===== 06:00 UPDATE: Morning Cache Warm =====
 echo.
-echo [CURSOR] Running UPDATE KNOWLEDGE - CURSOR - %DATE%
+echo [06:00 Function] Running Morning Cache Warm...
 echo.
 
-cursor --non-interactive --dangerously-skip-permissions "UPDATE KNOWLEDGE - CURSOR - %DATE%"
+REM Warm top markets cache
+echo Warming top markets cache...
+npx supabase functions invoke warm-top-markets --project-ref wiotrvoirdgzfacuuiem
+
+REM Optional: Run a quick bot analytics check
+echo Checking bot analytics...
+cursor --print --force "Quick summary: Check cloudflare_request_logs for overnight bot activity and cache hit rates"
 
 echo.
 echo ========================================
-echo Knowledge Update Complete: %date% %time%
+echo Updates Complete: %date% %time%
 echo ========================================
 echo.
 
 REM Log the run
-echo %date% %time% - Automated knowledge sync completed >> .knowledge\deltas\sync_log.txt
+echo %date% %time% - Automated sync completed (21:00 + 06:00 functions) >> .knowledge\deltas\sync_log.txt
 
 exit /b 0
