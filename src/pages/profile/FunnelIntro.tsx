@@ -7,11 +7,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { useFunnelTracking, FUNNEL_EVENTS } from '@/hooks/useFunnelTracking';
 import { LiveAIVerdict } from '@/components/LiveAIVerdict';
 
+const isProductionBuild = import.meta.env.VITE_IS_PRODUCTION === "1" || import.meta.env.VITE_IS_PRODUCTION === "true";
+
 export default function FunnelIntro() {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
   const [firstName, setFirstName] = useState<string | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [adminState, setAdminState] = useState(false);
+  const isAdmin = isProductionBuild ? false : adminState;
   const [showAIVerdict, setShowAIVerdict] = useState(false);
   const { trackEvent } = useFunnelTracking(token);
 
@@ -27,7 +30,7 @@ export default function FunnelIntro() {
           .eq('id', session.user.id)
           .in('role', ['admin', 'superadmin'])
           .single();
-        setIsAdmin(!!data);
+        setAdminState(!!data);
       }
     };
     
