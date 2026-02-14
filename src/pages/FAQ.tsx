@@ -65,9 +65,9 @@ const FAQ = () => {
         "name": item.question,
         "acceptedAnswer": { "@type": "Answer", "text": item.answer },
       };
-      if (item.keywords?.length) q.keywords = item.keywords.join(", ");
+      if ("keywords" in item && Array.isArray(item.keywords) && item.keywords.length) q.keywords = item.keywords.join(", ");
       if (item.categoryName) q.about = { "@type": "Thing", "name": item.categoryName };
-      if (item.suggestedAnswer) {
+      if ("suggestedAnswer" in item && item.suggestedAnswer) {
         q.suggestedAnswer = [{ "@type": "Answer", "text": item.suggestedAnswer }];
       }
       return q;
