@@ -1,6 +1,17 @@
 ---
-description: Push changes to staging after edits so Robert can see and test
+description: Staging/main branch flow and push workflow — never main to staging
 alwaysApply: true
+---
+
+# Branch Flow (Locked)
+
+**Deployment direction is one-way only:**
+
+- **Allowed:** `staging` → `main` (merge or deploy from staging to production).
+- **Forbidden:** Never merge or deploy `main` into `staging`. Never bring main back into staging.
+
+When preparing a release, merge staging into main and push main. Never do the reverse.
+
 ---
 
 # Staging Push Workflow

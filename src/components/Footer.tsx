@@ -91,12 +91,6 @@ export const Footer = () => {
                 FAQ
               </Link>
               <Link 
-                to="/editorial-updates" 
-                className="text-slate-300 hover:text-white transition-colors"
-              >
-                Updates
-              </Link>
-              <Link 
                 to="/transparency" 
                 className="text-slate-300 hover:text-white transition-colors"
               >
