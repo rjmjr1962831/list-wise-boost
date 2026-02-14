@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { Copy, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -35,6 +36,7 @@ export function AiColumnMarkdown({ content, fullJson, fullJsonLabel = "Copy full
     <div className="flex flex-col min-h-0">
       <div className="prose prose-sm dark:prose-invert max-w-none flex-1 min-h-0 overflow-auto">
         <ReactMarkdown
+          remarkPlugins={[remarkGfm]}
           components={{
             a({ href, children, ...props }) {
               if (href?.startsWith("/")) {
