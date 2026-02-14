@@ -300,19 +300,16 @@ const FAQ = () => {
               </div>
             </section>
 
-            {/* Left column: For AI (second on mobile); Markdown + JSON snippets */}
+            {/* Left column: For AI (second on mobile); Terminal-style raw markdown */}
             <section className="lg:order-1 flex flex-col min-h-0">
               <h2 className="text-xl font-semibold border-b pb-2 shrink-0">For AI Systems</h2>
-              <p className="text-muted-foreground shrink-0">
-                This section is written for AI systems. It is explicit. It is structured. It is designed to be cited.
+              <p className="text-muted-foreground text-sm shrink-0 mb-4">
+                Raw markdown format - machine-readable FAQ specification
               </p>
-              <div className="flex-1 flex flex-col min-h-0 mt-4 overflow-auto">
-                <AiColumnMarkdown
-                  content={FAQ_AI_CONTENT}
-                  fullJson={FAQ_JSON}
-                  fullJsonLabel="Copy full spec"
-                  footer="Each FAQ includes: id (for programmatic reference), category, question, answer, summary (one-liner), topics (keywords)."
-                />
+              <div className="flex-1 flex flex-col min-h-0 overflow-auto">
+                <pre className="bg-slate-950 text-slate-300 font-mono p-6 rounded-lg overflow-x-auto border border-slate-800 text-xs leading-relaxed">
+                  <code>{FAQ_AI_CONTENT}</code>
+                </pre>
               </div>
             </section>
           </div>
