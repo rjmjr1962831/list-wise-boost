@@ -11,16 +11,12 @@ import { Chatbot } from "@/components/Chatbot";
 import { StagingAdminLink } from "@/components/StagingAdminLink";
 import { Loader2 } from "lucide-react";
 
-/** When set (e.g. Vercel Production env), admin routes are not registered and all /admin paths 404. */
-const isProductionBuild = import.meta.env.VITE_IS_PRODUCTION === "1" || import.meta.env.VITE_IS_PRODUCTION === "true";
-const AdminRoutesLazy = lazy(() => import("./AdminRoutes").then(m => ({ default: m.AdminRoutes })));
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import DynamicCategoryList from "./pages/DynamicCategoryList";
 import AgentProfile from "./pages/AgentProfile";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { HomeErrorBoundary } from "@/components/HomeErrorBoundary";
-import { ProductionAdminRoutes } from "@/ProductionAdminRoutes";
 
 // Canonical agent profile - new URL structure
 const CanonicalAgentProfile = lazy(() => import("./pages/CanonicalAgentProfile"));
@@ -155,7 +151,7 @@ const App = () => (
         <RateLimitGuard>
           <Toaster />
         <div className="flex flex-col min-h-screen">
-            {!isProductionBuild && <StagingAdminLink />}
+            <StagingAdminLink />
             <Header />
             <main className="flex-1">
               <ErrorBoundary>
@@ -174,12 +170,7 @@ const App = () => (
                     <Route path="/ranking-methodology" element={<RankingMethodologyRedirect />} />
                     <Route path="/methodology" element={<MethodologyRedirect />} />
                     <Route path="/main" element={<Navigate to="/" replace />} />
-                    {/* Admin routes: excluded from production build (VITE_IS_PRODUCTION=1) for security */}
-                    {isProductionBuild ? <ProductionAdminRoutes /> : (
-                      <Suspense fallback={null}>
-                        <AdminRoutesLazy />
-                      </Suspense>
-                    )}
+                    {/* EMERGENCY: Admin routes removed temporarily. /admin/* etc. fall through to catch-all 404. */}
                     {/* Visibility funnel */}
                     <Route path="/visibility" element={<Navigate to="/visibility/coverage" replace />} />
                     <Route path="/visibility/coverage" element={<VisibilityCoveragePage />} />

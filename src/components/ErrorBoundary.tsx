@@ -73,14 +73,16 @@ export class ErrorBoundary extends React.Component<Props, State> {
   render() {
     if (this.state.hasError && this.state.error) {
       const msg = this.state.error.message || "(no message)";
-      const isProduction = import.meta.env.VITE_IS_PRODUCTION === "1" || import.meta.env.VITE_IS_PRODUCTION === "true";
+      const isProdBuild = import.meta.env.VITE_IS_PRODUCTION === "1" || import.meta.env.VITE_IS_PRODUCTION === "true";
+      const isProdHost = typeof window !== "undefined" && /^(\w+\.)?top10lists\.us$/i.test(window.location.hostname) && !window.location.hostname.includes("staging");
+      const showAlertSent = !isProdBuild && !isProdHost;
       return (
         <div role="alert" className="min-h-screen flex items-center justify-center bg-background p-4">
           <div className="max-w-md text-center space-y-4">
             <h1 className="text-2xl font-semibold text-foreground">Something went wrong</h1>
             <p className="text-muted-foreground">An unexpected error occurred while rendering this page.</p>
             <pre className="text-left text-xs bg-muted p-3 rounded overflow-auto max-h-32 font-mono">{msg}</pre>
-            {!isProduction && <p className="text-sm text-muted-foreground">An alert has been sent to the admin.</p>}
+            {showAlertSent && <p className="text-sm text-muted-foreground">An alert has been sent to the admin.</p>}
             <button 
               onClick={this.handleRetry} 
               className="px-4 py-2 rounded border border-border hover:bg-accent"

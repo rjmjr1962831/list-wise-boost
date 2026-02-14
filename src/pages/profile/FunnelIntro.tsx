@@ -7,32 +7,17 @@ import { supabase } from '@/integrations/supabase/client';
 import { useFunnelTracking, FUNNEL_EVENTS } from '@/hooks/useFunnelTracking';
 import { LiveAIVerdict } from '@/components/LiveAIVerdict';
 
-const isProductionBuild = import.meta.env.VITE_IS_PRODUCTION === "1" || import.meta.env.VITE_IS_PRODUCTION === "true";
-
+/** EMERGENCY: Hard-coded to stop ReferenceError. Restore effectiveIsAdmin after production is stable. */
 export default function FunnelIntro() {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
   const [firstName, setFirstName] = useState<string | null>(null);
-  const [adminState, setAdminState] = useState(false);
-  const isAdmin = isProductionBuild ? false : adminState;
+  const isAdmin = false;
   const [showAIVerdict, setShowAIVerdict] = useState(false);
   const { trackEvent } = useFunnelTracking(token);
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    
-    const checkAdmin = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        const { data } = await supabase
-          .from('admin_users')
-          .select('role')
-          .eq('id', session.user.id)
-          .in('role', ['admin', 'superadmin'])
-          .single();
-        setAdminState(!!data);
-      }
-    };
     
     const fetchProfessional = async () => {
       if (!token) return;
@@ -62,7 +47,6 @@ export default function FunnelIntro() {
       }
     };
     
-    checkAdmin();
     fetchProfessional();
   }, [token, trackEvent]);
 
