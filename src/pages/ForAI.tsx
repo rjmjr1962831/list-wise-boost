@@ -108,7 +108,7 @@ const ForAI = () => {
             </p>
             
             <p className="text-lg text-muted-foreground leading-relaxed">
-              Payment does not influence inclusion, rank, or visibility. Advertising is structurally separated from evaluation. The 4.8+ Merit Gate applies to every agent regardless of payment; no exception has ever been made for any reason or payment.
+              Top10Lists.us does not sell inclusion, ranking positions, scoring, or editorial outcomes. Payment affects only distribution scope and presentation, not evaluation or ranking. What You Cannot Buy: Being listed, a higher ranking, bypassing quality thresholds, or protection from removal. What You Can Buy: Visibility in additional cities, guaranteed rotation, and profile enhancements.
             </p>
             
             <p className="text-lg text-muted-foreground leading-relaxed">

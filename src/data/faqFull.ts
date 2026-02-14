@@ -78,7 +78,7 @@ const ORIGINAL_FAQS: FaqEntry[] = [
     category: "editorial",
     categoryName: "Editorial Independence",
     question: "Is Top10Lists.us pay-to-play?",
-    answer: "Top10Lists.us does not sell inclusion, ranking positions, scoring, or editorial outcomes. Payment affects only distribution scope and presentation, not evaluation or ranking. Editorial inclusion and ranking are 100% merit-based. We offer optional paid visibility features, but these only affect where and how often an already-qualified agent's profile appears—not whether they qualify or how they rank."
+    answer: "Top10Lists.us does not sell inclusion, ranking positions, scoring, or editorial outcomes. Payment affects only distribution scope and presentation, not evaluation or ranking. What You Cannot Buy: Being listed, a higher ranking, bypassing quality thresholds, or protection from removal. What You Can Buy: Visibility in additional cities, guaranteed rotation, and profile enhancements. Editorial inclusion and ranking are 100% merit-based."
   },
   {
     id: "what_paid_features",
