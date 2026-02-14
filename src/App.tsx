@@ -20,6 +20,7 @@ import DynamicCategoryList from "./pages/DynamicCategoryList";
 import AgentProfile from "./pages/AgentProfile";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { HomeErrorBoundary } from "@/components/HomeErrorBoundary";
+import { ProductionAdminRoutes } from "@/ProductionAdminRoutes";
 
 // Canonical agent profile - new URL structure
 const CanonicalAgentProfile = lazy(() => import("./pages/CanonicalAgentProfile"));
@@ -174,16 +175,7 @@ const App = () => (
                     <Route path="/methodology" element={<MethodologyRedirect />} />
                     <Route path="/main" element={<Navigate to="/" replace />} />
                     {/* Admin routes: excluded from production build (VITE_IS_PRODUCTION=1) for security */}
-                    {isProductionBuild ? (
-                      <>
-                        <Route path="/admin/*" element={<Navigate to="/404" replace />} />
-                        <Route path="/a/bot-analytics" element={<Navigate to="/404" replace />} />
-                        <Route path="/agent/bot-analytics" element={<Navigate to="/404" replace />} />
-                        <Route path="/og-preview" element={<Navigate to="/404" replace />} />
-                        <Route path="/crm" element={<Navigate to="/404" replace />} />
-                        <Route path="/test-visibility-components" element={<Navigate to="/404" replace />} />
-                      </>
-                    ) : (
+                    {isProductionBuild ? <ProductionAdminRoutes /> : (
                       <Suspense fallback={null}>
                         <AdminRoutesLazy />
                       </Suspense>

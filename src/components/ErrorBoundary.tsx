@@ -39,9 +39,10 @@ export class ErrorBoundary extends React.Component<Props, State> {
       return;
     }
     
-    // Send email alert only when not in production (avoids CORS; prod alert endpoint may block)
-    const isProduction = import.meta.env.VITE_IS_PRODUCTION === "1" || import.meta.env.VITE_IS_PRODUCTION === "true";
-    if (!this.state.alertSent && !isProduction) {
+    // Never send alert from production origin (avoids CORS); also skip when build-time prod flag set
+    const isProdBuild = import.meta.env.VITE_IS_PRODUCTION === "1" || import.meta.env.VITE_IS_PRODUCTION === "true";
+    const isProdHost = typeof window !== "undefined" && /^(\w+\.)?top10lists\.us$/i.test(window.location.hostname) && !window.location.hostname.includes("staging");
+    if (!this.state.alertSent && !isProdBuild && !isProdHost) {
       this.sendErrorAlert(error, info);
     }
   }
