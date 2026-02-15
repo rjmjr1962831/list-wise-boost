@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Helmet } from "react-helmet-async";
+import { SafeHead } from "@/components/SafeHead";
 import { Link } from "react-router-dom";
 
 const SMSTerms = () => {
@@ -9,11 +9,11 @@ const SMSTerms = () => {
 
   return (
     <>
-      <Helmet>
+      <SafeHead>
         <title>SMS Terms & Conditions | Top10Lists.us</title>
         <meta name="description" content="SMS messaging terms and conditions for Top10Lists.us notifications about account, billing, and listing status." />
         <link rel="canonical" href="https://www.top10lists.us/sms-terms" />
-      </Helmet>
+      </SafeHead>
       
       <div className="container mx-auto px-4 py-12 max-w-3xl">
         <h1 className="text-3xl font-bold mb-8">SMS Terms & Conditions</h1>

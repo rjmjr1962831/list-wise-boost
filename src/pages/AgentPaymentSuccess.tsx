@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
+import { SafeHead } from "@/components/SafeHead";
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -114,9 +114,9 @@ export default function AgentPaymentSuccess() {
   if (isProcessing) {
     return (
       <>
-        <Helmet>
+        <SafeHead>
           <title>Processing Payment... | Top10Lists</title>
-        </Helmet>
+        </SafeHead>
         <div className="min-h-screen bg-gradient-to-b from-background to-secondary/30 flex items-center justify-center">
           <div className="text-center">
             <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto mb-4" />
@@ -131,9 +131,9 @@ export default function AgentPaymentSuccess() {
   if (error) {
     return (
       <>
-        <Helmet>
+        <SafeHead>
           <title>Payment Issue | Top10Lists</title>
-        </Helmet>
+        </SafeHead>
         <div className="min-h-screen bg-gradient-to-b from-background to-secondary/30">
           <Header />
           <div className="container mx-auto px-4 py-12 max-w-3xl text-center">
@@ -164,10 +164,10 @@ export default function AgentPaymentSuccess() {
 
   return (
     <>
-      <Helmet>
+      <SafeHead>
         <title>Welcome to Premium Placement! | Top10Lists</title>
         <meta name="description" content="Your premium placement subscription is now active" />
-      </Helmet>
+      </SafeHead>
 
       <div className="min-h-screen bg-gradient-to-b from-background to-secondary/30">
         <Header />

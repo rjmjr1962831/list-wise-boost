@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, Navigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { Helmet } from 'react-helmet-async';
+import { SafeHead } from "@/components/SafeHead";
 import { Loader2 } from 'lucide-react';
 import { ProfessionalCard } from '@/components/ProfessionalCard';
 import { Professional } from '@/types/professional';
@@ -321,11 +321,11 @@ export default function AgentProfile() {
   if (loading) {
     return (
       <>
-        <Helmet>
+        <SafeHead>
           <title>{`${loadingAgentName} - Real Estate Agent in ${loadingCityName}, AZ | Top10Lists.us`}</title>
           <meta name="description" content={loadingDescription} />
         <meta name="robots" content="noindex, nofollow" />
-        </Helmet>
+        </SafeHead>
         <div className="min-h-screen flex items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
@@ -357,7 +357,7 @@ export default function AgentProfile() {
 
   return (
     <>
-      <Helmet>
+      <SafeHead>
         <title>{pageTitle}</title>
         <meta name="description" content={pageDescription} />
         <meta name="robots" content="noindex, nofollow" />
@@ -380,7 +380,7 @@ export default function AgentProfile() {
             {JSON.stringify(verifiedSchema)}
           </script>
         )}
-      </Helmet>
+      </SafeHead>
 
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         {/* Breadcrumbs */}

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Helmet } from "react-helmet-async";
+import { SafeHead } from "@/components/SafeHead";
 import { Loader2, MapPin, Briefcase, Star, Award, Mail, Phone, Globe } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -117,14 +117,14 @@ export default function ProfileView() {
 
   return (
     <>
-      <Helmet>
+      <SafeHead>
         <title>{professional.name} - Professional Profile | Top10Lists</title>
         <meta name="description" content={`View the professional profile of ${professional.name}`} />
         <meta name="robots" content="noindex, nofollow" />
         <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
         <meta http-equiv="Pragma" content="no-cache" />
         <meta http-equiv="Expires" content="0" />
-      </Helmet>
+      </SafeHead>
 
       <div className="min-h-screen bg-gradient-to-br from-background to-muted/20 py-12 px-4">
         <div className="max-w-4xl mx-auto space-y-6">

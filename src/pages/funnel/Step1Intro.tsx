@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
+import { SafeHead } from "@/components/SafeHead";
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -102,9 +102,9 @@ export default function Step1Intro() {
 
   return (
     <>
-      <Helmet>
+      <SafeHead>
         <title>Welcome {professional.name} | Top10Lists.us</title>
-      </Helmet>
+      </SafeHead>
       <div className="min-h-screen bg-gradient-to-b from-background to-muted py-12 px-4">
         <div className="max-w-3xl mx-auto">
           <Card>

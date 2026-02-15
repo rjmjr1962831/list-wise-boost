@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Helmet } from "react-helmet-async";
+import { SafeHead } from "@/components/SafeHead";
 import { Footer } from "@/components/Footer";
 import { Link } from "react-router-dom";
 import { HelpCircle, ChevronDown } from "lucide-react";
@@ -97,7 +97,7 @@ const FAQ = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <Helmet>
+      <SafeHead>
         <title>Frequently Asked Questions | Top10Lists.us</title>
         <meta name="description" content="Answers to common questions about Top10Lists.us: how agents are selected, the difference between editorial inclusion and paid visibility, and how we relate to AI search tools." />
         <link rel="canonical" href={`${BASE_URL}/faq`} />
@@ -111,7 +111,7 @@ const FAQ = () => {
         <meta property="og:type" content="website" />
         <script type="application/ld+json">{JSON.stringify(faqPageSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(organizationSchema)}</script>
-      </Helmet>
+      </SafeHead>
 
       {/* Hidden: full FAQ as raw Markdown in pre (MKD). AI payload; not displayed. */}
       <div id="ai-extended-knowledge" style={{ display: "none" }} aria-hidden="true" data-purpose="ai-extended-faq">

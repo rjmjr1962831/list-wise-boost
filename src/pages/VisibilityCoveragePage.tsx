@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
+import { SafeHead } from "@/components/SafeHead";
 import { Loader2, ArrowRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { CoverageProgress } from '@/components/visibility/CoverageProgress';
@@ -224,10 +224,10 @@ export default function VisibilityCoveragePage() {
 
   return (
     <>
-      <Helmet>
+      <SafeHead>
         <title>Select Your Coverage Areas | Top10Lists</title>
         <meta name="description" content="Choose the cities where you actively serve clients. City listings are free for all qualified agents." />
-      </Helmet>
+      </SafeHead>
 
       <div className="container max-w-7xl mx-auto px-4 py-8">
 

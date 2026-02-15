@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
+import { SafeHead } from "@/components/SafeHead";
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -96,9 +96,9 @@ export default function SimpleFunnelTest() {
   if (error || !professional) {
     return (
       <>
-        <Helmet>
+        <SafeHead>
           <title>Invalid Link | Top10Lists.us</title>
-        </Helmet>
+        </SafeHead>
         <div className="min-h-screen flex items-center justify-center p-4">
           <Card className="max-w-md w-full">
             <CardHeader>
@@ -138,9 +138,9 @@ export default function SimpleFunnelTest() {
 
   return (
     <>
-      <Helmet>
+      <SafeHead>
         <title>Welcome {professional.name} | Top10Lists.us</title>
-      </Helmet>
+      </SafeHead>
       <div className="min-h-screen bg-gradient-to-b from-background to-muted py-8 px-4">
         <div className="max-w-2xl mx-auto">
           <Card>

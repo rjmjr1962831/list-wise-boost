@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
+import { SafeHead } from "@/components/SafeHead";
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Loader2, Check } from 'lucide-react';
@@ -162,10 +162,10 @@ export default function FunnelStep0() {
 
   return (
     <>
-      <Helmet>
+      <SafeHead>
         <title>Confirm Your Profile | Top10Lists</title>
         <meta name="robots" content="noindex, nofollow" />
-      </Helmet>
+      </SafeHead>
 
       <div className="min-h-screen bg-gray-50 pb-24 sm:pb-8">
         {/* Minimal Header */}

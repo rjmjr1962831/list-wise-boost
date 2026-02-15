@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
+import { SafeHead } from "@/components/SafeHead";
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Star, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -117,11 +117,11 @@ export default function FunnelIntro() {
 
   return (
     <>
-      <Helmet>
+      <SafeHead>
         <title>Welcome to Top10Lists | The AI-First Agent Directory</title>
         <meta name="description" content="Join the invitation-only agent directory structured for AI citation and retrieval." />
         <meta name="robots" content="noindex, nofollow" />
-      </Helmet>
+      </SafeHead>
 
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
         {IS_ADMIN && (

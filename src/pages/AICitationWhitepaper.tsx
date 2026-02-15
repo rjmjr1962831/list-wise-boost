@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Helmet } from "react-helmet-async";
+import { SafeHead } from "@/components/SafeHead";
 import { Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -63,7 +63,7 @@ export default function AICitationWhitepaper() {
 
   return (
     <>
-      <Helmet>
+      <SafeHead>
         <title>The Yellow Page Moment: AI Citation and Unpriced Risk | Top10Lists.us</title>
         <meta 
           name="description" 
@@ -73,7 +73,7 @@ export default function AICitationWhitepaper() {
         <script type="application/ld+json">
           {JSON.stringify(WHITEPAPER_METADATA)}
         </script>
-      </Helmet>
+      </SafeHead>
 
       <div className="min-h-screen bg-background">
         {/* Hero */}

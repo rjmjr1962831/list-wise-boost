@@ -1,5 +1,5 @@
 import { useParams, Link } from "react-router-dom";
-import { Helmet } from "react-helmet-async";
+import { SafeHead } from "@/components/SafeHead";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowRight, ExternalLink, CheckCircle } from "lucide-react";
@@ -754,10 +754,10 @@ const QuestionPage = () => {
   if (!content) {
     return (
       <div className="min-h-screen bg-background">
-        <Helmet>
+        <SafeHead>
           <title>Question Not Found | Top10Lists</title>
           <meta name="robots" content="noindex" />
-        </Helmet>
+        </SafeHead>
         <div className="container mx-auto px-4 py-16 text-center">
           <h1 className="text-3xl font-bold mb-4">Question Not Found</h1>
           <p className="text-muted-foreground mb-8">This question page doesn't exist yet.</p>
@@ -811,7 +811,7 @@ const QuestionPage = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Helmet>
+      <SafeHead>
         <title>{content.question} | Top10Lists</title>
         <meta name="description" content={content.metaDescription} />
         <link rel="canonical" href={`https://www.top10lists.us/q/${questionSlug}`} />
@@ -821,7 +821,7 @@ const QuestionPage = () => {
         <meta property="og:type" content="article" />
         <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(breadcrumbSchema)}</script>
-      </Helmet>
+      </SafeHead>
 
       <div className="container mx-auto px-4 py-12 max-w-4xl">
         {/* Breadcrumb */}

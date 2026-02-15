@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
+import { SafeHead } from "@/components/SafeHead";
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { 
@@ -122,12 +122,12 @@ export default function AgentLanding() {
 
   return (
     <>
-      <Helmet>
+      <SafeHead>
         <title>Be the Answer When AI Recommends | Top10Lists Real Estate Agents</title>
         <meta name="description" content="Top real estate agents in the United States. When ChatGPT, Gemini, or Claude search for top agents, will they find you? Data-verified directory. 4.5+ rating required." />
         <meta name="keywords" content="top real estate agents USA, best realtors, AI search optimization, ChatGPT real estate, verified agents" />
         <link rel="canonical" href="https://www.top10lists.us/join" />
-      </Helmet>
+      </SafeHead>
 
       <div className="min-h-screen bg-gradient-to-b from-background via-background/95 to-muted/20">
         {/* Hero Section */}

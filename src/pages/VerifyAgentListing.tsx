@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, CheckCircle2, Phone, Mail, Globe, Award, Copy, ExternalLink } from "lucide-react";
-import { Helmet } from "react-helmet-async";
+import { SafeHead } from "@/components/SafeHead";
 import { toast as sonnerToast } from "sonner";
 import { isValidImageUrl, getValidImageUrl } from "@/utils/imageUrlValidator";
 
@@ -173,11 +173,11 @@ export default function VerifyAgentListing() {
 
   return (
     <>
-      <Helmet>
+      <SafeHead>
         <title>Verify Your Listing - {professional.name} | Top10Lists.us</title>
         <meta name="description" content={`Verify and update your listing as one of ${cityName}'s top real estate agents`} />
         <meta name="robots" content="noindex, nofollow" />
-      </Helmet>
+      </SafeHead>
 
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="text-center mb-8">

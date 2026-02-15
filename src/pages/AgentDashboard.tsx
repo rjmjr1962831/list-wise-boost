@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
+import { SafeHead } from "@/components/SafeHead";
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -489,10 +489,10 @@ export default function AgentDashboard() {
 
   return (
     <>
-      <Helmet>
+      <SafeHead>
         <title>Agent Dashboard | Top10Lists.us</title>
         <meta name="robots" content="noindex, nofollow" />
-      </Helmet>
+      </SafeHead>
       
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 py-8 md:py-12">
         <div className="container mx-auto px-4 max-w-6xl">

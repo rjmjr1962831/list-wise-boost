@@ -1,7 +1,7 @@
 // src/components/AgentProfileHead.tsx
 // SEO Head component for individual agent profile pages
 
-import { Helmet } from 'react-helmet-async';
+import { SafeHead } from "@/components/SafeHead";
 import { generateAgentProfileSchema, AgentSchemaData } from '@/utils/agentSchema';
 
 interface AgentProfileHeadProps {
@@ -17,7 +17,7 @@ export function AgentProfileHead({ agent }: AgentProfileHeadProps) {
   const url = `https://www.top10lists.us/profile/${agent.slug}`;
   
   return (
-    <Helmet>
+    <SafeHead>
       <title>{title}</title>
       <meta name="description" content={description} />
       
@@ -46,7 +46,7 @@ export function AgentProfileHead({ agent }: AgentProfileHeadProps) {
       <script type="application/ld+json">
         {JSON.stringify(schema)}
       </script>
-    </Helmet>
+    </SafeHead>
   );
 }
 

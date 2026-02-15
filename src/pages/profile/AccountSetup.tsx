@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
+import { SafeHead } from "@/components/SafeHead";
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -218,10 +218,10 @@ export default function AccountSetup() {
 
     return (
       <>
-        <Helmet>
+        <SafeHead>
           <title>Your Account | Top10Lists</title>
           <meta name="robots" content="noindex, nofollow" />
-        </Helmet>
+        </SafeHead>
 
         <div className="min-h-screen bg-gradient-to-b from-background to-muted/30 py-12 px-4">
           <div className="max-w-2xl mx-auto space-y-8">
@@ -327,10 +327,10 @@ export default function AccountSetup() {
   if (pageState === 'sent') {
     return (
       <>
-        <Helmet>
+        <SafeHead>
           <title>Check Your Email | Top10Lists</title>
           <meta name="robots" content="noindex, nofollow" />
-        </Helmet>
+        </SafeHead>
         
         <div className="min-h-screen bg-gradient-to-b from-background to-muted/30 flex items-center justify-center p-4">
           <Card className="max-w-md w-full">
@@ -369,10 +369,10 @@ export default function AccountSetup() {
 
   return (
     <>
-      <Helmet>
+      <SafeHead>
         <title>Set Up Your Account | Top10Lists</title>
         <meta name="robots" content="noindex, nofollow" />
-      </Helmet>
+      </SafeHead>
 
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/30 py-12 px-4">
         <div className="max-w-lg mx-auto space-y-8">

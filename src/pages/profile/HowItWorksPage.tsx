@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Helmet } from 'react-helmet-async';
+import { SafeHead } from "@/components/SafeHead";
 import { MessageCircle, Search, ListOrdered, ArrowRight, ArrowDown, Zap, Eye } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -57,11 +57,11 @@ export default function HowItWorksPage() {
 
   return (
     <>
-      <Helmet>
+      <SafeHead>
         <title>How It Works | Top10Lists</title>
         <meta name="description" content="Learn how AI citation works for real estate agents" />
         <meta name="robots" content="noindex, nofollow" />
-      </Helmet>
+      </SafeHead>
 
       <div className="min-h-screen bg-background py-12 px-4">
         <div className="max-w-4xl mx-auto space-y-8">

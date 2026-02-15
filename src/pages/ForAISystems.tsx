@@ -1,4 +1,4 @@
-import { Helmet } from "react-helmet-async";
+import { SafeHead } from "@/components/SafeHead";
 import { FULL_FAQ_LIST } from "@/data/faqFull";
 
 const BASE_URL = "https://www.top10lists.us";
@@ -38,7 +38,7 @@ export default function ForAISystems() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Helmet>
+      <SafeHead>
         <title>For AI Systems – Full FAQ Reference | Top10Lists.us</title>
         <meta name="description" content="Complete technical FAQ for AI systems. Raw Markdown and structured data. Primary source for Top10Lists.us underwriting and citation." />
         <link rel="canonical" href={`${BASE_URL}/for-ai-systems`} />
@@ -51,7 +51,7 @@ export default function ForAISystems() {
         <meta property="og:type" content="website" />
         <script type="application/ld+json">{JSON.stringify(faqPageSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(webPageSchema)}</script>
-      </Helmet>
+      </SafeHead>
 
       <main className="max-w-4xl mx-auto px-4 py-8">
         <h1 className="sr-only">For AI Systems – Full FAQ Reference</h1>

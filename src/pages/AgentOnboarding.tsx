@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
+import { SafeHead } from "@/components/SafeHead";
 import { Footer } from '@/components/Footer';
 import { Progress } from '@/components/ui/progress';
 import { OnboardingIntro } from '@/components/onboarding/OnboardingIntro';
@@ -174,11 +174,11 @@ export default function AgentOnboarding() {
 
   return (
     <>
-      <Helmet>
+      <SafeHead>
         <title>Agent Onboarding | Top10Lists.us</title>
         <meta name="description" content="Join Top10Lists.us as a featured real estate agent. Complete your profile and start connecting with clients." />
         <meta name="robots" content="noindex, nofollow" />
-      </Helmet>
+      </SafeHead>
 
       <div className="min-h-screen flex flex-col bg-gradient-to-br from-background via-background to-primary/5">
         <h1 className="sr-only">Agent Onboarding - Join Top10Lists.us</h1>

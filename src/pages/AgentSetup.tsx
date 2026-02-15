@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
+import { SafeHead } from "@/components/SafeHead";
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -203,9 +203,9 @@ export default function AgentSetup() {
   if (isFetching) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-background to-muted/20 px-4">
-        <Helmet>
+        <SafeHead>
           <title>Finding Your Profile | Top10Lists</title>
-        </Helmet>
+        </SafeHead>
         <Card className="w-full max-w-lg text-center p-8">
           <Loader2 className="w-16 h-16 animate-spin text-primary mx-auto mb-6" />
           <h2 className="text-2xl font-bold mb-4">Searching for Your Profile</h2>
@@ -227,9 +227,9 @@ export default function AgentSetup() {
   if (matchedAgent) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 py-16 px-4">
-        <Helmet>
+        <SafeHead>
           <title>Your Profile | Top10Lists</title>
-        </Helmet>
+        </SafeHead>
         <div className="container mx-auto max-w-4xl">
           <div className="text-center mb-8">
             <h1 className="text-3xl md:text-4xl font-bold mb-4">
@@ -285,10 +285,10 @@ export default function AgentSetup() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 py-16 px-4">
-      <Helmet>
+      <SafeHead>
         <title>Join Top10Lists | Premium Agent Setup</title>
         <meta name="description" content="Set up your premium agent listing on Top10Lists" />
-      </Helmet>
+      </SafeHead>
 
       <div className="container mx-auto max-w-lg">
         <Card>

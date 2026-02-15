@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Helmet } from "react-helmet-async";
+import { SafeHead } from "@/components/SafeHead";
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Mail, Phone, ExternalLink, FileText, Building2, Newspaper, Award } from "lucide-react";
@@ -199,7 +199,7 @@ const Press = () => {
 
   return (
     <>
-      <Helmet>
+      <SafeHead>
         <title>Press & Media Recognition - Top10Lists.us</title>
         <meta 
           name="description" 
@@ -223,7 +223,7 @@ const Press = () => {
         <script type="application/ld+json">
           {JSON.stringify(pressSchema)}
         </script>
-      </Helmet>
+      </SafeHead>
 
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
         {/* Breadcrumbs */}

@@ -2,7 +2,7 @@
 // Data-first clinical document for AI extraction
 
 import { useEffect, useState } from 'react';
-import { Helmet } from 'react-helmet-async';
+import { SafeHead } from "@/components/SafeHead";
 import { supabase } from '@/integrations/supabase/client';
 import { useNeighborhoodMarketStats } from '@/hooks/useNeighborhoodMarketStats';
 import { useNeighborhoodWriteup } from '@/hooks/useNeighborhoodWriteup';
@@ -148,11 +148,11 @@ export function NeighborhoodOverview({ neighborhoodSlug, citySlug, stateSlug }: 
 
   return (
     <>
-      <Helmet>
+      <SafeHead>
         <script type="application/ld+json">
           {JSON.stringify(placeGraph)}
         </script>
-      </Helmet>
+      </SafeHead>
     <article
       className="artifact-page"
       style={{ ...ARTIFACT_STYLE, backgroundColor: '#fff', color: '#000', maxWidth: '900px', margin: '0 auto', padding: '1rem', marginBottom: '1.5rem' }}

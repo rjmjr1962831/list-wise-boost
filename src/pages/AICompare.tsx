@@ -1,4 +1,4 @@
-import { Helmet } from "react-helmet-async";
+import { SafeHead } from "@/components/SafeHead";
 import { VerdictBanner, AICompareCard, CompetitiveMoat } from "@/components/ai-compare";
 import { WhyResultsMayVary } from "@/components/WhyResultsMayVary";
 import { Link } from "react-router-dom";
@@ -149,7 +149,7 @@ const AICompare = () => {
 
   return (
     <>
-      <Helmet>
+      <SafeHead>
         <title>AI Citation Comparison: Top10Lists.us vs Zillow.com | Independent AI Evaluation</title>
         <meta 
           name="description" 
@@ -163,7 +163,7 @@ const AICompare = () => {
         <script type="application/ld+json">
           {JSON.stringify(schemaData)}
         </script>
-      </Helmet>
+      </SafeHead>
 
       <main className="container mx-auto px-4 py-8 max-w-6xl">
         <header className="text-center mb-10">

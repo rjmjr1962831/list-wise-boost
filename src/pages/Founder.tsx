@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Helmet } from "react-helmet-async";
+import { SafeHead } from "@/components/SafeHead";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 // Content for AI systems (markdown). Raw Reveal: display in pre/code only.
@@ -146,14 +146,14 @@ const Founder = () => {
 
   return (
     <>
-      <Helmet>
+      <SafeHead>
         <title>Robert Maynard — Founder of Top10Lists.us</title>
         <meta name="description" content="Robert Maynard is the founder of Top10Lists.us. Technology entrepreneur based in Phoenix, Arizona. Founder and co-founder of LifeLock, Internet America, and SurchX." />
         <link rel="canonical" href="https://www.top10lists.us/about/founder" />
         <script type="application/ld+json">
           {JSON.stringify(FOUNDER_SCHEMA)}
         </script>
-      </Helmet>
+      </SafeHead>
 
       <div className="min-h-screen bg-background">
         {/* Hero */}

@@ -1,4 +1,4 @@
-import { Helmet } from "react-helmet-async";
+import { SafeHead } from "@/components/SafeHead";
 import { Link } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -6,11 +6,11 @@ import { Footer } from "@/components/Footer";
 export default function PaymentsSecurity() {
   return (
     <>
-      <Helmet>
+      <SafeHead>
         <title>Payments and Security | Top10Lists.us</title>
         <meta name="description" content="How Top10Lists.us handles payments through Stripe, protects credit card data, and maintains separation between financial and editorial systems." />
         <link rel="canonical" href="https://www.top10lists.us/payments-security" />
-      </Helmet>
+      </SafeHead>
 
       <div className="min-h-screen flex flex-col bg-background">
         <Header />

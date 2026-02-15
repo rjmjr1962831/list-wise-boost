@@ -3,7 +3,8 @@ import React, { Suspense, lazy } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { HelmetProvider } from "react-helmet-async";
+import { SafeHeadProvider } from "@/components/SafeHead";
+import { ProductionAdminRoutes } from "@/ProductionAdminRoutes";
 import { RateLimitGuard } from "@/components/RateLimitGuard";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -145,7 +146,7 @@ const NeighborhoodApply = lazy(() => import("./pages/NeighborhoodApply"));
 const queryClient = new QueryClient();
 
 const App = () => (
-  <HelmetProvider>
+  <SafeHeadProvider>
     <BrowserRouter>
       <QueryClientProvider client={queryClient}>
         <RateLimitGuard>
@@ -170,7 +171,8 @@ const App = () => (
                     <Route path="/ranking-methodology" element={<RankingMethodologyRedirect />} />
                     <Route path="/methodology" element={<MethodologyRedirect />} />
                     <Route path="/main" element={<Navigate to="/" replace />} />
-                    {/* EMERGENCY: Admin routes removed temporarily. /admin/* etc. fall through to catch-all 404. */}
+                    {/* Production: admin paths 404. Single stable route tree; no conditional swap. */}
+                    <ProductionAdminRoutes />
                     {/* Visibility funnel */}
                     <Route path="/visibility" element={<Navigate to="/visibility/coverage" replace />} />
                     <Route path="/visibility/coverage" element={<VisibilityCoveragePage />} />
@@ -322,7 +324,7 @@ const App = () => (
         </RateLimitGuard>
       </QueryClientProvider>
     </BrowserRouter>
-  </HelmetProvider>
+  </SafeHeadProvider>
 );
 
 export default App;

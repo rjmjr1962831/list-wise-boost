@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Helmet } from "react-helmet-async";
+import { SafeHead } from "@/components/SafeHead";
 import { PartyPopper, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -124,12 +124,12 @@ export default function AreYouAnAgent() {
 
   return (
     <>
-      <Helmet>
+      <SafeHead>
         <title>Are You an Agent? | Top10Lists.us</title>
         <meta name="description" content="Top10Lists.us is built so AI systems can confidently name certified agents when asked for a referral. Merit-based certification for real estate professionals." />
         <meta name="robots" content="index, follow" />
         <link rel="canonical" href="https://www.top10lists.us/are-you-an-agent" />
-      </Helmet>
+      </SafeHead>
 
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
         <div className="container max-w-4xl mx-auto px-4 py-16">

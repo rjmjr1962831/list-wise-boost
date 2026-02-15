@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Helmet } from "react-helmet-async";
+import { SafeHead } from "@/components/SafeHead";
 import { Link, Navigate, useParams } from "react-router-dom";
 import { MapPin, ArrowLeft, Loader2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
@@ -102,7 +102,7 @@ export default function CityLanding() {
 
   return (
     <>
-      <Helmet>
+      <SafeHead>
         <title>{`${city.name} ${city.state} Real Estate Guide | Top10Lists.us`}</title>
         <meta
           name="description"
@@ -125,7 +125,7 @@ export default function CityLanding() {
           name="twitter:description"
           content={`Market overview for ${cityName} with highlights, neighborhoods, and selection criteria.`}
         />
-      </Helmet>
+      </SafeHead>
 
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
         {/* Back to List Button - Top Right */}

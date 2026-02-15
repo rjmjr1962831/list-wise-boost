@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Helmet } from 'react-helmet-async';
+import { SafeHead } from "@/components/SafeHead";
 import { ZillowPayToPlay } from '@/components/pricing/ZillowPayToPlay';
 
 export default function ZillowPayToPlayPage() {
@@ -9,10 +9,10 @@ export default function ZillowPayToPlayPage() {
 
   return (
     <>
-      <Helmet>
+      <SafeHead>
         <title>Zillow Pay-to-Play Explained | Top10Lists.us</title>
         <meta name="robots" content="noindex, nofollow" />
-      </Helmet>
+      </SafeHead>
 
       <div className="min-h-screen bg-background py-12">
         <div className="container max-w-4xl">

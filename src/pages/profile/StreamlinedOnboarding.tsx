@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
+import { SafeHead } from "@/components/SafeHead";
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -692,10 +692,10 @@ export default function StreamlinedOnboarding() {
 
     return (
       <>
-        <Helmet>
+        <SafeHead>
           <title>You're All Set! | Top10Lists.us</title>
           <meta name="robots" content="noindex, nofollow" />
-        </Helmet>
+        </SafeHead>
         <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted py-12 px-4">
           <div className="max-w-2xl mx-auto text-center">
             <Card className="p-8 bg-gradient-to-br from-green-500/10 to-green-600/5 border-green-500/20">
@@ -811,10 +811,10 @@ export default function StreamlinedOnboarding() {
     
     return (
       <>
-        <Helmet>
+        <SafeHead>
           <title>Review Your Profile | Top10Lists.us</title>
           <meta name="robots" content="noindex, nofollow" />
-        </Helmet>
+        </SafeHead>
         <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted py-12 px-4">
           <div className="max-w-3xl mx-auto space-y-6">
             
@@ -932,11 +932,11 @@ export default function StreamlinedOnboarding() {
     
     return (
       <>
-        <Helmet>
+        <SafeHead>
           <title>Welcome {firstName} | Top10Lists.us</title>
           <meta name="description" content="Review your professional listing on Top10Lists.us" />
           <meta name="robots" content="noindex, nofollow" />
-        </Helmet>
+        </SafeHead>
 
         <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted">
           {/* Top Bar with Profile Dropdown */}
@@ -1053,11 +1053,11 @@ export default function StreamlinedOnboarding() {
   // Step 2: Edit View
   return (
     <>
-      <Helmet>
+      <SafeHead>
         <title>Edit Your Listing | Top10Lists.us</title>
         <meta name="description" content="Edit and claim your professional listing on Top10Lists.us" />
         <meta name="robots" content="noindex, nofollow" />
-      </Helmet>
+      </SafeHead>
 
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted">
         {/* Top Bar with Profile Dropdown */}
