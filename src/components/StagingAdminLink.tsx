@@ -2,14 +2,13 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Shield } from "lucide-react";
 
-const IS_PRODUCTION = import.meta.env.VITE_IS_PRODUCTION === "1" || import.meta.env.VITE_IS_PRODUCTION === "true";
-
+/**
+ * Shows "Admin Dashboard" link on every page when on staging host.
+ * Uses runtime hostname so one build works for both staging and production.
+ */
 export const StagingAdminLink = () => {
-  if (IS_PRODUCTION) return null;
-
   const [isStaging, setIsStaging] = useState(false);
 
-  // Only check hostname on client-side after mount (staging only)
   useEffect(() => {
     try {
       const hostname = window.location.hostname;

@@ -13,6 +13,7 @@ export const AdminRouteGuard = ({ children }: { children: React.ReactNode }) => 
     const hostname = window.location.hostname;
     const isStaging =
       hostname === 'staging.top10lists.us' ||
+      hostname.includes('staging') ||
       hostname.includes('vercel.app') ||
       hostname === 'localhost' ||
       hostname === '127.0.0.1';

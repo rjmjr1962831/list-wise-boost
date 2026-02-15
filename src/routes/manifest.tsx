@@ -1,14 +1,12 @@
 /**
  * Law 1.2 Static Route Manifest — Zero conditionals in array structure.
- * Flat, stable route list. No .filter(Boolean), no ternaries that change array length.
- * Production: Admin/CRM paths → Navigate to /404. Staging: Admin/CRM paths → AdminAppWrapper.
+ * Admin paths use AdminOr404: runtime hostname decides (staging → admin, production → 404).
+ * One build works for both; no VITE_IS_PRODUCTION needed for staging.
  */
 import React, { lazy } from "react";
 import { Navigate } from "react-router-dom";
 import type { RouteObject } from "react-router-dom";
-
-const IS_PRODUCTION = import.meta.env.VITE_IS_PRODUCTION === "1" || import.meta.env.VITE_IS_PRODUCTION === "true";
-const AdminAppLazy = lazy(() => import("@/AdminAppWrapper"));
+import { AdminOr404 } from "@/components/AdminOr404";
 
 import Index from "@/pages/Index";
 import NotFound from "@/pages/NotFound";
@@ -112,10 +110,8 @@ const VisibilitySuccessPage = lazy(() => import("@/pages/VisibilitySuccessPage")
 const AgentLookup = lazy(() => import("@/pages/AgentLookup"));
 const NeighborhoodApply = lazy(() => import("@/pages/NeighborhoodApply"));
 
-/** Production: 404. Staging: real admin app. Array length/order unchanged. */
-const adminElement = IS_PRODUCTION
-  ? React.createElement(Navigate, { to: "/404", replace: true })
-  : React.createElement(AdminAppLazy, null);
+/** Runtime hostname in AdminOr404: staging host → admin, production host → 404. */
+const adminElement = React.createElement(AdminOr404, null);
 
 /** Law 1.2: Flat route array. No filter, no ternaries that remove entries. Admin slots always present. */
 export const routeManifest: RouteObject[] = [
