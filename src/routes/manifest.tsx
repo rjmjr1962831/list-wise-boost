@@ -1,11 +1,14 @@
 /**
  * Law 1.2 Static Route Manifest — Zero conditionals in array structure.
  * Flat, stable route list. No .filter(Boolean), no ternaries that change array length.
- * Admin/CRM paths use a single stable element (Navigate to /404); no admin imports.
+ * Production: Admin/CRM paths → Navigate to /404. Staging: Admin/CRM paths → AdminAppWrapper.
  */
 import React, { lazy } from "react";
 import { Navigate } from "react-router-dom";
 import type { RouteObject } from "react-router-dom";
+
+const IS_PRODUCTION = import.meta.env.VITE_IS_PRODUCTION === "1" || import.meta.env.VITE_IS_PRODUCTION === "true";
+const AdminAppLazy = lazy(() => import("@/AdminAppWrapper"));
 
 import Index from "@/pages/Index";
 import NotFound from "@/pages/NotFound";
@@ -109,10 +112,12 @@ const VisibilitySuccessPage = lazy(() => import("@/pages/VisibilitySuccessPage")
 const AgentLookup = lazy(() => import("@/pages/AgentLookup"));
 const NeighborhoodApply = lazy(() => import("@/pages/NeighborhoodApply"));
 
-/** Stable element for Admin/CRM paths — no admin code in bundle; array length never changes. */
-const ADMIN_404_ELEMENT = React.createElement(Navigate, { to: "/404", replace: true });
+/** Production: 404. Staging: real admin app. Array length/order unchanged. */
+const adminElement = IS_PRODUCTION
+  ? React.createElement(Navigate, { to: "/404", replace: true })
+  : React.createElement(AdminAppLazy, null);
 
-/** Law 1.2: Flat route array. No filter, no ternaries that remove entries. Admin slots always present with ADMIN_404_ELEMENT. */
+/** Law 1.2: Flat route array. No filter, no ternaries that remove entries. Admin slots always present. */
 export const routeManifest: RouteObject[] = [
   { path: "/", element: React.createElement(HomeErrorBoundary, null, React.createElement(Index, null)) },
   { path: "/404", element: React.createElement(NotFound, null) },
@@ -122,12 +127,12 @@ export const routeManifest: RouteObject[] = [
   { path: "/ranking-methodology", element: React.createElement(RankingMethodologyRedirect, null) },
   { path: "/methodology", element: React.createElement(MethodologyRedirect, null) },
   { path: "/main", element: React.createElement(Navigate, { to: "/", replace: true }) },
-  { path: "/admin/*", element: ADMIN_404_ELEMENT },
-  { path: "/a/bot-analytics", element: ADMIN_404_ELEMENT },
-  { path: "/agent/bot-analytics", element: ADMIN_404_ELEMENT },
-  { path: "/og-preview", element: ADMIN_404_ELEMENT },
-  { path: "/crm", element: ADMIN_404_ELEMENT },
-  { path: "/test-visibility-components", element: ADMIN_404_ELEMENT },
+  { path: "/admin/*", element: adminElement },
+  { path: "/a/bot-analytics", element: adminElement },
+  { path: "/agent/bot-analytics", element: adminElement },
+  { path: "/og-preview", element: adminElement },
+  { path: "/crm", element: adminElement },
+  { path: "/test-visibility-components", element: adminElement },
   { path: "/visibility", element: React.createElement(Navigate, { to: "/visibility/coverage", replace: true }) },
   { path: "/visibility/coverage", element: React.createElement(VisibilityCoveragePage, null) },
   { path: "/visibility/expertise", element: React.createElement(VisibilityExpertisePage, null) },
