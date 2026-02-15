@@ -1,149 +1,26 @@
-// Force rebuild - SMS Terms page added
-import React, { Suspense, lazy } from "react";
+/**
+ * Law 1.2 — Routing via static manifest only. No JSX <Routes> block.
+ */
+import React, { Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, useRoutes } from "react-router-dom";
 import { SafeHeadProvider } from "@/components/SafeHead";
-import { ProductionAdminRoutes } from "@/ProductionAdminRoutes";
 import { RateLimitGuard } from "@/components/RateLimitGuard";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Chatbot } from "@/components/Chatbot";
 import { StagingAdminLink } from "@/components/StagingAdminLink";
 import { Loader2 } from "lucide-react";
-
-import Index from "./pages/Index";
-import NotFound from "./pages/NotFound";
-import DynamicCategoryList from "./pages/DynamicCategoryList";
-import AgentProfile from "./pages/AgentProfile";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import { HomeErrorBoundary } from "@/components/HomeErrorBoundary";
-
-// Canonical agent profile - new URL structure
-const CanonicalAgentProfile = lazy(() => import("./pages/CanonicalAgentProfile"));
-
-// Lazy load all pages except Index and NotFound for better initial load performance
-const Privacy = lazy(() => import("./pages/Privacy"));
-const AICompare = lazy(() => import("./pages/AICompare"));
-const TermsOfService = lazy(() => import("./pages/TermsOfService"));
-const SMSTerms = lazy(() => import("./pages/SMSTerms"));
-const OptInPolicy = lazy(() => import("./pages/OptInPolicy"));
-const ApplyListing = lazy(() => import("./pages/ApplyListing"));
-const VerifyListing = lazy(() => import("./pages/VerifyListing"));
-const VerifyDetails = lazy(() => import("./pages/VerifyDetails"));
-const VerifySpecialties = lazy(() => import("./pages/VerifySpecialties"));
-const VerifyCities = lazy(() => import("./pages/VerifyCities"));
-const CityLanding = lazy(() => import("./pages/CityLanding"));
-const StateLanding = lazy(() => import("./pages/StateLanding"));
-const CityComingSoon = lazy(() => import("./pages/CityComingSoon"));
-const AlbuquerqueRedirect = lazy(() => import("./pages/AlbuquerqueRedirect"));
-const StateAgentOrCategoryRouter = lazy(() => import("./pages/StateAgentOrCategoryRouter"));
-const NeighborhoodCategoryRouter = lazy(() => import("./pages/NeighborhoodCategoryRouter"));
-const NeighborhoodZipCategoryRouter = lazy(() => import("./pages/NeighborhoodZipCategoryRouter"));
-
-const MigrateData = lazy(() => import("./pages/MigrateData"));
-const VerifyAgentListing = lazy(() => import("./pages/VerifyAgentListing"));
-const AgentOnboarding = lazy(() => import("./pages/AgentOnboarding"));
-const AreYouAnAgent = lazy(() => import("./pages/AreYouAnAgent"));
-const AgentOnboardingFunnel = lazy(() => import("./pages/AgentOnboardingFunnel"));
-const AgentPaymentSuccess = lazy(() => import("./pages/AgentPaymentSuccess"));
-const AgentInfo = lazy(() => import("./pages/AgentInfo"));
-const AgentLanding = lazy(() => import("./pages/AgentLanding"));
-const AgentSetup = lazy(() => import("./pages/AgentSetup"));
-const LegacyAgentDashboard = lazy(() => import("./pages/AgentDashboard"));
-const AgentDashboard = lazy(() => import("./pages/agent/AgentDashboard"));
-const AgentLogin = lazy(() => import("./pages/AgentLogin"));
-const AgentLoginRequest = lazy(() => import("./pages/agent/AgentLoginRequest"));
-const AgentCodeVerify = lazy(() => import("./pages/agent/AgentCodeVerify"));
-const PaymentComingSoon = lazy(() => import("./pages/PaymentComingSoon"));
-const About = lazy(() => import("./pages/About"));
-const MethodologyPage = lazy(() => import("./pages/MethodologyPage"));
-const RankingMethodologyRedirect = lazy(() => import("./pages/RankingMethodologyRedirect"));
-const MethodologyRedirect = lazy(() => import("./pages/MethodologyRedirect"));
-const ProfileView = lazy(() => import("./pages/ProfileView"));
-// NOTE: Loaded eagerly (not lazy) to avoid rare chunk-load hangs on public traffic.
-const CheckProfile = lazy(() => import("./pages/CheckProfile"));
-const VerifyListingByToken = lazy(() => import("./pages/VerifyListingByToken"));
-
-// Agent funnel pages
-const WelcomeInterstitial = lazy(() => import("./pages/profile/WelcomeInterstitial"));
-const EditProfile = lazy(() => import("./pages/profile/EditProfile"));
-const ProfileFieldsGuide = lazy(() => import("./pages/profile/ProfileFieldsGuide"));
-const PremiumPricingPage = lazy(() => import("./pages/profile/PremiumPricingPage"));
-const SelectCities = lazy(() => import("./pages/profile/SelectCities"));
-const CitySelection = lazy(() => import("./pages/profile/CitySelection"));
-const SelectNeighborhoods = lazy(() => import("./pages/profile/SelectNeighborhoods"));
-const SelectionPlaceholder = lazy(() => import("./pages/profile/SelectionPlaceholder"));
-const ScheduleCall = lazy(() => import("./pages/profile/ScheduleCall"));
-const ClaimListingPreview = lazy(() => import("./pages/profile/ClaimListingPreview"));
-const ReviewListing = lazy(() => import("./pages/profile/ReviewListing"));
-const FreeCitySelection = lazy(() => import("./pages/profile/FreeCitySelection"));
-const FreeCityConfirmation = lazy(() => import("./pages/profile/FreeCityConfirmation"));
-const HowItWorksPage = lazy(() => import("./pages/profile/HowItWorksPage"));
-const FreeListingThankYou = lazy(() => import("./pages/profile/FreeListingThankYou"));
-const FunnelSuccess = lazy(() => import("./pages/profile/FunnelSuccess"));
-const FunnelIntro = lazy(() => import("./pages/profile/FunnelIntro"));
-const AccuracyReview = lazy(() => import("./pages/profile/AccuracyReview"));
-const FunnelStep0 = lazy(() => import("./pages/profile/FunnelStep0"));
-const ProfileCardPreview = lazy(() => import("./pages/profile/ProfileCardPreview"));
-const AccountSetup = lazy(() => import("./pages/profile/AccountSetup"));
-const StreamlinedOnboarding = lazy(() => import("./pages/profile/StreamlinedOnboarding"));
-const SimpleFunnelTest = lazy(() => import("./pages/profile/SimpleFunnelTest"));
-
-// New Simple Funnel Pages
-const Step1Intro = lazy(() => import("./pages/funnel/Step1Intro"));
-const Step2Review1 = lazy(() => import("./pages/funnel/Step2Review1"));
-const Step3Review2 = lazy(() => import("./pages/funnel/Step3Review2"));
-const Step4ReviewFinal = lazy(() => import("./pages/funnel/Step4ReviewFinal"));
-const Step5Cities = lazy(() => import("./pages/funnel/Step5Cities"));
-const Step6Neighborhoods = lazy(() => import("./pages/funnel/Step6Neighborhoods"));
-const Step7Pricing = lazy(() => import("./pages/funnel/Step7Pricing"));
-const StepSuccess = lazy(() => import("./pages/funnel/StepSuccess"));
-
-// Certification Artifact Pages
-const ArtifactPage = lazy(() => import("./pages/ArtifactPage"));
-
-const ClaimRedirect = lazy(() => import("./pages/ClaimRedirect"));
-const ShortLinkRedirect = lazy(() => import("./pages/ShortLinkRedirect"));
-const AzMagicLinkRedirect = lazy(() => import("./pages/AzMagicLinkRedirect"));
-const AzNeighborhoodRedirect = lazy(() => import("./pages/AzNeighborhoodRedirect"));
-const CanonicalAgentRedirect = lazy(() => import("./pages/CanonicalAgentRedirect"));
-// Q&A Landing Pages for LLM optimization
-const QALandingPage = lazy(() => import("./pages/QALandingPage"));
-
-// Question Pages for sitemap SEO
-const QuestionPage = lazy(() => import("./pages/QuestionPage"));
-
-// FAQ page
-const FAQ = lazy(() => import("./pages/FAQ"));
-const ZillowPayToPlayPage = lazy(() => import("./pages/ZillowPayToPlayPage"));
-const Compare = lazy(() => import("./pages/Compare"));
-const Press = lazy(() => import("./pages/Press"));
-const ForAI = lazy(() => import("./pages/ForAI"));
-const ForAISystems = lazy(() => import("./pages/ForAISystems"));
-
-const Transparency = lazy(() => import("./pages/Transparency"));
-const Founder = lazy(() => import("./pages/Founder"));
-const AILiability = lazy(() => import("./pages/AILiability"));
-const AICitationWhitepaper = lazy(() => import("./pages/AICitationWhitepaper"));
-const ProtocolServices = lazy(() => import("./pages/ProtocolServices"));
-const PaymentsSecurity = lazy(() => import("./pages/PaymentsSecurity"));
-const QualifiedAgentsPage = lazy(() => import("./pages/QualifiedAgentsPage"));
-const AreaAgentsPage = lazy(() => import("./pages/AreaAgentsPage"));
-
-// Visibility funnel pages
-const VisibilityCoveragePage = lazy(() => import("./pages/VisibilityCoveragePage"));
-const VisibilityExpertisePage = lazy(() => import("./pages/VisibilityExpertisePage"));
-const VisibilityReviewPage = lazy(() => import("./pages/VisibilityReviewPage"));
-const VisibilitySuccessPage = lazy(() => import("./pages/VisibilitySuccessPage"));
-
-// Agent lookup page
-const AgentLookup = lazy(() => import("./pages/AgentLookup"));
-
-// Neighborhood application page
-const NeighborhoodApply = lazy(() => import("./pages/NeighborhoodApply"));
+import { routeManifest } from "@/routes/manifest";
 
 const queryClient = new QueryClient();
+
+const AppRoutes = () => {
+  const element = useRoutes(routeManifest);
+  return element;
+};
 
 const App = () => (
   <SafeHeadProvider>
@@ -151,170 +28,19 @@ const App = () => (
       <QueryClientProvider client={queryClient}>
         <RateLimitGuard>
           <Toaster />
-        <div className="flex flex-col min-h-screen">
+          <div className="flex flex-col min-h-screen">
             <StagingAdminLink />
             <Header />
             <main className="flex-1">
               <ErrorBoundary>
-                <Suspense fallback={
-                  <div className="min-h-screen flex items-center justify-center">
-                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                  </div>
-                }>
-                  <Routes>
-                    <Route path="/" element={<HomeErrorBoundary><Index /></HomeErrorBoundary>} />
-                    {/* Dedicated 404 route (used by pages that Navigate to /404) */}
-                    <Route path="/404" element={<NotFound />} />
-                    <Route path="/about" element={<About />} />
-                    <Route path="/about/founder" element={<Founder />} />
-                    <Route path="/about/ranking-methodology" element={<MethodologyPage />} />
-                    <Route path="/ranking-methodology" element={<RankingMethodologyRedirect />} />
-                    <Route path="/methodology" element={<MethodologyRedirect />} />
-                    <Route path="/main" element={<Navigate to="/" replace />} />
-                    {/* Production: admin paths 404. Single stable route tree; no conditional swap. */}
-                    <ProductionAdminRoutes />
-                    {/* Visibility funnel */}
-                    <Route path="/visibility" element={<Navigate to="/visibility/coverage" replace />} />
-                    <Route path="/visibility/coverage" element={<VisibilityCoveragePage />} />
-                    <Route path="/visibility/expertise" element={<VisibilityExpertisePage />} />
-                    <Route path="/visibility/review" element={<VisibilityReviewPage />} />
-                    <Route path="/visibility/success" element={<VisibilitySuccessPage />} />
-                    <Route path="/migrate-data" element={<MigrateData />} />
-                    {/* Static pages */}
-                    <Route path="/faq" element={<FAQ />} />
-                    <Route path="/privacy" element={<Privacy />} />
-                    <Route path="/terms" element={<TermsOfService />} />
-                    <Route path="/sms-terms" element={<SMSTerms />} />
-                    <Route path="/opt-in" element={<OptInPolicy />} />
-                    <Route path="/zillow-explained" element={<ZillowPayToPlayPage />} />
-                    <Route path="/compare" element={<Compare />} />
-                    <Route path="/press" element={<Press />} />
-                    <Route path="/for-ai" element={<ForAI />} />
-                    <Route path="/for-ai-systems" element={<ForAISystems />} />
-                    <Route path="/transparency" element={<Transparency />} />
-                    
-                    <Route path="/ai-compare" element={<AICompare />} />
-                    <Route path="/ai-liability" element={<AILiability />} />
-                    <Route path="/ai-citation-whitepaper" element={<AICitationWhitepaper />} />
-                    <Route path="/protocol-services" element={<ProtocolServices />} />
-                    <Route path="/payments-security" element={<PaymentsSecurity />} />
-                    <Route path="/check-profile" element={<CheckProfile />} />
-                    <Route path="/check-agent" element={<AgentLookup />} />
-                    <Route path="/agent-info" element={<AgentInfo />} />
-                    <Route path="/apply-listing" element={<ApplyListing />} />
-                    
-                    {/* Certification Artifact Pages */}
-                    <Route path="/artifact/:agentId" element={<ArtifactPage />} />
-                    
-                    {/* Agent Landing & Onboarding */}
-                    <Route path="/join" element={<AgentLanding />} />
-                    <Route path="/agent-setup" element={<AgentSetup />} />
-                    <Route path="/agent/dashboard" element={<AgentDashboard />} />
-                    <Route path="/dashboard" element={<Navigate to="/agent/dashboard" replace />} />
-                    <Route path="/agent-login" element={<AgentLogin />} />
-                    <Route path="/agent/login" element={<AgentLoginRequest />} />
-                    <Route path="/agent/verify" element={<AgentCodeVerify />} />
-                    <Route path="/agent-onboarding" element={<AgentOnboarding />} />
-                    <Route path="/are-you-an-agent" element={<AreYouAnAgent />} />
-                    <Route path="/neighborhood/apply" element={<NeighborhoodApply />} />
-                    <Route path="/agent-onboarding/success" element={<AgentPaymentSuccess />} />
-                    <Route path="/agent-payment-success" element={<AgentPaymentSuccess />} />
-                    {/* New Agent Onboarding Funnel */}
-                    <Route path="/apply/onboarding" element={<AgentOnboardingFunnel />} />
-                    <Route path="/apply/payment-coming-soon" element={<PaymentComingSoon />} />
-                    {/* Verification funnel */}
-                    <Route path="/verify" element={<Navigate to="/verify/ee5a75fc-2a6e-4a03-980e-f40532c55f59" replace />} />
-                    <Route path="/verify/:token" element={<VerifyListing />} />
-                    <Route path="/verify/:token/details" element={<VerifyDetails />} />
-                    <Route path="/verify/:token/specialties" element={<VerifySpecialties />} />
-                    <Route path="/verify/:token/cities" element={<VerifyCities />} />
-                    <Route path="/verify-listing/:professionalId" element={<VerifyAgentListing />} />
-                    {/* Claim link redirect: /claim?token=xxx -> /funnel/xxx */}
-                    <Route path="/claim" element={<ClaimRedirect />} />
-                    {/* Short link redirect for magic links */}
-                    <Route path="/p/:shortCode" element={<ShortLinkRedirect />} />
-                    {/* Simple funnel test page (no complex logic) */}
-                    <Route path="/funnel-test/:token" element={<SimpleFunnelTest />} />
-                    {/* New Simple Funnel (7 steps) - Working reliably */}
-                    <Route path="/funnel/:token" element={<Step1Intro />} />
-                    <Route path="/funnel/:token/review-1" element={<Step2Review1 />} />
-                    <Route path="/funnel/:token/review-2" element={<Step3Review2 />} />
-                    <Route path="/funnel/:token/review-final" element={<Step4ReviewFinal />} />
-                    <Route path="/funnel/:token/cities" element={<Step5Cities />} />
-                    <Route path="/funnel/:token/neighborhoods" element={<Step6Neighborhoods />} />
-                    <Route path="/funnel/:token/pricing" element={<Step7Pricing />} />
-                    <Route path="/funnel/:token/success" element={<StepSuccess />} />
-                    {/* Step 0: Introduction and Context (entry point for magic links) */}
-                    <Route path="/profile/:token" element={<FunnelStep0 />} />
-                    {/* Step 1: Card Preview (shows current profile before edits) */}
-                    <Route path="/profile/:token/card" element={<ProfileCardPreview />} />
-                    {/* Step 2: Accuracy Review */}
-                    <Route path="/profile/:token/review" element={<AccuracyReview />} />
-                    {/* Legacy funnel routes - still accessible but not in main flow */}
-                    <Route path="/profile/:token/intro" element={<AccuracyReview />} />
-                    <Route path="/profile/:token/legacy-intro" element={<FunnelIntro />} />
-                    <Route path="/profile/:token/setup" element={<AccountSetup />} />
-                    <Route path="/profile/:token/listing" element={<VerifyListingByToken />} />
-                    <Route path="/profile/:token/fields" element={<ProfileFieldsGuide />} />
-                    <Route path="/profile/:token/edit" element={<EditProfile />} />
-                    <Route path="/profile/:token/preview" element={<ClaimListingPreview />} />
-                    <Route path="/profile/:token/success" element={<FunnelSuccess />} />
-                    
-                    <Route path="/profile/:token/select-free-city" element={<FreeCitySelection />} />
-                    <Route path="/profile/:token/free-confirmed" element={<FreeCityConfirmation />} />
-                    <Route path="/profile/:token/how-it-works" element={<HowItWorksPage />} />
-                    <Route path="/profile/:token/thank-you" element={<FreeListingThankYou />} />
-                    <Route path="/profile/:token/pricing" element={<PremiumPricingPage />} />
-                    <Route path="/profile/:token/cities" element={<CitySelection />} />
-                    <Route path="/profile/:token/select-cities" element={<SelectCities />} />
-                    <Route path="/profile/:token/select-neighborhoods" element={<SelectNeighborhoods />} />
-                    <Route path="/profile/:token/select" element={<SelectionPlaceholder />} />
-                    <Route path="/profile/:token/schedule" element={<ScheduleCall />} />
-                    {/* Legacy profile view route */}
-                    <Route path="/profile-view/:token" element={<ProfileView />} />
-                    {/* Coming Soon route for non-Arizona cities */}
-                    <Route path="/coming-soon/:stateSlug/:citySlug" element={<CityComingSoon />} />
-
-                    {/* Albuquerque-only legacy redirects (URLs missing the state slug) */}
-                    <Route path="/albuquerque/:categorySlug" element={<AlbuquerqueRedirect />} />
-                    <Route path="/albuquerque/:categorySlug/:agentSlug" element={<AlbuquerqueRedirect />} />
-
-                    {/* Question Pages for sitemap SEO */}
-                    <Route path="/q/:questionSlug" element={<QuestionPage />} />
-                    {/* Q&A Landing Pages for LLM optimization */}
-                    <Route path="/:stateSlug/:citySlug/best-real-estate-agents-:year" element={<QALandingPage />} />
-                    <Route path="/:stateSlug/:citySlug/best-real-estate-agents" element={<QALandingPage />} />
-                    {/* Legacy /az/ neighborhood+category format - redirect to full state name */}
-                    <Route path="/az/:citySlug/:neighborhoodSlug/:categorySlug" element={<AzNeighborhoodRedirect />} />
-                    {/* 5-segment: neighborhood with ZIP - new canonical format */}
-                    <Route path="/:stateSlug/:citySlug/:zipCode/:neighborhoodSlug/:categorySlug" element={<NeighborhoodZipCategoryRouter />} />
-                    {/* 5-segment: qualified agents page with ZIP */}
-                    <Route path="/:stateSlug/:citySlug/:zipCode/:neighborhoodSlug/qualified-real-estate-agents" element={<QualifiedAgentsPage />} />
-                    {/* Area agents page - find agents in wider radius */}
-                    <Route path="/:stateSlug/:citySlug/:zipCode/:neighborhoodSlug/area-agents" element={<AreaAgentsPage />} />
-                    <Route path="/:stateSlug/:citySlug/:neighborhoodSlug/area-agents" element={<AreaAgentsPage />} />
-                    {/* Qualified Agents Page (Page 2+ of Expert-First Architecture) - legacy 4-segment format */}
-                    <Route path="/:stateSlug/:citySlug/:neighborhoodSlug/qualified-real-estate-agents" element={<QualifiedAgentsPage />} />
-                    {/* Legacy /az/ magic link format - redirect to full state name with category */}
-                    <Route path="/az/:citySlug/:agentSlug" element={<AzMagicLinkRedirect />} />
-                    {/* NEW: Canonical agent profile URL - /{state}/agents/{canonical_slug} */}
-                    <Route path="/:stateSlug/agents/:canonicalSlug" element={<CanonicalAgentProfile />} />
-                    {/* Compatibility redirect: /{state}/{city}/agents/{canonical_slug} -> /{state}/agents/{canonical_slug} */}
-                    <Route
-                      path="/:stateSlug/:citySlug/agents/:canonicalSlug"
-                      element={<CanonicalAgentRedirect />}
-                    />
-                    {/* Smart router to distinguish magic links from categories for any state */}
-                    <Route path="/:stateSlug/:citySlug/:thirdSegment" element={<StateAgentOrCategoryRouter />} />
-                    {/* 4-segment router: handles both neighborhood+category and category+agent */}
-                    <Route path="/:stateSlug/:citySlug/:thirdSegment/:fourthSegment" element={<NeighborhoodCategoryRouter />} />
-                    <Route path="/:stateSlug/:citySlug" element={<CityLanding />} />
-                    {/* State landing pages - must be after city routes */}
-                    <Route path="/arizona" element={<StateLanding />} />
-                    <Route path="/california" element={<StateLanding />} />
-                    {/* Catch-all 404 route */}
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
+                <Suspense
+                  fallback={
+                    <div className="min-h-screen flex items-center justify-center">
+                      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    </div>
+                  }
+                >
+                  <AppRoutes />
                 </Suspense>
               </ErrorBoundary>
             </main>
