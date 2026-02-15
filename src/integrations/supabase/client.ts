@@ -5,29 +5,44 @@ import type { Database } from './types';
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || '';
 const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || '';
 
+const memoryStorage: Storage = {
+  getItem: () => null,
+  setItem: () => {},
+  removeItem: () => {},
+  key: () => null,
+  length: 0,
+  clear: () => {},
+};
+
+function getAuthStorage(): Storage {
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) return window.localStorage;
+  } catch (_) {}
+  return memoryStorage;
+}
+
 let supabaseInstance: SupabaseClient<Database>;
 
 try {
+  const storage = getAuthStorage();
   if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
     if (typeof window !== 'undefined') {
       console.warn('[Supabase] Missing VITE_SUPABASE_URL or VITE_SUPABASE_PUBLISHABLE_KEY. App will load; Supabase calls will fail until env is set in Vercel.');
     }
-    // Use a valid-looking placeholder so createClient doesn't throw (requests will fail at runtime)
     supabaseInstance = createClient<Database>(
       SUPABASE_URL || 'https://placeholder.invalid',
       SUPABASE_PUBLISHABLE_KEY || 'placeholder-key',
-      { auth: { storage: localStorage, persistSession: true, autoRefreshToken: true } }
+      { auth: { storage, persistSession: true, autoRefreshToken: true } }
     );
   } else {
     supabaseInstance = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
-      auth: { storage: localStorage, persistSession: true, autoRefreshToken: true },
+      auth: { storage, persistSession: true, autoRefreshToken: true },
     });
   }
 } catch (e) {
   console.error('[Supabase] Client init failed:', e);
-  // Dummy client so imports don't break; methods will no-op or throw at call site
   supabaseInstance = createClient<Database>('https://placeholder.invalid', 'placeholder-key', {
-    auth: { storage: localStorage, persistSession: true, autoRefreshToken: true },
+    auth: { storage: memoryStorage, persistSession: true, autoRefreshToken: true },
   });
 }
 

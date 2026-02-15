@@ -10,7 +10,15 @@ export const AdminRouteGuard = ({ children }: { children: React.ReactNode }) => 
   const [allowed, setAllowed] = useState<boolean | null>(null);
 
   useEffect(() => {
-    setAllowed(!isProductionHost(window.location.hostname));
+    try {
+      if (typeof window !== "undefined" && window.location?.hostname != null) {
+        setAllowed(!isProductionHost(window.location.hostname));
+      } else {
+        setAllowed(true);
+      }
+    } catch (_) {
+      setAllowed(true);
+    }
   }, []);
 
   if (allowed === null) {

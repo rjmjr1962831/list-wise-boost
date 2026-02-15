@@ -24,46 +24,53 @@ export class ErrorBoundary extends React.Component<Props, State> {
   };
 
   componentDidCatch(error: Error, info: React.ErrorInfo) {
-    console.error("ErrorBoundary caught an error:", error, info);
-    
-    // Don't send alerts for chunk loading errors - they're expected during deployments
-    // and are already handled by the reload logic in main.tsx
+    try {
+      console.error("ErrorBoundary caught an error:", error, info);
+    } catch (_) {}
+
     if (this.isChunkLoadError(error)) {
-      console.log("Chunk loading error detected - skipping alert (handled by reload logic)");
-      // Trigger a page reload to get fresh chunks
-      const hasReloaded = sessionStorage.getItem('chunk-reload');
-      if (!hasReloaded) {
-        sessionStorage.setItem('chunk-reload', 'true');
-        window.location.reload();
-      }
+      try {
+        const hasReloaded = typeof sessionStorage !== "undefined" ? sessionStorage.getItem("chunk-reload") : null;
+        if (!hasReloaded && typeof window !== "undefined") {
+          sessionStorage.setItem("chunk-reload", "true");
+          window.location.reload();
+        }
+      } catch (_) {}
       return;
     }
-    
-    // Never send alert from production origin (avoids CORS); also skip when build-time prod flag set
-    const isProdBuild = import.meta.env.VITE_IS_PRODUCTION === "1" || import.meta.env.VITE_IS_PRODUCTION === "true";
-    const isProdHost = typeof window !== "undefined" && /^(\w+\.)?top10lists\.us$/i.test(window.location.hostname) && !window.location.hostname.includes("staging");
-    if (!this.state.alertSent && !isProdBuild && !isProdHost) {
-      this.sendErrorAlert(error, info);
-    }
+
+    try {
+      const isProdBuild = import.meta.env.VITE_IS_PRODUCTION === "1" || import.meta.env.VITE_IS_PRODUCTION === "true";
+      let isProdHost = false;
+      if (typeof window !== "undefined" && window.location && window.location.hostname) {
+        isProdHost = /^(\w+\.)?top10lists\.us$/i.test(window.location.hostname) && !window.location.hostname.includes("staging");
+      }
+      if (!this.state.alertSent && !isProdBuild && !isProdHost) {
+        this.sendErrorAlert(error, info);
+      }
+    } catch (_) {}
   }
 
   sendErrorAlert = async (error: Error, info: React.ErrorInfo) => {
     try {
-      await supabase.functions.invoke('send-frontend-error-alert', {
+      let url = "";
+      let userAgent = "";
+      if (typeof window !== "undefined") {
+        try { url = window.location?.href ?? ""; } catch (_) {}
+        try { userAgent = typeof navigator !== "undefined" ? navigator.userAgent ?? "" : ""; } catch (_) {}
+      }
+      await supabase.functions.invoke("send-frontend-error-alert", {
         body: {
           errorMessage: error.message,
           errorStack: error.stack,
           componentStack: info.componentStack,
-          url: window.location.href,
-          userAgent: navigator.userAgent,
+          url,
+          userAgent,
           timestamp: new Date().toISOString(),
         },
       });
       this.setState({ alertSent: true });
-      console.log("Error alert email sent");
-    } catch (alertError) {
-      console.error("Failed to send error alert:", alertError);
-    }
+    } catch (_) {}
   };
 
   handleRetry = () => {
@@ -72,24 +79,48 @@ export class ErrorBoundary extends React.Component<Props, State> {
 
   render() {
     if (this.state.hasError && this.state.error) {
-      const msg = this.state.error.message || "(no message)";
+      let msg = "(no message)";
+      try {
+        msg = (this.state.error && typeof this.state.error === "object" && "message" in this.state.error)
+          ? String((this.state.error as Error).message)
+          : String(this.state.error);
+      } catch (_) {}
+      let isProdHost = false;
+      try {
+        if (typeof window !== "undefined" && window.location?.hostname)
+          isProdHost = /^(\w+\.)?top10lists\.us$/i.test(window.location.hostname) && !window.location.hostname.includes("staging");
+      } catch (_) {}
       const isProdBuild = import.meta.env.VITE_IS_PRODUCTION === "1" || import.meta.env.VITE_IS_PRODUCTION === "true";
-      const isProdHost = typeof window !== "undefined" && /^(\w+\.)?top10lists\.us$/i.test(window.location.hostname) && !window.location.hostname.includes("staging");
       const showAlertSent = !isProdBuild && !isProdHost;
       return (
         <div role="alert" className="min-h-screen flex items-center justify-center bg-background p-4">
           <div className="max-w-md text-center space-y-4">
             <h1 className="text-2xl font-semibold text-foreground">Something went wrong</h1>
             <p className="text-muted-foreground">An unexpected error occurred while rendering this page.</p>
-            <pre className="text-left text-xs bg-muted p-3 rounded overflow-auto max-h-32 font-mono">{msg}</pre>
+            <pre className="text-left text-xs bg-muted p-3 rounded overflow-auto max-h-32 font-mono" id="error-boundary-msg">{msg}</pre>
             <p className="text-xs text-muted-foreground">If your browser shows &quot;SES&quot; or &quot;lockdown&quot; in the console, try a private/incognito window or disable that extension.</p>
             {showAlertSent && <p className="text-sm text-muted-foreground">An alert has been sent to the admin.</p>}
-            <button 
-              onClick={this.handleRetry} 
-              className="px-4 py-2 rounded border border-border hover:bg-accent"
-            >
-              Try again
-            </button>
+            <div className="flex gap-2 justify-center flex-wrap">
+              <button
+                type="button"
+                onClick={() => {
+                  try {
+                    const el = document.getElementById("error-boundary-msg");
+                    if (el?.textContent) navigator.clipboard?.writeText(el.textContent);
+                  } catch (_) {}
+                }}
+                className="px-4 py-2 rounded border border-border hover:bg-accent text-sm"
+              >
+                Copy error
+              </button>
+              <button
+                type="button"
+                onClick={this.handleRetry}
+                className="px-4 py-2 rounded border border-border hover:bg-accent"
+              >
+                Try again
+              </button>
+            </div>
           </div>
         </div>
       );

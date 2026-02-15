@@ -17,7 +17,15 @@ export function AdminOr404() {
   const [allow, setAllow] = useState<boolean | null>(null);
 
   useEffect(() => {
-    setAllow(!isProductionHost(window.location.hostname));
+    try {
+      if (typeof window !== "undefined" && window.location?.hostname != null) {
+        setAllow(!isProductionHost(window.location.hostname));
+      } else {
+        setAllow(true);
+      }
+    } catch (_) {
+      setAllow(true);
+    }
   }, []);
 
   if (allow === null) {
