@@ -1,14 +1,17 @@
 /**
  * Wraps AdminRoutes in Routes so it can be mounted as the element for admin paths.
- * Only loaded when VITE_IS_PRODUCTION is not set (staging). Production never imports this.
+ * ErrorBoundary catches admin-only crashes so the rest of the app stays up.
  */
 import { Routes } from "react-router-dom";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AdminRoutes } from "./AdminRoutes";
 
 export default function AdminAppWrapper() {
   return (
-    <Routes>
-      <AdminRoutes />
-    </Routes>
+    <ErrorBoundary>
+      <Routes>
+        <AdminRoutes />
+      </Routes>
+    </ErrorBoundary>
   );
 }

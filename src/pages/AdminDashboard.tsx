@@ -11,7 +11,9 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    window.scrollTo(0, 0);
+    try {
+      if (typeof window !== "undefined") window.scrollTo(0, 0);
+    } catch (_) {}
   }, []);
 
   useEffect(() => {
@@ -122,8 +124,8 @@ const AdminDashboard = () => {
                       }],
                       allCityIds: ['test-city'],
                       monthlyTotal: 1,
-                      successUrl: `${window.location.origin}/agent-payment-success`,
-                      cancelUrl: `${window.location.origin}/admin`
+                      successUrl: `${typeof window !== "undefined" ? window.location.origin : ""}/agent-payment-success`,
+                      cancelUrl: `${typeof window !== "undefined" ? window.location.origin : ""}/admin`
                     }
                   });
                   if (error) throw error;

@@ -204,17 +204,19 @@ export default function AgentDashboard() {
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
             <div className="flex items-center gap-4">
               <Avatar className="h-16 w-16 border-2 border-primary/20">
-                <AvatarImage src={getValidImageUrl(professional.image_url)} alt={professional.name} />
+                <AvatarImage src={getValidImageUrl(professional?.image_url)} alt={professional?.name ?? "Agent"} />
                 <AvatarFallback className="bg-primary/10 text-primary text-lg">
-                  {getInitials(professional.name)}
+                  {getInitials(professional?.name ?? "Agent")}
                 </AvatarFallback>
               </Avatar>
               <div>
                 <h1 className="text-2xl md:text-3xl font-bold">
-                  Welcome back, {professional.name.split(" ")[0]}
+                  Welcome back, {professional?.name?.split(" ")?.[0] ?? "Agent"}
                 </h1>
                 <p className="text-muted-foreground">
-                  {professional.city?.name && `${professional.city.name}, ${professional.city.state}`}
+                  {professional?.city?.name && professional?.city?.state
+                    ? `${professional.city.name}, ${professional.city.state}`
+                    : professional?.business_city ?? null}
                 </p>
               </div>
             </div>
