@@ -98,18 +98,29 @@ serve(async (req) => {
       return 'listed';
     };
 
+    // Calculate trust signal score
+    const getTrustSignalScore = (tierLevel: string, tier: string): number => {
+      if (tierLevel === 'certified') {
+        return 100; // Paying customer
+      }
+      if (tier === 'hot') {
+        return 75; // Approved/certified profile
+      }
+      return 50; // Welcome/warm
+    };
+
     // Parse name into first/last
     const name = professional.name || '';
     const nameParts = name.split(' ', 2);
     const firstName = nameParts[0] || '';
     const lastName = nameParts[1] || '';
 
-    // Build cities served string
+    // Build cities served string (truncate at 255 chars)
     const citiesServed = Array.isArray(professional.served_cities) 
-      ? professional.served_cities.join(', ') 
+      ? professional.served_cities.join(', ').substring(0, 255)
       : '';
 
-    // Build specialty string
+    // Build specialty string (truncate at 255 chars)
     const specialty = Array.isArray(professional.specialty)
       ? professional.specialty.join(', ').substring(0, 255)
       : '';
@@ -125,9 +136,12 @@ serve(async (req) => {
       professional.monthly_revenue_cents,
       professional.subscription_status
     );
+    const trustSignalScore = getTrustSignalScore(tierLevel, tier);
+    const logarithmicBoost = tierLevel === 'certified';
 
-    // Prepare data for Instantly
+    // Prepare data for Instantly API V2
     const instantlyData = {
+      api_key: INSTANTLY_API_KEY,
       email: professional.email,
       first_name: firstName,
       last_name: lastName,
@@ -140,6 +154,8 @@ serve(async (req) => {
         review_count: String(professional.num_total_reviews || ''),
         tier: tier,
         tier_level: tierLevel,
+        trust_signal_score: String(trustSignalScore),
+        logarithmic_boost: String(logarithmicBoost),
         funnel_status: professional.funnel_status || 'welcome',
         profile_url: profileUrl,
         state: (professional.state_slug || '').toUpperCase(),
@@ -148,28 +164,25 @@ serve(async (req) => {
       }
     };
 
-    // Determine Instantly API endpoint
+    // Determine Instantly API V2 endpoint
     let instantlyUrl = '';
     let method = 'POST';
     
     if (action === 'delete') {
-      instantlyUrl = 'https://api.instantly.ai/api/v1/lead/delete';
+      instantlyUrl = 'https://api.instantly.ai/api/v2/leads/delete';
       method = 'DELETE';
-    } else if (action === 'add') {
-      instantlyUrl = 'https://api.instantly.ai/api/v1/lead/add';
     } else {
-      instantlyUrl = 'https://api.instantly.ai/api/v1/lead/add';
-      // Instantly uses same endpoint for add/update - it upserts
+      // V2 uses /api/v2/leads/add for both add and update (upsert)
+      instantlyUrl = 'https://api.instantly.ai/api/v2/leads/add';
     }
 
-    console.log(`Syncing to Instantly: ${action} for ${professional.email}`);
+    console.log(`Syncing to Instantly V2: ${action} for ${professional.email}`);
 
-    // Call Instantly API
+    // Call Instantly API V2
     const instantlyResponse = await fetch(instantlyUrl, {
       method: method,
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${INSTANTLY_API_KEY}`,
       },
       body: JSON.stringify(instantlyData),
     });
@@ -177,7 +190,7 @@ serve(async (req) => {
     const instantlyResult = await instantlyResponse.json();
 
     if (!instantlyResponse.ok) {
-      console.error("Instantly API error:", instantlyResult);
+      console.error("Instantly API V2 error:", instantlyResult);
       return new Response(
         JSON.stringify({ 
           error: "Instantly API error", 
@@ -188,7 +201,7 @@ serve(async (req) => {
       );
     }
 
-    console.log(`✅ Synced to Instantly: ${professional.email}`);
+    console.log(`✅ Synced to Instantly V2: ${professional.email}`);
 
     return new Response(
       JSON.stringify({ 
@@ -197,6 +210,8 @@ serve(async (req) => {
         email: professional.email,
         tier: tier,
         tier_level: tierLevel,
+        trust_signal_score: trustSignalScore,
+        logarithmic_boost: logarithmicBoost,
         instantly_response: instantlyResult
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
