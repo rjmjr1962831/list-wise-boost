@@ -1,12 +1,11 @@
 /**
- * Law 1.2 Static Route Manifest — Zero conditionals in array structure.
- * Admin paths use AdminOr404: runtime hostname decides (staging → admin, production → 404).
- * One build works for both; no VITE_IS_PRODUCTION needed for staging.
+ * Law 1.2 Static Route Manifest — Zero conditionals, no nested <Routes>.
+ * Admin routes are flat entries here (no AdminAppWrapper / inner Routes) to avoid Object.forEach crash.
  */
 import React, { lazy } from "react";
 import { Navigate } from "react-router-dom";
 import type { RouteObject } from "react-router-dom";
-import { AdminOr404 } from "@/components/AdminOr404";
+import { AdminRouteGuard } from "@/components/AdminRouteGuard";
 
 import Index from "@/pages/Index";
 import NotFound from "@/pages/NotFound";
@@ -110,10 +109,25 @@ const VisibilitySuccessPage = lazy(() => import("@/pages/VisibilitySuccessPage")
 const AgentLookup = lazy(() => import("@/pages/AgentLookup"));
 const NeighborhoodApply = lazy(() => import("@/pages/NeighborhoodApply"));
 
-/** Runtime hostname in AdminOr404: staging host → admin, production host → 404. */
-const adminElement = React.createElement(AdminOr404, null);
+const AdminDashboard = lazy(() => import("@/pages/AdminDashboard"));
+const AdminLogin = lazy(() => import("@/pages/AdminLogin"));
+const AdminExportAgents = lazy(() => import("@/pages/AdminExportAgents"));
+const BotAnalyticsDashboard = lazy(() => import("@/pages/BotAnalyticsDashboard"));
+const AgentBotAnalyticsDashboard = lazy(() => import("@/pages/AgentBotAnalyticsDashboard"));
+const MobilePreview = lazy(() => import("@/pages/MobilePreview"));
+const OGPreview = lazy(() => import("@/pages/OGPreview"));
+const CRM = lazy(() => import("@/pages/CRM"));
+const TestVisibilityComponents = lazy(() => import("@/pages/TestVisibilityComponents"));
+const CRMLogin = lazy(() => import("@/pages/admin/crm/CRMLogin"));
+const CRMDashboard = lazy(() => import("@/pages/admin/crm/CRMDashboard"));
+const CRMAgentList = lazy(() => import("@/pages/admin/crm/AgentList"));
+const CRMLeads = lazy(() => import("@/pages/admin/crm/Leads"));
+const CRMLayout = lazy(() => import("@/components/admin/AdminLayout"));
 
-/** Law 1.2: Flat route array. No filter, no ternaries that remove entries. Admin slots always present. */
+const wrapAdmin = (el: React.ReactNode): React.ReactElement =>
+  React.createElement(AdminRouteGuard, null, el);
+
+/** Law 1.2: Flat route array. Admin routes are flat (no nested Routes) to avoid router forEach crash. */
 export const routeManifest: RouteObject[] = [
   { path: "/", element: React.createElement(HomeErrorBoundary, null, React.createElement(Index, null)) },
   { path: "/404", element: React.createElement(NotFound, null) },
@@ -123,12 +137,28 @@ export const routeManifest: RouteObject[] = [
   { path: "/ranking-methodology", element: React.createElement(RankingMethodologyRedirect, null) },
   { path: "/methodology", element: React.createElement(MethodologyRedirect, null) },
   { path: "/main", element: React.createElement(Navigate, { to: "/", replace: true }) },
-  { path: "/admin/*", element: adminElement },
-  { path: "/a/bot-analytics", element: adminElement },
-  { path: "/agent/bot-analytics", element: adminElement },
-  { path: "/og-preview", element: adminElement },
-  { path: "/crm", element: adminElement },
-  { path: "/test-visibility-components", element: adminElement },
+  { path: "/admin/login", element: wrapAdmin(React.createElement(AdminLogin, null)) },
+  { path: "/admin", element: wrapAdmin(React.createElement(AdminDashboard, null)) },
+  { path: "/admin/crm/login", element: wrapAdmin(React.createElement(CRMLogin, null)) },
+  {
+    path: "/admin/crm",
+    element: wrapAdmin(React.createElement(CRMLayout, null)),
+    children: [
+      { index: true, element: React.createElement(Navigate, { to: "dashboard", replace: true }) },
+      { path: "dashboard", element: React.createElement(CRMDashboard, null) },
+      { path: "agents", element: React.createElement(CRMAgentList, null) },
+      { path: "leads", element: React.createElement(CRMLeads, null) },
+    ],
+  },
+  { path: "/admin/mobile-preview", element: wrapAdmin(React.createElement(MobilePreview, null)) },
+  { path: "/admin/ingest-neighborhoods", element: wrapAdmin(React.createElement(Navigate, { to: "/404", replace: true })) },
+  { path: "/admin/neighborhood-writeups", element: wrapAdmin(React.createElement(Navigate, { to: "/404", replace: true })) },
+  { path: "/admin/export-agents", element: wrapAdmin(React.createElement(AdminExportAgents, null)) },
+  { path: "/a/bot-analytics", element: wrapAdmin(React.createElement(BotAnalyticsDashboard, null)) },
+  { path: "/agent/bot-analytics", element: wrapAdmin(React.createElement(AgentBotAnalyticsDashboard, null)) },
+  { path: "/og-preview", element: wrapAdmin(React.createElement(OGPreview, null)) },
+  { path: "/crm", element: wrapAdmin(React.createElement(CRM, null)) },
+  { path: "/test-visibility-components", element: wrapAdmin(React.createElement(TestVisibilityComponents, null)) },
   { path: "/visibility", element: React.createElement(Navigate, { to: "/visibility/coverage", replace: true }) },
   { path: "/visibility/coverage", element: React.createElement(VisibilityCoveragePage, null) },
   { path: "/visibility/expertise", element: React.createElement(VisibilityExpertisePage, null) },
