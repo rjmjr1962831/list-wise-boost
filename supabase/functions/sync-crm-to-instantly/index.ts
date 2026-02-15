@@ -77,13 +77,25 @@ serve(async (req) => {
       );
     }
 
-    // Determine tier based on funnel_status
+    // Determine tier based on funnel_status (certification status)
     const getTier = (funnelStatus: string): string => {
       const status = (funnelStatus || '').toLowerCase().trim();
       if (status === 'approved' || status === 'edit_complete') {
         return 'hot';
       }
       return 'warm';
+    };
+
+    // Determine tier level based on subscription (listed/certified)
+    const getTierLevel = (paidCities: any[], monthlyRevenue: number, subscriptionStatus: string): string => {
+      const hasPaidCities = paidCities && paidCities.length > 0;
+      const hasRevenue = monthlyRevenue && monthlyRevenue > 0;
+      const isSubscribed = subscriptionStatus && subscriptionStatus !== 'none';
+      
+      if (hasPaidCities || hasRevenue || isSubscribed) {
+        return 'certified';
+      }
+      return 'listed';
     };
 
     // Parse name into first/last
@@ -108,6 +120,11 @@ serve(async (req) => {
       : '';
 
     const tier = getTier(professional.funnel_status);
+    const tierLevel = getTierLevel(
+      professional.paid_cities,
+      professional.monthly_revenue_cents,
+      professional.subscription_status
+    );
 
     // Prepare data for Instantly
     const instantlyData = {
@@ -122,6 +139,7 @@ serve(async (req) => {
         rating: String(professional.review_stars_rating || ''),
         review_count: String(professional.num_total_reviews || ''),
         tier: tier,
+        tier_level: tierLevel,
         funnel_status: professional.funnel_status || 'welcome',
         profile_url: profileUrl,
         state: (professional.state_slug || '').toUpperCase(),
@@ -178,6 +196,7 @@ serve(async (req) => {
         action: action,
         email: professional.email,
         tier: tier,
+        tier_level: tierLevel,
         instantly_response: instantlyResult
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
