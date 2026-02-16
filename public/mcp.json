@@ -122,12 +122,11 @@
       }
     },
     "neighborhood": {
-      "template": "https://www.top10lists.us/{state}/{city}/{zip}/{neighborhood}/top10realestateagents",
+      "template": "https://www.top10lists.us/{state}/{city}/{neighborhood}/top10realestateagents",
       "description": "Neighborhood-level agent rankings page",
       "variables": {
         "state": "Lowercase state name with hyphens",
         "city": "Lowercase city name with hyphens",
-        "zip": "5-digit ZIP code",
         "neighborhood": "Lowercase neighborhood name with hyphens"
       }
     }

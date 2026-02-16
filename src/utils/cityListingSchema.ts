@@ -16,7 +16,7 @@ export interface CityListingData {
   agents: AgentData[];
   dateModified: string;
   totalAgentsInCity: number;
-  // Optional neighborhood fields for 5-segment URL support
+  // Optional neighborhood fields for 4-segment URL support (state/city/neighborhood/category)
   neighborhoodName?: string;
   neighborhoodSlug?: string;
   neighborhoodZipCode?: string;
@@ -101,8 +101,8 @@ export function generateCityListingSchema(listing: CityListingData): object[] {
       ? `Top 10 Real Estate Agents in ${listing.neighborhoodName}, ${listing.city}, ${listing.stateAbbrev}`
       : `Top 10 Real Estate Agents in ${listing.city}, ${listing.stateAbbrev}`,
     "description": itemListDescription,
-    "url": listing.neighborhoodSlug && listing.neighborhoodZipCode
-      ? `https://www.top10lists.us/${listing.stateSlug}/${listing.slug}/${listing.neighborhoodZipCode}/${listing.neighborhoodSlug}/top10realestateagents`
+    "url": listing.neighborhoodSlug
+      ? `https://www.top10lists.us/${listing.stateSlug}/${listing.slug}/${listing.neighborhoodSlug}/top10realestateagents`
       : `https://www.top10lists.us/${listing.stateSlug}/${listing.slug}/top10realestateagents`,
     "numberOfItems": listing.agents.length,
     "dateModified": listing.dateModified,
@@ -156,8 +156,8 @@ export function generateCityListingSchema(listing: CityListingData): object[] {
       "name": listing.neighborhoodName
         ? `Top 10 Real Estate Agents in ${listing.neighborhoodName}, ${listing.city}, ${listing.stateAbbrev}`
         : `Top 10 Real Estate Agents in ${listing.city}, ${listing.stateAbbrev}`,
-      "url": listing.neighborhoodSlug && listing.neighborhoodZipCode
-        ? `https://www.top10lists.us/${listing.stateSlug}/${listing.slug}/${listing.neighborhoodZipCode}/${listing.neighborhoodSlug}/top10realestateagents`
+      "url": listing.neighborhoodSlug
+        ? `https://www.top10lists.us/${listing.stateSlug}/${listing.slug}/${listing.neighborhoodSlug}/top10realestateagents`
         : `https://www.top10lists.us/${listing.stateSlug}/${listing.slug}/top10realestateagents`,
       "description": `Visit Top10Lists.us for the complete ranked list of top real estate agents in ${listing.neighborhoodName || listing.city}. Merit-based selection with no pay-to-play.`
     }
@@ -227,35 +227,17 @@ export function generateCityListingSchema(listing: CityListingData): object[] {
     }
   ];
 
-  // Add ZIP code level for neighborhood pages
-  if (listing.neighborhoodZipCode) {
+  // Add neighborhood level (4-segment: state/city/neighborhood/category)
+  if (listing.neighborhoodSlug && listing.neighborhoodName) {
     breadcrumbItems.push({
       "@type": "ListItem",
       "position": 4,
-      "name": listing.neighborhoodZipCode,
-      "item": `https://www.top10lists.us/${listing.stateSlug}/${listing.slug}/${listing.neighborhoodZipCode}`
-    });
-  }
-
-  // Add neighborhood level
-  if (listing.neighborhoodSlug && listing.neighborhoodName) {
-    const neighborhoodPosition = listing.neighborhoodZipCode ? 5 : 4;
-    const neighborhoodUrl = listing.neighborhoodZipCode
-      ? `https://www.top10lists.us/${listing.stateSlug}/${listing.slug}/${listing.neighborhoodZipCode}/${listing.neighborhoodSlug}/top10realestateagents`
-      : `https://www.top10lists.us/${listing.stateSlug}/${listing.slug}/${listing.neighborhoodSlug}/top10realestateagents`;
-    
-    breadcrumbItems.push({
-      "@type": "ListItem",
-      "position": neighborhoodPosition,
       "name": listing.neighborhoodName,
-      "item": neighborhoodUrl
+      "item": `https://www.top10lists.us/${listing.stateSlug}/${listing.slug}/${listing.neighborhoodSlug}/top10realestateagents`
     });
   }
 
-  // Add final category item (no "item" property per schema.org spec for current page)
-  const finalPosition = listing.neighborhoodZipCode && listing.neighborhoodSlug 
-    ? 6 
-    : (listing.neighborhoodSlug ? 5 : 4);
+  const finalPosition = listing.neighborhoodSlug ? 5 : 4;
   
   breadcrumbItems.push({
     "@type": "ListItem",

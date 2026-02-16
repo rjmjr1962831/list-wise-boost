@@ -97,10 +97,7 @@ export function generateCityPlaceGraph(input: CityPlaceGraphInput): object {
 
 export function generateNeighborhoodPlaceGraph(input: NeighborhoodPlaceGraphInput): object {
   const baseUrl = 'https://www.top10lists.us';
-  const zipSegment = input.zipCode || '';
-  const path = zipSegment
-    ? `${input.stateSlug}/${input.citySlug}/${zipSegment}/${input.neighborhoodSlug}/top10realestateagents`
-    : `${input.stateSlug}/${input.citySlug}/${input.neighborhoodSlug}/top10realestateagents`;
+  const path = `${input.stateSlug}/${input.citySlug}/${input.neighborhoodSlug}/top10realestateagents`;
   const placeUrl = `${baseUrl}/${path}`;
   const dateModified = input.dateModified || getDefaultDateModified();
 

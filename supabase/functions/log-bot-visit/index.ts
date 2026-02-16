@@ -122,7 +122,7 @@ async function resolveListPageContext(
     };
   }
 
-  // Neighborhood list: /state/city/zip/neighborhood/top10realestateagents or /state/city/neighborhood/top10realestateagents
+  // Neighborhood list: canonical /state/city/neighborhood/top10realestateagents (4 seg); legacy 5-seg with zip redirects
   const isNeighborhood5 =
     seg.length === 5 && seg[4] === "top10realestateagents";
   const isNeighborhood4 =

@@ -212,7 +212,7 @@ Deno.serve(async (req) => {
         },
         "urlPatterns": {
           "city": `${baseUrl}/{state}/{city}/top10realestateagents`,
-          "neighborhood": `${baseUrl}/{state}/{city}/{zip}/{neighborhood}/top10realestateagents`
+          "neighborhood": `${baseUrl}/{state}/{city}/{neighborhood}/top10realestateagents`
         }
       };
 

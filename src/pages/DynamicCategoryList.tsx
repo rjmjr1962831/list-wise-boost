@@ -1120,22 +1120,13 @@ export default function DynamicCategoryList({
     title: pageTitle,
     description: pageDescription,
     breadcrumbs: neighborhoodSlug
-      ? (neighborhoodZipCode
-        ? [
-            { name: 'Home', path: '/' },
-            { name: city.state, path: `/${city.state_slug}` },
-            { name: city.name, path: `/${city.state_slug}/${city.slug}` },
-            { name: neighborhoodZipCode, path: `/${city.state_slug}/${city.slug}/${neighborhoodZipCode}` },
-            { name: neighborhoodName || neighborhoodSlug, path: `/${city.state_slug}/${city.slug}/${neighborhoodZipCode}/${neighborhoodSlug}` },
-            { name: `Top 10 ${category.plural_name}` }
-          ]
-        : [
-            { name: 'Home', path: '/' },
-            { name: city.state, path: `/${city.state_slug}` },
-            { name: city.name, path: `/${city.state_slug}/${city.slug}` },
-            { name: neighborhoodName || neighborhoodSlug, path: `/${city.state_slug}/${city.slug}/${neighborhoodSlug}` },
-            { name: `Top 10 ${category.plural_name}` }
-          ])
+      ? [
+          { name: 'Home', path: '/' },
+          { name: city.state, path: `/${city.state_slug}` },
+          { name: city.name, path: `/${city.state_slug}/${city.slug}` },
+          { name: neighborhoodName || neighborhoodSlug, path: `/${city.state_slug}/${city.slug}/${neighborhoodSlug}` },
+          { name: `Top 10 ${category.plural_name}` }
+        ]
       : [
           { name: 'Home', path: '/' },
           { name: city.state, path: `/${city.state_slug}` },
@@ -1161,13 +1152,11 @@ export default function DynamicCategoryList({
 
   // Get city coordinates for geo tags
   const cityCoords = getCityCoordinates(city.slug);
-  // Canonical URL includes neighborhood and ZIP if present
-  const canonicalUrl = neighborhoodSlug && neighborhoodZipCode
-    ? `https://www.top10lists.us/${city.state_slug}/${city.slug}/${neighborhoodZipCode}/${neighborhoodSlug}/${category.slug}`
+  // Canonical URL: 4-segment for neighborhood (state/city/neighborhood/category), 3-segment for city
+  const canonicalUrl = neighborhoodSlug
+    ? `https://www.top10lists.us/${city.state_slug}/${city.slug}/${neighborhoodSlug}/${category.slug}`
     : `https://www.top10lists.us/${city.state_slug}/${city.slug}/${category.slug}`;
-  const pageUrl = neighborhoodSlug && neighborhoodZipCode
-    ? `https://www.top10lists.us/${city.state_slug}/${city.slug}/${neighborhoodZipCode}/${neighborhoodSlug}/${category.slug}`
-    : `https://www.top10lists.us/${city.state_slug}/${city.slug}/${category.slug}`;
+  const pageUrl = canonicalUrl;
   const ogImageUrl = `https://www.top10lists.us/og-${city.slug}.png`;
   
   // Freshness signals for LLM optimization
@@ -1192,7 +1181,7 @@ export default function DynamicCategoryList({
     agents: agentDataArray,
     dateModified: lastUpdated,
     totalAgentsInCity: 500, // Approximate number of licensed agents in city
-    // Include neighborhood data for 5-segment URL breadcrumbs
+    // Include neighborhood data for 4-segment canonical URLs and breadcrumbs
     neighborhoodName: neighborhoodName,
     neighborhoodSlug: neighborhoodSlug,
     neighborhoodZipCode: neighborhoodZipCode,

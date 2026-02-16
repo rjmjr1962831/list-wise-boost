@@ -73,13 +73,13 @@ Examples:
 - https://www.top10lists.us/arizona/scottsdale/top10realestateagents
 - https://www.top10lists.us/california/los-angeles/top10realestateagents
 
-**Neighborhood Pages (5 segments with ZIP):**
-https://www.top10lists.us/{state}/{city}/{zip}/{neighborhood}/top10realestateagents
+**Neighborhood Pages (4 segments):**
+https://www.top10lists.us/{state}/{city}/{neighborhood}/top10realestateagents
 
 Examples:
-- https://www.top10lists.us/arizona/phoenix/85018/arcadia/top10realestateagents
-- https://www.top10lists.us/arizona/scottsdale/85255/troon-north/top10realestateagents
-- https://www.top10lists.us/arizona/scottsdale/85255/greyhawk/top10realestateagents
+- https://www.top10lists.us/arizona/phoenix/arcadia/top10realestateagents
+- https://www.top10lists.us/arizona/scottsdale/troon-north/top10realestateagents
+- https://www.top10lists.us/arizona/scottsdale/greyhawk/top10realestateagents
 
 ---
 
