@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Loader2, Check, Pencil, Clock, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
 import { ProfessionalCard } from '@/components/ProfessionalCard';
-import { Helmet } from 'react-helmet-async';
+import { SafeHead } from "@/components/SafeHead";
 import { Badge } from '@/components/ui/badge';
 import { LiveAIVerdict } from '@/components/LiveAIVerdict';
 
@@ -129,11 +129,11 @@ export default function ReviewListing() {
 
   return (
     <>
-      <Helmet>
+      <SafeHead>
         <title>Review Your Listing | Top10Lists</title>
         <meta name="description" content="Review your listing before accepting" />
         <meta name="robots" content="noindex, nofollow" />
-      </Helmet>
+      </SafeHead>
       
       <div className="min-h-screen bg-background py-12 px-4">
         <div className="max-w-5xl mx-auto space-y-6">

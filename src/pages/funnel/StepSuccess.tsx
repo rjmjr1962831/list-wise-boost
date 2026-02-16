@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
+import { SafeHead } from "@/components/SafeHead";
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -68,9 +68,9 @@ export default function StepSuccess() {
 
   return (
     <>
-      <Helmet>
+      <SafeHead>
         <title>Welcome to Top10Lists! | Top10Lists.us</title>
-      </Helmet>
+      </SafeHead>
       <div className="min-h-screen bg-gradient-to-b from-background to-muted py-12 px-4">
         <div className="max-w-2xl mx-auto">
           <Card>

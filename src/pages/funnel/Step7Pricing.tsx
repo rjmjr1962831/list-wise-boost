@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
+import { SafeHead } from "@/components/SafeHead";
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -177,9 +177,9 @@ export default function Step7Pricing() {
 
   return (
     <>
-      <Helmet>
+      <SafeHead>
         <title>Choose Your Certification Tier | Top10Lists.us</title>
-      </Helmet>
+      </SafeHead>
       <div className="min-h-screen bg-gradient-to-b from-background to-muted py-12 px-4">
         <div className="max-w-6xl mx-auto">
           <Card>

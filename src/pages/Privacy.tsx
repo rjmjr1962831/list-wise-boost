@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Helmet } from 'react-helmet-async';
+import { SafeHead } from "@/components/SafeHead";
 import { Link } from 'react-router-dom';
 
 const Privacy = () => {
@@ -16,7 +16,7 @@ const Privacy = () => {
 
   return (
     <>
-      <Helmet>
+      <SafeHead>
         <title>Privacy Policy - Top10Lists.us</title>
         <meta name="description" content="Privacy policy for Top10Lists.us. Learn how we collect, use, and protect your personal information." />
         <link rel="canonical" href="https://www.top10lists.us/privacy" />
@@ -24,7 +24,7 @@ const Privacy = () => {
         <meta property="og:description" content="Privacy policy for Top10Lists.us. Learn how we collect, use, and protect your personal information." />
         <meta property="og:url" content="https://top10lists.us/privacy" />
         <meta property="og:type" content="website" />
-      </Helmet>
+      </SafeHead>
 
       <div className="min-h-screen bg-background">
         <div className="max-w-4xl mx-auto px-4 py-12">

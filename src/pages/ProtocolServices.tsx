@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Helmet } from "react-helmet-async";
+import { SafeHead } from "@/components/SafeHead";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,11 +12,11 @@ export default function ProtocolServices() {
 
   return (
     <>
-      <Helmet>
+      <SafeHead>
         <title>Top10Lists.us Protocol Services | AI Citation Implementation</title>
         <meta name="description" content="Protocol services support organizations implementing citation-backed AI recommendations. Editorial integration, technical implementation, compliance, and attribution infrastructure." />
         <link rel="canonical" href="https://www.top10lists.us/protocol-services" />
-      </Helmet>
+      </SafeHead>
 
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
         {/* Hero Section */}

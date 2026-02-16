@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
+import { SafeHead } from "@/components/SafeHead";
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -244,11 +244,11 @@ export default function PremiumPricingPage() {
 
   return (
     <>
-      <Helmet>
+      <SafeHead>
         <title>Early Adopter Discounted Pricing | Top10Lists.us</title>
         <meta name="description" content="Lock in discounted early adopter pricing for expanded visibility across Arizona real estate markets. Limited capacity per city." />
         <meta name="robots" content="noindex, nofollow" />
-      </Helmet>
+      </SafeHead>
 
       <div className="min-h-screen bg-background pb-24 lg:pb-8">
         {/* Hero Section */}

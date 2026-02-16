@@ -2,30 +2,23 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Shield } from "lucide-react";
 
-export const StagingAdminLink = () => {
-  const [isStaging, setIsStaging] = useState(false);
+/** Show Admin link when not on production host (same logic as AdminOr404). */
+function isProductionHost(hostname: string): boolean {
+  return hostname === "top10lists.us" || hostname === "www.top10lists.us";
+}
 
-  // Only check hostname on client-side after mount
+export const StagingAdminLink = () => {
+  const [showLink, setShowLink] = useState(false);
+
   useEffect(() => {
     try {
-      const hostname = window.location.hostname;
-      const staging = 
-        hostname.includes('staging') ||
-        hostname.includes('vercel.app') ||
-        hostname === 'localhost' ||
-        hostname === '127.0.0.1';
-      
-      setIsStaging(staging);
-    } catch (error) {
-      console.error('StagingAdminLink error:', error);
-      setIsStaging(false);
+      setShowLink(!isProductionHost(window.location.hostname));
+    } catch {
+      setShowLink(false);
     }
   }, []);
 
-  // Don't render anything until we've checked (client-side only)
-  if (!isStaging) {
-    return null;
-  }
+  if (!showLink) return null;
 
   return (
     <div className="bg-yellow-100 border-b border-yellow-300 py-2 px-4">

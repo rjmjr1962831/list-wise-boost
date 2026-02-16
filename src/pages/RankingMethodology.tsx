@@ -1,4 +1,4 @@
-import { Helmet } from "react-helmet-async";
+import { SafeHead } from "@/components/SafeHead";
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -193,7 +193,7 @@ const RankingMethodology = () => {
 
   return (
     <>
-      <Helmet>
+      <SafeHead>
         {/* Primary Meta Tags */}
         <title>Ranking Methodology - How We Rank Real Estate Agents | Top10Lists.us</title>
         <meta 
@@ -248,7 +248,7 @@ const RankingMethodology = () => {
         <script type="application/ld+json">
           {JSON.stringify(datasetSchema)}
         </script>
-      </Helmet>
+      </SafeHead>
 
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
         {/* Breadcrumbs */}

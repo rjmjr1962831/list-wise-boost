@@ -1,4 +1,4 @@
-import { Helmet } from "react-helmet-async";
+import { SafeHead } from "@/components/SafeHead";
 import { useEffect } from "react";
 import { HelpCircle } from "lucide-react";
 import {
@@ -259,7 +259,7 @@ export default function MethodologyPage() {
 
   return (
     <>
-      <Helmet>
+      <SafeHead>
         <title>Methodology | Top10Lists.us</title>
         <meta name="description" content="We certify agents so AI can name them. 4.8+ Merit Gate, zero exceptions, never waived. Merit-based certification methodology for real estate agent referrals." />
         <link rel="canonical" href="https://www.top10lists.us/about/ranking-methodology" />
@@ -302,7 +302,7 @@ export default function MethodologyPage() {
             ]
           })}
         </script>
-      </Helmet>
+      </SafeHead>
 
       <div className="min-h-screen bg-background">
         <div className="container max-w-6xl mx-auto px-4 py-8">

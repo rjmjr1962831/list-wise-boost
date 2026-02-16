@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useSearchParams, Link } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
+import { SafeHead } from "@/components/SafeHead";
 import { supabase } from '@/integrations/supabase/client';
 import { useAreaAgents } from '@/hooks/useAreaAgents';
 import { AgentBadge } from '@/components/AgentBadge';
@@ -133,13 +133,13 @@ export default function AreaAgentsPage() {
 
   return (
     <>
-      <Helmet>
+      <SafeHead>
         {/* NOINDEX - This page is not for AI crawling */}
         <title>{`Top Agents Near ${neighborhood.neighborhood}, ${neighborhood.city_area} | Page ${currentPage}`}</title>
         <meta name="robots" content="noindex, nofollow" />
         <meta name="googlebot" content="noindex, nofollow" />
         <meta name="description" content={`Find top real estate agents operating within ${SEARCH_RADIUS_MILES} miles of ${neighborhood.neighborhood}. Page ${currentPage} of ${totalPages}.`} />
-      </Helmet>
+      </SafeHead>
 
       <div className="min-h-screen bg-background">
         {/* Header */}

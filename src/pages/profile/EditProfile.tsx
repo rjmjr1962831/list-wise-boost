@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
+import { SafeHead } from "@/components/SafeHead";
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -559,10 +559,10 @@ export default function EditProfile() {
 
   return (
     <>
-      <Helmet>
+      <SafeHead>
         <title>Review & Edit Your Profile | Top10Lists.us</title>
         <meta name="robots" content="noindex, nofollow" />
-      </Helmet>
+      </SafeHead>
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted py-12 px-4">
       <div className="max-w-4xl mx-auto">
         {/* Progress Bar */}

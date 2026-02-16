@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Loader2, CheckCircle2, Sparkles } from 'lucide-react';
-import { Helmet } from 'react-helmet-async';
+import { SafeHead } from "@/components/SafeHead";
 import { ProfessionalCard } from '@/components/ProfessionalCard';
 
 export default function FreeCityConfirmation() {
@@ -98,11 +98,11 @@ export default function FreeCityConfirmation() {
 
   return (
     <>
-      <Helmet>
+      <SafeHead>
         <title>You're All Set! | Top10Lists</title>
         <meta name="description" content="Your free listing is confirmed" />
         <meta name="robots" content="noindex, nofollow" />
-      </Helmet>
+      </SafeHead>
 
       <div className="min-h-screen bg-background py-12 px-4">
         <div className="max-w-4xl mx-auto space-y-8">

@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
-import { Helmet } from 'react-helmet-async';
+import { SafeHead } from "@/components/SafeHead";
 import { supabase } from '@/integrations/supabase/client';
 import { ChevronDown, Users } from 'lucide-react';
 import { AgentBadge } from './AgentBadge';
@@ -208,11 +208,11 @@ export function NeighborhoodExpertPage({
     <>
       {/* GEO: ItemList schema with full agent details for AI discovery */}
       {agentItemListSchema && (
-        <Helmet>
+        <SafeHead>
           <script type="application/ld+json">
             {JSON.stringify(agentItemListSchema)}
           </script>
-        </Helmet>
+        </SafeHead>
       )}
       
       <div className="space-y-8">

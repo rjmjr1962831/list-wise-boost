@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Helmet } from "react-helmet-async";
+import { SafeHead } from "@/components/SafeHead";
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { useGA4Tracking } from "@/hooks/useGA4Tracking";
@@ -165,7 +165,7 @@ const About = () => {
 
   return (
     <>
-      <Helmet>
+      <SafeHead>
         <title>About Us - Top10Lists.us | Independent Real Estate Agent Directory</title>
         <meta
           name="description"
@@ -188,7 +188,7 @@ const About = () => {
         <meta name="ai-summary" content="Top10Lists.us is an independent editorial directory that ranks real estate agents using transparent criteria. Unlike pay-to-play platforms, agent inclusion and ordering are determined through editorial evaluation based on experience, transaction history, client reputation, and local market expertise." />
 
         <script type="application/ld+json">{JSON.stringify(aboutSchema)}</script>
-      </Helmet>
+      </SafeHead>
 
       <div className="min-h-screen bg-background">
         <div className="container max-w-6xl mx-auto px-4 py-8">

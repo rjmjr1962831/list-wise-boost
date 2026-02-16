@@ -1,4 +1,4 @@
-import { Helmet } from 'react-helmet-async';
+import { SafeHead } from "@/components/SafeHead";
 import { Link } from 'react-router-dom';
 import { 
   Shield, 
@@ -161,7 +161,7 @@ export default function Transparency() {
 
   return (
     <>
-      <Helmet>
+      <SafeHead>
         <title>Transparency Report | North Star Protocol | Top10Lists.us</title>
         <meta 
           name="description" 
@@ -175,7 +175,7 @@ export default function Transparency() {
         <script type="application/ld+json">
           {JSON.stringify(reportSchema)}
         </script>
-      </Helmet>
+      </SafeHead>
 
       <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-12 max-w-5xl">

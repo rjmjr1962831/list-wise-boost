@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Helmet } from "react-helmet-async";
+import { SafeHead } from "@/components/SafeHead";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -193,10 +193,10 @@ export default function AgentDashboard() {
 
   return (
     <>
-      <Helmet>
+      <SafeHead>
         <title>Agent Dashboard | Top10Lists.us</title>
         <meta name="robots" content="noindex, nofollow" />
-      </Helmet>
+      </SafeHead>
 
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 py-8 md:py-12">
         <div className="container mx-auto px-4 max-w-6xl">
@@ -204,17 +204,19 @@ export default function AgentDashboard() {
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
             <div className="flex items-center gap-4">
               <Avatar className="h-16 w-16 border-2 border-primary/20">
-                <AvatarImage src={getValidImageUrl(professional.image_url)} alt={professional.name} />
+                <AvatarImage src={getValidImageUrl(professional?.image_url)} alt={professional?.name ?? "Agent"} />
                 <AvatarFallback className="bg-primary/10 text-primary text-lg">
-                  {getInitials(professional.name)}
+                  {getInitials(professional?.name ?? "Agent")}
                 </AvatarFallback>
               </Avatar>
               <div>
                 <h1 className="text-2xl md:text-3xl font-bold">
-                  Welcome back, {professional.name.split(" ")[0]}
+                  Welcome back, {professional?.name?.split(" ")?.[0] ?? "Agent"}
                 </h1>
                 <p className="text-muted-foreground">
-                  {professional.city?.name && `${professional.city.name}, ${professional.city.state}`}
+                  {professional?.city?.name && professional?.city?.state
+                    ? `${professional.city.name}, ${professional.city.state}`
+                    : professional?.business_city ?? null}
                 </p>
               </div>
             </div>

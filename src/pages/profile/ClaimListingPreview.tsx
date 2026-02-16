@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
+import { SafeHead } from "@/components/SafeHead";
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -113,10 +113,10 @@ export default function ClaimListingPreview() {
 
   return (
     <>
-      <Helmet>
+      <SafeHead>
         <title>Preview Your Profile | Top10Lists.us</title>
         <meta name="robots" content="noindex, nofollow" />
-      </Helmet>
+      </SafeHead>
       
       <div className="min-h-screen bg-gradient-to-b from-background to-muted">
         <div className="container mx-auto px-4 py-12">

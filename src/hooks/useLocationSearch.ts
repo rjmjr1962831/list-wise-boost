@@ -95,13 +95,8 @@ export const useLocationSearch = () => {
     // Neighborhood result - navigate to neighborhood expert page (shows neighborhood data + experts)
     const city = result.city_area_slug;
     const neighborhood = result.neighborhood_slug;
-    const zip = result.primary_zip;
 
-    // Use 5-segment URL with ZIP when available - top10realestateagents shows neighborhood experts page
-    if (zip) {
-      return `/${state}/${city}/${zip}/${neighborhood}/top10realestateagents`;
-    }
-    // Fallback to 4-segment format
+    // Canonical 4-segment URL (state/city/neighborhood/top10realestateagents)
     return `/${state}/${city}/${neighborhood}/top10realestateagents`;
   }, []);
 

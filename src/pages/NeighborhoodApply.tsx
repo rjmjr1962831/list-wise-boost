@@ -9,7 +9,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { Helmet } from 'react-helmet-async';
+import { SafeHead } from "@/components/SafeHead";
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Loader2, MapPin, ArrowRight, CheckCircle } from 'lucide-react';
@@ -166,11 +166,11 @@ export default function NeighborhoodApply() {
 
   return (
     <>
-      <Helmet>
+      <SafeHead>
         <title>Apply for Neighborhood Expert | Top10Lists</title>
         <meta name="description" content={`Apply to become a Neighborhood Expert for ${neighborhoodDisplay}, ${cityDisplay}`} />
         <meta name="robots" content="noindex, nofollow" />
-      </Helmet>
+      </SafeHead>
 
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/30 py-12 px-4">
         <div className="max-w-md mx-auto">

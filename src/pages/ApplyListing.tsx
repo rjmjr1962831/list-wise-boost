@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
+import { SafeHead } from "@/components/SafeHead";
 import { Sparkles } from 'lucide-react';
 
 const ApplyListing = () => {
@@ -27,13 +27,13 @@ const ApplyListing = () => {
 
   return (
     <>
-      <Helmet>
+      <SafeHead>
         <title>Apply to be Listed - Top10Lists.us</title>
         <meta name="description" content="Apply to be featured as a top real estate agent in your area. Join our curated directory of premier professionals." />
         <meta property="og:title" content="Apply to be Listed - Top10Lists.us" />
         <meta property="og:description" content="Apply to be featured as a top real estate agent in your area." />
         <link rel="canonical" href="https://www.top10lists.us/apply-listing" />
-      </Helmet>
+      </SafeHead>
 
       <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-12">

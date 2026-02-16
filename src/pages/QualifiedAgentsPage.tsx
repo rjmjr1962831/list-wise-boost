@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useSearchParams, Link } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
+import { SafeHead } from "@/components/SafeHead";
 import { supabase } from '@/integrations/supabase/client';
 import { useAreaAgents } from '@/hooks/useAreaAgents';
 import { AgentBadge } from '@/components/AgentBadge';
@@ -131,20 +131,17 @@ export default function QualifiedAgentsPage() {
     );
   }
 
-  // Build expert page URL - always use 5-segment format when ZIP is available
-  // zipCode is always defined when accessed via the 5-segment route
-  // Build expert page URL (4-segment format without ZIP)
   const expertPageUrl = `/${stateSlug}/${citySlug}/${neighborhoodSlug}/top10realestateagents`;
 
   return (
     <>
-      <Helmet>
+      <SafeHead>
         {/* NOINDEX - This page is not for AI crawling */}
         <title>{`Qualified Agents in ${neighborhood?.neighborhood || 'Area'}, ${neighborhood?.city_area || 'City'} | Page ${currentPage}`}</title>
         <meta name="robots" content="noindex, nofollow" />
         <meta name="googlebot" content="noindex, nofollow" />
         <meta name="description" content={`Browse qualified real estate agents serving ${neighborhood?.neighborhood || 'this area'}. Page ${currentPage} of ${totalPages}.`} />
-      </Helmet>
+      </SafeHead>
 
       <div className="min-h-screen bg-background">
         {/* Header */}

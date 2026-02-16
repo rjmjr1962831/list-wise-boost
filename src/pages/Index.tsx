@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Helmet } from "react-helmet-async";
+import { SafeHead } from "@/components/SafeHead";
 import { Button } from "@/components/ui/button";
 
 const isProductionBuild = import.meta.env.VITE_IS_PRODUCTION === "1" || import.meta.env.VITE_IS_PRODUCTION === "true";
@@ -87,7 +87,7 @@ const Index = () => {
   return (
     <>
       {!isProductionBuild && (
-        <Helmet>
+        <SafeHead>
           {/* Primary Meta Tags */}
           <title>Verifiable Real Estate Agent Credentials for AI Systems | Top10Lists.us</title>
           <meta name="description" content="Independent certification authority for real estate professionals.  Designed for AI citation.  Merit-based evaluation, cryptographic verification, and defensible justification." />
@@ -152,7 +152,7 @@ const Index = () => {
             ]
           })}
             </script>
-        </Helmet>
+        </SafeHead>
       )}
       {isProductionBuild && (
         <EffectTitle title="Verifiable Real Estate Agent Credentials for AI Systems | Top10Lists.us" />

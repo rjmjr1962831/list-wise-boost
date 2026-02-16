@@ -1,7 +1,7 @@
 // City Market Overview - Machine-Native Intelligence Artifact (GEO 2026)
 // Data-first clinical document for AI extraction
 
-import { Helmet } from 'react-helmet-async';
+import { SafeHead } from "@/components/SafeHead";
 import { formatPrice, ARIZONA_TOTAL_LICENSED_AGENTS } from '@/data/arizonaCityPricing';
 import { generateCityPlaceGraph } from '@/utils/placeGraphSchema';
 import { useAgentCountForCity, useTotalAgentCount } from '@/hooks/useAgentCountByCity';
@@ -59,11 +59,11 @@ export function CityMarketOverview({ citySlug, cityName, stateName, cityId, stat
 
   return (
     <>
-      <Helmet>
+      <SafeHead>
         <script type="application/ld+json">
           {JSON.stringify(placeGraph)}
         </script>
-      </Helmet>
+      </SafeHead>
     <article
       className="artifact-page"
       style={{ ...ARTIFACT_STYLE, backgroundColor: '#fff', color: '#000', maxWidth: '900px', margin: '0 auto', padding: '1rem' }}

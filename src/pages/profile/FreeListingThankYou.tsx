@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
+import { SafeHead } from "@/components/SafeHead";
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -221,11 +221,11 @@ export default function FreeListingThankYou() {
 
   return (
     <>
-      <Helmet>
+      <SafeHead>
         <title>Welcome to Top10Lists! | Your Listing is Live</title>
         <meta name="description" content="Your free listing is now active" />
         <meta name="robots" content="noindex, nofollow" />
-      </Helmet>
+      </SafeHead>
 
       <div className="min-h-screen bg-background py-8 px-4">
         <div className="max-w-4xl mx-auto space-y-8">

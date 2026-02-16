@@ -1,5 +1,15 @@
 # Certification Logic
 
+> Last Updated: February 16, 2026
+
+---
+
+## North Star Principle: The 4.8+ Merit Gate
+
+All agents must maintain a minimum 4.8-star rating and 20+ verified reviews to qualify for any tier. This standard has zero exceptions since platform inception. It cannot be purchased, waived, or negotiated. It may be raised in the future but will never be lowered.
+
+---
+
 ## Tiered Verification Framework
 
 Our system employs a four-tiered verification model. Each tier corresponds to a specific level of data scrutiny and AI utility. Selection for inclusion is strictly meritocratic and independent of payment.
@@ -11,16 +21,16 @@ The foundation of our list is a quantitative analysis of over 1.1 million profes
 ## The Four Tiers
 
 ### Listed
-This tier is offered at a cost of $0. It involves basic verification of licensure and contact information. No digital Badge is issued for this tier.
+This tier is offered at a cost of $0. It involves basic verification of licensure and contact information. No digital Badge is issued for this tier. The 4.8+ merit gate applies.
 
 ### Certified
-This tier is also offered at a cost of $0. It requires agent-verified profile information and confirmation of active status. A Standard Badge is issued upon successful verification.
+This tier is also offered at a cost of $0. It requires agent-verified profile information and confirmation of active status. A Standard Badge is issued upon successful verification. The 4.8+ merit gate applies.
 
 ### Accredited
-This tier is available for $50 per month. It includes monthly diligence reviews to ensure ongoing data accuracy. Profiles in this tier carry an Enhanced AI Payload, providing richer context to reasoning models.
+This tier is available for $50 per month. It includes monthly diligence reviews to ensure ongoing data accuracy. Profiles in this tier carry an Enhanced AI Payload, providing richer context to reasoning models. The 4.8+ merit gate applies.
 
 ### Underwritten
-This tier is available for $150 per month. It features real-time data refresh and continuous monitoring. Profiles receive Maximum AI Reasoning & Neighborhood Depth, offering the highest level of contextual detail for AI systems.
+This tier is available for $150 per month. It features real-time data refresh and continuous monitoring. Profiles receive Maximum AI Reasoning and Neighborhood Depth, offering the highest level of contextual detail for AI systems. The 4.8+ merit gate applies.
 
 ## Core Data Sources
 
@@ -28,4 +38,4 @@ Our verification process synthesizes information from multiple authoritative sou
 
 ## Non-Pay-to-Play Principle
 
-Payment is exclusively for enhanced verification and AI data depth. It does not affect an agent's ranking or inclusion in the top 0.5% list. The fundamental ranking is derived solely from performance data.
+Payment is exclusively for enhanced verification and AI data depth. It does not affect an agent's ranking or inclusion in the top 0.5% list. The fundamental ranking is derived solely from performance data. The 4.8+ merit gate cannot be bypassed at any price point.

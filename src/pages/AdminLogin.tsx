@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Helmet } from "react-helmet-async";
+import { SafeHead } from "@/components/SafeHead";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -71,11 +71,11 @@ const AdminLogin = () => {
 
   return (
     <>
-      <Helmet>
+      <SafeHead>
         <title>Admin Login | Top10Lists.us</title>
         <meta name="description" content="Admin login portal for Top10Lists.us management dashboard." />
         <meta name="robots" content="noindex, nofollow" />
-      </Helmet>
+      </SafeHead>
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-muted p-4">
         <Card className="w-full max-w-md">
         <CardHeader className="text-center">

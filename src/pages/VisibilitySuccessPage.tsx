@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
+import { SafeHead } from "@/components/SafeHead";
 import { CheckCircle, ArrowRight, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CoverageProgress } from '@/components/visibility/CoverageProgress';
@@ -30,10 +30,10 @@ export default function VisibilitySuccessPage() {
 
   return (
     <>
-      <Helmet>
+      <SafeHead>
         <title>{isFreeOnly ? 'Coverage Confirmed' : 'Payment Successful'} | Top10Lists</title>
         <meta name="description" content={isFreeOnly ? "Your free city listing has been confirmed." : "Your neighborhood endorsement has been activated successfully."} />
-      </Helmet>
+      </SafeHead>
 
       <div className="container max-w-2xl mx-auto px-4 py-8">
 

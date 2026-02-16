@@ -1,21 +1,31 @@
+import { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 
-/**
- * AdminRouteGuard - Blocks admin routes on production domain
- * Admin routes should only be accessible on staging.top10lists.us
- */
+/** Block only known production hosts; allow all others. Never return null (avoid route fallthrough). */
+function isProductionHost(hostname: string): boolean {
+  return hostname === 'top10lists.us' || hostname === 'www.top10lists.us';
+}
+
 export const AdminRouteGuard = ({ children }: { children: React.ReactNode }) => {
-  const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
-  
-  // Allow admin routes on staging and localhost
-  const isStaging = hostname === 'staging.top10lists.us' || 
-                    hostname.includes('vercel.app') || 
-                    hostname === 'localhost';
-  
-  if (!isStaging) {
-    console.log('[AdminRouteGuard] Blocking admin route on production');
+  const [allowed, setAllowed] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    try {
+      if (typeof window !== "undefined" && window.location?.hostname != null) {
+        setAllowed(!isProductionHost(window.location.hostname));
+      } else {
+        setAllowed(true);
+      }
+    } catch (_) {
+      setAllowed(true);
+    }
+  }, []);
+
+  if (allowed === null) {
+    return <div className="min-h-[120px] flex items-center justify-center text-muted-foreground text-sm">Loading…</div>;
+  }
+  if (!allowed) {
     return <Navigate to="/404" replace />;
   }
-  
   return <>{children}</>;
 };

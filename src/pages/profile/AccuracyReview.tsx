@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
+import { SafeHead } from "@/components/SafeHead";
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -260,10 +260,10 @@ export default function AccuracyReview() {
 
   return (
     <>
-      <Helmet>
+      <SafeHead>
         <title>Review Profile Accuracy | Top10Lists</title>
         <meta name="robots" content="noindex, nofollow" />
-      </Helmet>
+      </SafeHead>
 
       <div className="min-h-screen bg-background py-8 px-4">
         <div className="max-w-2xl mx-auto space-y-6">

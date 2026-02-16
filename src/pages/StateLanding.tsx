@@ -1,5 +1,5 @@
 import { useParams, Navigate, Link } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
+import { SafeHead } from "@/components/SafeHead";
 import { useEffect, useState, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { MapPin } from 'lucide-react';
@@ -92,12 +92,12 @@ export default function StateLanding() {
 
   return (
     <>
-      <Helmet>
+      <SafeHead>
         <title>Real Estate Agent Recommendations in {stateName} | Top10Lists.us</title>
         <meta name="description" content={description} />
         {!INDEXABLE_STATES.includes(normalizedStateSlug) && <meta name="robots" content="noindex, nofollow" />}
         <link rel="canonical" href={`https://www.top10lists.us/${normalizedStateSlug}`} />
-      </Helmet>
+      </SafeHead>
 
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
         {/* Hero Section */}

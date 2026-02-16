@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Helmet } from 'react-helmet-async';
+import { SafeHead } from "@/components/SafeHead";
 import { Link } from 'react-router-dom';
 
 const TermsOfService = () => {
@@ -29,12 +29,12 @@ const TermsOfService = () => {
 
   return (
     <>
-      <Helmet>
+      <SafeHead>
         <title>Terms of Service - Top10Lists.us</title>
         <meta name="description" content="Terms of Service for Top10Lists.us Independent Certification Authority. North Star Protocol: 4.8+ Merit Gate, zero exceptions. Not pay-to-play." />
         <link rel="canonical" href="https://www.top10lists.us/terms" />
         <script type="application/ld+json">{JSON.stringify(termsSchema)}</script>
-      </Helmet>
+      </SafeHead>
 
       <div className="min-h-screen bg-background py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto bg-card rounded-lg shadow-lg p-8">

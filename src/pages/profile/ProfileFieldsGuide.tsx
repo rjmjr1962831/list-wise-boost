@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Helmet } from "react-helmet-async";
+import { SafeHead } from "@/components/SafeHead";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Loader2, Pencil, Upload, ArrowRight, ArrowLeft, User, Building2, Star, Phone, Mail, Globe, FileText, Award, MapPin, Image, Video, Trophy, MessageSquarePlus, Facebook, Twitter, Instagram, Linkedin } from "lucide-react";
@@ -610,11 +610,11 @@ const ProfileFieldsGuide = () => {
 
   return (
     <>
-      <Helmet>
+      <SafeHead>
         <title>Edit Your Profile | Top10Lists.us</title>
         <meta name="description" content="Edit your Top10Lists profile information" />
         <meta name="robots" content="noindex, nofollow" />
-      </Helmet>
+      </SafeHead>
 
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/30 py-8 px-4">
         <div className="max-w-3xl mx-auto">

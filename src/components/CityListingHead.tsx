@@ -1,7 +1,7 @@
 // src/components/CityListingHead.tsx
 // SEO Head component for city listing pages (Top10Lists.us)
 
-import { Helmet } from 'react-helmet-async';
+import { SafeHead } from "@/components/SafeHead";
 import { generateCityListingSchema, CityListingData } from '@/utils/cityListingSchema';
 
 interface CityListingHeadProps {
@@ -21,7 +21,7 @@ export function CityListingHead({ listing }: CityListingHeadProps) {
     : `Find the best real estate agents in ${listing.city}, ${listing.stateAbbrev}. AI-curated rankings based on verified reviews and transaction data.`;
   
   return (
-    <Helmet>
+    <SafeHead>
       <title>{title}</title>
       <meta name="description" content={description} />
       
@@ -52,7 +52,7 @@ export function CityListingHead({ listing }: CityListingHeadProps) {
           {JSON.stringify(schema)}
         </script>
       ))}
-    </Helmet>
+    </SafeHead>
   );
 }
 

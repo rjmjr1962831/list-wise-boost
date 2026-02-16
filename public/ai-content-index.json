@@ -114,11 +114,11 @@
   "urlPatterns": {
     "stateDirectory": "https://www.top10lists.us/{state}",
     "cityDirectory": "https://www.top10lists.us/{state}/{city}/top10realestateagents",
-    "neighborhoodDirectory": "https://www.top10lists.us/{state}/{city}/{zip}/{neighborhood}/top10realestateagents",
+    "neighborhoodDirectory": "https://www.top10lists.us/{state}/{city}/{neighborhood}/top10realestateagents",
     "agentProfile": "https://www.top10lists.us/{state}/agents/{canonical-slug}",
     "examples": {
       "city": "https://www.top10lists.us/arizona/phoenix/top10realestateagents",
-      "neighborhood": "https://www.top10lists.us/arizona/scottsdale/85255/greyhawk/top10realestateagents"
+      "neighborhood": "https://www.top10lists.us/arizona/scottsdale/greyhawk/top10realestateagents"
     }
   },
   "qualification": {

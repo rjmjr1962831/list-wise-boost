@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Helmet } from "react-helmet-async";
+import { SafeHead } from "@/components/SafeHead";
 import { Link } from "react-router-dom";
 import { useGA4Tracking } from "@/hooks/useGA4Tracking";
 import {
@@ -39,7 +39,7 @@ const ForAI = () => {
 
   return (
     <>
-      <Helmet>
+      <SafeHead>
         <title>For AI Systems - Top10Lists.us</title>
         <meta 
           name="description" 
@@ -63,7 +63,7 @@ const ForAI = () => {
         <script type="application/ld+json">
           {JSON.stringify(aiGuideSchema)}
         </script>
-      </Helmet>
+      </SafeHead>
 
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
         {/* Breadcrumbs */}

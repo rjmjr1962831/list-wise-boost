@@ -1,26 +1,17 @@
 import { Navigate, useParams } from "react-router-dom";
-import { lazy, Suspense, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
-// Lazy load the component
-const DynamicCategoryList = lazy(() => import("./DynamicCategoryList"));
-
-interface NeighborhoodData {
-  neighborhood: string;
+interface NeighborhoodCatalogRow {
   neighborhood_slug: string;
   city_area_slug: string;
-  primary_zip: string | null;
-  zips: string[] | null;
+  is_active: boolean;
 }
 
 /**
- * Router for 5-segment neighborhood URLs with ZIP code:
- * /:stateSlug/:citySlug/:zipCode/:neighborhoodSlug/:categorySlug
- * 
- * Validates ZIP code and redirects to canonical (primary_zip) if needed.
- * Also checks for aliases and redirects to canonical neighborhood slug.
- * Returns 404 for invalid neighborhoods.
+ * Legacy 5-segment neighborhood URLs (with ZIP).
+ * Redirects to canonical 4-segment URL: /:stateSlug/:citySlug/:neighborhoodSlug/:categorySlug
  */
 const NeighborhoodZipCategoryRouter = () => {
   const { stateSlug, citySlug, zipCode, neighborhoodSlug, categorySlug } = useParams<{
@@ -32,7 +23,6 @@ const NeighborhoodZipCategoryRouter = () => {
   }>();
   
   const [loading, setLoading] = useState(true);
-  const [neighborhood, setNeighborhood] = useState<NeighborhoodData | null>(null);
   const [redirectPath, setRedirectPath] = useState<string | null>(null);
   const [notFound, setNotFound] = useState(false);
 
@@ -44,17 +34,8 @@ const NeighborhoodZipCategoryRouter = () => {
         return;
       }
 
-      // Validate ZIP format (5 digits)
-      const zipRegex = /^\d{5}$/;
-      if (!zipRegex.test(zipCode)) {
-        console.log('[NeighborhoodZipCategoryRouter] Invalid ZIP format:', zipCode);
-        setNotFound(true);
-        setLoading(false);
-        return;
-      }
-
       try {
-        // Step 1: Try to find neighborhood by primary slug
+        // Validate neighborhood exists, then redirect to canonical 4-segment URL (no ZIP)
         const { data: neighborhoodData, error } = await supabase
           .from('neighborhood_catalog')
           .select('neighborhood, neighborhood_slug, city_area_slug, primary_zip, zips')
@@ -64,34 +45,11 @@ const NeighborhoodZipCategoryRouter = () => {
           .maybeSingle();
 
         if (!error && neighborhoodData) {
-          // Found by primary slug - validate ZIP
-          const primaryZip = neighborhoodData.primary_zip;
-          const canonicalZip = primaryZip || (neighborhoodData.zips && neighborhoodData.zips[0]) || null;
-
-          if (!canonicalZip) {
-            console.log('[NeighborhoodZipCategoryRouter] Neighborhood has no ZIP data');
-            setNotFound(true);
-            setLoading(false);
-            return;
-          }
-
-          // Check if URL ZIP matches canonical ZIP
-          if (zipCode !== canonicalZip) {
-            console.log(`[NeighborhoodZipCategoryRouter] Redirecting ${zipCode} → ${canonicalZip}`);
-            setRedirectPath(`/${stateSlug}/${citySlug}/${canonicalZip}/${neighborhoodSlug}/${categorySlug}`);
-            setLoading(false);
-            return;
-          }
-
-          // ZIP matches - render the page
-          setNeighborhood(neighborhoodData);
+          setRedirectPath(`/${stateSlug}/${citySlug}/${neighborhoodSlug}/${categorySlug}`);
           setLoading(false);
           return;
         }
 
-        // Step 2: Not found by primary slug - check aliases
-        console.log('[NeighborhoodZipCategoryRouter] Checking aliases for:', neighborhoodSlug);
-        
         const { data: aliasData, error: aliasError } = await supabase
           .from('neighborhood_aliases')
           .select(`
@@ -109,26 +67,14 @@ const NeighborhoodZipCategoryRouter = () => {
           .maybeSingle();
 
         if (!aliasError && aliasData && aliasData.neighborhood_catalog) {
-          const canonical = aliasData.neighborhood_catalog as unknown as NeighborhoodData & { is_active: boolean };
-          
-          // Verify neighborhood is active and in the correct city
-          if (!canonical.is_active || canonical.city_area_slug !== citySlug) {
-            console.log('[NeighborhoodZipCategoryRouter] Alias found but neighborhood inactive or wrong city');
-            setNotFound(true);
+          const canonical = aliasData.neighborhood_catalog as unknown as NeighborhoodCatalogRow;
+          if (canonical.is_active && canonical.city_area_slug === citySlug) {
+            setRedirectPath(`/${stateSlug}/${citySlug}/${canonical.neighborhood_slug}/${categorySlug}`);
             setLoading(false);
             return;
           }
-
-          // Found via alias - redirect to canonical URL (301)
-          const canonicalZip = canonical.primary_zip || (canonical.zips && canonical.zips[0]) || zipCode;
-          console.log(`[NeighborhoodZipCategoryRouter] Alias redirect: ${neighborhoodSlug} → ${canonical.neighborhood_slug}`);
-          setRedirectPath(`/${stateSlug}/${citySlug}/${canonicalZip}/${canonical.neighborhood_slug}/${categorySlug}`);
-          setLoading(false);
-          return;
         }
 
-        // Step 3: Not found anywhere
-        console.log('[NeighborhoodZipCategoryRouter] Neighborhood not found:', neighborhoodSlug);
         setNotFound(true);
         setLoading(false);
 
@@ -157,22 +103,11 @@ const NeighborhoodZipCategoryRouter = () => {
     return <Navigate to={redirectPath} replace />;
   }
 
-  // 404 for invalid requests
   if (notFound) {
     return <Navigate to="/404" replace />;
   }
 
-  // Render DynamicCategoryList with neighborhood context
-  return (
-    <Suspense fallback={loader}>
-      <DynamicCategoryList 
-        categorySlugOverride={categorySlug}
-        neighborhoodSlug={neighborhoodSlug}
-        neighborhoodName={neighborhood?.neighborhood}
-        neighborhoodZipCode={zipCode}
-      />
-    </Suspense>
-  );
+  return null;
 };
 
 export default NeighborhoodZipCategoryRouter;

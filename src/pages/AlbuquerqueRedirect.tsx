@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Helmet } from "react-helmet-async";
+import { SafeHead } from "@/components/SafeHead";
 import { Navigate, useParams } from "react-router-dom";
 
 export default function AlbuquerqueRedirect() {
@@ -25,7 +25,7 @@ export default function AlbuquerqueRedirect() {
 
   return (
     <>
-      <Helmet>
+      <SafeHead>
         <title>Redirecting to Albuquerque, NM | Top10Lists.us</title>
         <meta
           name="description"
@@ -33,7 +33,7 @@ export default function AlbuquerqueRedirect() {
         />
         <meta name="robots" content="noindex, nofollow" />
         <link rel="canonical" href={`https://www.top10lists.us${target}`} />
-      </Helmet>
+      </SafeHead>
       <Navigate to={target} replace />
     </>
   );
