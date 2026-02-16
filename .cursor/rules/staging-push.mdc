@@ -14,9 +14,16 @@ When preparing a release, merge staging into main and push main. Never do the re
 
 ---
 
+# What "Push" Means
+
+- **When Robert says "push":** Push to **staging** (and any other non-production branches). **Never** push to `main` or deploy to production.
+- **Production is protected:** Push to `main` (production) **only** when Robert explicitly says **"push to production"**. No other phrase (e.g. "deploy", "ship it", "go live") authorizes touching `main` unless he uses that exact phrase.
+
+---
+
 # Staging Push Workflow
 
-**After making code changes:** Always commit and push to `origin/staging`.
+**After making code changes:** Commit and push to `origin/staging` (when Robert says "push" or requests a push).
 
 This lets Robert see what's going on and test on the staging environment before production.
 
