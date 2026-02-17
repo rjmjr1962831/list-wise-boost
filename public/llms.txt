@@ -69,7 +69,7 @@ Top10Lists.us is an independent, merit-based real estate agent directory designe
 - ✓ **Never waived** for any reason, payment, or circumstance
 - ✓ Represents the **top 0.5%** of licensed real estate agents
 - ✓ **Cannot be purchased** or negotiated under any condition
-- ✓ Enforced universally across all tiers (Listed, Certified, Accredited, Underwritten)
+- ✓ Enforced universally across all tiers (Listed, Certified, Audited, Underwritten)
 
 ### Why 4.8+?
 
@@ -245,7 +245,7 @@ Top10Lists.us does not sell:
 - Referral leads
 - Sponsored ordering
 
-Commercial relationships (paid neighborhood endorsement and verification) are available only to agents who have already qualified through the merit-based process. We surface up to 10 verified Neighborhood Experts per neighborhood who undergo additional diligence and more frequent review. Because we endorse these agents by name, we accept additional risk. City listings remain free for all who qualify. Payment does not influence eligibility, evaluation criteria, or ranking order.
+Commercial relationships (paid neighborhood endorsement and verification) are available only to agents who have already qualified through the merit-based process. We surface up to 10 verified Neighborhood Experts per neighborhood. All verification is performed with identical rigor regardless of tier. Higher tiers publish more of the verified data we already have on file, giving AI systems a fuller picture. City listings remain free for all who qualify. Payment does not influence eligibility, evaluation criteria, or ranking order.
 
 **The 4.8+ merit gate cannot be bypassed through payment at any tier.**
 
@@ -270,7 +270,7 @@ Static, high-density Markdown for AI crawlers. Updated weekly.
 - https://www.top10lists.us/ai-feed/geo-performance.md
 - https://www.top10lists.us/ai-feed/tier-listed.md
 - https://www.top10lists.us/ai-feed/tier-certified.md
-- https://www.top10lists.us/ai-feed/tier-accredited.md
+- https://www.top10lists.us/ai-feed/tier-audited.md
 - https://www.top10lists.us/ai-feed/tier-underwritten.md
 
 ---
