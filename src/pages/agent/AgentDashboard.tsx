@@ -6,13 +6,40 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { LogOut, User, CreditCard, TrendingUp, RefreshCw } from "lucide-react";
+import {
+  LogOut,
+  LayoutDashboard,
+  User,
+  Bot,
+  TrendingUp,
+  CreditCard,
+  RefreshCw,
+  Menu,
+  X,
+} from "lucide-react";
+import { OverviewSection } from "@/components/agent/OverviewSection";
 import { ProfileSection } from "@/components/agent/ProfileSection";
+import { PayloadSection } from "@/components/agent/PayloadSection";
 import { BillingSection } from "@/components/agent/BillingSection";
-import { UpsellSection } from "@/components/agent/UpsellSection";
 import { getValidImageUrl } from "@/utils/imageUrlValidator";
+import { cn } from "@/lib/utils";
+
+type NavSection = "overview" | "profile" | "payload" | "upgrade" | "billing";
+
+interface NavItem {
+  id: NavSection;
+  label: string;
+  icon: typeof LayoutDashboard;
+}
+
+const NAV_ITEMS: NavItem[] = [
+  { id: "overview", label: "Overview", icon: LayoutDashboard },
+  { id: "profile", label: "Profile", icon: User },
+  { id: "payload", label: "Payload", icon: Bot },
+  { id: "upgrade", label: "Upgrade", icon: TrendingUp },
+  { id: "billing", label: "Billing", icon: CreditCard },
+];
 
 interface Subscription {
   id: string;
@@ -46,6 +73,8 @@ export default function AgentDashboard() {
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [pendingRequests, setPendingRequests] = useState<PendingRequest[]>([]);
   const [hasStripeSubscription, setHasStripeSubscription] = useState(false);
+  const [activeSection, setActiveSection] = useState<NavSection>("overview");
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -56,7 +85,6 @@ export default function AgentDashboard() {
     const token = localStorage.getItem("agent_session_token");
 
     if (!token) {
-      console.log("[AgentDashboard] No session token found, redirecting to login");
       navigate("/agent/login");
       return;
     }
@@ -64,23 +92,20 @@ export default function AgentDashboard() {
     setSessionToken(token);
 
     try {
-      // Validate session
-      const { data: sessionData, error: sessionError } = await supabase.functions.invoke(
-        "validate-agent-session",
-        { body: { sessionToken: token } }
-      );
+      const { data: sessionData, error: sessionError } =
+        await supabase.functions.invoke("validate-agent-session", {
+          body: { sessionToken: token },
+        });
 
       if (sessionError || !sessionData?.valid) {
-        console.log("[AgentDashboard] Session invalid, clearing and redirecting");
         localStorage.removeItem("agent_session_token");
         navigate("/agent/login");
         return;
       }
 
-      // Fetch full profile
       await loadProfile(token);
     } catch (error) {
-      console.error("[AgentDashboard] Error validating session:", error);
+      console.error("[AgentDashboard] Error:", error);
       localStorage.removeItem("agent_session_token");
       navigate("/agent/login");
     }
@@ -88,12 +113,12 @@ export default function AgentDashboard() {
 
   const loadProfile = async (token: string) => {
     try {
-      const { data, error } = await supabase.functions.invoke("get-agent-profile", {
-        body: { sessionToken: token },
-      });
+      const { data, error } = await supabase.functions.invoke(
+        "get-agent-profile",
+        { body: { sessionToken: token } }
+      );
 
       if (error) {
-        console.error("[AgentDashboard] Error loading profile:", error);
         if (error.message?.includes("401") || error.message?.includes("expired")) {
           localStorage.removeItem("agent_session_token");
           navigate("/agent/login");
@@ -128,28 +153,34 @@ export default function AgentDashboard() {
     navigate("/agent/login");
   };
 
-  const handleUpgrade = () => {
-    // Store professional context for the purchase flow
-    if (professional?.id) {
-      sessionStorage.setItem("visibility_professional_id", professional.id);
+  const handleNavClick = (section: NavSection) => {
+    if (section === "upgrade") {
+      if (professional?.id) {
+        sessionStorage.setItem("visibility_professional_id", professional.id);
+      }
+      const verificationToken =
+        professional?.verification_token || professional?.id;
+      if (verificationToken) {
+        sessionStorage.setItem(
+          "visibility_professional_token",
+          verificationToken
+        );
+      }
+      navigate("/visibility/expertise");
+      return;
     }
-
-    const verificationToken = professional?.verification_token || professional?.id;
-    if (verificationToken) {
-      sessionStorage.setItem("visibility_professional_token", verificationToken);
-    }
-
-    navigate("/visibility/expertise");
+    setActiveSection(section);
+    setMobileNavOpen(false);
+    window.scrollTo(0, 0);
   };
 
-  const getInitials = (name: string) => {
-    return name
+  const getInitials = (name: string) =>
+    name
       .split(" ")
       .map((n) => n[0])
       .join("")
       .toUpperCase()
       .substring(0, 2);
-  };
 
   if (loading) {
     return (
@@ -162,9 +193,8 @@ export default function AgentDashboard() {
               <Skeleton className="h-4 w-32" />
             </div>
           </div>
-          <Skeleton className="h-12 w-full max-w-md mb-6" />
-          <div className="grid gap-6 lg:grid-cols-2">
-            <Skeleton className="h-96" />
+          <div className="grid gap-6 lg:grid-cols-[240px_1fr]">
+            <Skeleton className="h-64 hidden lg:block" />
             <Skeleton className="h-96" />
           </div>
         </div>
@@ -181,15 +211,15 @@ export default function AgentDashboard() {
               <p className="text-muted-foreground mb-4">
                 Could not load your profile. Please try logging in again.
               </p>
-              <Button onClick={() => navigate("/agent/login")}>Go to Login</Button>
+              <Button onClick={() => navigate("/agent/login")}>
+                Go to Login
+              </Button>
             </CardContent>
           </Card>
         </div>
       </div>
     );
   }
-
-  const activeSubscriptionCount = subscriptions.filter((s) => s.is_active).length;
 
   return (
     <>
@@ -198,90 +228,144 @@ export default function AgentDashboard() {
         <meta name="robots" content="noindex, nofollow" />
       </SafeHead>
 
-      <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 py-8 md:py-12">
-        <div className="container mx-auto px-4 max-w-6xl">
-          {/* Header */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
-            <div className="flex items-center gap-4">
-              <Avatar className="h-16 w-16 border-2 border-primary/20">
-                <AvatarImage src={getValidImageUrl(professional?.image_url)} alt={professional?.name ?? "Agent"} />
-                <AvatarFallback className="bg-primary/10 text-primary text-lg">
-                  {getInitials(professional?.name ?? "Agent")}
-                </AvatarFallback>
-              </Avatar>
-              <div>
-                <h1 className="text-2xl md:text-3xl font-bold">
-                  Welcome back, {professional?.name?.split(" ")?.[0] ?? "Agent"}
-                </h1>
-                <p className="text-muted-foreground">
-                  {professional?.city?.name && professional?.city?.state
-                    ? `${professional.city.name}, ${professional.city.state}`
-                    : professional?.business_city ?? null}
-                </p>
+      <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
+        {/* Top Bar */}
+        <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-30">
+          <div className="container mx-auto px-4 max-w-7xl">
+            <div className="flex items-center justify-between h-16">
+              <div className="flex items-center gap-3">
+                {/* Mobile menu toggle */}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="lg:hidden"
+                  onClick={() => setMobileNavOpen(!mobileNavOpen)}
+                >
+                  {mobileNavOpen ? (
+                    <X className="h-5 w-5" />
+                  ) : (
+                    <Menu className="h-5 w-5" />
+                  )}
+                </Button>
+                <Avatar className="h-10 w-10 border border-primary/20">
+                  <AvatarImage
+                    src={getValidImageUrl(professional?.image_url)}
+                    alt={professional?.name ?? "Agent"}
+                  />
+                  <AvatarFallback className="bg-primary/10 text-primary text-sm">
+                    {getInitials(professional?.name ?? "Agent")}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="hidden sm:block">
+                  <p className="text-sm font-semibold leading-none">
+                    {professional?.name}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {professional?.city?.name && professional?.city?.state
+                      ? `${professional.city.name}, ${professional.city.state}`
+                      : professional?.business_city ?? ""}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleRefresh}
+                  disabled={refreshing}
+                >
+                  <RefreshCw
+                    className={cn("h-4 w-4", refreshing && "animate-spin")}
+                  />
+                  <span className="hidden sm:inline ml-2">Refresh</span>
+                </Button>
+                <Button variant="ghost" size="sm" onClick={handleLogout}>
+                  <LogOut className="h-4 w-4" />
+                  <span className="hidden sm:inline ml-2">Sign Out</span>
+                </Button>
               </div>
             </div>
-            <div className="flex gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleRefresh}
-                disabled={refreshing}
-              >
-                <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? "animate-spin" : ""}`} />
-                Refresh
-              </Button>
-              <Button variant="outline" size="sm" onClick={handleLogout}>
-                <LogOut className="h-4 w-4 mr-2" />
-                Sign Out
-              </Button>
-            </div>
           </div>
+        </div>
 
-          {/* Main Content Tabs */}
-          <Tabs defaultValue="profile" className="space-y-6">
-            <TabsList className="grid w-full max-w-2xl grid-cols-3">
-              <TabsTrigger value="profile" className="flex items-center gap-2">
-                <User className="h-4 w-4" />
-                <span className="hidden sm:inline">Profile</span>
-              </TabsTrigger>
-              <TabsTrigger value="billing" className="flex items-center gap-2">
-                <CreditCard className="h-4 w-4" />
-                <span className="hidden sm:inline">Billing</span>
-              </TabsTrigger>
-              <TabsTrigger
-                value="upgrade"
-                className="flex items-center gap-2"
-                onClick={handleUpgrade}
-              >
-                <TrendingUp className="h-4 w-4" />
-                <span className="hidden sm:inline">Upgrade</span>
-              </TabsTrigger>
-            </TabsList>
+        <div className="container mx-auto px-4 max-w-7xl py-6">
+          <div className="flex gap-6">
+            {/* Sidebar (desktop) */}
+            <aside className="hidden lg:block w-[220px] shrink-0">
+              <nav className="sticky top-24 space-y-1">
+                {NAV_ITEMS.map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => handleNavClick(item.id)}
+                    className={cn(
+                      "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-left",
+                      activeSection === item.id
+                        ? "bg-primary/10 text-primary"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    )}
+                  >
+                    <item.icon className="h-4 w-4 shrink-0" />
+                    {item.label}
+                  </button>
+                ))}
+              </nav>
+            </aside>
 
-            <TabsContent value="profile">
-              <ProfileSection
-                professional={professional}
-                sessionToken={sessionToken!}
-                pendingRequests={pendingRequests}
-                onProfileUpdate={handleRefresh}
-              />
-            </TabsContent>
+            {/* Mobile Nav Drawer */}
+            {mobileNavOpen && (
+              <div className="fixed inset-0 z-40 lg:hidden">
+                <div
+                  className="absolute inset-0 bg-black/40"
+                  onClick={() => setMobileNavOpen(false)}
+                />
+                <div className="absolute left-0 top-16 bottom-0 w-64 bg-background border-r p-4 space-y-1">
+                  {NAV_ITEMS.map((item) => (
+                    <button
+                      key={item.id}
+                      onClick={() => handleNavClick(item.id)}
+                      className={cn(
+                        "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-left",
+                        activeSection === item.id
+                          ? "bg-primary/10 text-primary"
+                          : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                      )}
+                    >
+                      <item.icon className="h-4 w-4 shrink-0" />
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
-            <TabsContent value="billing">
-              <BillingSection
-                professional={professional}
-                subscriptions={subscriptions}
-                hasStripeSubscription={hasStripeSubscription}
-              />
-            </TabsContent>
+            {/* Main Content */}
+            <main className="flex-1 min-w-0">
+              {activeSection === "overview" && (
+                <OverviewSection professional={professional} />
+              )}
 
-            <TabsContent value="upgrade">
-              <UpsellSection
-                professional={professional}
-                subscriptionCount={activeSubscriptionCount}
-              />
-            </TabsContent>
-          </Tabs>
+              {activeSection === "profile" && (
+                <ProfileSection
+                  professional={professional}
+                  sessionToken={sessionToken!}
+                  pendingRequests={pendingRequests}
+                  onProfileUpdate={handleRefresh}
+                />
+              )}
+
+              {activeSection === "payload" && (
+                <PayloadSection professional={professional} />
+              )}
+
+              {activeSection === "billing" && (
+                <BillingSection
+                  professional={professional}
+                  subscriptions={subscriptions}
+                  hasStripeSubscription={hasStripeSubscription}
+                />
+              )}
+            </main>
+          </div>
         </div>
       </div>
     </>
