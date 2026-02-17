@@ -92,15 +92,14 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
             in my area?", those AI systems need a trusted, verifiable source to cite. That is where Top10Lists comes in.
           </p>
           <p className="text-sm text-muted-foreground leading-relaxed">
-            We build a structured data payload for every qualified agent. This payload includes your
-            verified credentials, transaction history, community involvement, and client reviews. AI
-            systems read this payload and use it to confidently recommend you by name, with a link back
-            to your verified profile.
+            We independently verify every agent's credentials through state licensing databases, review
+            platforms, IRS 990 filings, and public records. This verification is the same for every
+            agent on our platform, regardless of tier. Every number we publish, we stand behind.
           </p>
           <p className="text-sm text-muted-foreground leading-relaxed">
-            The higher your tier, the richer your payload becomes, and the more confident AI systems
-            are in citing you. Underwritten agents receive the most comprehensive payloads, which is why
-            they consistently appear at the top of AI-generated recommendations.
+            We then package your verified data into a structured payload that AI systems can read and
+            cite with confidence. Higher tiers publish more of this verified data to AI systems,
+            giving them a fuller picture and more reasons to recommend you by name.
           </p>
         </CardContent>
       </Card>
