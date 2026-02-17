@@ -47,8 +47,6 @@ interface ProfileSectionProps {
 // Self-service fields that agents can edit directly
 const SELF_SERVICE_FIELDS = [
   { key: "phone", label: "Phone Number", icon: Phone, type: "tel" },
-  { key: "description", label: "Bio / Description", icon: FileText, type: "textarea" },
-  { key: "get_to_know_me", label: "Get To Know Me", icon: User, type: "textarea" },
   { key: "image_url", label: "Photo URL", icon: User, type: "url" },
   { key: "website", label: "Website", icon: Globe, type: "url" },
   { key: "sidebar_video_url", label: "Video URL", icon: Video, type: "url" },
@@ -158,6 +156,21 @@ export function ProfileSection({
 
   return (
     <>
+      {/* Why We Selected You */}
+      {professional.selection_rationale && (
+        <Card className="mb-6 border-primary/20 bg-primary/5">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Award className="h-5 w-5 text-primary" />
+              Why We Selected You
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm leading-relaxed">{professional.selection_rationale}</p>
+          </CardContent>
+        </Card>
+      )}
+
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Self-Service Fields */}
         <Card>
