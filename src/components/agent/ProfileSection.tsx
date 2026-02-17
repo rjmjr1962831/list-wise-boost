@@ -261,7 +261,7 @@ export function ProfileSection({
                       <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">$50/mo</span>
                     </div>
                     <p className="text-lg font-bold text-amber-700">
-                      {professional.signal_score != null ? `${Math.min(professional.signal_score + 8, 98)}/100` : "Projected score available soon"}
+                      {professional.audited_projected_signal != null ? `${professional.audited_projected_signal}/100` : "Projected score available soon"}
                     </p>
                   </div>
                 )}
