@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useLocation, Link } from "react-router-dom";
-import { Helmet } from "react-helmet-async";
+import { SafeHead } from "@/components/SafeHead";
 
 const NotFound = () => {
   const location = useLocation();
@@ -20,10 +20,10 @@ const NotFound = () => {
 
   return (
     <>
-      <Helmet>
+      <SafeHead>
         <title>Page Not Found | Top10Lists.us</title>
         <meta name="robots" content="noindex, nofollow" />
-      </Helmet>
+      </SafeHead>
       <div className="flex min-h-screen items-center justify-center bg-gray-100">
         <div className="text-center">
           <h1 className="mb-4 text-4xl font-bold">404</h1>

@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Helmet } from "react-helmet-async";
+import { SafeHead } from "@/components/SafeHead";
 import { Link } from "react-router-dom";
 import { CheckCircle, MessageSquare, Mail, Shield } from "lucide-react";
 
@@ -10,11 +10,11 @@ const OptInPolicy = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Helmet>
+      <SafeHead>
         <title>SMS & Email Opt-In Policy | Top10Lists.us</title>
         <meta name="description" content="Learn about our SMS and email opt-in policy. We obtain explicit consent before sending any communications to real estate agents." />
-        <link rel="canonical" href="https://top10lists.us/opt-in" />
-      </Helmet>
+        <link rel="canonical" href="https://www.top10lists.us/opt-in" />
+      </SafeHead>
 
       <div className="container mx-auto px-4 py-16 max-w-4xl">
         <header className="text-center mb-12">

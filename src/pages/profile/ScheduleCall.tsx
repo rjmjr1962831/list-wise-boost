@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
+import { SafeHead } from "@/components/SafeHead";
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -30,10 +30,10 @@ export default function ScheduleCall() {
 
   return (
     <>
-      <Helmet>
+      <SafeHead>
         <title>Schedule Your Onboarding Call | Top10Lists.us</title>
         <meta name="robots" content="noindex, nofollow" />
-      </Helmet>
+      </SafeHead>
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted py-12 px-4">
       <div className="max-w-5xl mx-auto">
         {/* Header */}

@@ -22,6 +22,38 @@ interface AgentView {
   user_agent: string;
 }
 
+interface ListPageView {
+  location_display: string;
+  list_page_type: "city" | "neighborhood";
+  bot_type: string;
+  viewed_at: string;
+  cache_status: string;
+  agents_shown: { canonical_slug: string; name: string }[];
+}
+
+// Report only MAIN (www.top10lists.us). Staging has no crawl / noindex.
+const MAIN_HOST = "www.top10lists.us";
+
+/** Returns agent slug only when path is an agent profile URL (canonical or legacy); otherwise null. */
+function getAgentSlugFromPath(path: string | null | undefined): string | null {
+  if (!path) return null;
+  // Canonical: /state/agents/canonical-slug
+  const canonicalMatch = path.match(/\/[^/]+\/agents\/([^/?#]+)/);
+  if (canonicalMatch) {
+    const slug = canonicalMatch[1];
+    if (slug && !/^\d{5}$/.test(slug)) return slug;
+    return null;
+  }
+  // Legacy: /state/city/top10realestateagents/agent-slug
+  const legacyMatch = path.match(/\/[^/]+\/[^/]+\/top10realestateagents\/([^/?#]+)/);
+  if (legacyMatch) {
+    const slug = legacyMatch[1];
+    if (!slug || slug === "top10realestateagents" || /^\d{5}$/.test(slug)) return null;
+    return slug;
+  }
+  return null;
+}
+
 interface SummaryStats {
   total_bot_visits: number;
   unique_bots: number;
@@ -33,6 +65,7 @@ export default function BotAnalyticsDashboard() {
   const [summary, setSummary] = useState<SummaryStats | null>(null);
   const [botStats, setBotStats] = useState<BotStat[]>([]);
   const [agentViews, setAgentViews] = useState<AgentView[]>([]);
+  const [listPageViews, setListPageViews] = useState<ListPageView[]>([]);
   const [loading, setLoading] = useState(true);
   const [dateRange, setDateRange] = useState("7d");
 
@@ -46,11 +79,12 @@ export default function BotAnalyticsDashboard() {
     const daysAgo = dateRange === "24h" ? 1 : dateRange === "7d" ? 7 : 30;
     const startDate = new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000).toISOString();
 
-    // Summary stats
+    // Summary stats (MAIN only)
     const { data: summaryData } = await supabase
       .from("cloudflare_request_logs")
       .select("*")
       .eq("is_bot", true)
+      .eq("host", MAIN_HOST)
       .gte("timestamp", startDate);
 
     if (summaryData) {
@@ -58,8 +92,8 @@ export default function BotAnalyticsDashboard() {
       const total = summaryData.length;
       const uniqueAgents = new Set(
         summaryData
-          .map(r => r.path?.match(/\/([^\/]+)\/([^\/]+)\/([^\/]+)/)?.[3])
-          .filter(Boolean)
+          .map(r => getAgentSlugFromPath(r.path))
+          .filter((s): s is string => s != null)
       ).size;
 
       setSummary({
@@ -79,31 +113,61 @@ export default function BotAnalyticsDashboard() {
       setBotStats(botData);
     }
 
-    // Agent-specific views
+    // Agent-specific views (MAIN only): only paths that are agent profile URLs
     const { data: agentData } = await supabase
       .from("cloudflare_request_logs")
       .select("path, bot_type, timestamp, cache_status, user_agent")
       .eq("is_bot", true)
+      .eq("host", MAIN_HOST)
       .gte("timestamp", startDate)
-      .like("path", "%top10%")
+      .or("path.ilike.%/agents/%,path.ilike.%/top10realestateagents/%")
       .order("timestamp", { ascending: false })
-      .limit(100);
+      .limit(200);
 
     if (agentData) {
       const views = agentData
         .map(record => {
-          const match = record.path?.match(/\/([^\/]+)\/([^\/]+)\/([^\/]+)/);
-          return match ? {
-            agent_slug: match[3],
+          const agent_slug = getAgentSlugFromPath(record.path);
+          if (!agent_slug) return null;
+          return {
+            agent_slug,
             bot_type: record.bot_type || 'unknown',
             viewed_at: record.timestamp,
             cache_status: record.cache_status || 'UNKNOWN',
             user_agent: record.user_agent || '',
-          } : null;
+          } as AgentView;
         })
         .filter((v): v is AgentView => v !== null);
 
       setAgentViews(views);
+    }
+
+    // List page crawls (MAIN only): neighborhood/city pages with agents shown
+    const { data: listPageData } = await supabase
+      .from("cloudflare_request_logs")
+      .select("list_page_type, location_display, agents_shown, bot_type, timestamp, cache_status")
+      .eq("is_bot", true)
+      .eq("host", MAIN_HOST)
+      .gte("timestamp", startDate)
+      .not("list_page_type", "is", null)
+      .order("timestamp", { ascending: false })
+      .limit(100);
+
+    if (listPageData) {
+      setListPageViews(
+        listPageData
+          .filter((r): r is typeof r & { location_display: string; list_page_type: "city" | "neighborhood" } =>
+            r.list_page_type != null && r.location_display != null
+          )
+          .map(r => ({
+            location_display: r.location_display,
+            list_page_type: r.list_page_type,
+            bot_type: r.bot_type || "unknown",
+            viewed_at: r.timestamp,
+            cache_status: r.cache_status || "UNKNOWN",
+            agents_shown: Array.isArray(r.agents_shown) ? r.agents_shown : [],
+          }))
+      );
     }
 
     setLoading(false);
@@ -136,7 +200,7 @@ export default function BotAnalyticsDashboard() {
         <div>
           <h1 className="text-3xl font-bold">Bot Analytics Dashboard</h1>
           <p className="text-muted-foreground mt-2">
-            Track AI bot visits and agent profile views
+            Track AI bot visits and cache hits on MAIN (www.top10lists.us) only
           </p>
         </div>
         
@@ -219,6 +283,7 @@ export default function BotAnalyticsDashboard() {
         <TabsList>
           <TabsTrigger value="bots">Bot Breakdown</TabsTrigger>
           <TabsTrigger value="agents">Agent Views</TabsTrigger>
+          <TabsTrigger value="list-pages">List page crawls</TabsTrigger>
         </TabsList>
 
         <TabsContent value="bots" className="space-y-4">
@@ -309,6 +374,68 @@ export default function BotAnalyticsDashboard() {
                       </TableCell>
                     </TableRow>
                   ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="list-pages" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Neighborhood &amp; city list crawls</CardTitle>
+              <CardDescription>
+                When a bot crawled a city or neighborhood list page, which location and which agents were shown (up to 10 per page)
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Location</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead>Bot</TableHead>
+                    <TableHead>Agents shown</TableHead>
+                    <TableHead>When</TableHead>
+                    <TableHead>Cache</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {listPageViews.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                        No list page crawls in this period. Data is recorded when bots hit city or neighborhood list pages.
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    listPageViews.map((view, idx) => (
+                      <TableRow key={idx}>
+                        <TableCell className="font-medium">{view.location_display}</TableCell>
+                        <TableCell>
+                          <Badge variant={view.list_page_type === "neighborhood" ? "default" : "secondary"}>
+                            {view.list_page_type}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge className={getBotColor(view.bot_type)}>{view.bot_type}</Badge>
+                        </TableCell>
+                        <TableCell className="max-w-[280px]">
+                          <span className="text-sm" title={view.agents_shown.map(a => a.name).join(", ")}>
+                            {view.agents_shown.length} agent{view.agents_shown.length !== 1 ? "s" : ""}:{" "}
+                            {view.agents_shown.map(a => a.name || a.canonical_slug).join(", ")}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {format(new Date(view.viewed_at), "MMM d, yyyy HH:mm")}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={view.cache_status === "HIT" ? "default" : "secondary"}>
+                            {view.cache_status}
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
                 </TableBody>
               </Table>
             </CardContent>

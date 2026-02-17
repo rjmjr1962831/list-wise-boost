@@ -1,4 +1,4 @@
-import { Helmet } from "react-helmet-async";
+import { SafeHead } from "@/components/SafeHead";
 import { Link } from "react-router-dom";
 import {
   Breadcrumb,
@@ -65,7 +65,7 @@ const AILiability = () => {
 
   return (
     <>
-      <Helmet>
+      <SafeHead>
         <title>AI Citation and Liability | Top10Lists.us</title>
         <meta 
           name="description" 
@@ -93,7 +93,7 @@ const AILiability = () => {
         <script type="application/ld+json">
           {JSON.stringify(breadcrumbSchema)}
         </script>
-      </Helmet>
+      </SafeHead>
 
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
         {/* Breadcrumbs */}

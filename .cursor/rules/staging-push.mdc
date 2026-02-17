@@ -1,0 +1,35 @@
+---
+description: Staging/main branch flow and push workflow — never main to staging
+alwaysApply: true
+---
+
+# Branch Flow (Locked)
+
+**Deployment direction is one-way only:**
+
+- **Allowed:** `staging` → `main` (merge or deploy from staging to production).
+- **Forbidden:** Never merge or deploy `main` into `staging`. Never bring main back into staging.
+
+When preparing a release, merge staging into main and push main. Never do the reverse.
+
+---
+
+# Staging Push Workflow
+
+**After making code changes:** Always commit and push to `origin/staging`.
+
+This lets Robert see what's going on and test on the staging environment before production.
+
+### Steps
+
+1. Stage the modified files (exclude `.env` and other secrets)
+2. Commit with a clear message
+3. `git push origin staging`
+
+### Example
+
+```bash
+git add path/to/changed/files
+git commit -m "Brief description of change"
+git push origin staging
+```

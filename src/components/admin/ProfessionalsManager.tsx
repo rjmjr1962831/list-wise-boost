@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Plus, Edit, Trash2, Search, Loader2, CheckCircle, Clock, XCircle, Minus } from "lucide-react";
+import { Plus, Edit, Trash2, Search, Loader2 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { getLicenseLookupByStateAbbr } from "@/data/stateLicenseLookups";
 
@@ -27,13 +27,6 @@ interface Professional {
   categories?: { name: string };
 }
 
-interface SyncStatus {
-  professional_id: string;
-  status: string;
-  last_error?: string | null;
-  attempts: number;
-}
-
 interface City {
   id: string;
   name: string;
@@ -49,7 +42,6 @@ const ProfessionalsManager = () => {
   const [professionals, setProfessionals] = useState<Professional[]>([]);
   const [cities, setCities] = useState<City[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [syncStatuses, setSyncStatuses] = useState<Record<string, SyncStatus>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProfessional, setEditingProfessional] = useState<Professional | null>(null);
@@ -82,16 +74,13 @@ const ProfessionalsManager = () => {
 
   const fetchData = async () => {
     try {
-      const [profRes, citiesRes, catsRes, syncRes] = await Promise.all([
+      const [profRes, citiesRes, catsRes] = await Promise.all([
         supabase
           .from("professionals")
           .select("*, cities(name, state), categories(name)")
           .order("rank", { ascending: true }),
         supabase.from("cities").select("*").eq("active", true).order("name"),
         supabase.from("categories").select("*").eq("active", true).order("name"),
-        supabase
-          .from("pipedrive_sync_queue")
-          .select("professional_id, status, last_error, attempts"),
       ]);
 
       if (profRes.error) throw profRes.error;
@@ -101,13 +90,6 @@ const ProfessionalsManager = () => {
       setProfessionals(profRes.data || []);
       setCities(citiesRes.data || []);
       setCategories(catsRes.data || []);
-      
-      // Build sync status map
-      const statusMap: Record<string, SyncStatus> = {};
-      syncRes.data?.forEach(status => {
-        statusMap[status.professional_id] = status;
-      });
-      setSyncStatuses(statusMap);
     } catch (error: any) {
       toast.error("Failed to load data: " + error.message);
     } finally {
@@ -573,71 +555,11 @@ const ProfessionalsManager = () => {
               <TableHead>Category</TableHead>
               <TableHead>Type</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Pipedrive Sync</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {professionals.map((prof) => {
-              const syncStatus = syncStatuses[prof.id];
-              const renderSyncBadge = () => {
-                if (!prof.email) {
-                  return (
-                    <span className="flex items-center gap-1 px-2 py-1 rounded text-xs bg-gray-100 text-gray-600">
-                      <Minus className="h-3 w-3" />
-                      No Email
-                    </span>
-                  );
-                }
-
-                if (!syncStatus) {
-                  return (
-                    <span className="flex items-center gap-1 px-2 py-1 rounded text-xs bg-gray-200 text-gray-700">
-                      <Clock className="h-3 w-3" />
-                      Needs Sync
-                    </span>
-                  );
-                }
-
-                switch (syncStatus.status) {
-                  case 'completed':
-                    return (
-                      <span className="flex items-center gap-1 px-2 py-1 rounded text-xs bg-green-100 text-green-700">
-                        <CheckCircle className="h-3 w-3" />
-                        Synced
-                      </span>
-                    );
-                  case 'pending':
-                    return (
-                      <span className="flex items-center gap-1 px-2 py-1 rounded text-xs bg-yellow-100 text-yellow-700">
-                        <Clock className="h-3 w-3" />
-                        Pending
-                      </span>
-                    );
-                  case 'failed':
-                    return (
-                      <span className="flex items-center gap-1 px-2 py-1 rounded text-xs bg-red-100 text-red-700" title={syncStatus.last_error || 'Sync failed'}>
-                        <XCircle className="h-3 w-3" />
-                        Failed ({syncStatus.attempts})
-                      </span>
-                    );
-                  case 'processing':
-                    return (
-                      <span className="flex items-center gap-1 px-2 py-1 rounded text-xs bg-blue-100 text-blue-700">
-                        <Loader2 className="h-3 w-3 animate-spin" />
-                        Processing
-                      </span>
-                    );
-                  default:
-                    return (
-                      <span className="flex items-center gap-1 px-2 py-1 rounded text-xs bg-gray-100 text-gray-600">
-                        {syncStatus.status}
-                      </span>
-                    );
-                }
-              };
-
-              return (
+            {professionals.map((prof) => (
                 <TableRow key={prof.id}>
                   <TableCell className="font-mono">{prof.rank}</TableCell>
                   <TableCell className="font-medium">{prof.name}</TableCell>
@@ -649,9 +571,6 @@ const ProfessionalsManager = () => {
                       {prof.active ? 'Active' : 'Inactive'}
                     </span>
                   </TableCell>
-                  <TableCell>
-                    {renderSyncBadge()}
-                  </TableCell>
                   <TableCell className="text-right space-x-2">
                     <Button size="sm" variant="outline" onClick={() => handleEdit(prof)}>
                       <Edit className="h-4 w-4" />
@@ -661,8 +580,7 @@ const ProfessionalsManager = () => {
                     </Button>
                   </TableCell>
                 </TableRow>
-              );
-            })}
+            ))}
           </TableBody>
         </Table>
       </CardContent>

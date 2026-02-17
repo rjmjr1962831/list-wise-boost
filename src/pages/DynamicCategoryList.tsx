@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, Navigate, useSearchParams, Link } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
+import { SafeHead } from "@/components/SafeHead";
 import { supabase } from '@/integrations/supabase/client';
 import { normalizeStateSlug, getStateAbbreviation } from '@/utils/stateSlugMapping';
 import { ProfessionalListLayout } from '@/components/ProfessionalListLayout';
@@ -25,7 +25,7 @@ import { NeighborhoodExpertPage } from '@/components/NeighborhoodExpertPage';
 import { DatasetSchema } from '@/components/seo/DatasetSchema';
 import { SourceAttributionSchema } from '@/components/seo/SourceAttributionSchema';
 import { CitationAuthorityBlock } from '@/components/CitationAuthorityBlock';
-import { Info } from 'lucide-react';
+import { Info, Loader2 } from 'lucide-react';
 import { getValidImageUrl } from '@/utils/imageUrlValidator';
 import { DualSearchBox } from '@/components/DualSearchBox';
 import { useNeighborhoodWriteup } from '@/hooks/useNeighborhoodWriteup';
@@ -966,10 +966,10 @@ export default function DynamicCategoryList({
     
     return (
       <>
-      <Helmet>
+      <SafeHead>
         <title>{`Top 10 Real Estate Agents in ${loadingCityName}, Arizona | Top10Lists.us`}</title>
         <meta name="description" content={loadingDescription} />
-      </Helmet>
+      </SafeHead>
       <div className="min-h-[70vh] flex flex-col items-center justify-center p-8 bg-gradient-to-b from-primary/5 to-background">
         <h1 className="sr-only">Top 10 Real Estate Agents in {loadingCityName}, Arizona</h1>
         <div className="flex flex-col items-center gap-8 text-center max-w-2xl">
@@ -1039,8 +1039,13 @@ export default function DynamicCategoryList({
     );
   }
 
-  if (!city || !category) {
-    return <Navigate to="/404" replace />;
+  // Show loading state while city and category are being fetched
+  if (loading || !city || !category) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
   }
 
   // Build titles for empty state
@@ -1061,11 +1066,11 @@ export default function DynamicCategoryList({
   if (allProfessionals.length === 0) {
     return (
       <>
-        <Helmet>
+        <SafeHead>
           <meta name="robots" content="noindex, nofollow" />
           <title>{emptyStateTitle}</title>
           <meta name="description" content={emptyStateDescription} />
-        </Helmet>
+        </SafeHead>
         <div className="min-h-screen flex items-center justify-center p-8">
           <h1 className="sr-only">{emptyStateH1}</h1>
           <div className="text-center max-w-md">
@@ -1115,22 +1120,13 @@ export default function DynamicCategoryList({
     title: pageTitle,
     description: pageDescription,
     breadcrumbs: neighborhoodSlug
-      ? (neighborhoodZipCode
-        ? [
-            { name: 'Home', path: '/' },
-            { name: city.state, path: `/${city.state_slug}` },
-            { name: city.name, path: `/${city.state_slug}/${city.slug}` },
-            { name: neighborhoodZipCode, path: `/${city.state_slug}/${city.slug}/${neighborhoodZipCode}` },
-            { name: neighborhoodName || neighborhoodSlug, path: `/${city.state_slug}/${city.slug}/${neighborhoodZipCode}/${neighborhoodSlug}` },
-            { name: `Top 10 ${category.plural_name}` }
-          ]
-        : [
-            { name: 'Home', path: '/' },
-            { name: city.state, path: `/${city.state_slug}` },
-            { name: city.name, path: `/${city.state_slug}/${city.slug}` },
-            { name: neighborhoodName || neighborhoodSlug, path: `/${city.state_slug}/${city.slug}/${neighborhoodSlug}` },
-            { name: `Top 10 ${category.plural_name}` }
-          ])
+      ? [
+          { name: 'Home', path: '/' },
+          { name: city.state, path: `/${city.state_slug}` },
+          { name: city.name, path: `/${city.state_slug}/${city.slug}` },
+          { name: neighborhoodName || neighborhoodSlug, path: `/${city.state_slug}/${city.slug}/${neighborhoodSlug}` },
+          { name: `Top 10 ${category.plural_name}` }
+        ]
       : [
           { name: 'Home', path: '/' },
           { name: city.state, path: `/${city.state_slug}` },
@@ -1156,13 +1152,11 @@ export default function DynamicCategoryList({
 
   // Get city coordinates for geo tags
   const cityCoords = getCityCoordinates(city.slug);
-  // Canonical URL includes neighborhood and ZIP if present
-  const canonicalUrl = neighborhoodSlug && neighborhoodZipCode
-    ? `https://www.top10lists.us/${city.state_slug}/${city.slug}/${neighborhoodZipCode}/${neighborhoodSlug}/${category.slug}`
+  // Canonical URL: 4-segment for neighborhood (state/city/neighborhood/category), 3-segment for city
+  const canonicalUrl = neighborhoodSlug
+    ? `https://www.top10lists.us/${city.state_slug}/${city.slug}/${neighborhoodSlug}/${category.slug}`
     : `https://www.top10lists.us/${city.state_slug}/${city.slug}/${category.slug}`;
-  const pageUrl = neighborhoodSlug && neighborhoodZipCode
-    ? `https://www.top10lists.us/${city.state_slug}/${city.slug}/${neighborhoodZipCode}/${neighborhoodSlug}/${category.slug}`
-    : `https://www.top10lists.us/${city.state_slug}/${city.slug}/${category.slug}`;
+  const pageUrl = canonicalUrl;
   const ogImageUrl = `https://www.top10lists.us/og-${city.slug}.png`;
   
   // Freshness signals for LLM optimization
@@ -1187,7 +1181,7 @@ export default function DynamicCategoryList({
     agents: agentDataArray,
     dateModified: lastUpdated,
     totalAgentsInCity: 500, // Approximate number of licensed agents in city
-    // Include neighborhood data for 5-segment URL breadcrumbs
+    // Include neighborhood data for 4-segment canonical URLs and breadcrumbs
     neighborhoodName: neighborhoodName,
     neighborhoodSlug: neighborhoodSlug,
     neighborhoodZipCode: neighborhoodZipCode,
@@ -1257,7 +1251,7 @@ export default function DynamicCategoryList({
 
   return (
     <>
-      <Helmet>
+      <SafeHead>
         {/* Primary Meta Tags */}
         <title>{seoTitle}</title>
         <meta name="description" content={seoDescription} />
@@ -1311,7 +1305,7 @@ export default function DynamicCategoryList({
             {JSON.stringify(schema)}
           </script>
         ))}
-      </Helmet>
+      </SafeHead>
       
       {/* GEO Schema Enhancement - Dataset and Source Attribution (no agent names) */}
       <DatasetSchema
@@ -1359,6 +1353,8 @@ export default function DynamicCategoryList({
             citySlug={city.slug} 
             cityName={city.name} 
             stateName={city.state}
+            cityId={city.id}
+            stateSlug={city.stateSlug || (city as any).state_slug}
           />
         </div>
       )}

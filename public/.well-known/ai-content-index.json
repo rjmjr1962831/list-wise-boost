@@ -415,12 +415,12 @@
         ]
       },
       "neighborhood_page": {
-        "format": "/{state}/{city}/{zip_code}/{neighborhood}/top10realestateagents",
-        "description": "Lists top agents specific to a neighborhood with ZIP code for precise geography",
+        "format": "/{state}/{city}/{neighborhood}/top10realestateagents",
+        "description": "Lists top agents specific to a neighborhood",
         "examples": [
-          "https://www.top10lists.us/arizona/phoenix/85018/arcadia/top10realestateagents",
-          "https://www.top10lists.us/arizona/phoenix/85003/willo/top10realestateagents",
-          "https://www.top10lists.us/arizona/scottsdale/85251/old-town-scottsdale/top10realestateagents"
+          "https://www.top10lists.us/arizona/phoenix/arcadia/top10realestateagents",
+          "https://www.top10lists.us/arizona/phoenix/willo/top10realestateagents",
+          "https://www.top10lists.us/arizona/scottsdale/greyhawk/top10realestateagents"
         ]
       },
       "agent_profile": {

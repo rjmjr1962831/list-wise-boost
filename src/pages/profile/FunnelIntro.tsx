@@ -1,35 +1,25 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
+import { SafeHead } from "@/components/SafeHead";
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Star, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useFunnelTracking, FUNNEL_EVENTS } from '@/hooks/useFunnelTracking';
 import { LiveAIVerdict } from '@/components/LiveAIVerdict';
 
+/** Module-level so minifier cannot drop declaration and leave references broken. */
+const IS_ADMIN = false;
+
+/** EMERGENCY: Hard-coded to stop ReferenceError. Restore effectiveIsAdmin after production is stable. */
 export default function FunnelIntro() {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
   const [firstName, setFirstName] = useState<string | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
   const [showAIVerdict, setShowAIVerdict] = useState(false);
   const { trackEvent } = useFunnelTracking(token);
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    
-    const checkAdmin = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        const { data } = await supabase
-          .from('admin_users')
-          .select('role')
-          .eq('id', session.user.id)
-          .eq('role', 'admin')
-          .single();
-        setIsAdmin(!!data);
-      }
-    };
     
     const fetchProfessional = async () => {
       if (!token) return;
@@ -59,7 +49,6 @@ export default function FunnelIntro() {
       }
     };
     
-    checkAdmin();
     fetchProfessional();
   }, [token, trackEvent]);
 
@@ -128,14 +117,14 @@ export default function FunnelIntro() {
 
   return (
     <>
-      <Helmet>
+      <SafeHead>
         <title>Welcome to Top10Lists | The AI-First Agent Directory</title>
         <meta name="description" content="Join the invitation-only agent directory structured for AI citation and retrieval." />
         <meta name="robots" content="noindex, nofollow" />
-      </Helmet>
+      </SafeHead>
 
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
-        {isAdmin && (
+        {IS_ADMIN && (
           <div className="fixed top-2 right-2 z-50">
             <Link 
               to="/admin" 
@@ -300,7 +289,7 @@ export default function FunnelIntro() {
           {/* How We Rank Section */}
           <div className="mb-16">
             <h2 className="text-2xl md:text-3xl font-bold text-center mb-2">
-              220,000+ Agents Analyzed.  882 Made the Cut.
+              750,000+ Agents Analyzed.  882 Made the Cut.
             </h2>
             <p className="text-xl text-muted-foreground text-center mb-8">
               That is the top 0.5% of all professionals in the market.

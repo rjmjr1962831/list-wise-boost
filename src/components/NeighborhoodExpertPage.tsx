@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
-import { Helmet } from 'react-helmet-async';
+import { SafeHead } from "@/components/SafeHead";
 import { supabase } from '@/integrations/supabase/client';
 import { ChevronDown, Users } from 'lucide-react';
 import { AgentBadge } from './AgentBadge';
@@ -128,10 +128,8 @@ export function NeighborhoodExpertPage({
     fetchExperts();
   }, [neighborhoodSlug, citySlug, neighborhoodName]);
 
-  // Build qualified agents URL with ZIP when available (5-segment canonical format)
-  const qualifiedAgentsUrl = primaryZip
-    ? `/${stateSlug}/${citySlug}/${primaryZip}/${neighborhoodSlug}/qualified-real-estate-agents`
-    : `/${stateSlug}/${citySlug}/${neighborhoodSlug}/qualified-real-estate-agents`;
+  // Build qualified agents URL (4-segment format without ZIP)
+  const qualifiedAgentsUrl = `/${stateSlug}/${citySlug}/${neighborhoodSlug}/qualified-real-estate-agents`;
 
   // Generate ItemList JSON-LD schema with full agent details for GEO optimization
   const agentItemListSchema = useMemo(() => {
@@ -140,9 +138,7 @@ export function NeighborhoodExpertPage({
 
     const stateAbbrev = stateSlug.toUpperCase().substring(0, 2);
     const cityName = citySlug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-    const pageUrl = primaryZip
-      ? `https://www.top10lists.us/${stateSlug}/${citySlug}/${primaryZip}/${neighborhoodSlug}/top10realestateagents`
-      : `https://www.top10lists.us/${stateSlug}/${citySlug}/${neighborhoodSlug}/top10realestateagents`;
+    const pageUrl = `https://www.top10lists.us/${stateSlug}/${citySlug}/${neighborhoodSlug}/top10realestateagents`;
 
     return {
       "@context": "https://schema.org",
@@ -212,11 +208,11 @@ export function NeighborhoodExpertPage({
     <>
       {/* GEO: ItemList schema with full agent details for AI discovery */}
       {agentItemListSchema && (
-        <Helmet>
+        <SafeHead>
           <script type="application/ld+json">
             {JSON.stringify(agentItemListSchema)}
           </script>
-        </Helmet>
+        </SafeHead>
       )}
       
       <div className="space-y-8">
@@ -252,7 +248,7 @@ export function NeighborhoodExpertPage({
             </div>
             <div className="mt-4">
               <Link
-                to={`/neighborhood/apply?state=${stateSlug}&city=${citySlug}&zip=${primaryZip || ''}&neighborhood=${neighborhoodSlug}`}
+                to={`/neighborhood/apply?state=${stateSlug}&city=${citySlug}&neighborhood=${neighborhoodSlug}`}
                 className="inline-flex items-center gap-2 text-primary hover:text-primary/80 font-medium text-sm transition-colors"
               >
                 <span className="mr-1">→</span>
@@ -269,7 +265,7 @@ export function NeighborhoodExpertPage({
               This featured position is available for agents with proven expertise in this area.
             </p>
             <Link
-              to={`/neighborhood/apply?state=${stateSlug}&city=${citySlug}&zip=${primaryZip || ''}&neighborhood=${neighborhoodSlug}`}
+              to={`/neighborhood/apply?state=${stateSlug}&city=${citySlug}&neighborhood=${neighborhoodSlug}`}
               className="inline-flex items-center gap-2 text-primary hover:text-primary/80 font-medium text-sm transition-colors"
             >
               <span className="mr-1">→</span>

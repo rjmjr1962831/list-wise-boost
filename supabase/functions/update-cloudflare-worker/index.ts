@@ -64,6 +64,30 @@ serve(async (req) => {
       });
     }
 
+    // Sync Worker secrets: WARM_SECRET and VERCEL_PROTECTION_BYPASS
+    const secretsUrl = `https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/workers/scripts/${scriptName}/secrets`;
+    const secretsToSync: Array<{ name: string; value: string | undefined }> = [
+      { name: "WARM_SECRET", value: Deno.env.get("WARM_SECRET") },
+      { name: "VERCEL_PROTECTION_BYPASS", value: Deno.env.get("VERCEL_PROTECTION_BYPASS") },
+    ];
+    for (const { name, value } of secretsToSync) {
+      if (value) {
+        const secretsRes = await fetch(secretsUrl, {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${CURSOR_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ name, text: value, type: "secret_text" }),
+        });
+        if (!secretsRes.ok) {
+          console.warn(`${name} sync to Worker failed:`, await secretsRes.text());
+        } else {
+          console.log(`${name} synced to Worker`);
+        }
+      }
+    }
+
     let result;
     try {
       result = JSON.parse(responseText);

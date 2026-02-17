@@ -29,6 +29,11 @@ const StateAgentOrCategoryRouter = () => {
     return <Navigate to={`/${stateSlug}/${citySlug}/${aliasMap[thirdSegment]}`} replace />;
   }
 
+  // We don't have zip-level pages. Redirect 5-digit zip-like segments to city landing.
+  if (stateSlug && citySlug && thirdSegment && /^\d{5}$/.test(thirdSegment)) {
+    return <Navigate to={`/${stateSlug}/${citySlug}`} replace />;
+  }
+
   // Check if this looks like a magic link (ends with 4 digits)
   const isMagicLink = thirdSegment && /\d{4}$/.test(thirdSegment);
 

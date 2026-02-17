@@ -212,6 +212,11 @@ serve(async (req) => {
         'profile_link', 'license_number', 'synthesized_bio', 'zillow_data_fetched_at',
         'zillow_search_city', 'zillow_search_position', 'zillow_search_total',
         'zillow_search_page', 'zillow_rank_captured_at',
+        // Sales and pricing fields
+        'sales_count_all_time', 'sales_count_last_year',
+        'price_range_3yr_min', 'price_range_3yr_max', 'average_value_3yr',
+        // Business location fields
+        'business_city', 'business_state', 'business_zip',
         // Profile enhancement fields
         'selection_rationale', 'selection_rationale_generated_at',
         'press_mentions', 'awards_verified', 'notable_achievements',
@@ -447,6 +452,16 @@ serve(async (req) => {
         'zillow_search_total',
         'zillow_search_page',
         'zillow_rank_captured_at',
+        // Sales and pricing fields
+        'sales_count_all_time',
+        'sales_count_last_year',
+        'price_range_3yr_min',
+        'price_range_3yr_max',
+        'average_value_3yr',
+        // Business location fields
+        'business_city',
+        'business_state',
+        'business_zip',
         // Profile enhancement fields
         'selection_rationale',
         'selection_rationale_generated_at',
@@ -1647,7 +1662,7 @@ serve(async (req) => {
             community_roles: data.community_roles || []
           },
           methodology: {
-            url: 'https://www.top10lists.us/methodology',
+            url: 'https://www.top10lists.us/about/ranking-methodology',
             version: '1.0'
           }
         }),

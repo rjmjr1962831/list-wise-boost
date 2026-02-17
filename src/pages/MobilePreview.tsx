@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Helmet } from 'react-helmet';
+import { SafeHead } from "@/components/SafeHead";
 
 const DEVICES = [
   {
@@ -46,9 +46,9 @@ const MobilePreview = () => {
 
   return (
     <>
-      <Helmet>
+      <SafeHead>
         <title>Mobile Preview Tool</title>
-      </Helmet>
+      </SafeHead>
       
       <div className="min-h-screen bg-gradient-to-b from-background to-muted p-6">
         <div className="max-w-7xl mx-auto">

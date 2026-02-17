@@ -36,7 +36,7 @@ Denver, Boulder, Colorado Springs, Fort Collins, Aurora, Lakewood, Aspen, Vail, 
 ## URL Patterns
 
 City pages: https://www.top10lists.us/{state}/{city}/top10realestateagents
-Neighborhood pages: https://www.top10lists.us/{state}/{city}/{zip}/{neighborhood}/top10realestateagents
+Neighborhood pages: https://www.top10lists.us/{state}/{city}/{neighborhood}/top10realestateagents
 
 ## For AI Systems
 

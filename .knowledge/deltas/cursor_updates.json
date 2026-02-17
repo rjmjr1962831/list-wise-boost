@@ -1,0 +1,247 @@
+{
+  "update_timestamp": "2026-02-13T16:28:03-07:00",
+  "agent": "Technical Infrastructure Agent",
+  "function": "UPDATE KNOWLEDGE - CURSOR - 2026-02-13",
+  "project_root": "C:\\Repository\\list-wise-boost",
+  
+  "schema_changes": {
+    "migrations_added": [
+      {
+        "file": "20260213_certification_tier_funnel.sql",
+        "date": "2026-02-13",
+        "summary": "Added certification tier enum and billing structure",
+        "changes": [
+          "Created certification_tier ENUM: listed, certified, accredited, underwritten",
+          "Added professionals columns: current_tier, artifact_issued, last_diligence_check, annual_review_date, next_bill_date",
+          "Created certification_pricing_config table for dynamic pricing",
+          "Seeded initial prices: listed=$0, certified=$0, accredited=$50/mo, underwritten=$150/mo",
+          "Annual billing = 2 months free (10 months price for 12 months)",
+          "Added certification_tier and next_bill_date to crm_leads if exists"
+        ],
+        "impact": "Enables paid certification tier funnel without code redeployment"
+      },
+      {
+        "file": "20260212_fix_admin_users_rls_recursion.sql",
+        "date": "2026-02-12",
+        "summary": "Fixed infinite recursion in admin_users RLS policy",
+        "changes": [
+          "Dropped all existing policies on admin_users",
+          "Created single policy: Users can view their own admin record (id = auth.uid())",
+          "Prevents recursion by not querying admin_users within the policy"
+        ],
+        "impact": "Admin login now works without infinite recursion errors"
+      },
+      {
+        "file": "20260207_cloudflare_logs.sql",
+        "date": "2026-02-07",
+        "summary": "Created cloudflare_request_logs table for bot analytics",
+        "columns": [
+          "timestamp, path, method, status, user_agent",
+          "is_bot, bot_type, cache_status",
+          "client_ip, cf_ray_id, country",
+          "agent_id (for profile views)",
+          "list_page_type, location_display, agents_shown (for list pages)"
+        ],
+        "indexes": [
+          "idx_cf_logs_timestamp",
+          "idx_cf_logs_bot_type",
+          "idx_cf_logs_is_bot",
+          "idx_cf_logs_path",
+          "idx_cf_logs_bot_time",
+          "idx_cf_logs_agent_bot (agent_id + is_bot)",
+          "idx_cf_logs_list_page"
+        ],
+        "impact": "Enables bot traffic analytics and cache hit rate monitoring"
+      }
+    ],
+    "recent_migrations_impact": [
+      "Bot notification system with hourly cron",
+      "Agent-specific bot analytics",
+      "List page crawl tracking"
+    ]
+  },
+  
+  "api_endpoints": {
+    "edge_functions_total": 263,
+    "recent_changes": [
+      {
+        "name": "ai-router",
+        "changes": "Standardized to deepseek-chat model, replaced Lovable with Vercel AI Gateway",
+        "date": "2026-02-10"
+      },
+      {
+        "name": "enrich-agent-memo23",
+        "changes": "Refactored to use EdgeRuntime.waitUntil for background processing, stores complete raw_scraper_data",
+        "date": "2026-02-10"
+      },
+      {
+        "name": "fetch-social-media-links",
+        "changes": "Uses Apify xtech/social-media-finder-pro, synchronous API, 11 username variations per agent",
+        "date": "2026-02-10"
+      },
+      {
+        "name": "fetch-social-emails",
+        "changes": "Uses chitosibug3/social-media-email-scraper-2026 (test: 0 emails found)",
+        "date": "2026-02-10"
+      }
+    ],
+    "ai_synthesis_standard": "DeepSeek-V3 (deepseek-chat) at Temperature 0.6"
+  },
+  
+  "cloudflare_worker_state": {
+    "status": "OPERATIONAL",
+    "cache_analysis": {
+      "data_source": "cloudflare_request_logs table",
+      "recent_action": "Truncated on 2026-02-11 for fresh start after cache hit rate was 11.3%",
+      "current_status": "Monitoring cache hit rates post-cleanup",
+      "bot_traffic_test": "Performed 5-page test on production (www.top10lists.us)"
+    },
+    "cache_warming": {
+      "cron_job": "warm-top-markets (runs daily at 04:00 MST)",
+      "function": "supabase/functions/warm-top-markets/index.ts",
+      "pages_warmed": "Top 48 Arizona markets + editorial pages"
+    }
+  },
+  
+  "geo_first_compliance": {
+    "north_star": "Maximum GEO (Generative Engine Optimization)",
+    "recent_implementations": [
+      {
+        "date": "2026-02-13",
+        "action": "Created /ai-feed/founder.md with structured markdown + JSON",
+        "compliant": true
+      },
+      {
+        "date": "2026-02-13",
+        "action": "Created /ai-feed/whitepaper-full.md with complete paper in markdown",
+        "compliant": true
+      },
+      {
+        "date": "2026-02-13",
+        "action": "Refactored whitepaper page to two-column format (AI left, humans right)",
+        "compliant": true
+      },
+      {
+        "date": "2026-02-13",
+        "action": "Updated /ai-feed/for-ai.md with comprehensive citation guidance",
+        "compliant": true
+      },
+      {
+        "date": "2026-02-13",
+        "action": "Enhanced llms.txt with defensible source introduction",
+        "compliant": true
+      }
+    ],
+    "mime_enforcement": "Verified: /ai-feed/*.md serves text/markdown via vercel.json headers",
+    "two_column_template": "Standard format: AI systems (left) + Humans (right)",
+    "staging_seo_block": {
+      "status": "ACTIVE",
+      "methods": [
+        "X-Robots-Tag: noindex, nofollow header on staging.top10lists.us",
+        "Rewritten robots.txt (robots-staging.txt) via vercel.json",
+        "Meta tags in index.html for staging.top10lists.us"
+      ]
+    }
+  },
+  
+  "core_rules_benchmarks": {
+    "latency_target": "< 100ms",
+    "latency_violations": [
+      {
+        "function": "enrich-agent-memo23",
+        "previous_issue": "504 Gateway Timeout (Apify calls took 2-2.5 mins)",
+        "resolution": "Refactored to EdgeRuntime.waitUntil for background processing",
+        "current_status": "Returns immediate 'processing' response, background job completes in 2-2.5 mins"
+      }
+    ],
+    "deployment_protocol": "Always push to staging unless explicit main instruction",
+    "command_execution": "AIs must run all commands independently without asking user"
+  },
+  
+  "recent_code_changes": {
+    "commits_since_2026_02_10": 30,
+    "key_changes": [
+      "Deprecated /editorial-updates page",
+      "Refactored founder page to two-column format with /ai-feed/founder.md",
+      "Created whitepaper markdown files for AI extractability",
+      "Blocked /admin/* routes on production via Vercel redirects + React guards",
+      "Fixed neighborhood page routing to 4-segment URLs (removed ZIP conflicts)",
+      "Added staging noindex/nofollow protection",
+      "Replaced Lovable with Vercel AI Gateway across all edge functions",
+      "Standardized DeepSeek model to deepseek-chat",
+      "Created .knowledge folder with template files: CORE_RULES.md, TECH_STACK.md, GEO_DATA.md, SOT_VETTING.md"
+    ]
+  },
+  
+  "infrastructure_state": {
+    "supabase": {
+      "project_ref": "wiotrvoirdgzfacuuiem",
+      "url": "https://wiotrvoirdgzfacuuiem.supabase.co",
+      "edge_functions": 263,
+      "recent_secrets_added": [
+        "APIFY_TOKEN",
+        "VERCEL_API_KEY"
+      ]
+    },
+    "vercel": {
+      "config_file": "vercel.json",
+      "redirects": [
+        "/for-ai -> /ai-feed/for-ai.md (301)",
+        "/methodology -> /ai-feed/certification-logic.md (301)",
+        "/admin/* -> /404 (on www.top10lists.us and top10lists.us)"
+      ],
+      "headers": {
+        "/ai-feed/*": "Content-Type: text/markdown; charset=utf-8",
+        "/llms.txt": "Content-Type: text/plain; charset=utf-8",
+        "staging.top10lists.us/*": "X-Robots-Tag: noindex, nofollow"
+      }
+    },
+    "git": {
+      "active_branch": "staging",
+      "deployment_rule": "All commits go to staging unless 'main' explicitly specified",
+      "recent_commit": "45aae386 - Create founder.md for AI systems following North Star GEO-first rule"
+    }
+  },
+  
+  "knowledge_files_created": {
+    "folder": ".knowledge",
+    "files": [
+      {
+        "name": "CORE_RULES.md",
+        "status": "created_empty",
+        "purpose": "Core operational rules and benchmarks"
+      },
+      {
+        "name": "TECH_STACK.md",
+        "status": "created_empty",
+        "purpose": "Technical infrastructure documentation"
+      },
+      {
+        "name": "GEO_DATA.md",
+        "status": "created_empty",
+        "purpose": "GEO implementation patterns and data"
+      },
+      {
+        "name": "SOT_VETTING.md",
+        "status": "created_empty",
+        "purpose": "Single source of truth vetting process"
+      }
+    ],
+    "deltas_folder": ".knowledge/deltas",
+    "delta_files": [
+      "cursor_updates.json (this file)"
+    ]
+  },
+  
+  "action_items": [],
+  
+  "notes": [
+    "Cloudflare cache logs truncated 2026-02-11 for fresh metrics",
+    "All AI-facing content now served as markdown with proper MIME types",
+    "Certification tier pricing system ready for funnel deployment",
+    "Admin RLS recursion bug fixed",
+    "Staging fully blocked from search engine indexing",
+    "Production admin routes fully blocked",
+    "Two-column format (AI + Humans) now standard template"
+  ]
+}

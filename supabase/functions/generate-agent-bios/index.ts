@@ -25,10 +25,10 @@ Deno.serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const lovableApiKey = Deno.env.get('LOVABLE_API_KEY')!;
+    const vercelApiKey = Deno.env.get('VERCEL_API_KEY')!;
 
-    if (!lovableApiKey) {
-      throw new Error('LOVABLE_API_KEY not configured');
+    if (!vercelApiKey) {
+      throw new Error('VERCEL_API_KEY not configured');
     }
 
     const supabase = createClient(supabaseUrl, supabaseKey);
@@ -110,12 +110,12 @@ Write only the bio, no preamble.`;
 
           console.log(`Generating bio for ${prof.name}...`);
 
-          // Call Lovable AI Gateway
-          const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+          // Call Vercel AI Gateway
+          const aiResponse = await fetch('https://ai.gateway.vercel.dev/v1/chat/completions', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': `Bearer ${lovableApiKey}`,
+              'Authorization': `Bearer ${vercelApiKey}`,
             },
             body: JSON.stringify({
               model: 'google/gemini-2.5-flash',

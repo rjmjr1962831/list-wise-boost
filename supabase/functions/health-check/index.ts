@@ -236,7 +236,7 @@ async function sendHealthAlert(
     : `Review the health check warnings for ${warnings.map(w => w.name).join(", ")}`;
   
   const encodedPrompt = encodeURIComponent(chatPrompt);
-  const lovableProjectUrl = "https://lovable.dev/projects/9cdb9be2-e152-4f82-8510-b202c71869c2";
+  const vercelProjectUrl = "https://vercel.com/dashboard";
   
   const client = new SMTPClient({
     connection: {
@@ -312,14 +312,14 @@ async function sendHealthAlert(
           </div>
           
           <h2 style="border-bottom: 2px solid #e5e7eb; padding-bottom: 8px; margin-top: 30px;">Quick Fix</h2>
-          <p>Copy this prompt into the Lovable chat to fix the issue:</p>
+          <p>Copy this prompt into the Vercel chat to fix the issue:</p>
           <div style="background: #1f2937; color: #f9fafb; padding: 16px; border-radius: 8px; font-family: monospace; font-size: 14px; margin-bottom: 20px;">
             ${chatPrompt}
           </div>
           
           <div style="text-align: center; margin: 30px 0;">
-            <a href="${lovableProjectUrl}" style="display: inline-block; background: #8b5cf6; color: white; padding: 16px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px;">
-              Open Lovable to Fix →
+            <a href="${vercelProjectUrl}" style="display: inline-block; background: #8b5cf6; color: white; padding: 16px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px;">
+              Open Vercel to Fix →
             </a>
           </div>
         ` : ''}

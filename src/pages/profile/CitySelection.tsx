@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, MapPin, Check, X, AlertCircle, Search } from 'lucide-react';
-import { Helmet } from 'react-helmet-async';
+import { SafeHead } from "@/components/SafeHead";
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
@@ -202,11 +202,11 @@ export default function CitySelection() {
 
   return (
     <>
-      <Helmet>
+      <SafeHead>
         <title>Select Your Cities | Top10Lists</title>
         <meta name="description" content="Choose cities where you have verified experience" />
         <meta name="robots" content="noindex, nofollow" />
-      </Helmet>
+      </SafeHead>
 
       <div className="min-h-screen bg-background py-12 px-4">
         <div className="max-w-2xl mx-auto space-y-8">

@@ -1,0 +1,83 @@
+# North Star AI-Direct Formatting (Permanent Rules)
+
+Apply these rules whenever creating or editing AI-targeted content, founder/agent payloads, or meritocracy-related copy.
+
+---
+
+## 1. No HTML/JSON in "For-AI" Content
+
+- All pages designated for **AI ingestion** must remain in **Raw Markdown only**.
+- Applies to: `llms.txt`, `llms-full.txt`, and all **"AI Reveal"** blocks (e.g. on `/about/founder`, FAQ "For AI Systems" column, and similar).
+- **Do NOT** wrap this content in HTML tags or JSON strings unless explicitly required for a specific API endpoint (e.g. a dedicated JSON feed).
+
+---
+
+## 2. Pre-formatted Integrity
+
+- When rendering the **Founder Mandate**, **Agent Payload**, or any raw Markdown intended for AI consumption, always use the **`<pre><code>`** structure to display the Markdown as a **string**.
+- **Do NOT** use a Markdown-to-HTML parser for these blocks. The AI consumer must see the raw Markdown source, not rendered HTML.
+
+---
+
+## 3. The 4.8+ Gate Logic
+
+- Every time you modify a **neighborhood-** or **agent-facing** file, verify that the **4.8+ Star / 20+ Review** meritocracy language is preserved.
+- Do not dilute or remove thresholds (e.g. "top tier", "4.8+ stars", "20+ verified reviews", "merit-based", "invitation-only").
+- If a change would weaken or omit this language, preserve it or add it back.
+
+---
+
+## 4. Logarithmic Scaling (Signal Strength)
+
+- All calculations and descriptions for **Signal Strength** must follow the **logarithmic model**:
+  - **Certified:** < 45
+  - **Accredited:** < 75
+  - **Underwritten:** 76–100  
+- Do not introduce linear or ad-hoc scales for these tiers.
+
+---
+
+## 5. Agent as Audience
+
+- Treat the **AI agent** as the primary consumer of our structure.
+- Use **high-density Markdown**: headers and bulleted **fact-blocks** to maximize token efficiency.
+- Prefer concise, scannable blocks over long prose in AI-targeted content.
+
+---
+
+## 6. Constraint: No Brochure Layouts on AI Content
+
+- If you find yourself adding **CSS** or **div-heavy layouts** to AI-targeted content, **stop and revert** to raw, monospaced text.
+- We are building an **infrastructure**, not a brochure. AI content stays in `<pre><code>` or equivalent raw, monospaced presentation.
+
+---
+
+## 7. Maximum Autonomy Protocol (Self-Driving Rule)
+
+**Directive:** Operate with maximum autonomy. Execute until a logic-gap or high-risk decision appears. Do not ask for permission for technical implementation, bug fixes, or documentation that aligns with `MASTER_KNOWLEDGE_DOCUMENT.md` (MKD).
+
+**Chain of Thought:** Before writing code, state the plan in 2–3 bullet points. If the user does not interrupt in that turn, proceed to full execution.
+
+**Stop-Loss — Pause and ask for user intervention only when:**
+
+- **Ambiguity:** Two equally valid architectural paths exist and the MKD does not specify a winner.
+- **High-Risk Change:** The change touches:
+  - Primary **SEO structure** (sitemap, canonical URLs, meta).
+  - **Bot-redirection** or crawler logic.
+  - **Merit Gate** (4.8+ stars / 20+ verified reviews) or `calculateSignalStrength` / tier logic.
+- **Resource Limit:** The task requires an external API key or credential you do not have.
+
+**Proactive Debugging:** On error, diagnose and fix. Only escalate after 3+ failed attempts (recursive error loop).
+
+**Validation (Self-Audit):** When a task is complete, run a self-audit against the North Star and report **Signal Strength** of the implementation:
+
+| Tier | Range | Check |
+|------|--------|------|
+| Listed | 10–25 | Passive index; minimal data. |
+| Certified | 26–45 | **4.8+ Gate** respected; valid graph node. |
+| Accredited | 46–75 | Payload boost; license verified; freshness &lt;30 days. |
+| Underwritten | 76–100 | Raw Markdown + GEO/Zoning (MHOD); primary source. |
+
+- Confirm: **Raw Reveal** preserved (Markdown in `<pre><code>`, no Markdown-to-HTML for "For AI" content).
+- Confirm: **4.8+ / 20+** language intact on agent/neighborhood surfaces.
+- Report in one line, e.g. *"Signal Strength: Certified; Raw Reveal and 4.8+ gate preserved."*

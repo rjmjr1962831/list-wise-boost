@@ -1,13 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
+import { SafeHead } from "@/components/SafeHead";
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Loader2, ArrowRight, ArrowLeft } from 'lucide-react';
+import { Loader2, ArrowRight, ArrowLeft, HelpCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Professional {
@@ -28,7 +27,6 @@ export default function Step2Review1() {
   const [saving, setSaving] = useState(false);
   const [professional, setProfessional] = useState<Professional | null>(null);
   const [formData, setFormData] = useState({
-    name: '',
     email: '',
     phone: '',
     company: '',
@@ -58,7 +56,6 @@ export default function Step2Review1() {
 
       setProfessional(data);
       setFormData({
-        name: data.name || '',
         email: data.email || '',
         phone: data.phone || '',
         company: data.company || '',
@@ -78,7 +75,6 @@ export default function Step2Review1() {
       const { error } = await supabase
         .from('professionals')
         .update({
-          name: formData.name,
           email: formData.email,
           phone: formData.phone,
           company: formData.company,
@@ -87,13 +83,17 @@ export default function Step2Review1() {
 
       if (error) throw error;
 
-      toast.success('Basic information saved!');
+      toast.success('Contact information saved!');
       navigate(`/funnel/${token}/review-2`);
     } catch (err: any) {
       toast.error('Failed to save: ' + err.message);
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleRequestReview = (field: string) => {
+    toast.info(`Review request for ${field} will be sent to our team. Call (602) 758-9600 to discuss.`);
   };
 
   if (loading) {
@@ -106,9 +106,9 @@ export default function Step2Review1() {
 
   return (
     <>
-      <Helmet>
+      <SafeHead>
         <title>Review Your Information | Top10Lists.us</title>
-      </Helmet>
+      </SafeHead>
       <div className="min-h-screen bg-gradient-to-b from-background to-muted py-12 px-4">
         <div className="max-w-2xl mx-auto">
           <Card>
@@ -124,14 +124,25 @@ export default function Step2Review1() {
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-4">
-                <div>
-                  <Label htmlFor="name">Full Name *</Label>
-                  <Input
-                    id="name"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    placeholder="Your full name"
-                  />
+                {/* Name: read-only, request review */}
+                <div className="flex flex-col gap-2">
+                  <Label>Full Name</Label>
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 rounded-md border bg-muted/50 px-3 py-2 text-sm">
+                      {professional?.name || 'Not provided'}
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleRequestReview('name')}
+                      className="shrink-0"
+                    >
+                      <HelpCircle className="h-4 w-4 mr-1" />
+                      Request review
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">To change your name, request a review.</p>
                 </div>
 
                 <div>
@@ -178,7 +189,7 @@ export default function Step2Review1() {
                 </Button>
                 <Button
                   onClick={handleSave}
-                  disabled={saving || !formData.name || !formData.email}
+                  disabled={saving || !formData.email}
                   className="flex-1 gap-2"
                 >
                   {saving ? (

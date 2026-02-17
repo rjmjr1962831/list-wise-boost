@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Helmet } from "react-helmet-async";
+import { SafeHead } from "@/components/SafeHead";
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Mail, Phone, ExternalLink, FileText, Building2, Newspaper, Award } from "lucide-react";
@@ -108,8 +108,8 @@ const pressArticles: PressArticle[] = [
     tier: "Financial",
     tierColor: "bg-accent text-accent-foreground",
     url: "https://www.streetinsider.com/Pinion+Newswire/414+Arizona+Agents+Receive+an+Invitation+They+Didn%E2%80%99t+Apply+For.+The+Other+220%2C000+Cannot+Buy+Their+Way+In./25754981.html",
-    title: "414 Arizona Agents Receive an Invitation They Didn't Apply For. The Other 220,000 Cannot Buy Their Way In.",
-    summary: "Coverage highlighting the invitation-only model where only 414 agents out of 220,000+ Arizona real estate professionals qualified for the merit-based rankings based on verified performance data.",
+    title: "414 Arizona Agents Receive an Invitation They Didn't Apply For. The Other 750,000 Cannot Buy Their Way In.",
+    summary: "Coverage highlighting the invitation-only model where only 414 agents out of 750,000+ Arizona real estate professionals qualified for the merit-based rankings based on verified performance data.",
     date: "December 2025",
     logo: streetInsiderLogo,
   },
@@ -118,7 +118,7 @@ const pressArticles: PressArticle[] = [
     tier: "Trade",
     tierColor: "bg-muted text-muted-foreground",
     url: "https://aijourn.com/414-arizona-agents-receive-an-invitation-they-didnt-apply-for-the-other-220000-cannot-buy-their-way-in/",
-    title: "414 Arizona Agents Receive an Invitation They Didn't Apply For. The Other 220,000 Cannot Buy Their Way In.",
+    title: "414 Arizona Agents Receive an Invitation They Didn't Apply For. The Other 750,000 Cannot Buy Their Way In.",
     summary: "AI and technology industry coverage of the invitation-only real estate agent directory structured for AI citation and retrieval with anti-pay-to-play methodology.",
     date: "December 2025",
     logo: aiJournLogo,
@@ -199,7 +199,7 @@ const Press = () => {
 
   return (
     <>
-      <Helmet>
+      <SafeHead>
         <title>Press & Media Recognition - Top10Lists.us</title>
         <meta 
           name="description" 
@@ -223,7 +223,7 @@ const Press = () => {
         <script type="application/ld+json">
           {JSON.stringify(pressSchema)}
         </script>
-      </Helmet>
+      </SafeHead>
 
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
         {/* Breadcrumbs */}

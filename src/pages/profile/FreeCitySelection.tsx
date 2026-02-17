@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Loader2, ChevronDown, MapPin, AlertCircle, RefreshCw } from 'lucide-react';
-import { Helmet } from 'react-helmet-async';
+import { SafeHead } from "@/components/SafeHead";
 import {
   Select,
   SelectContent,
@@ -211,11 +211,11 @@ export default function FreeCitySelection() {
 
   return (
     <>
-      <Helmet>
+      <SafeHead>
         <title>Select Your City | Top10Lists</title>
         <meta name="description" content="Choose your free listing city" />
         <meta name="robots" content="noindex, nofollow" />
-      </Helmet>
+      </SafeHead>
 
       <div className="min-h-screen bg-background py-12 px-4">
         <div className="max-w-4xl mx-auto space-y-8">

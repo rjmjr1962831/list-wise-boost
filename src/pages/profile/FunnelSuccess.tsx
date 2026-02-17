@@ -1,6 +1,6 @@
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Helmet } from 'react-helmet-async';
+import { SafeHead } from "@/components/SafeHead";
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
@@ -65,10 +65,10 @@ export default function FunnelSuccess() {
 
   return (
     <>
-      <Helmet>
+      <SafeHead>
         <title>Your Profile Is Live | Top10Lists.us</title>
         <meta name="robots" content="noindex, nofollow" />
-      </Helmet>
+      </SafeHead>
       
       <div className="min-h-screen bg-gradient-to-b from-background to-muted">
         <div className="container mx-auto px-4 py-12">

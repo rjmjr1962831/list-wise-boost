@@ -18,7 +18,8 @@ interface UpsellSectionProps {
 
 export function UpsellSection({ professional, subscriptionCount }: UpsellSectionProps) {
   const navigate = useNavigate();
-  
+  if (!professional) return null;
+
   const verificationToken = professional.verification_token || professional.id;
   
   const handleAddNeighborhoods = () => {
@@ -33,22 +34,17 @@ export function UpsellSection({ professional, subscriptionCount }: UpsellSection
   };
 
   const handleViewProfile = () => {
-    // Build public profile URL
-    const citySlug = professional.city?.slug || professional.city_id;
+    const citySlug = professional.city?.slug || professional.city_id || "";
     const stateSlug = professional.city?.state_slug || professional.state_slug || "arizona";
-    
-    // Generate profile slug from name + short_code
-    const nameSlug = professional.name
-      ?.toLowerCase()
+    const namePart = (professional.name ?? "agent")
+      .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
-      .replace(/(^-|-$)/g, "");
-    
-    const profileSlug = professional.short_code 
-      ? `${nameSlug}-${professional.short_code}`
-      : nameSlug;
-
+      .replace(/(^-|-$)/g, "") || "agent";
+    const profileSlug = professional.short_code ? `${namePart}-${professional.short_code}` : namePart;
     const profileUrl = `/${stateSlug}/${citySlug}/top10realestateagents/${profileSlug}`;
-    window.open(profileUrl, "_blank");
+    try {
+      window.open(profileUrl, "_blank");
+    } catch (_) {}
   };
 
   return (

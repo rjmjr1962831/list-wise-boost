@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { Helmet } from "react-helmet-async";
+import { SafeHead } from "@/components/SafeHead";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -169,7 +169,7 @@ export default function ArtifactPage() {
 
   return (
     <>
-      <Helmet>
+      <SafeHead>
         <title>{data.name} - Top10Lists {tierNames[cert.certification_tier]} Professional</title>
         <meta name="description" content={cert.justification_data?.selection_rationale || `${data.name} is certified by Top10Lists.us based on verified performance data.`} />
         <link rel="canonical" href={artifactUrl} />
@@ -199,7 +199,7 @@ export default function ArtifactPage() {
             }
           })}
         </script>
-      </Helmet>
+      </SafeHead>
 
       <div className="min-h-screen bg-gradient-to-b from-background to-muted py-12 px-4">
         <div className="max-w-4xl mx-auto">

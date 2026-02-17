@@ -14,6 +14,8 @@ const PRERENDER_TOKEN = Deno.env.get("PRERENDER_TOKEN");
 const CLOUDFLARE_ACCOUNT_ID = Deno.env.get("CLOUDFLARE_ACCOUNT_ID");
 const CLOUDFLARE_KV_NAMESPACE_ID = Deno.env.get("CLOUDFLARE_KV_NAMESPACE_ID");
 const CLOUDFLARE_API_TOKEN = Deno.env.get("CLOUDFLARE_API_TOKEN");
+const WARM_SECRET = Deno.env.get("WARM_SECRET");
+const WORKER_WARM_URL = "https://www.top10lists.us/__warm";
 
 // Static pages - always warmed
 const STATIC_PAGES = [
@@ -31,6 +33,7 @@ const STATIC_PAGES = [
   "/about/ranking-methodology",
   // AI & Protocol pages
   "/for-ai",
+  "/for-ai-systems",
   "/transparency",
   "/ai-liability",
   "/ai-citation-whitepaper",
@@ -88,8 +91,23 @@ function hasStructuredData(html: string): boolean {
     (html.includes("RealEstateAgent") || html.includes("ItemList"));
 }
 
+function isMarkdownArtifact(content: string): boolean {
+  return !!content && content.length >= 500 &&
+    (content.startsWith("# ") || content.includes("## `") || content.includes("REASONING_NUGGET") || content.includes("MARKET_AUDIT_GRID"));
+}
+
 function validateRenderedHtml(html: string, url: string): { ok: boolean; reason?: string } {
-  if (!html || html.length < 1000 || !html.includes("</html>")) {
+  if (!html || html.length < 500) {
+    return { ok: false, reason: "Response too short" };
+  }
+
+  // Support markdown artifact format (worker returns text/markdown)
+  if (isMarkdownArtifact(html)) {
+    return { ok: true };
+  }
+
+  // Legacy HTML validation
+  if (html.length < 1000 || !html.includes("</html>")) {
     return { ok: false, reason: "Invalid HTML response" };
   }
 
@@ -189,6 +207,31 @@ async function fetchBotHtml(url: string, forceRefresh: boolean): Promise<{ succe
   } catch (error: unknown) {
     const errMsg = error instanceof Error ? error.message : String(error);
     return { success: false, error: errMsg };
+  }
+}
+
+async function writeToWorkerCache(url: string, content: string, format?: "html" | "markdown"): Promise<{ success: boolean; error?: string }> {
+  if (!WARM_SECRET) {
+    return { success: false, error: "WARM_SECRET not configured" };
+  }
+  const body = format === "markdown" ? { url, html: content, format: "markdown" } : { url, html: content };
+  try {
+    const response = await fetch(WORKER_WARM_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Warm-Secret": WARM_SECRET,
+      },
+      body: JSON.stringify(body),
+    });
+    if (!response.ok) {
+      const text = await response.text();
+      return { success: false, error: `Worker warm failed: ${response.status} ${text}` };
+    }
+    return { success: true };
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : String(e);
+    return { success: false, error: msg };
   }
 }
 
@@ -356,20 +399,17 @@ async function warmUrl(url: string, forceRefresh: boolean): Promise<WarmResult |
       return { url, type: "validation", message: validation.reason || "Validation failed" };
     }
 
+    // Primary: write to Worker cache (same store bots read from). This fixes low hit rate.
+    const workerResult = await writeToWorkerCache(url, html, isMarkdownArtifact(html) ? "markdown" : "html");
+    if (!workerResult.success && WARM_SECRET) {
+      console.warn(`Worker cache write failed for ${url}: ${workerResult.error}`);
+    }
+
+    // Optional: also write to KV for other consumers
     if (PRERENDER_TOKEN && canWriteKv) {
       const cacheKeys = buildCacheKeys(url);
-      const kvErrors: string[] = [];
-      let wroteAny = false;
       for (const cacheKey of cacheKeys) {
-        const kvResult = await writeToKv(cacheKey, html);
-        if (kvResult.success) {
-          wroteAny = true;
-        } else if (kvResult.error) {
-          kvErrors.push(kvResult.error);
-        }
-      }
-      if (!wroteAny) {
-        return { url, type: "kv", message: kvErrors.join(" | ") || "KV write failed" };
+        await writeToKv(cacheKey, html);
       }
     }
 
@@ -440,7 +480,8 @@ serve(async (req) => {
       concurrency = 5,
       limit = undefined,
       offset = 0,
-      region = undefined
+      region = undefined,
+      list_urls_only = false
     } = body;
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
@@ -476,6 +517,14 @@ serve(async (req) => {
     }
 
     const totalCount = allUrls.length;
+    if (list_urls_only) {
+      const fullUrls = allUrls.map((p) => (p === "/" ? BASE_URL + "/" : BASE_URL + p));
+      return new Response(JSON.stringify({ urls: fullUrls, total: fullUrls.length }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const batchLimit = typeof limit === "number" && limit > 0 ? limit : allUrls.length;
     const batchOffset = typeof offset === "number" && offset >= 0 ? Math.min(offset, allUrls.length) : 0;
     const batchUrls = allUrls.slice(batchOffset, batchOffset + batchLimit);

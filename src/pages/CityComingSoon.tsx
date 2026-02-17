@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Navigate, useParams, useNavigate } from "react-router-dom";
-import { Helmet } from "react-helmet-async";
+import { SafeHead } from "@/components/SafeHead";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MapPin, Bell } from "lucide-react";
@@ -39,7 +39,7 @@ const CityComingSoon = () => {
 
   return (
     <>
-      <Helmet>
+      <SafeHead>
         <title>{pageTitle}</title>
         <meta name="description" content={pageDescription} />
         <meta name="robots" content="noindex, follow" />
@@ -51,7 +51,7 @@ const CityComingSoon = () => {
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={pageTitle} />
         <meta name="twitter:description" content={pageDescription} />
-      </Helmet>
+      </SafeHead>
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 flex items-center justify-center p-4">
       <Card className="p-8 max-w-2xl w-full text-center">
         <MapPin className="h-16 w-16 text-primary mx-auto mb-4" />

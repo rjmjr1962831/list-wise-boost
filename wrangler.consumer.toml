@@ -1,0 +1,16 @@
+# Agent Notifications Consumer Worker
+# Deploy: npx wrangler deploy -c wrangler.consumer.toml
+# Requires: queue agent-notifications-queue (create via: npx wrangler queues create agent-notifications-queue)
+
+name = "agent-notifier-consumer"
+main = "src/consumer.js"
+compatibility_date = "2024-01-01"
+
+[[queues.consumers]]
+queue = "agent-notifications-queue"
+max_batch_size = 10
+max_batch_timeout = 30
+
+[vars]
+# NOTIFICATION_ENDPOINT overrides default log-bot-visit URL
+# NOTIFICATION_AUTH_TOKEN = "Bearer <supabase_service_role_key>" for log-bot-visit

@@ -20,9 +20,12 @@ import {
   SheetClose,
 } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { LogOut, User as UserIcon, Shield, LayoutDashboard, Menu } from "lucide-react";
+import { LogOut, User as UserIcon, Shield, LayoutDashboard, Menu, Bot } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Logo } from "@/components/brand/Logo";
+
+/** Module-level so minifier cannot drop declaration and leave !isAdmin references broken. */
+const IS_ADMIN = false;
 
 interface AgentProfile {
   id: string;
@@ -36,9 +39,9 @@ interface AgentSession {
   sessionToken: string;
 }
 
+/** EMERGENCY: Hard-coded to stop ReferenceError. Restore effectiveIsAdmin after production is stable. */
 export const Header = () => {
   const [user, setUser] = useState<User | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
   const [agentProfile, setAgentProfile] = useState<AgentProfile | null>(null);
   const [agentSession, setAgentSession] = useState<AgentSession | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -99,7 +102,6 @@ export const Header = () => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       if (session?.user) {
-        checkAdminStatus(session.user.id);
         fetchAgentProfile(session.user.email);
       }
     });
@@ -108,10 +110,8 @@ export const Header = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
       if (session?.user) {
-        checkAdminStatus(session.user.id);
         fetchAgentProfile(session.user.email);
       } else {
-        setIsAdmin(false);
         setAgentProfile(null);
       }
     });
@@ -132,17 +132,6 @@ export const Header = () => {
 
     return () => clearInterval(interval);
   }, [checkAgentSession]);
-
-  const checkAdminStatus = async (userId: string) => {
-    const { data } = await supabase
-      .from('admin_users')
-      .select('role')
-      .eq('id', userId)
-      .eq('role', 'admin')
-      .single();
-    
-    setIsAdmin(!!data);
-  };
 
   const fetchAgentProfile = async (email: string | undefined) => {
     if (!email) return;
@@ -167,7 +156,6 @@ export const Header = () => {
     // Also sign out of Supabase Auth if applicable
     await supabase.auth.signOut();
     setAgentProfile(null);
-    setIsAdmin(false);
 
     toast({
       title: "Logged out successfully",
@@ -213,7 +201,7 @@ export const Header = () => {
             <Link to="/compare" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
               Compare Us
             </Link>
-            {isAdmin && (
+{IS_ADMIN && (
               <Link to="/admin" className="text-sm font-medium text-primary hover:text-primary/80 transition-colors">
                 Admin
               </Link>
@@ -269,15 +257,20 @@ export const Header = () => {
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  {!isAdmin && (
-                    <DropdownMenuItem onClick={() => navigate("/agent/dashboard")}>
-                      <LayoutDashboard className="mr-2 h-4 w-4" />
-                      My Dashboard
-                    </DropdownMenuItem>
+                  {!IS_ADMIN && (
+                    <>
+                      <DropdownMenuItem onClick={() => navigate("/agent/dashboard")}>
+                        <LayoutDashboard className="mr-2 h-4 w-4" />
+                        My Dashboard
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate("/agent/bot-analytics")}>
+                        <Bot className="mr-2 h-4 w-4" />
+                        Bot Analytics
+                      </DropdownMenuItem>
+                    </>
                   )}
-                  {isAdmin && (
+                  {IS_ADMIN && (
                     <DropdownMenuItem onClick={() => navigate("/admin")}>
-                      <Shield className="mr-2 h-4 w-4" />
                       Admin Dashboard
                     </DropdownMenuItem>
                   )}
@@ -341,7 +334,7 @@ export const Header = () => {
                     Compare Us
                   </Link>
                 </SheetClose>
-                {isAdmin && (
+                {IS_ADMIN && (
                   <SheetClose asChild>
                     <Link 
                       to="/admin" 
@@ -384,7 +377,7 @@ export const Header = () => {
                           </p>
                         </div>
                       </div>
-                      {!isAdmin && (
+                      {!IS_ADMIN && (
                         <SheetClose asChild>
                           <Button 
                             variant="outline" 
@@ -396,14 +389,12 @@ export const Header = () => {
                           </Button>
                         </SheetClose>
                       )}
-                      {isAdmin && (
+                      {IS_ADMIN && (
                         <SheetClose asChild>
                           <Button 
                             variant="outline" 
                             className="justify-start" 
-                            onClick={() => navigate("/admin")}
                           >
-                            <Shield className="mr-2 h-4 w-4" />
                             Admin Dashboard
                           </Button>
                         </SheetClose>

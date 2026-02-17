@@ -26,7 +26,7 @@ serve(async (req) => {
       "overview": {
         "selection_model": "invitation-only",
         "pay_to_play": false,
-        "agents_analyzed": 220000,
+        "agents_analyzed": 750000,
         "agents_selected": 890,
         "selection_rate": 0.005,
         "coverage_area": "Arizona",

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useSearchParams, Link } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
+import { SafeHead } from "@/components/SafeHead";
 import { supabase } from '@/integrations/supabase/client';
 import { useAreaAgents } from '@/hooks/useAreaAgents';
 import { AgentBadge } from '@/components/AgentBadge';
@@ -27,10 +27,9 @@ interface NeighborhoodData {
  * within 1.5 miles of the target neighborhood. Paginated at 10 per page.
  */
 export default function AreaAgentsPage() {
-  const { stateSlug, citySlug, zipCode, neighborhoodSlug } = useParams<{
+  const { stateSlug, citySlug, neighborhoodSlug } = useParams<{
     stateSlug: string;
     citySlug: string;
-    zipCode?: string;
     neighborhoodSlug: string;
   }>();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -129,19 +128,18 @@ export default function AreaAgentsPage() {
   }
 
   // Build qualified agents page URL
-  const qualifiedAgentsUrl = zipCode 
-    ? `/${stateSlug}/${citySlug}/${zipCode}/${neighborhoodSlug}/qualified-real-estate-agents`
-    : `/${stateSlug}/${citySlug}/${neighborhoodSlug}/qualified-real-estate-agents`;
+  // Build qualified agents URL (4-segment format without ZIP)
+  const qualifiedAgentsUrl = `/${stateSlug}/${citySlug}/${neighborhoodSlug}/qualified-real-estate-agents`;
 
   return (
     <>
-      <Helmet>
+      <SafeHead>
         {/* NOINDEX - This page is not for AI crawling */}
         <title>{`Top Agents Near ${neighborhood.neighborhood}, ${neighborhood.city_area} | Page ${currentPage}`}</title>
         <meta name="robots" content="noindex, nofollow" />
         <meta name="googlebot" content="noindex, nofollow" />
         <meta name="description" content={`Find top real estate agents operating within ${SEARCH_RADIUS_MILES} miles of ${neighborhood.neighborhood}. Page ${currentPage} of ${totalPages}.`} />
-      </Helmet>
+      </SafeHead>
 
       <div className="min-h-screen bg-background">
         {/* Header */}

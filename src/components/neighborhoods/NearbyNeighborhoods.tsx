@@ -30,23 +30,15 @@ const tierPrices: Record<string, string> = {
 };
 
 /**
- * Generate neighborhood URL - uses 5-segment format with ZIP when available
- * Format: /{state}/{city}/{zip}/{neighborhood}/top10realestateagents
- * Falls back to 4-segment (legacy) if no ZIP available
+ * Generate neighborhood URL - canonical 4-segment format
+ * Format: /{state}/{city}/{neighborhood}/top10realestateagents
  */
 const generateNeighborhoodUrl = (
-  state: string, 
+  state: string,
   neighborhood: NearbyNeighborhood
 ): string => {
-  const citySlug = neighborhood.city_area_slug || 
+  const citySlug = neighborhood.city_area_slug ||
     neighborhood.city_area.toLowerCase().replace(/\s+/g, '-');
-  
-  // Use 5-segment format with ZIP if available (preferred)
-  if (neighborhood.primary_zip) {
-    return `/${state}/${citySlug}/${neighborhood.primary_zip}/${neighborhood.slug}/top10realestateagents`;
-  }
-  
-  // Fallback to 4-segment (will redirect via NeighborhoodCategoryRouter)
   return `/${state}/${citySlug}/${neighborhood.slug}/top10realestateagents`;
 };
 

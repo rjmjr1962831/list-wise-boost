@@ -7,11 +7,10 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
-import { Loader2, Link2, CheckCircle, XCircle, ExternalLink } from "lucide-react";
+import { Loader2, Link2, CheckCircle, XCircle } from "lucide-react";
 
 export function MagicLinkGenerator() {
   const [isGenerating, setIsGenerating] = useState(false);
-  const [syncToPipedrive, setSyncToPipedrive] = useState(true);
   const [regenerateAll, setRegenerateAll] = useState(false);
   const [progress, setProgress] = useState<{
     total: number;
@@ -39,7 +38,7 @@ export function MagicLinkGenerator() {
       while (true) {
         const { data, error } = await supabase.functions.invoke("generate-all-magic-links", {
           body: {
-            sync_to_pipedrive: syncToPipedrive,
+            sync_to_pipedrive: false,
             regenerate_all: regenerateAll,
             offset,
             auto_continue: false,
@@ -75,7 +74,7 @@ export function MagicLinkGenerator() {
 
       toast({
         title: "Magic Links Generated!",
-        description: `Successfully processed ${successful + failed} links${syncToPipedrive ? " and synced to Pipedrive" : ""}`,
+        description: `Successfully processed ${successful + failed} links`,
       });
     } catch (error: any) {
       console.error("Error generating magic links:", error);
@@ -112,7 +111,7 @@ export function MagicLinkGenerator() {
         </CardTitle>
         <CardDescription>
           Generate permanent magic links for all active professionals without links.
-          Links are stored in the database and can be synced to Pipedrive.
+          Links are stored in the database.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -128,22 +127,6 @@ export function MagicLinkGenerator() {
             id="regenerate-all"
             checked={regenerateAll}
             onCheckedChange={setRegenerateAll}
-            disabled={isGenerating}
-          />
-        </div>
-
-        {/* Sync to Pipedrive Toggle */}
-        <div className="flex items-center justify-between">
-          <div className="space-y-0.5">
-            <Label htmlFor="sync-pipedrive">Sync to Pipedrive</Label>
-            <p className="text-sm text-muted-foreground">
-              Automatically update the Magic Link field in Pipedrive
-            </p>
-          </div>
-          <Switch
-            id="sync-pipedrive"
-            checked={syncToPipedrive}
-            onCheckedChange={setSyncToPipedrive}
             disabled={isGenerating}
           />
         </div>
@@ -214,12 +197,6 @@ export function MagicLinkGenerator() {
               <Badge variant={progress.failed === 0 ? "default" : "secondary"}>
                 {progress.total > 0 ? ((progress.processed / progress.total) * 100).toFixed(1) : 0}% Complete
               </Badge>
-              {syncToPipedrive && (
-                <Badge variant="outline" className="gap-1">
-                  <ExternalLink className="w-3 h-3" />
-                  Synced to Pipedrive
-                </Badge>
-              )}
             </div>
 
             {/* Errors List */}
@@ -258,7 +235,6 @@ export function MagicLinkGenerator() {
             <li>Generates permanent tokens (expires 2099) for active professionals without magic links</li>
             <li>Creates URLs: <code className="text-xs bg-background px-1 py-0.5 rounded">https://top10lists.us/arizona/{'{city}'}/{'{name}'}-{'{phone}'}</code></li>
             <li>Rate limited to 500ms between generations to protect API</li>
-            <li>Optionally syncs magic links to Pipedrive custom field</li>
             <li>Tokens are stored in verification_token column</li>
           </ul>
         </div>

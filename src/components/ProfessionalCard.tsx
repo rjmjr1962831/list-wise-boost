@@ -19,6 +19,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { extractYearsFromBio } from "@/utils/bioParser";
 
+/** Module-level so minifier cannot drop declaration and leave !isAdmin references broken. */
+const IS_ADMIN = false;
+
+/** EMERGENCY: Hard-coded to stop ReferenceError. Restore effectiveIsAdmin after production is stable. */
 
 interface ProfessionalCardProps {
   professional: Professional;
@@ -73,7 +77,6 @@ export const ProfessionalCard = ({
   
   // Press enrichment states
   const [enrichingPress, setEnrichingPress] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
   
   // Helper to strip HTML tags
   const stripHtml = (html: string): string => {
@@ -152,17 +155,7 @@ export const ProfessionalCard = ({
       setCurrentUser(user);
       console.log('Current user:', user?.email, 'Professional email:', professional.email);
       
-      // Check if user is admin
-      if (user) {
-        const { data: roleData } = await supabase
-          .from('admin_users')
-          .select('role')
-          .eq('id', user.id)
-          .eq('role', 'admin')
-          .maybeSingle();
-        
-        setIsAdmin(!!roleData);
-      }
+      // EMERGENCY: Admin check removed. isAdmin hard-coded false.
     };
     checkAuth();
   }, []);
@@ -1667,7 +1660,7 @@ export const ProfessionalCard = ({
                   // Split long text into logical paragraphs based on topic shifts
                   // Look for sentences that start new topics (credentials, achievements, community, etc.)
                   const sentences = text.split(/(?<=[.!?])\s+/);
-                  const paragraphs: string[] = [];
+                  let paragraphs: string[] = [];
                   let currentParagraph: string[] = [];
                   
                   const topicIndicators = [
@@ -2039,7 +2032,7 @@ export const ProfessionalCard = ({
                             </div>
                             
                             {/* Manual Press Enrichment Button (Admin only) */}
-                            {isAdmin && (
+                            {IS_ADMIN && (
                               <div className="border-t pt-3 flex flex-col items-center gap-2">
                                 {profileLastSynthesized && (
                                   <p className="text-xs text-muted-foreground">
@@ -2282,7 +2275,7 @@ export const ProfessionalCard = ({
                              )}
                              
                              {/* Manual Press Enrichment Button (Admin only) - also show when data exists */}
-                             {isAdmin && (
+                             {IS_ADMIN && (
                                <div className="border-t mt-4 pt-3 flex flex-col items-center gap-2">
                                  {(professional as any).profile_last_synthesized_at && (
                                    <p className="text-xs text-muted-foreground">

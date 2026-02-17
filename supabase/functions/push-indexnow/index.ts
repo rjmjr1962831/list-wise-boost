@@ -23,6 +23,7 @@ const KEY_URLS = [
   
   // AI-specific pages
   'https://www.top10lists.us/for-ai',
+  'https://www.top10lists.us/for-ai-systems',
   'https://www.top10lists.us/ai-liability',
   'https://www.top10lists.us/ai-citation-whitepaper',
   'https://www.top10lists.us/protocol-services',

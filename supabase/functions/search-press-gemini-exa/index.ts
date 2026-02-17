@@ -22,15 +22,15 @@ interface ExaResult {
   publishedDate?: string;
 }
 
-// Call Gemini Flash via Lovable AI Gateway
+// Call Gemini Flash via Vercel AI Gateway
 async function callGemini(prompt: string, systemPrompt: string): Promise<string> {
-  const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-  if (!LOVABLE_API_KEY) throw new Error('LOVABLE_API_KEY not configured');
+  const VERCEL_API_KEY = Deno.env.get('VERCEL_API_KEY');
+  if (!VERCEL_API_KEY) throw new Error('VERCEL_API_KEY not configured');
 
-  const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+  const response = await fetch('https://ai.gateway.vercel.dev/v1/chat/completions', {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+      'Authorization': `Bearer ${VERCEL_API_KEY}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({

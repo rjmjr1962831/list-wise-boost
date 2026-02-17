@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, Navigate } from "react-router-dom";
-import { Helmet } from "react-helmet-async";
+import { SafeHead } from "@/components/SafeHead";
 import { supabase } from "@/integrations/supabase/client";
 import { Professional } from "@/types/professional";
 import { ProfessionalCard } from "@/components/ProfessionalCard";
@@ -161,7 +161,7 @@ const QALandingPage = () => {
 
   return (
     <>
-      <Helmet>
+      <SafeHead>
         <title>{pageTitle} | Top10Lists.us</title>
         <meta name="description" content={pageDescription} />
         <meta property="og:title" content={pageTitle} />
@@ -177,7 +177,7 @@ const QALandingPage = () => {
         <script type="application/ld+json">
           {JSON.stringify(faqSchema)}
         </script>
-      </Helmet>
+      </SafeHead>
 
       <div className="container mx-auto px-4 py-8 max-w-5xl">
         {/* Breadcrumbs */}

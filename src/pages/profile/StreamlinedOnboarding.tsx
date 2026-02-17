@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
+import { SafeHead } from "@/components/SafeHead";
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -692,10 +692,10 @@ export default function StreamlinedOnboarding() {
 
     return (
       <>
-        <Helmet>
+        <SafeHead>
           <title>You're All Set! | Top10Lists.us</title>
           <meta name="robots" content="noindex, nofollow" />
-        </Helmet>
+        </SafeHead>
         <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted py-12 px-4">
           <div className="max-w-2xl mx-auto text-center">
             <Card className="p-8 bg-gradient-to-br from-green-500/10 to-green-600/5 border-green-500/20">
@@ -811,10 +811,10 @@ export default function StreamlinedOnboarding() {
     
     return (
       <>
-        <Helmet>
+        <SafeHead>
           <title>Review Your Profile | Top10Lists.us</title>
           <meta name="robots" content="noindex, nofollow" />
-        </Helmet>
+        </SafeHead>
         <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted py-12 px-4">
           <div className="max-w-3xl mx-auto space-y-6">
             
@@ -932,11 +932,11 @@ export default function StreamlinedOnboarding() {
     
     return (
       <>
-        <Helmet>
+        <SafeHead>
           <title>Welcome {firstName} | Top10Lists.us</title>
           <meta name="description" content="Review your professional listing on Top10Lists.us" />
           <meta name="robots" content="noindex, nofollow" />
-        </Helmet>
+        </SafeHead>
 
         <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted">
           {/* Top Bar with Profile Dropdown */}
@@ -988,7 +988,7 @@ export default function StreamlinedOnboarding() {
                 Hello {firstName}. <span className="text-primary">AI has been looking forward to meeting you.</span>
               </h1>
               <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-                You are one of the nearly 900 agents in Arizona (Out of 220,000+!) who we have invited to our recommendation engine.
+                You are one of the nearly 900 agents in Arizona (Out of 750,000+!) who we have invited to our recommendation engine.
               </p>
               <p className="text-lg md:text-xl text-primary font-semibold max-w-2xl mx-auto">
                 There is no cost for your listing in the city of your choice
@@ -1053,11 +1053,11 @@ export default function StreamlinedOnboarding() {
   // Step 2: Edit View
   return (
     <>
-      <Helmet>
+      <SafeHead>
         <title>Edit Your Listing | Top10Lists.us</title>
         <meta name="description" content="Edit and claim your professional listing on Top10Lists.us" />
         <meta name="robots" content="noindex, nofollow" />
-      </Helmet>
+      </SafeHead>
 
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted">
         {/* Top Bar with Profile Dropdown */}

@@ -1,4 +1,4 @@
-import { Helmet } from 'react-helmet-async';
+import { SafeHead } from "@/components/SafeHead";
 
 interface DatasetSchemaProps {
   cityName: string;
@@ -126,10 +126,10 @@ export function DatasetSchema({
   };
 
   return (
-    <Helmet>
+    <SafeHead>
       <script type="application/ld+json">
         {JSON.stringify(schema)}
       </script>
-    </Helmet>
+    </SafeHead>
   );
 }

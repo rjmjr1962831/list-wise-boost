@@ -254,7 +254,7 @@ export function BatchSynthesisRefresher() {
             Batch Synthesis Refresher
           </CardTitle>
           <CardDescription>
-            Re-run press search + synthesis for active agents. Updates press mentions, community roles, and AI-generated bios. Automatically syncs to Pipedrive.
+            Re-run press search + synthesis for active agents. Updates press mentions, community roles, and AI-generated bios.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">

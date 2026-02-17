@@ -24,7 +24,7 @@
     "/agents/search": {
       "get": {
         "summary": "Search for real estate agents",
-        "description": "Find agents by market (state, city, ZIP, neighborhood), specialty, or qualification criteria. All agents meet minimum standards (4.8+ rating, 20+ reviews). Results are sorted by rating and review count.",
+        "description": "Find agents by market (state, city, ZIP), specialty, or qualification criteria. All agents meet minimum standards (4.8+ rating, 20+ reviews). Results are sorted by rating and review count.",
         "operationId": "searchAgents",
         "tags": ["Agents"],
         "parameters": [
@@ -51,13 +51,6 @@
             },
             "description": "ZIP code (5 digits, e.g., '85255', '92037')",
             "example": "85255"
-          },
-          {
-            "name": "neighborhood",
-            "in": "query",
-            "schema": { "type": "string" },
-            "description": "Neighborhood name (e.g., 'Grayhawk', 'La Jolla')",
-            "example": "Grayhawk"
           },
           {
             "name": "specialty",
@@ -88,13 +81,6 @@
             },
             "description": "Minimum review count",
             "example": 20
-          },
-          {
-            "name": "has_certification",
-            "in": "query",
-            "schema": { "type": "boolean" },
-            "description": "Only return certified agents (true/false)",
-            "example": true
           },
           {
             "name": "limit",
@@ -196,16 +182,6 @@
             "schema": { "type": "string" },
             "description": "Filter results by state name",
             "example": "Arizona"
-          },
-          {
-            "name": "include_neighborhoods",
-            "in": "query",
-            "schema": { 
-              "type": "boolean",
-              "default": false
-            },
-            "description": "Include neighborhood-level data (increases response size)",
-            "example": false
           }
         ],
         "responses": {

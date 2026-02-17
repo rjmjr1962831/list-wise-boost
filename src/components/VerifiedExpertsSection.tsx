@@ -177,10 +177,7 @@ export function VerifiedExpertsSection({
               Check an agent by name
             </Button>
             <Button variant="secondary" size="sm" asChild>
-              <Link to={primaryZip 
-                ? `/${stateSlug}/${citySlug}/${primaryZip}/${neighborhoodSlug}/qualified-real-estate-agents`
-                : `/${stateSlug}/${citySlug}/${neighborhoodSlug}/qualified-real-estate-agents`
-              }>
+              <Link to={`/${stateSlug}/${citySlug}/${neighborhoodSlug}/qualified-real-estate-agents`}>
                 <Users className="h-4 w-4 mr-2" />
                 View qualified agents near {neighborhoodName}
               </Link>

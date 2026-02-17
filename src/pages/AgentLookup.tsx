@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Helmet } from 'react-helmet-async';
+import { SafeHead } from "@/components/SafeHead";
 import { Link, useSearchParams } from 'react-router-dom';
 import { Search, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -67,14 +67,14 @@ export default function AgentLookup() {
 
   return (
     <>
-      <Helmet>
+      <SafeHead>
         <title>Check an Agent - Top10Lists</title>
         <meta
           name="description"
           content="Search for any licensed real estate agent by name and view their listing status on Top10Lists."
         />
         <link rel="canonical" href="https://www.top10lists.us/check-agent" />
-      </Helmet>
+      </SafeHead>
 
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         {/* Breadcrumbs */}

@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
+import { SafeHead } from "@/components/SafeHead";
 import { Loader2, ChevronDown } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { CoverageProgress } from '@/components/visibility/CoverageProgress';
@@ -212,10 +212,10 @@ export default function VisibilityExpertisePage() {
 
   return (
     <>
-      <Helmet>
+      <SafeHead>
         <title>Highlight Your Neighborhood Expertise | Top10Lists</title>
         <meta name="description" content="Optionally highlight specific neighborhoods where you have demonstrated experience." />
-      </Helmet>
+      </SafeHead>
 
       <div className="container max-w-7xl mx-auto px-4 py-8">
 

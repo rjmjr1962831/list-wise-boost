@@ -1,8 +1,6 @@
-import React from "react";
+import { Toaster as SonnerToaster } from "sonner";
 
-// Minimal no-op Toaster to avoid hook/runtime issues.
-// Toast logic is handled via the `toast` helper; this component
-// just satisfies layout imports without using React hooks.
+// Sonner Toaster - required for toast() calls from "sonner" to display.
 export function Toaster() {
-  return null;
+  return <SonnerToaster position="top-center" richColors closeButton />;
 }

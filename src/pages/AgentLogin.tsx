@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Helmet } from "react-helmet-async";
+import { SafeHead } from "@/components/SafeHead";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -95,10 +95,10 @@ export default function AgentLogin() {
   if (sent) {
     return (
       <>
-        <Helmet>
+        <SafeHead>
           <title>Check Your Email | Top10Lists.us</title>
           <meta name="description" content="Check your email for your dashboard link" />
-        </Helmet>
+        </SafeHead>
         <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30 flex items-start justify-center pt-16 p-4">
           <Card className="w-full max-w-md">
             <CardHeader className="text-center space-y-4">
@@ -135,10 +135,10 @@ export default function AgentLogin() {
 
   return (
     <>
-      <Helmet>
+      <SafeHead>
         <title>Agent Login | Top10Lists.us</title>
         <meta name="description" content="Access your Top10Lists.us agent dashboard" />
-      </Helmet>
+      </SafeHead>
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30 flex items-start justify-center pt-16 p-4">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center space-y-2">

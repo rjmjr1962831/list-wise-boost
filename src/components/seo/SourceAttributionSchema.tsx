@@ -1,4 +1,4 @@
-import { Helmet } from 'react-helmet-async';
+import { SafeHead } from "@/components/SafeHead";
 
 interface SourceAttributionSchemaProps {
   cityName: string;
@@ -214,10 +214,10 @@ export function SourceAttributionSchema({
   };
 
   return (
-    <Helmet>
+    <SafeHead>
       <script type="application/ld+json">
         {JSON.stringify(schema)}
       </script>
-    </Helmet>
+    </SafeHead>
   );
 }

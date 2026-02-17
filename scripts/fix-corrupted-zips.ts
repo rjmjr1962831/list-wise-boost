@@ -2,7 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 
 // Initialize Supabase client - STAGING instance where corruption exists
 const supabaseUrl = 'https://wiotrvoirdgzfacuuiem.supabase.co';
-const supabaseKey = 'sb_publishable_wBATLek3bsYZp7iUDwvp9w_7ii2-zDZ';
+const supabaseKey = process.env.VITE_SUPABASE_PUBLISHABLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indpb3Rydm9pcmRnemZhY3V1aWVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk4MTcwNzcsImV4cCI6MjA4NTM5MzA3N30.BZAli-r81llqnq9xStghKNqK8MnrSNQMOIqkkE09mwI';
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 interface Neighborhood {

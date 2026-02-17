@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
+import { SafeHead } from "@/components/SafeHead";
 import { Loader2, ArrowLeft, AlertCircle, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
@@ -132,7 +132,7 @@ export default function VisibilityReviewPage() {
             .from('admin_users')
             .select('role')
             .eq('id', user.id)
-            .eq('role', 'admin')
+            .in('role', ['admin', 'superadmin'])
             .maybeSingle();
 
           if (adminRole) {
@@ -370,10 +370,10 @@ export default function VisibilityReviewPage() {
 
   return (
     <>
-      <Helmet>
+      <SafeHead>
         <title>Review Your Coverage | Top10Lists</title>
         <meta name="description" content="Review your selected coverage before confirming." />
-      </Helmet>
+      </SafeHead>
 
       <div className="container max-w-3xl mx-auto px-4 py-8">
 

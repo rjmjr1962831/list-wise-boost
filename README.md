@@ -64,6 +64,14 @@ This project is built with:
 
 Simply open [Lovable](https://lovable.dev/projects/9cdb9be2-e152-4f82-8510-b202c71869c2) and click on Share -> Publish.
 
+### Vercel production vs staging
+
+To keep admin routes off the live site, set this only for the **Production** environment in Vercel:
+
+- **`VITE_IS_PRODUCTION`** = `1`  
+
+When set, the production build does not register any `/admin` routes (or `/crm`, `/og-preview`, etc.); those URLs return 404. Leave this variable **unset** for Preview/staging so admin remains available there.
+
 ## Can I connect a custom domain to my Lovable project?
 
 Yes, you can!
