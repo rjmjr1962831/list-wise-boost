@@ -165,7 +165,7 @@ export function PayloadSection({ professional }: PayloadSectionProps) {
         <CardHeader className="pb-3">
           <CardTitle className="text-lg">Your Payload by Tier</CardTitle>
           <CardDescription>
-            Same verified data, different levels of published detail
+            Same verified data, different levels of published detail. You are currently in the <span className="font-semibold capitalize">{currentTier}</span> tier.
           </CardDescription>
         </CardHeader>
         <CardContent>
