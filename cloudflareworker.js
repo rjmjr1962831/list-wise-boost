@@ -19939,6 +19939,7 @@ const index_default = {
     const ua = request.headers.get("user-agent") || "";
 
     // 1. Warm & Purge Endpoints
+    // Policy: Cached (bot) pages = text/markdown only. Full HTML is only for human-facing (pass-through to origin).
     if (url.pathname === "/__warm" && request.method === "POST") {
       const secret = request.headers.get("X-Warm-Secret");
       if (secret && env.WARM_SECRET && secret === env.WARM_SECRET) {
@@ -19947,12 +19948,15 @@ const index_default = {
           const targetUrl = body.url;
           const content = body.html || body.content;
           const isMarkdown = body.format === "markdown" || (typeof content === "string" && content.includes("# ") && (content.includes("## `") || content.includes("REASONING_NUGGET")));
+          const looksLikeHtml = typeof content === "string" && (content.trimStart().startsWith("<!") || content.includes("</html>"));
           if (targetUrl && typeof content === "string") {
+            if (!isMarkdown || looksLikeHtml) {
+              return new Response(JSON.stringify({ ok: true, url: targetUrl, skipped: "cache_is_markdown_only" }), { status: 200, headers: { "Content-Type": "application/json" } });
+            }
             const cacheUrl = new URL(targetUrl);
             cacheUrl.search = "";
             const cacheKey = new Request(cacheUrl.toString(), { method: "GET", headers: { "User-Agent": "bot-cache-normalized" } });
-            const contentType = isMarkdown ? "text/markdown; charset=utf-8" : "text/html;charset=UTF-8";
-            await caches.default.put(cacheKey, new Response(content, { headers: { "Content-Type": contentType, "Cache-Control": "public, max-age=604800" } }));
+            await caches.default.put(cacheKey, new Response(content, { headers: { "Content-Type": "text/markdown; charset=utf-8", "Cache-Control": "public, max-age=604800" } }));
             return new Response(JSON.stringify({ ok: true, url: targetUrl }), { status: 200, headers: { "Content-Type": "application/json" } });
           }
         } catch (e) {}
@@ -19971,13 +19975,20 @@ const index_default = {
           }
           const cache = caches.default;
           let purged = 0;
+          const seen = new Set();
           for (let i = 0; i < urls.length; i++) {
             const u = urls[i];
             const purgeUrl = new URL(u);
             purgeUrl.search = "";
-            const key = new Request(purgeUrl.toString(), { method: "GET", headers: { "User-Agent": "bot-cache-normalized" } });
-            const deleted = await cache.delete(key);
-            if (deleted) purged++;
+            const path = purgeUrl.pathname.replace(/\/+$/, "") || "/";
+            for (const pathVariant of [path, path + "/"].filter((p) => p !== "//")) {
+              purgeUrl.pathname = pathVariant;
+              const urlStr = purgeUrl.toString();
+              if (seen.has(urlStr)) continue;
+              seen.add(urlStr);
+              const key = new Request(urlStr, { method: "GET", headers: { "User-Agent": "bot-cache-normalized" } });
+              if (await cache.delete(key)) purged++;
+            }
           }
           return new Response(JSON.stringify({ purged }), { status: 200, headers: { "Content-Type": "application/json" } });
         } catch (e) {
@@ -20284,10 +20295,19 @@ const index_default = {
         headers: originHeaders 
       }));
 
-      // Tag the response so you can identify failures in your logs
       const fallbackHeaders = new Headers(originResponse.headers);
       fallbackHeaders.set("X-Render-Status", "FAILED_FALLBACK");
-      
+
+      // Cache the origin response so the NEXT bot request gets a Worker HIT instead of re-failing render
+      const bodyBytes = await originResponse.clone().arrayBuffer();
+      const cacheHeaders = new Headers(fallbackHeaders);
+      cacheHeaders.set("Cache-Control", "public, max-age=3600, stale-while-revalidate=86400");
+      try {
+        await caches.default.put(cacheKey, new Response(bodyBytes, { status: originResponse.status, headers: cacheHeaders }));
+      } catch (putErr) {
+        console.warn("Fallback cache put failed:", putErr && putErr.message);
+      }
+
       return new Response(originResponse.body, {
         status: originResponse.status,
         headers: fallbackHeaders
