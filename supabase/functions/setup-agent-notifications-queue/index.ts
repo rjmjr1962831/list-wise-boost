@@ -19,7 +19,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const CONSUMER_SCRIPT = `const DEFAULT_NOTIFY_URL='https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/log-bot-visit';export default{async queue(batch,env,ctx){const u=env.NOTIFICATION_ENDPOINT||DEFAULT_NOTIFY_URL;for(const m of batch.messages){try{const b=m.body,url=b.request_url||'',path=url?new URL(url).pathname:null;const r=await fetch(u,{method:'POST',headers:{'Content-Type':'application/json',...(env.NOTIFICATION_AUTH_TOKEN&&{'Authorization':'Bearer '+env.NOTIFICATION_AUTH_TOKEN})},body:JSON.stringify({url:url||path,path,bot_type:b.bot_name,timestamp:b.timestamp,user_agent:b.user_agent||null,method:'GET'})});r.ok?m.ack():m.retry()}catch(e){m.retry()}}}}`;
+const CONSUMER_SCRIPT = `const DEFAULT_NOTIFY_URL='https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/log-bot-visit';export default{async queue(batch,env,ctx){const u=env.NOTIFICATION_ENDPOINT||DEFAULT_NOTIFY_URL;for(const m of batch.messages){try{const b=m.body,url=b.request_url||'',path=url?new URL(url).pathname:null;const r=await fetch(u,{method:'POST',headers:{'Content-Type':'application/json',...(env.NOTIFICATION_AUTH_TOKEN&&{'Authorization':'Bearer '+env.NOTIFICATION_AUTH_TOKEN})},body:JSON.stringify({url:url||path,path,bot_type:b.bot_name,timestamp:b.timestamp,user_agent:b.user_agent||null,method:'GET',cache_status:b.cache_status||null,ray_id:b.ray_id||null,host:b.host||null})});r.ok?m.ack():m.retry()}catch(e){m.retry()}}}}`;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {

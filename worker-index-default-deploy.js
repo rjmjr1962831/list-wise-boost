@@ -37,6 +37,33 @@ const index_default = {
       return new Response(JSON.stringify({ error: "Unauthorized or invalid" }), { status: 401, headers: { "Content-Type": "application/json" } });
     }
 
+    if (url.pathname === "/__purge" && request.method === "POST") {
+      const secret = request.headers.get("X-Warm-Secret");
+      if (secret && env.WARM_SECRET && secret === env.WARM_SECRET) {
+        try {
+          const body = await request.json();
+          const urls = body.urls;
+          if (!Array.isArray(urls) || urls.length === 0) {
+            return new Response(JSON.stringify({ purged: 0 }), { status: 200, headers: { "Content-Type": "application/json" } });
+          }
+          const cache = caches.default;
+          let purged = 0;
+          for (let i = 0; i < urls.length; i++) {
+            const u = urls[i];
+            const purgeUrl = new URL(u);
+            purgeUrl.search = "";
+            const key = new Request(purgeUrl.toString(), { method: "GET", headers: { "User-Agent": "bot-cache-normalized" } });
+            const deleted = await cache.delete(key);
+            if (deleted) purged++;
+          }
+          return new Response(JSON.stringify({ purged }), { status: 200, headers: { "Content-Type": "application/json" } });
+        } catch (e) {
+          return new Response(JSON.stringify({ error: String(e && e.message) }), { status: 500, headers: { "Content-Type": "application/json" } });
+        }
+      }
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { "Content-Type": "application/json" } });
+    }
+
     // 2. Bot Identification
     const botPatterns = {
       googlebot: /googlebot|google-inspectiontool|googleother|adsbot-google/i,
@@ -67,8 +94,9 @@ const index_default = {
       headers: { 'User-Agent': 'bot-cache-normalized' } 
     });
 
+    let cachedResponse = null;
     if (isBot && !forceRefresh) {
-      const cachedResponse = await cache.match(cacheKey);
+      cachedResponse = await cache.match(cacheKey);
       if (cachedResponse) {
         const dateHeader = cachedResponse.headers.get("Date");
         const cacheAge = dateHeader ? (Date.now() - new Date(dateHeader).getTime()) / 1000 : 0;
@@ -76,6 +104,29 @@ const index_default = {
         // SWR Trigger: If older than 24 hours, refresh in background
         if (cacheAge > 86400) {
           ctx.waitUntil(this.renderAndStore(request, env, cacheKey));
+        }
+
+        // Enqueue bot visit with Worker cache status (for analytics)
+        if (env.NOTIFICATION_QUEUE) {
+          const path = url.pathname;
+          let agentId = null, agentSlug = null;
+          const artifactMatch = path.match(/^\/artifact\/([^/]+)/);
+          if (artifactMatch) agentId = artifactMatch[1];
+          else {
+            const agentsMatch = path.match(/\/([^/]+)\/agents\/([^/]+)/);
+            if (agentsMatch) agentSlug = agentsMatch[2];
+          }
+          ctx.waitUntil(env.NOTIFICATION_QUEUE.send({
+            agent_id: agentId,
+            agent_slug: agentSlug,
+            bot_name: botType,
+            timestamp: new Date().toISOString(),
+            request_url: request.url,
+            user_agent: request.headers.get("user-agent") || null,
+            cache_status: 'HIT',
+            ray_id: request.headers.get("cf-ray") || null,
+            host: url.hostname || null
+          }));
         }
 
         const hitHdrs = new Headers(cachedResponse.headers);
@@ -94,6 +145,29 @@ const index_default = {
       const originHeaders = new Headers(request.headers);
       if (env.VERCEL_PROTECTION_BYPASS) originHeaders.set("x-vercel-protection-bypass", env.VERCEL_PROTECTION_BYPASS);
       return fetch(new Request(originUrl.toString(), { method: request.method, headers: originHeaders }));
+    }
+
+    // Bot cache MISS: enqueue with Worker cache status before rendering
+    if (env.NOTIFICATION_QUEUE) {
+      const path = url.pathname;
+      let agentId = null, agentSlug = null;
+      const artifactMatch = path.match(/^\/artifact\/([^/]+)/);
+      if (artifactMatch) agentId = artifactMatch[1];
+      else {
+        const agentsMatch = path.match(/\/([^/]+)\/agents\/([^/]+)/);
+        if (agentsMatch) agentSlug = agentsMatch[2];
+      }
+      ctx.waitUntil(env.NOTIFICATION_QUEUE.send({
+        agent_id: agentId,
+        agent_slug: agentSlug,
+        bot_name: botType,
+        timestamp: new Date().toISOString(),
+        request_url: request.url,
+        user_agent: request.headers.get("user-agent") || null,
+        cache_status: 'MISS',
+        ray_id: request.headers.get("cf-ray") || null,
+        host: url.hostname || null
+      }));
     }
 
     return this.renderAndStore(request, env, cacheKey);
@@ -130,15 +204,42 @@ const index_default = {
         timeout: 15000 
       });
 
-      // RACE CONDITION: Wait for any valid content indicator
-      try {
-        await Promise.race([
-          page.waitForSelector('[data-artifact-id]', { timeout: 7000 }),
-          page.waitForSelector('article', { timeout: 7000 }),
-          page.waitForFunction(() => document.querySelector('main')?.textContent?.length > 800, { timeout: 5000 })
-        ]);
-      } catch (selectorError) {
-        console.warn("Artifact markers missing, attempting capture anyway.");
+      const isListPage = url.pathname.indexOf("top10realestateagents") !== -1;
+
+      // List pages (city/neighborhood): wait for agent content so we don't cache hollow shells.
+      // 45s so we usually get full content; SWR still serves stale then refreshes in background.
+      const LIST_WAIT_MS = 45000;
+      if (isListPage) {
+        try {
+          await Promise.race([
+            page.waitForSelector('[itemtype*="RealEstateAgent"]', { timeout: LIST_WAIT_MS }),
+            page.waitForFunction(function() {
+              var main = document.querySelector("main");
+              if (!main) return false;
+              var textLen = (main.textContent || "").length;
+              var scripts = document.querySelectorAll('script[type="application/ld+json"]');
+              for (var i = 0; i < scripts.length; i++) {
+                if ((scripts[i].textContent || "").indexOf("ItemList") !== -1 && textLen > 15000) return true;
+              }
+              return false;
+            }, { timeout: LIST_WAIT_MS })
+          ]);
+        } catch (listWaitErr) {
+          console.warn("List content wait timed out, capturing anyway.");
+        }
+      }
+
+      // RACE CONDITION: Wait for any valid content indicator (non-list or fallback)
+      if (!isListPage) {
+        try {
+          await Promise.race([
+            page.waitForSelector('[data-artifact-id]', { timeout: 7000 }),
+            page.waitForSelector('article', { timeout: 7000 }),
+            page.waitForFunction(() => document.querySelector('main')?.textContent?.length > 800, { timeout: 5000 })
+          ]);
+        } catch (selectorError) {
+          console.warn("Artifact markers missing, attempting capture anyway.");
+        }
       }
 
       const extracted = await page.evaluate(function extractArtifact() {
@@ -237,7 +338,11 @@ const index_default = {
           "Cache-Control": "public, max-age=604800, stale-while-revalidate=31536000"
         }
       });
-      await caches.default.put(cacheKey, response.clone());
+      // Don't cache hollow list pages (no agents/ItemList or too small)
+      const shouldCacheList = !isListPage || (html.length >= 50000 && html.indexOf("ItemList") !== -1);
+      if (shouldCacheList) {
+        await caches.default.put(cacheKey, response.clone());
+      }
       return response;
 
     } catch (err) {

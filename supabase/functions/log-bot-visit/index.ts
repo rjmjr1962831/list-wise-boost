@@ -273,29 +273,31 @@ serve(async (req) => {
       } catch (_) {}
     }
 
-    const { error } = await supabase
-      .from("cloudflare_request_logs")
-      .insert({
-        timestamp: timestamp || new Date().toISOString(),
-        client_ip: client_ip || null,
-        user_agent: user_agent || null,
-        url: url,
-        path: path || url,
-        method: method || 'GET',
-        cache_status: cache_status || 'UNKNOWN',
-        cache_response_status: null,
-        country: country || null,
-        ray_id: ray_id || null,
-        bot_type: finalBotType,
-        is_bot: isBot,
-        host,
-        agent_id: agentId,
-        list_page_type,
-        location_display,
-        agents_shown: agents_shown ?? null,
-        raw_log: payload,
-      });
-    
+    const row = {
+      timestamp: timestamp || new Date().toISOString(),
+      client_ip: client_ip || null,
+      user_agent: user_agent || null,
+      url: url,
+      path: path || url,
+      method: method || 'GET',
+      cache_status: cache_status || 'UNKNOWN',
+      cache_response_status: null,
+      country: country || null,
+      ray_id: ray_id || null,
+      bot_type: finalBotType,
+      is_bot: isBot,
+      host,
+      agent_id: agentId,
+      list_page_type,
+      location_display,
+      agents_shown: agents_shown ?? null,
+      raw_log: payload,
+    };
+
+    const { error } = ray_id
+      ? await supabase.from("cloudflare_request_logs").upsert(row, { onConflict: "ray_id" })
+      : await supabase.from("cloudflare_request_logs").insert(row);
+
     if (error && error.code !== '23505') { // Ignore duplicate errors
       console.error("Insert error:", error);
       const errorMsg = error.message || JSON.stringify(error);
