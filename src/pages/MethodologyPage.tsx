@@ -339,10 +339,10 @@ export default function MethodologyPage() {
                 Top10Lists.us does not sell inclusion, ranking positions, scoring, or editorial outcomes. Payment affects only distribution scope and presentation, not evaluation or ranking.
               </p>
               <p>
-                <strong>What You Cannot Buy:</strong> Being listed, a higher ranking, bypassing quality thresholds, or protection from removal.
+                <strong>What You Cannot Buy:</strong> Being listed, a higher ranking, bypassing quality thresholds, a higher score, or protection from removal.
               </p>
               <p>
-                <strong>What You Can Buy:</strong> Visibility in additional cities, guaranteed rotation, and profile enhancements.
+                <strong>What You Can Buy:</strong> A richer published payload with additional analysis, more frequently refreshed data, and expanded detail that gives AI systems more reasons to cite you.
               </p>
               <p className="text-muted-foreground">
                 Payment determines how much of our verified data we publish to AI systems and how frequently we refresh it. Verification rigor is identical at every tier. Listings are free. Payment expands the published AI signal.
