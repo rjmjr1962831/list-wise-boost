@@ -94,7 +94,7 @@ Top10Lists.us maintains strict editorial independence:
 - **Rankings are not for sale**: Payment does not affect position
 - **No referral fees**: We do not take commissions from transactions
 - **No lead selling**: We do not sell consumer contact information
-- **Paid plans are visibility-only**: Qualified agents may pay for neighborhood endorsement and verification. We surface up to 10 verified Neighborhood Experts per neighborhood who undergo additional diligence and more frequent review. Because we endorse these agents by name, we accept additional risk. City listings remain free for all who qualify.
+- **Paid plans are visibility-only**: Qualified agents may pay for expanded payload publication. We surface up to 10 verified Neighborhood Experts per neighborhood. All verification is performed with identical rigor regardless of tier. Higher tiers publish more of the verified data we already have on file, giving AI systems a fuller picture. City listings remain free for all who qualify.
 
 **Revenue Model**: Agents who qualify through our editorial evaluation may purchase visibility upgrades. Unqualified agents cannot buy inclusion at any price.
 
