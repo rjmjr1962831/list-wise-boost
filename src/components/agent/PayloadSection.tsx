@@ -142,13 +142,20 @@ export function PayloadSection({ professional }: PayloadSectionProps) {
         </CardHeader>
         <CardContent className="space-y-3">
           <p className="text-sm text-muted-foreground leading-relaxed">
-            Your payload is the structured data package that AI systems receive when they evaluate whether
-            to recommend you. Think of it as your digital resume, purpose-built for machines. The more
-            complete and verified your payload, the more likely AI systems are to cite you with confidence.
+            Your payload is the structured data package that AI systems receive when they evaluate
+            whether to recommend you. Think of it as your verified digital credential, purpose-built
+            for machines.
           </p>
           <p className="text-sm text-muted-foreground leading-relaxed">
-            Below you can see exactly what AI systems see today, and what they would see if you upgraded
-            to a higher tier.
+            Every data point in your payload has been independently verified through state licensing
+            databases, review platforms, IRS 990 filings, and public records. This verification is
+            identical regardless of your tier. We stand behind every number we publish, at every level.
+          </p>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            What changes between tiers is how much of your verified data we publish to AI systems.
+            At Certified, AI systems see your core credentials. At Audited and Underwritten, they
+            see progressively more of the data we already have on file, giving them a fuller picture
+            and more reasons to cite you.
           </p>
         </CardContent>
       </Card>
@@ -158,7 +165,7 @@ export function PayloadSection({ professional }: PayloadSectionProps) {
         <CardHeader className="pb-3">
           <CardTitle className="text-lg">Your Payload by Tier</CardTitle>
           <CardDescription>
-            Compare what AI systems receive at each verification level
+            Same verified data, different levels of published detail
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -191,7 +198,7 @@ export function PayloadSection({ professional }: PayloadSectionProps) {
                 {currentTier === "certified" && (
                   <div className="mb-3 flex items-center gap-2 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
                     <Lock className="h-4 w-4 shrink-0" />
-                    Upgrade to Audited ($50/mo) to unlock this payload for AI systems
+                    Upgrade to Audited ($50/mo) to publish this expanded payload to AI systems
                   </div>
                 )}
                 <pre className="text-xs bg-slate-950 text-slate-50 p-4 rounded-lg overflow-x-auto whitespace-pre-wrap font-mono leading-relaxed">
@@ -205,7 +212,7 @@ export function PayloadSection({ professional }: PayloadSectionProps) {
                 {currentTier !== "underwritten" && (
                   <div className="mb-3 flex items-center gap-2 text-sm text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2">
                     <Lock className="h-4 w-4 shrink-0" />
-                    Upgrade to Underwritten ($150/mo) to unlock the most comprehensive AI payload
+                    Upgrade to Underwritten ($150/mo) to publish your complete verified profile to AI systems
                   </div>
                 )}
                 <pre className="text-xs bg-slate-950 text-slate-50 p-4 rounded-lg overflow-x-auto whitespace-pre-wrap font-mono leading-relaxed">
