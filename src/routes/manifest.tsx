@@ -39,6 +39,7 @@ const AgentInfo = lazy(() => import("@/pages/AgentInfo"));
 const AgentLanding = lazy(() => import("@/pages/AgentLanding"));
 const AgentSetup = lazy(() => import("@/pages/AgentSetup"));
 const AgentDashboard = lazy(() => import("@/pages/agent/AgentDashboard"));
+const MagicLinkRouter = lazy(() => import("@/pages/MagicLinkRouter"));
 const AgentLogin = lazy(() => import("@/pages/AgentLogin"));
 const AgentLoginRequest = lazy(() => import("@/pages/agent/AgentLoginRequest"));
 const AgentCodeVerify = lazy(() => import("@/pages/agent/AgentCodeVerify"));
@@ -190,6 +191,7 @@ export const routeManifest: RouteObject[] = [
   { path: "/agent-setup", element: React.createElement(AgentSetup, null) },
   { path: "/agent/dashboard", element: React.createElement(AgentDashboard, null) },
   { path: "/dashboard", element: React.createElement(Navigate, { to: "/agent/dashboard", replace: true }) },
+  { path: "/dashboard/:token", element: React.createElement(MagicLinkRouter, null) },
   { path: "/agent-login", element: React.createElement(AgentLogin, null) },
   { path: "/agent/login", element: React.createElement(AgentLoginRequest, null) },
   { path: "/agent/verify", element: React.createElement(AgentCodeVerify, null) },
