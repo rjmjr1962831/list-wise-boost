@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { SafeHead } from "@/components/SafeHead";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -65,6 +65,8 @@ interface PendingRequest {
 
 export default function AgentDashboard() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const magicToken = searchParams.get("t");
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [sessionToken, setSessionToken] = useState<string | null>(null);
@@ -74,11 +76,79 @@ export default function AgentDashboard() {
   const [hasStripeSubscription, setHasStripeSubscription] = useState(false);
   const [activeSection, setActiveSection] = useState<NavSection>("overview");
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [authStatus, setAuthStatus] = useState("Loading...");
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    validateSessionAndLoad();
+
+    if (magicToken) {
+      // Magic link flow: create session from dashboard_token
+      handleMagicToken(magicToken);
+    } else {
+      // Normal flow: validate existing session
+      validateSessionAndLoad();
+    }
   }, []);
+
+  const handleMagicToken = async (dashboardToken: string) => {
+    try {
+      setAuthStatus("Verifying your link...");
+
+      // Look up professional by dashboard_token
+      const { data: prof, error: fetchErr } = await supabase
+        .from("professionals")
+        .select("id, name, verification_token, funnel_status, active")
+        .eq("dashboard_token", dashboardToken)
+        .maybeSingle();
+
+      if (fetchErr || !prof) {
+        setAuthStatus("Link not recognized. Please check your latest email.");
+        setLoading(false);
+        return;
+      }
+
+      if (!prof.active) {
+        setAuthStatus("This profile is no longer active.");
+        setLoading(false);
+        return;
+      }
+
+      // Not approved? Send to funnel.
+      if (prof.funnel_status !== "approved") {
+        const funnelToken = prof.verification_token || prof.id;
+        window.location.href = `/funnel/${funnelToken}`;
+        return;
+      }
+
+      setAuthStatus(`Welcome back, ${prof.name.split(" ")[0]}!`);
+
+      // Create session
+      const { data: sessData, error: sessErr } =
+        await supabase.functions.invoke("create-session-from-token", {
+          body: { token: prof.id },
+        });
+
+      if (sessErr || !sessData?.success) {
+        console.error("[Dashboard] Session create failed:", sessErr || sessData);
+        setAuthStatus("Could not create session. Please try your link again.");
+        setLoading(false);
+        return;
+      }
+
+      // Store session and load profile
+      localStorage.setItem("agent_session_token", sessData.sessionToken);
+      setSessionToken(sessData.sessionToken);
+
+      // Clean the URL (remove ?t= param)
+      setSearchParams({}, { replace: true });
+
+      await loadProfile(sessData.sessionToken);
+    } catch (err) {
+      console.error("[Dashboard] Magic token error:", err);
+      setAuthStatus("Something went wrong. Please try your link again.");
+      setLoading(false);
+    }
+  };
 
   const validateSessionAndLoad = async () => {
     const token = localStorage.getItem("agent_session_token");
@@ -186,19 +256,10 @@ export default function AgentDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background py-12">
-        <div className="container mx-auto px-4 max-w-6xl">
-          <div className="flex items-center gap-4 mb-8">
-            <Skeleton className="h-16 w-16 rounded-full" />
-            <div>
-              <Skeleton className="h-8 w-48 mb-2" />
-              <Skeleton className="h-4 w-32" />
-            </div>
-          </div>
-          <div className="grid gap-6 lg:grid-cols-[240px_1fr]">
-            <Skeleton className="h-64 hidden lg:block" />
-            <Skeleton className="h-96" />
-          </div>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <Skeleton className="h-8 w-8 rounded-full mx-auto mb-4" />
+          <p className="text-muted-foreground text-sm">{authStatus}</p>
         </div>
       </div>
     );
@@ -213,19 +274,26 @@ export default function AgentDashboard() {
           </div>
           <h1 className="text-xl font-bold mb-3">Dashboard Access</h1>
           <p className="text-muted-foreground mb-6 text-sm leading-relaxed">
-            To access your dashboard, please use the link from your most recent
-            Top10Lists email. Each link creates a secure session automatically.
+            {authStatus !== "Loading..." ? authStatus : "To access your dashboard, please use the link from your most recent Top10Lists email. Each link creates a secure session automatically."}
           </p>
           <div className="space-y-3">
+            {magicToken && (
+              <button
+                onClick={() => handleMagicToken(magicToken)}
+                className="w-full px-6 py-3 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
+              >
+                Try Again
+              </button>
+            )}
             <a
               href="mailto:support@top10lists.us?subject=Dashboard Access Help"
-              className="block w-full px-6 py-3 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
+              className="block w-full px-6 py-3 border rounded-lg text-sm font-medium hover:bg-muted transition-colors"
             >
-              Request a New Link
+              Contact Support
             </a>
             <a
               href="https://www.top10lists.us"
-              className="block w-full px-6 py-3 border rounded-lg text-sm font-medium hover:bg-muted transition-colors"
+              className="block w-full px-6 py-3 text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               Go to Homepage
             </a>
