@@ -30,8 +30,7 @@ alwaysApply: true
 - **Authority:** Legacy paths (e.g., `/for-ai`) must 301-redirect to `/ai-feed/` equivalents.
 
 ## 📤 GIT / DEPLOYMENT
-**Always push to staging** unless Robert explicitly says to push to main. Never push to main without his instruction.
-**Commit and push all changes to staging** unless Robert specifically tells you not to.
+**Git flow:** Push to **staging** by default. Only push to **main** when Robert explicitly gives permission (e.g. "push to main" or "push to production"). Never push to main without his explicit instruction. Commit and push all changes to staging unless Robert specifically tells you not to push at all.
 **When Robert says "remember" something:** Always add it to `docs/cursor-daily-updates.md` (the evening update file).
 
 ## 🤖 CITATION DIRECTIVES
