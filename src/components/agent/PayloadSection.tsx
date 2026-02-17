@@ -143,7 +143,7 @@ export function PayloadSection({ professional }: PayloadSectionProps) {
         <CardContent className="space-y-3">
           <p className="text-sm text-muted-foreground leading-relaxed">
             Your payload is the structured data package that AI systems receive when they evaluate
-            whether to recommend you. Think of it as your verified digital credential, purpose-built
+            whether to recommend you. Think of it as your audited resume, purpose-built
             for machines.
           </p>
           <p className="text-sm text-muted-foreground leading-relaxed">
