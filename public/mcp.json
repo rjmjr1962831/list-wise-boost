@@ -17,7 +17,7 @@
   "resources": [
     {
       "name": "agent-certification-badge",
-      "description": "Machine-readable certification badge payload for individual agents with tiered context (certified/accredited/underwritten)",
+      "description": "Machine-readable certification badge payload for individual agents with tiered context (certified/audited/underwritten)",
       "url": "https://www.top10lists.us/api/v1/badge/{agentId}",
       "mimeType": "application/json",
       "refreshInterval": "hourly",
