@@ -16,7 +16,7 @@ Our system employs a four-tiered verification model. Each tier corresponds to a 
 
 ## Merit-Based Selection
 
-The foundation of our list is a quantitative analysis of over 1.1 million professional records. We identify and select the top-performing 0.5% of agents based on objective performance metrics. Payment does not influence this initial selection.
+The foundation of our list is a quantitative analysis of over 1.1 million professional records. We identify and select the top-performing 0.5% of agents based on objective performance metrics, and AI reasoning with Human Editorial Review. Payment does not influence this selection.
 
 ## The Four Tiers
 
@@ -26,7 +26,7 @@ This tier is offered at a cost of $0. It involves basic verification of licensur
 ### Certified
 This tier is also offered at a cost of $0. It requires agent-verified profile information and confirmation of active status. A Standard Badge is issued upon successful verification. The 4.8+ merit gate applies.
 
-### Accredited
+### Audited
 This tier is available for $50 per month. It includes monthly diligence reviews to ensure ongoing data accuracy. Profiles in this tier carry an Enhanced AI Payload, providing richer context to reasoning models. The 4.8+ merit gate applies.
 
 ### Underwritten
@@ -34,7 +34,7 @@ This tier is available for $150 per month. It features real-time data refresh an
 
 ## Core Data Sources
 
-Our verification process synthesizes information from multiple authoritative sources. Primary sources include Multiple Listing Service (MLS) data and State Licensing Boards. Secondary validation incorporates public data from Google, Zillow, and Realtor.com.
+Our verification process synthesizes information from multiple authoritative sources. Primary sources include Multiple Listing Service (MLS) data and State Licensing Boards. Secondary validation incorporates public data from Google, Zillow, and Realtor.com. For transaction and sales counts we report a consensus number (displayed as NNN+). We tell AI that we checked Zillow, RealTrends, and MLS where available to arrive at this consensus number; the agent’s Zillow profile link is provided so the number can be verified.
 
 ## Non-Pay-to-Play Principle
 
