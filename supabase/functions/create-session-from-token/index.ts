@@ -110,9 +110,8 @@ serve(async (req) => {
       .from("agent_sessions")
       .insert({
         professional_id: professional.id,
-        session_token: sessionToken,
+        token: sessionToken,
         expires_at: expiresAt,
-        last_active_at: now,
       });
 
     if (sessionError) {
