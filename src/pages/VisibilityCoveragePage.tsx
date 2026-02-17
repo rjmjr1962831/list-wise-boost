@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { SafeHead } from "@/components/SafeHead";
-import { Loader2, ArrowRight } from 'lucide-react';
+import { Loader2, ArrowRight, Save } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { CoverageProgress } from '@/components/visibility/CoverageProgress';
 import { BundlesPanel, type CityBundle } from '@/components/visibility/BundlesPanel';
@@ -36,23 +36,51 @@ interface CityData {
 
 export default function VisibilityCoveragePage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const returnTo = searchParams.get('returnTo');
+  const isDashboardEdit = returnTo === 'dashboard';
   const { toast } = useToast();
   
   const [cities, setCities] = useState<CityData[]>([]);
   const [bundles, setBundles] = useState<CityBundle[]>([]);
   const [selectedCityIds, setSelectedCityIds] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [professionalId, setProfessionalId] = useState<string | null>(null);
+  const [agentStateSlug, setAgentStateSlug] = useState<string | null>(null);
 
   // Get professional token for tracking
   const professionalToken = sessionStorage.getItem('visibility_professional_token') || undefined;
   const { trackEvent } = useFunnelTracking(professionalToken);
 
-  // Gate: require professional context from profile funnel
+  // Gate: require professional context (from funnel or dashboard)
   useEffect(() => {
-    const professionalId = sessionStorage.getItem('visibility_professional_id');
-    const professionalToken = sessionStorage.getItem('visibility_professional_token');
+    if (isDashboardEdit) {
+      // Dashboard mode: validate via agent session
+      const sessionToken = localStorage.getItem('agent_session_token');
+      if (!sessionToken) {
+        navigate('/agent/login');
+        return;
+      }
+      // Load professional from session
+      (async () => {
+        const { data } = await supabase.functions.invoke('validate-agent-session', {
+          body: { sessionToken },
+        });
+        if (!data?.valid) {
+          navigate('/agent/login');
+          return;
+        }
+        setProfessionalId(data.professionalId);
+        sessionStorage.setItem('visibility_professional_id', data.professionalId);
+      })();
+      return;
+    }
+
+    const storedProfId = sessionStorage.getItem('visibility_professional_id');
+    const storedProfToken = sessionStorage.getItem('visibility_professional_token');
     
-    if (!professionalId && !professionalToken) {
+    if (!storedProfId && !storedProfToken) {
       toast({
         title: 'Complete your profile first',
         description: 'Please complete your profile review before selecting coverage areas.',
@@ -61,7 +89,8 @@ export default function VisibilityCoveragePage() {
       navigate('/');
       return;
     }
-  }, [navigate, toast]);
+    if (storedProfId) setProfessionalId(storedProfId);
+  }, [navigate, toast, isDashboardEdit]);
 
   // Scroll to top on mount
   useEffect(() => {
@@ -73,11 +102,33 @@ export default function VisibilityCoveragePage() {
     async function loadCities() {
       setIsLoading(true);
       try {
+        // Determine state to filter by
+        let stateFilter = 'arizona'; // default for funnel
+        
+        if (isDashboardEdit && professionalId) {
+          const { data: prof } = await supabase
+            .from('professionals')
+            .select('state_slug, service_areas')
+            .eq('id', professionalId)
+            .single();
+          
+          if (prof?.state_slug) {
+            stateFilter = prof.state_slug;
+            setAgentStateSlug(prof.state_slug);
+          }
+
+          // Pre-select existing service_areas
+          if (prof?.service_areas && Array.isArray(prof.service_areas)) {
+            // Will match after cities load below
+            var existingServiceAreas = prof.service_areas;
+          }
+        }
+
         const { data, error } = await supabase
           .from('cities')
           .select('id, name, slug, state, state_slug')
           .eq('active', true)
-          .eq('state_slug', 'arizona')
+          .eq('state_slug', stateFilter)
           .order('name');
 
         if (error) throw error;
@@ -90,40 +141,58 @@ export default function VisibilityCoveragePage() {
 
         setCities(cityOptions);
 
-        // Build bundles from REGIONAL_PACKAGES with actual city IDs, names, and categories
-        const cityBySlug = new Map(cityOptions.map(c => [c.slug, c.id]));
-        const cityNameBySlug = new Map(cityOptions.map(c => [c.slug, c.name]));
-        const resolvedBundles: CityBundle[] = REGIONAL_PACKAGES.map(pkg => ({
-          id: pkg.id,
-          name: pkg.name,
-          description: pkg.description,
-          category: pkg.category,
-          cityIds: pkg.includedCityIds
-            .map(slug => cityBySlug.get(slug))
-            .filter((id): id is string => !!id),
-          cityNames: pkg.includedCityIds
-            .map(slug => cityNameBySlug.get(slug))
-            .filter((name): name is string => !!name),
-        }));
-        setBundles(resolvedBundles);
+        // Build bundles from REGIONAL_PACKAGES with actual city IDs
+        if (stateFilter === 'arizona') {
+          const cityBySlug = new Map(cityOptions.map(c => [c.slug, c.id]));
+          const cityNameBySlug = new Map(cityOptions.map(c => [c.slug, c.name]));
+          const resolvedBundles: CityBundle[] = REGIONAL_PACKAGES.map(pkg => ({
+            id: pkg.id,
+            name: pkg.name,
+            description: pkg.description,
+            category: pkg.category,
+            cityIds: pkg.includedCityIds
+              .map(slug => cityBySlug.get(slug))
+              .filter((id): id is string => !!id),
+            cityNames: pkg.includedCityIds
+              .map(slug => cityNameBySlug.get(slug))
+              .filter((name): name is string => !!name),
+          }));
+          setBundles(resolvedBundles);
+        }
 
-        // Load saved selection from sessionStorage
-        try {
-          const stored = sessionStorage.getItem(STORAGE_KEY);
-          if (stored) {
-            const parsed: StoredSelection = JSON.parse(stored);
-            const savedAt = new Date(parsed.savedAt);
-            const now = new Date();
-            const hoursOld = (now.getTime() - savedAt.getTime()) / (1000 * 60 * 60);
-            
-            if (hoursOld < STORAGE_EXPIRY_HOURS && parsed.selectedCityIds) {
-              setSelectedCityIds(new Set(parsed.selectedCityIds));
-            } else {
-              sessionStorage.removeItem(STORAGE_KEY);
+        // Pre-select existing service_areas (dashboard edit mode)
+        if (isDashboardEdit && existingServiceAreas) {
+          const existingNames = new Set(
+            existingServiceAreas.map((a: string) => a.replace(/,\s*[A-Z]{2}$/, '').trim())
+          );
+          const preSelected = new Set<string>();
+          cityOptions.forEach((city) => {
+            if (existingNames.has(city.name)) {
+              preSelected.add(city.id);
             }
+          });
+          if (preSelected.size > 0) {
+            setSelectedCityIds(preSelected);
           }
-        } catch (e) {
-          console.error('Error loading saved selection:', e);
+        } else {
+          // Load saved selection from sessionStorage (funnel mode)
+          try {
+            const stored = sessionStorage.getItem(STORAGE_KEY);
+            if (stored) {
+              const parsed: StoredSelection = JSON.parse(stored);
+              const savedAt = new Date(parsed.savedAt);
+              const now = new Date();
+              const hoursOld = (now.getTime() - savedAt.getTime()) / (1000 * 60 * 60);
+              
+              if (hoursOld < STORAGE_EXPIRY_HOURS && parsed.selectedCityIds) {
+                setSelectedCityIds(new Set(parsed.selectedCityIds));
+              } else {
+                sessionStorage.removeItem(STORAGE_KEY);
+              }
+            }
+          } catch (e) {
+            console.error('Error loading saved selection:', e);
+          }
         }
       } catch (error) {
         console.error('Error loading cities:', error);
@@ -137,8 +206,10 @@ export default function VisibilityCoveragePage() {
       }
     }
 
-    loadCities();
-  }, [toast]);
+    if (!isDashboardEdit || professionalId) {
+      loadCities();
+    }
+  }, [toast, isDashboardEdit, professionalId]);
 
   const persistSelection = (nextCityIds: Set<string>) => {
     // Preserve any neighborhoods already selected in later steps
@@ -176,8 +247,49 @@ export default function VisibilityCoveragePage() {
     });
   };
 
-  // Handle continue to expertise
-  const handleContinue = () => {
+  // Handle continue to expertise or save and return to dashboard
+  const handleContinue = async () => {
+    if (isDashboardEdit) {
+      // Save directly to database and return to dashboard
+      setSaving(true);
+      try {
+        const selectedCityObjects = cities.filter(c => selectedCityIds.has(c.id));
+        // Get state name for service_areas format
+        const { data: stateData } = await supabase
+          .from('cities')
+          .select('state')
+          .eq('id', selectedCityObjects[0]?.id)
+          .single();
+        const stateName = stateData?.state || '';
+
+        const serviceAreas = selectedCityObjects.map(c => `${c.name}, ${stateName}`);
+
+        const { error } = await supabase
+          .from('professionals')
+          .update({ service_areas: serviceAreas })
+          .eq('id', professionalId);
+
+        if (error) throw error;
+
+        toast({
+          title: 'Cities updated',
+          description: `${selectedCityIds.size} cities saved to your profile.`,
+        });
+        navigate('/agent/dashboard');
+      } catch (err) {
+        console.error('Error saving cities:', err);
+        toast({
+          title: 'Error',
+          description: 'Failed to save cities. Please try again.',
+          variant: 'destructive',
+        });
+      } finally {
+        setSaving(false);
+      }
+      return;
+    }
+
+    // Normal funnel flow
     // Load existing selection to preserve neighborhoods if any
     let existingNeighborhoods: StoredSelection['selectedNeighborhoods'] = [];
     try {
@@ -256,11 +368,16 @@ export default function VisibilityCoveragePage() {
             </span>
           </div>
           <Button
-            disabled={!hasSelections}
+            disabled={!hasSelections || saving}
             onClick={handleContinue}
           >
-            Select Neighborhoods
-            <ArrowRight className="w-4 h-4 ml-2" />
+            {saving ? (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            ) : isDashboardEdit ? (
+              <Save className="w-4 h-4 mr-2" />
+            ) : null}
+            {isDashboardEdit ? 'Save & Return to Dashboard' : 'Select Neighborhoods'}
+            {!isDashboardEdit && <ArrowRight className="w-4 h-4 ml-2" />}
           </Button>
         </div>
       </div>
