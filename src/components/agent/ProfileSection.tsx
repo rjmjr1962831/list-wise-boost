@@ -15,16 +15,13 @@ import {
   Phone,
   Globe,
   Video,
-  FileText,
   Star,
   Building2,
   Award,
   MapPin,
   Mail,
   User,
-  Shield,
-  Bot,
-  Signal
+  Shield
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -76,53 +73,6 @@ const CONTROLLED_FIELDS = [
   { key: "company", label: "Company / Brokerage", icon: Building2 },
   { key: "years_experience", label: "Years Experience", icon: Award },
 ];
-
-// Build the AI artifact payload from professional data
-function buildArtifactPayload(professional: any) {
-  const profileUrl = professional.short_code
-    ? `https://www.top10lists.us/p/${professional.short_code}`
-    : null;
-
-  const payload: any = {
-    "@context": "https://www.top10lists.us/methodology",
-    "@type": "VerifiedProfessional",
-    name: professional.name,
-    profile_url: profileUrl,
-    issuer: "Top10Lists.us",
-    selection_rationale: professional.selection_rationale || null,
-    qualifications: {
-      rating: professional.review_stars_rating,
-      review_count: professional.num_total_reviews,
-      years_experience: professional.years_experience,
-      license_number: professional.license_number,
-      total_transactions: professional.total_sales || null,
-      specialties: professional.specialty || [],
-    },
-    markets: {
-      company: professional.company || null,
-      cities_served: professional.service_areas || [],
-    },
-    recognition: {},
-  };
-
-  if (professional.community_roles && professional.community_roles.length > 0) {
-    payload.recognition.community_roles = professional.community_roles.map(
-      (r: any) => ({
-        role: r.role,
-        organization: r.organization,
-        ...(r.verification_source ? { verified_via: r.verification_source } : {}),
-      })
-    );
-  }
-
-  if (professional.notable_achievements && professional.notable_achievements.length > 0) {
-    payload.recognition.notable_achievements = professional.notable_achievements.map(
-      (a: any) => a.title || a
-    );
-  }
-
-  return payload;
-}
 
 export function ProfileSection({
   professional,
@@ -210,74 +160,6 @@ export function ProfileSection({
 
   return (
     <>
-      {/* Why We Selected You */}
-      {professional.selection_rationale && (
-        <Card className="mb-6 border-primary/20 bg-primary/5">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Award className="h-5 w-5 text-primary" />
-              Why We Selected You
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm leading-relaxed">{professional.selection_rationale}</p>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Tier & Signal */}
-      <Card className="mb-6">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Signal className="h-5 w-5 text-primary" />
-            Your AI Visibility
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="p-4 rounded-lg bg-muted/50 border">
-              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Current Tier</p>
-              <p className="text-lg font-semibold capitalize">{professional.current_tier || "Certified"}</p>
-            </div>
-            <div className="p-4 rounded-lg bg-muted/50 border">
-              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Current Signal</p>
-              <p className="text-lg font-semibold">
-                {professional.signal_score != null ? `${professional.signal_score}/100` : "Pending"}
-              </p>
-            </div>
-          </div>
-
-          {/* Opportunity */}
-          {(professional.current_tier === "certified" || professional.current_tier === "listed") && (
-            <div className="pt-2">
-              <p className="text-sm font-medium mb-3">
-                Increase your tier and see these increases in Signal:
-              </p>
-              <div className="grid gap-3 sm:grid-cols-2">
-                {professional.current_tier !== "audited" && (
-                  <div className="p-4 rounded-lg border border-amber-200 bg-amber-50/50">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="font-semibold text-sm">Audited</span>
-                      <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">$50/mo</span>
-                    </div>
-                    <p className="text-lg font-bold text-amber-700">
-                      {professional.audited_projected_signal != null ? `${professional.audited_projected_signal}/100` : "Projected score available soon"}
-                    </p>
-                  </div>
-                )}
-                <div className="p-4 rounded-lg border border-emerald-200 bg-emerald-50/50">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="font-semibold text-sm">Underwritten</span>
-                    <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">$150/mo</span>
-                  </div>
-                  <p className="text-lg font-bold text-emerald-700">98/100</p>
-                </div>
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Self-Service Fields */}
         <Card>
@@ -510,24 +392,6 @@ export function ProfileSection({
           </CardContent>
         </Card>
       </div>
-
-      {/* AI Artifact Payload */}
-      <Card className="mt-6">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Bot className="h-5 w-5 text-primary" />
-            AI Artifact Payload
-          </CardTitle>
-          <CardDescription>
-            This is the structured data AI systems receive when they cite you. It cannot be edited directly.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <pre className="text-xs bg-slate-950 text-slate-50 p-4 rounded-lg overflow-x-auto whitespace-pre-wrap font-mono leading-relaxed">
-            {JSON.stringify(buildArtifactPayload(professional), null, 2)}
-          </pre>
-        </CardContent>
-      </Card>
 
       {/* Pending Requests Summary */}
       {pendingRequests.length > 0 && (
