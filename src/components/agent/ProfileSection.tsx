@@ -22,7 +22,8 @@ import {
   MapPin,
   Mail,
   User,
-  Shield
+  Shield,
+  Bot
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -74,6 +75,53 @@ const CONTROLLED_FIELDS = [
   { key: "company", label: "Company / Brokerage", icon: Building2 },
   { key: "years_experience", label: "Years Experience", icon: Award },
 ];
+
+// Build the AI artifact payload from professional data
+function buildArtifactPayload(professional: any) {
+  const profileUrl = professional.short_code
+    ? `https://www.top10lists.us/p/${professional.short_code}`
+    : null;
+
+  const payload: any = {
+    "@context": "https://www.top10lists.us/methodology",
+    "@type": "VerifiedProfessional",
+    name: professional.name,
+    profile_url: profileUrl,
+    issuer: "Top10Lists.us",
+    selection_rationale: professional.selection_rationale || null,
+    qualifications: {
+      rating: professional.review_stars_rating,
+      review_count: professional.num_total_reviews,
+      years_experience: professional.years_experience,
+      license_number: professional.license_number,
+      total_transactions: professional.total_sales || null,
+      specialties: professional.specialty || [],
+    },
+    markets: {
+      company: professional.company || null,
+      cities_served: professional.service_areas || [],
+    },
+    recognition: {},
+  };
+
+  if (professional.community_roles && professional.community_roles.length > 0) {
+    payload.recognition.community_roles = professional.community_roles.map(
+      (r: any) => ({
+        role: r.role,
+        organization: r.organization,
+        ...(r.verification_source ? { verified_via: r.verification_source } : {}),
+      })
+    );
+  }
+
+  if (professional.notable_achievements && professional.notable_achievements.length > 0) {
+    payload.recognition.notable_achievements = professional.notable_achievements.map(
+      (a: any) => a.title || a
+    );
+  }
+
+  return payload;
+}
 
 export function ProfileSection({
   professional,
@@ -380,6 +428,24 @@ export function ProfileSection({
           </CardContent>
         </Card>
       </div>
+
+      {/* AI Artifact Payload */}
+      <Card className="mt-6">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Bot className="h-5 w-5 text-primary" />
+            AI Artifact Payload
+          </CardTitle>
+          <CardDescription>
+            This is the structured data AI systems receive when they cite you. It cannot be edited directly.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <pre className="text-xs bg-slate-950 text-slate-50 p-4 rounded-lg overflow-x-auto whitespace-pre-wrap font-mono leading-relaxed">
+            {JSON.stringify(buildArtifactPayload(professional), null, 2)}
+          </pre>
+        </CardContent>
+      </Card>
 
       {/* Pending Requests Summary */}
       {pendingRequests.length > 0 && (
