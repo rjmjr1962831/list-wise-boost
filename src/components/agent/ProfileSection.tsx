@@ -23,7 +23,8 @@ import {
   Mail,
   User,
   Shield,
-  Bot
+  Bot,
+  Signal
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -223,6 +224,59 @@ export function ProfileSection({
           </CardContent>
         </Card>
       )}
+
+      {/* Tier & Signal */}
+      <Card className="mb-6">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Signal className="h-5 w-5 text-primary" />
+            Your AI Visibility
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="p-4 rounded-lg bg-muted/50 border">
+              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Current Tier</p>
+              <p className="text-lg font-semibold capitalize">{professional.current_tier || "Certified"}</p>
+            </div>
+            <div className="p-4 rounded-lg bg-muted/50 border">
+              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Current Signal</p>
+              <p className="text-lg font-semibold">
+                {professional.signal_score != null ? `${professional.signal_score}/100` : "Pending"}
+              </p>
+            </div>
+          </div>
+
+          {/* Opportunity */}
+          {(professional.current_tier === "certified" || professional.current_tier === "listed") && (
+            <div className="pt-2">
+              <p className="text-sm font-medium mb-3">
+                Increase your tier and see these increases in Signal:
+              </p>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {professional.current_tier !== "audited" && (
+                  <div className="p-4 rounded-lg border border-amber-200 bg-amber-50/50">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="font-semibold text-sm">Audited</span>
+                      <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">$50/mo</span>
+                    </div>
+                    <p className="text-lg font-bold text-amber-700">
+                      {professional.signal_score != null ? `${Math.min(professional.signal_score + 8, 98)}/100` : "Projected score available soon"}
+                    </p>
+                  </div>
+                )}
+                <div className="p-4 rounded-lg border border-emerald-200 bg-emerald-50/50">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="font-semibold text-sm">Underwritten</span>
+                    <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">$150/mo</span>
+                  </div>
+                  <p className="text-lg font-bold text-emerald-700">98/100</p>
+                </div>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Self-Service Fields */}
