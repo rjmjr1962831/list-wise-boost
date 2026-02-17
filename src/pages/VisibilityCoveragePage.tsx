@@ -250,24 +250,22 @@ export default function VisibilityCoveragePage() {
   // Handle continue to expertise or save and return to dashboard
   const handleContinue = async () => {
     if (isDashboardEdit) {
-      // Save directly to database and return to dashboard
+      // Save directly via edge function and return to dashboard
       setSaving(true);
       try {
         const selectedCityObjects = cities.filter(c => selectedCityIds.has(c.id));
-        // Get state name for service_areas format
         const { data: stateData } = await supabase
           .from('cities')
           .select('state')
           .eq('id', selectedCityObjects[0]?.id)
           .single();
         const stateName = stateData?.state || '';
-
         const serviceAreas = selectedCityObjects.map(c => `${c.name}, ${stateName}`);
 
-        const { error } = await supabase
-          .from('professionals')
-          .update({ service_areas: serviceAreas })
-          .eq('id', professionalId);
+        const sessionToken = localStorage.getItem('agent_session_token');
+        const { error } = await supabase.functions.invoke('update-agent-profile', {
+          body: { sessionToken, updates: { service_areas: serviceAreas } },
+        });
 
         if (error) throw error;
 
