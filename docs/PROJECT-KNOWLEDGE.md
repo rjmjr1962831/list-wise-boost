@@ -91,16 +91,17 @@ Claude (when in context) may handle:
 
 ---
 
-## Pricing Model
+## Pricing Model (current — do not use deprecated Main/Prime/Luxury)
 
-### Cities (Free Tier)
-No charge for city-level placement.
+**Tier model (SSoT):**
+| Tier | Price | Notes |
+|------|-------|--------|
+| **Listed** | $0 | Public data only. No artifact/badge. |
+| **Certified** | $0 | Agent-verified. Standard artifact + badge. |
+| **Audited** | $50/mo | Certified + community involvement + cities. Monthly diligence. |
+| **Underwritten** | $150/mo | Audited + neighborhoods + specialties. Real-time refresh. Max AI citation depth. |
 
-### Neighborhoods (Paid Tier)
-Based on Census ACS income/home value data:
-- **Main:** $25/month
-- **Prime:** $50/month
-- **Luxury:** $75/month
+**Deprecated (do not use):** Main $25 / Prime $50 / Luxury $75 or "Accredited" — that revenue model is retired.
 
 ---
 
@@ -157,6 +158,9 @@ Supabase returns max 1,000 rows by default. **Always paginate.** Never assume 1,
 ### Edge Function Timeout
 60 seconds. Keep batch sizes small (5-10 for API-heavy operations).
 
+### Schema notes (current)
+- **agent_sessions:** Use column `token` (not `session_token`). No `last_active_at` column.
+
 ---
 
 ## Enrichment API
@@ -178,8 +182,8 @@ Supabase returns max 1,000 rows by default. **Always paginate.** Never assume 1,
 ### AI Services
 | Service | Key | Use |
 |---------|-----|-----|
-| **Anthropic** | `[STORED IN ENVIRONMENT - Ask Robert]` | Prime/Luxury content |
-| **DeepSeek** | `REDACTED_DEEPSEEK_KEY` | Main tier (90% cheaper) |
+| **Anthropic** | `[STORED IN ENVIRONMENT - Ask Robert]` | Higher-tier content |
+| **DeepSeek** | `[STORED IN ENVIRONMENT / .secrets]` | Content synthesis (90% cheaper); do not use any key printed in old doc versions |
 | **OpenAI** | `[STORED IN ENVIRONMENT - Ask Robert]` | |
 | **Perplexity** | `[DEPRECATED]` | DEPRECATED - avoid |
 | **Gemini** | `[STORED IN ENVIRONMENT - Ask Robert]` | Back in play (new key Feb 2026) |
@@ -212,9 +216,8 @@ Supabase returns max 1,000 rows by default. **Always paginate.** Never assume 1,
 ### Content Generation by Tier
 | Tier | AI Model | Notes |
 |------|----------|-------|
-| Main | DeepSeek | 90% cheaper |
-| Prime | Claude Sonnet | Higher quality |
-| Luxury | Claude Sonnet | Higher quality |
+| Listed / Certified | DeepSeek | Primary; 90% cheaper |
+| Audited / Underwritten | DeepSeek or Claude Sonnet | Per implementation |
 
 **DO NOT use Perplexity** - Deprecated for cost reasons.
 
@@ -683,5 +686,5 @@ curl -s -H "Authorization: token <from env or .secrets>" -H "Accept: application
 
 ---
 
-*Version 0.3 - 2026-02-17*
-*Updated: Role/freshness fix; doc must be kept current via nightly synthesis*
+*Version 0.4 - 2026-02-17*
+*Updated: Current pricing (Listed/Certified/Audited/Underwritten); deprecated Main/Prime/Luxury; agent_sessions schema note*
