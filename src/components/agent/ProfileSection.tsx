@@ -361,10 +361,23 @@ export function ProfileSection({
             {/* Cities Served */}
             <Separator className="my-4" />
             <div className="space-y-1">
-              <Label className="flex items-center gap-2 text-sm">
-                <MapPin className="h-4 w-4 text-muted-foreground" />
-                Cities Served
-              </Label>
+              <div className="flex items-center justify-between">
+                <Label className="flex items-center gap-2 text-sm">
+                  <MapPin className="h-4 w-4 text-muted-foreground" />
+                  Cities Served
+                </Label>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 text-xs"
+                  onClick={() => {
+                    sessionStorage.setItem('visibility_professional_id', professional.id);
+                    window.location.href = '/visibility/coverage?returnTo=dashboard';
+                  }}
+                >
+                  Edit
+                </Button>
+              </div>
               <div className="flex flex-wrap gap-1.5 py-2 px-3 bg-muted/50 rounded-md min-h-[38px]">
                 {professional.service_areas && professional.service_areas.length > 0 ? (
                   professional.service_areas.map((area: string, i: number) => (
@@ -382,10 +395,23 @@ export function ProfileSection({
 
             {/* Neighborhood Expertise */}
             <div className="space-y-1">
-              <Label className="flex items-center gap-2 text-sm">
-                <MapPin className="h-4 w-4 text-muted-foreground" />
-                Neighborhood Expertise
-              </Label>
+              <div className="flex items-center justify-between">
+                <Label className="flex items-center gap-2 text-sm">
+                  <MapPin className="h-4 w-4 text-muted-foreground" />
+                  Neighborhood Expertise
+                </Label>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 text-xs"
+                  onClick={() => {
+                    sessionStorage.setItem('visibility_professional_id', professional.id);
+                    window.location.href = '/visibility/expertise?returnTo=dashboard';
+                  }}
+                >
+                  Edit
+                </Button>
+              </div>
               <div className="flex flex-wrap gap-1.5 py-2 px-3 bg-muted/50 rounded-md min-h-[38px]">
                 {professional.neighborhoods && professional.neighborhoods.length > 0 ? (
                   professional.neighborhoods.map((n: any, i: number) => (
