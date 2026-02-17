@@ -85,7 +85,9 @@ export default function AgentDashboard() {
     const token = localStorage.getItem("agent_session_token");
 
     if (!token) {
-      navigate("/agent/login");
+      // No session. Don't send to login (agents may not have credentials).
+      // Show a helpful message instead.
+      setLoading(false);
       return;
     }
 
@@ -99,7 +101,8 @@ export default function AgentDashboard() {
 
       if (sessionError || !sessionData?.valid) {
         localStorage.removeItem("agent_session_token");
-        navigate("/agent/login");
+        // Session expired - show the no-session state
+        setLoading(false);
         return;
       }
 
@@ -107,7 +110,7 @@ export default function AgentDashboard() {
     } catch (error) {
       console.error("[AgentDashboard] Error:", error);
       localStorage.removeItem("agent_session_token");
-      navigate("/agent/login");
+      setLoading(false);
     }
   };
 
@@ -121,7 +124,7 @@ export default function AgentDashboard() {
       if (error) {
         if (error.message?.includes("401") || error.message?.includes("expired")) {
           localStorage.removeItem("agent_session_token");
-          navigate("/agent/login");
+          setLoading(false);
           return;
         }
         toast.error("Failed to load profile");
@@ -150,7 +153,7 @@ export default function AgentDashboard() {
   const handleLogout = () => {
     localStorage.removeItem("agent_session_token");
     toast.success("Signed out successfully");
-    navigate("/agent/login");
+    navigate("/");
   };
 
   const handleNavClick = (section: NavSection) => {
@@ -204,18 +207,30 @@ export default function AgentDashboard() {
 
   if (!professional) {
     return (
-      <div className="min-h-screen bg-background py-12">
-        <div className="container mx-auto px-4 max-w-4xl">
-          <Card>
-            <CardContent className="pt-6 text-center">
-              <p className="text-muted-foreground mb-4">
-                Could not load your profile. Please try logging in again.
-              </p>
-              <Button onClick={() => navigate("/agent/login")}>
-                Go to Login
-              </Button>
-            </CardContent>
-          </Card>
+      <div className="min-h-screen bg-background flex items-center justify-center px-4">
+        <div className="text-center max-w-md mx-auto p-8 border rounded-xl bg-card shadow-sm">
+          <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+            <User className="h-6 w-6 text-primary" />
+          </div>
+          <h1 className="text-xl font-bold mb-3">Dashboard Access</h1>
+          <p className="text-muted-foreground mb-6 text-sm leading-relaxed">
+            To access your dashboard, please use the link from your most recent
+            Top10Lists email. Each link creates a secure session automatically.
+          </p>
+          <div className="space-y-3">
+            <a
+              href="mailto:support@top10lists.us?subject=Dashboard Access Help"
+              className="block w-full px-6 py-3 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
+            >
+              Request a New Link
+            </a>
+            <a
+              href="https://www.top10lists.us"
+              className="block w-full px-6 py-3 border rounded-lg text-sm font-medium hover:bg-muted transition-colors"
+            >
+              Go to Homepage
+            </a>
+          </div>
         </div>
       </div>
     );
