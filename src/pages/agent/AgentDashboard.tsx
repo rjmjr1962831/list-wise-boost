@@ -8,7 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { LogOut, User, CreditCard, TrendingUp, RefreshCw, Bot } from "lucide-react";
+import { LogOut, User, CreditCard, TrendingUp, RefreshCw } from "lucide-react";
 import { ProfileSection } from "@/components/agent/ProfileSection";
 import { BillingSection } from "@/components/agent/BillingSection";
 import { UpsellSection } from "@/components/agent/UpsellSection";
@@ -239,18 +239,10 @@ export default function AgentDashboard() {
 
           {/* Main Content Tabs */}
           <Tabs defaultValue="profile" className="space-y-6">
-            <TabsList className="grid w-full max-w-2xl grid-cols-4">
+            <TabsList className="grid w-full max-w-2xl grid-cols-3">
               <TabsTrigger value="profile" className="flex items-center gap-2">
                 <User className="h-4 w-4" />
                 <span className="hidden sm:inline">Profile</span>
-              </TabsTrigger>
-              <TabsTrigger
-                value="bot-analytics"
-                className="flex items-center gap-2"
-                onClick={() => navigate("/agent/bot-analytics")}
-              >
-                <Bot className="h-4 w-4" />
-                <span className="hidden sm:inline">Bot Analytics</span>
               </TabsTrigger>
               <TabsTrigger value="billing" className="flex items-center gap-2">
                 <CreditCard className="h-4 w-4" />
