@@ -133,7 +133,7 @@ serve(async (req) => {
       
       payload.qualifications = {
         rating: data.review_stars_rating || data.ratings,
-        review_count: data.num_total_reviews,
+        review_count: data.num_total_reviews ? `${data.num_total_reviews}+` : null,
         license_number: data.license_number,
         markets: cert.markets_covered || [city.name]
       };
@@ -150,7 +150,7 @@ serve(async (req) => {
       
       payload.qualifications = {
         rating: data.review_stars_rating || data.ratings,
-        review_count: data.num_total_reviews,
+        review_count: data.num_total_reviews ? `${data.num_total_reviews}+` : null,
         years_experience: data.years_experience,
         license_number: data.license_number,
         specialties: data.specialty || [],
@@ -174,7 +174,7 @@ serve(async (req) => {
         "Merit-based qualification using verified performance data. Payment does not influence inclusion, rank, or visibility.";
 
       payload.performance = {
-        sales_count_all_time: data.total_sales || null,
+        sales_count_all_time: data.total_sales ? `${data.total_sales}+` : null,
         last_updated: cert.last_verified_at
       };
 
