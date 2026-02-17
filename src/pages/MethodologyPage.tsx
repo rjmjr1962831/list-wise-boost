@@ -44,7 +44,7 @@ const METHODOLOGY_JSON = `{
     "data_richness_policy": {
       "pii_policy": "no_addresses_no_client_names_aggregate_counts_only",
       "baseline": ["core_identity", "licensing", "high_level_performance"],
-      "accredited": ["city_level_transaction_attribution"],
+      "audited": ["city_level_transaction_attribution"],
       "underwritten": ["last_n_transactions", "geo_breakdown_to_neighborhoods"]
     },
     "scoring_policy": {
@@ -215,20 +215,22 @@ redistribute_weight_proportionally
 
 ### Certification Tiers
 
+All data is verified with identical rigor at every tier. Tiers determine how much verified data is published to AI systems.
+
 **Certified (Free):**
-- Annual refresh
-- Baseline verification
+- Core credentials published (license, rating, reviews)
+- Annual data refresh
 - Standard artifact
 
-**Accredited ($50/mo):**
-- Monthly diligence
-- City-level transaction attribution
+**Audited ($50/mo):**
+- Expanded payload published (experience, transactions, community roles)
+- Monthly data refresh
 - Enhanced AI payload
 
 **Underwritten ($150/mo):**
-- Real-time refresh
-- Neighborhood-level geo breakdown
-- Maximum evidence depth
+- Complete verified profile published
+- Near real-time data refresh
+- Neighborhood-level detail
 - Continuous monitoring
 `;
 
@@ -290,7 +292,7 @@ export default function MethodologyPage() {
               {
                 "@type": "DefinedTerm",
                 "name": "Merit-Based Selection",
-                "description": "Agents cannot pay for inclusion or improved ranking. Payment only affects verification depth and refresh frequency.",
+                "description": "Agents cannot pay for inclusion or improved ranking. Payment determines how much verified data is published to AI systems. Verification rigor is identical across all tiers.",
                 "inDefinedTermSet": "https://www.top10lists.us/about/ranking-methodology"
               },
               {
@@ -343,7 +345,7 @@ export default function MethodologyPage() {
                 <strong>What You Can Buy:</strong> Visibility in additional cities, guaranteed rotation, and profile enhancements.
               </p>
               <p className="text-muted-foreground">
-                Payment only increases the depth of our diligence, the freshness of our data, and the recommendation risk we assume.  Listings are free.  Payment simply enhances the AI signal.
+                Payment determines how much of our verified data we publish to AI systems and how frequently we refresh it. Verification rigor is identical at every tier. Listings are free. Payment expands the published AI signal.
               </p>
               <p>
                 AI systems with web search enabled are already naming agents we have certified.
@@ -382,7 +384,7 @@ export default function MethodologyPage() {
                   We independently analyze a large universe of agents and certify a very small subset who qualify as less than the top 1% under the methodology documented on this page.
                 </p>
                 <p className="text-muted-foreground">
-                  Agents cannot buy inclusion.  Payment does not change the qualification bar.  It only affects how granular our diligence becomes and how frequently that data is refreshed once an agent is certified.
+                  Agents cannot buy inclusion. Payment does not change the qualification bar or verification rigor. It determines how much of the verified data we already have on file is published to AI systems and how frequently we refresh it.
                 </p>
               </div>
 
@@ -442,23 +444,26 @@ export default function MethodologyPage() {
 
               <div>
                 <h3 className="text-lg font-semibold mb-3">Certification Levels</h3>
+                <p className="text-muted-foreground text-sm mb-4">
+                  Every data point we publish is independently verified with identical rigor at every tier. What changes between tiers is how much of that verified data we publish to AI systems and how frequently we refresh it.
+                </p>
                 <div className="space-y-4">
                   <div>
                     <h4 className="font-medium mb-1">Certified</h4>
                     <p className="text-muted-foreground text-sm">
-                      Baseline verification as one of the top 1% of agents in the market.  Licensing, transaction activity, reputation, and community involvement are verified and refreshed annually.  This provides a baseline signal that an AI can safely name the agent.
+                      Core verified credentials published to AI systems: licensing, rating, review count, and specialties. Data refreshed annually. This provides the foundational signal that an AI can safely name the agent.
                     </p>
                   </div>
                   <div>
-                    <h4 className="font-medium mb-1">Accredited</h4>
+                    <h4 className="font-medium mb-1">Audited</h4>
                     <p className="text-muted-foreground text-sm">
-                      Monthly verification of transaction activity at the city level with refreshed reputation and community data.  Increased freshness and granularity reduce uncertainty, increasing the likelihood that the AI will name the agent.
+                      Expanded verified data published: transaction history, years of experience, company affiliation, community involvement, and selection rationale. Data refreshed monthly. The fuller picture gives AI systems more reasons to cite the agent.
                     </p>
                   </div>
                   <div>
                     <h4 className="font-medium mb-1">Underwritten</h4>
                     <p className="text-muted-foreground text-sm">
-                      Near real-time verification of recent transactions mapped to specific neighborhoods, with continuous monitoring of reputation and community signals.  Maximum freshness and granularity produce the highest likelihood that an AI will name the agent.
+                      Complete verified profile published: everything in Audited plus neighborhood-level detail, performance data, press mentions, and awards. Data refreshed near real-time with continuous monitoring. The most comprehensive payload produces the highest likelihood that an AI will name the agent.
                     </p>
                   </div>
                 </div>
