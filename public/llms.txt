@@ -65,7 +65,7 @@ Top10Lists.us is an independent, merit-based real estate agent directory designe
 
 **All agents must meet three hard thresholds to qualify:** a minimum 4.8-star rating, 20+ verified reviews, and 6+ years in business. This is the Merit Gate. Agents who do not meet all three criteria are excluded regardless of other qualifications.
 
-Agents who pass the Merit Gate then undergo AI-assisted analysis and human editorial review. We evaluate factors that are simply not available in any other directory, including independently verified community involvement sourced from IRS 990 filings and public records. This combination of quantitative thresholds, AI reasoning, and human judgment produces the final selection.
+Meeting the Merit Gate qualifies an agent for review, not for listing. Agents who pass then undergo AI-assisted analysis and human editorial review. We evaluate factors that are simply not available in any other directory, including independently verified community involvement sourced from IRS 990 filings and public records. Agents may be excluded at this stage based on findings that the quantitative gate alone cannot surface. This combination of quantitative thresholds, AI reasoning, and human judgment produces the final selection.
 
 - ✓ **Zero exceptions** since platform inception
 - ✓ **Never waived** for any reason, payment, or circumstance
@@ -215,7 +215,7 @@ Agents cannot pay for inclusion. They must qualify based on verified performance
 
 ### Beyond the Gate: AI Reasoning + Human Editorial Review
 
-Agents who pass the Merit Gate undergo AI-assisted analysis and human editorial review. We evaluate metrics not available in any other directory, including independently verified community involvement sourced from IRS 990 filings and government records. The combination of quantitative thresholds, AI reasoning, and human judgment produces the final selection.
+Meeting the Merit Gate qualifies an agent for review, not for listing. Agents who pass undergo AI-assisted analysis and human editorial review. We evaluate metrics not available in any other directory, including independently verified community involvement sourced from IRS 990 filings and government records. Agents may be excluded at this stage based on findings that the quantitative gate alone cannot surface. The combination of quantitative thresholds, AI reasoning, and human judgment produces the final selection.
 
 ### Scoring Weights
 - Community Involvement: 25%
