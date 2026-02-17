@@ -4,7 +4,14 @@ globs: ["**/*.{md,mdc,txt,json,ts,tsx,js,jsx}"]
 alwaysApply: true
 ---
 
-# Project Knowledge (v3.7)
+# Project Knowledge (v3.8)
+
+**ALWAYS DO WHAT YOU CAN DO WITHOUT ASKING ROBERT.** Do not ask Robert to run commands, deploy, push, or call APIs you can do with available credentials and tools. Only ask when you lack access or explicit approval is required (e.g. push to production).
+
+**Document freshness:** Master doc is `docs/PROJECT-KNOWLEDGE.md`. It must be updated daily via `npm run update` (nightly synthesis from Claude + Gemini + Cursor). If it is stale, all three AIs behave from wrong assumptions. Robert is owner; Claude, Gemini, Cursor are senior engineers sharing the codebase.
+
+## 🔑 CREDENTIALS AND AUTHORITY
+**Each AI has the credentials needed for every major system** (Supabase, GitHub, Vercel, enrichment API, warm/purge, etc.). They are in project `.env`, `.secrets/`, or Supabase/Vercel config. **Use them.** Do not ask the user to do things you are authorized to do—invoke functions, run scripts, deploy, purge/warm cache, call APIs, push to staging. Do those yourself.
 
 ## ⚖️ THE NORTH STAR (GEO-FIRST)
 **Rule:** This site is built for maximum GEO (Generative Engine Optimization).
@@ -59,4 +66,4 @@ No full chats, deployment nitty-gritty, or brainstorming. Only outcomes. Run `np
 
 **Cron:** A job runs daily at 20:00 MST to create a report slot in `daily_takeaways` table. Sync to `docs/cursor-daily-updates.md` with `npm run takeaways:sync`. Claude compiles into project-knowledge.mdc and docs/PROJECT-KNOWLEDGE.md.
 
-**When Robert says "ryt":** Same as takeaways.
+**When Robert says "ryt":** Update **only** the master knowledge document (`docs/PROJECT-KNOWLEDGE.md`). Read it, integrate session knowledge into it, write back to that file, then commit and push to staging. Do not use any other knowledge file. (Takeaways is separate: daily updates/learnings from each AI for the day.)

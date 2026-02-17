@@ -1,20 +1,25 @@
 # Top10Lists.us - Complete Project Knowledge
 
+**ALWAYS DO WHAT YOU CAN DO WITHOUT ASKING ROBERT.** Use credentials in env/.secrets; deploy, purge, warm, push to staging, run scripts, and call APIs yourself. Only ask when you lack access or explicit approval is required.
+
 **This document governs all operations. Every rule exists because something broke.**
 
-**Do not tell the user to do things you can do.** Do them yourself (edit files, run commands, fix copy); add this directive to the top of the project knowledge document so it stays in effect.
+### Document freshness (critical)
+This file must stay current. It is updated by **nightly synthesis**: `npm run update` merges Claude + Gemini + Cursor takeaways into one doc. If it has not been updated in a week, synthesis is not running or the three AIs are not pushing takeaways. Stale knowledge causes conflicting behavior across Claude, Gemini, and Cursor. **Run synthesis daily; all three must contribute takeaways.**
 
 ---
 
 ## Role & Responsibilities
 
-Claude is the **lead developer** for Top10Lists.us, responsible for:
+**Robert** is the decision-maker and product owner. **Claude, Gemini, and Cursor** act as senior engineers: they implement, deploy, and operate systems under the rules in this document. None is "lead developer"; they share the codebase and must stay aligned via this doc.
+
+Claude (when in context) may handle:
 - Database administration (Supabase DBA)
 - Website management and code deployment (GitHub/Vercel)
-- All operational and technical issues
+- Operational and technical issues
 - GEO/AEO optimization strategy
 
-**Claude owns these systems and is accountable for their operation.**
+**Robert owns the systems; the AIs execute. When this doc is wrong or old, all three behave wrong.**
 
 ---
 
@@ -86,37 +91,32 @@ Claude is the **lead developer** for Top10Lists.us, responsible for:
 
 ---
 
-## Pricing Model (Certification Tiers — SSoT)
+## Pricing Model
 
-**Canonical spec:** `docs/specs/tier-and-artifact-spec-v1.md` (approved Feb 16, 2026). All tier behavior, artifact templates, and pricing derive from that document.
+### Cities (Free Tier)
+No charge for city-level placement.
 
-| Tier | Monthly Cost | Artifact | Badge | Update frequency |
-|------|-------------|----------|-------|------------------|
-| **Listed** | $0 | No | No | None |
-| **Certified** | $0 | Yes | Yes | Annual |
-| **Audited** | $50 | Yes | Yes | Monthly |
-| **Underwritten** | $150 | Yes | Yes | Daily |
-
-**Artifact URL:** `https://www.top10lists.us/artifact/{magic_link_token}` (text/markdown, served by Cloudflare worker). One URL per agent; tier determines content depth.
-
-**Payment does not influence inclusion, rank, or visibility.** Qualification is merit-based (top 0.5%, 4.8+ rating). Payment controls only verification depth and update frequency in the artifact.
+### Neighborhoods (Paid Tier)
+Based on Census ACS income/home value data:
+- **Main:** $25/month
+- **Prime:** $50/month
+- **Luxury:** $75/month
 
 ---
 
 ## Tech Stack
 
-- **Frontend:** React SPA (Vite) deployed on Vercel. **Front-end management:** Cursor. Lovable is deprecated; do not use for front-end work.
+- **Frontend:** React SPA (Vite) deployed on Vercel
 - **Styling:** Tailwind CSS + shadcn/ui
 - **Routing:** react-router-dom (FROZEN - do not change)
 - **Database:** Supabase (PostgreSQL) - NEW PROJECT
 - **Bot Rendering:** Cloudflare Worker (orange-truth-a103)
-- **CRM:** Our own custom admin dashboard (we do not use Pipedrive). Bulk mailing: Instantly, connected to our CRM; sending via Google Workspace.
+- **CRM:** Custom admin dashboard (replacing Pipedrive)
+- **Email Outreach:** Instantly via Google Workspace
 
 ---
 
 ## Supabase Configuration (NEW PROJECT - Jan 2026)
-
-**We use this Supabase project EXCLUSIVELY.** All database, auth, storage, and Edge Functions must use `https://wiotrvoirdgzfacuuiem.supabase.co`. Do not introduce or reference any other Supabase project.
 
 **Project URL:** `https://wiotrvoirdgzfacuuiem.supabase.co`
 
@@ -170,16 +170,6 @@ Supabase returns max 1,000 rows by default. **Always paginate.** Never assume 1,
 - `GET ?action=fetch-neighborhoods&limit=100&offset=0` - Paginated neighborhoods
 - `POST ?action=bulk-update` - Bulk update professionals
 - `POST ?action=query` - Custom queries with filters
-- `POST ?action=enrich-civic` - ProPublica IRS 990 civic verification (same body as enrich-civic function; proxies to it)
-
-### Enrich-Civic (ProPublica IRS Form 990)
-- **Standalone:** `https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/enrich-civic`
-- **Auth:** Same as enrichment-api: `X-Enrichment-Key` (uses `ENRICHMENT_KEY` or `ENRICHMENT_API_KEY` secret)
-- **Single:** `POST { "professional_id": "uuid" }`
-- **Batch:** `POST { "batch": true, "state": "arizona", "limit": 50 }` (limit default 10, max 50; 1 req/sec to ProPublica)
-- **Deploy:** `C:\Users\rober\supabase.exe functions deploy enrich-civic --project-ref wiotrvoirdgzfacuuiem --no-verify-jwt`
-- **Secret:** Set `ENRICHMENT_KEY` (or reuse `ENRICHMENT_API_KEY`) for the function.
-- Runs automatically after `promote_to_professional` as final enrichment step.
 
 ---
 
@@ -188,8 +178,8 @@ Supabase returns max 1,000 rows by default. **Always paginate.** Never assume 1,
 ### AI Services
 | Service | Key | Use |
 |---------|-----|-----|
-| **Anthropic** | `[STORED IN ENVIRONMENT - Ask Robert]` | GEO content synthesis when needed |
-| **DeepSeek** | `REDACTED_DEEPSEEK_KEY` | Primary synthesis (temp 0.6, 90% cheaper) |
+| **Anthropic** | `[STORED IN ENVIRONMENT - Ask Robert]` | Prime/Luxury content |
+| **DeepSeek** | `REDACTED_DEEPSEEK_KEY` | Main tier (90% cheaper) |
 | **OpenAI** | `[STORED IN ENVIRONMENT - Ask Robert]` | |
 | **Perplexity** | `[DEPRECATED]` | DEPRECATED - avoid |
 | **Gemini** | `[STORED IN ENVIRONMENT - Ask Robert]` | Back in play (new key Feb 2026) |
@@ -207,32 +197,24 @@ Supabase returns max 1,000 rows by default. **Always paginate.** Never assume 1,
 ## GitHub Access
 
 - **Repository:** rjmjr1962831/list-wise-boost
-- **Token:** Use the **ai full access** API key. This is the key we have all been using for GitHub and knowledge access. Do not ask for a new key or a new Gist unless Robert explicitly provides one.
+- **Token:** [STORED IN ENVIRONMENT - Ask Robert]
 - **Method:** Always use GitHub API for read/write
 - **Deploy:** Push via API, Vercel auto-deploys
 
-**Claude pushes code directly. Never give Robert files to edit manually.**
-
-### Private knowledge repo (takeaways)
-
-- **Repo (canonical):** `https://github.com/rjmjr1962831/top10lists-knowledge` (private). Claude and Gemini push daily takeaways here only.
-- **Claude filename:** `docs/takeaways/CLAUDE_TAKEAWAYS_DD-MM-YY.md` (e.g. `docs/takeaways/CLAUDE_TAKEAWAYS_16-02-26.md`).
-- **Gemini filename:** `docs/takeaways/GEMINI_TAKEAWAYS_DD-MM-YY.md`.
-- **Token:** Same **ai full access** key as above. Use it for the private knowledge repo and for Gist access. Do not ask Robert for a new token.
-- **What it does:** Allows push/commit to the private repo where Claude and Gemini post their daily takeaways. Cursor or automation can use it to push to that repo. Also used for Gist read/update (knowledge bot).
-- **Key:** Stored in `.secrets/github-knowledge-token.txt` (or in environment as the ai full access key). Update that file only when Robert explicitly gives a replacement token.
-
-- **Knowledge Gist:** The ai full access API key can create and update Gists. We create and update the knowledge Gist ourselves via the GitHub API; do not ask Robert to create the Gist or paste the ID. To create or refresh the Gist: run `python scripts/create-knowledge-gist.py` (uses token from `.secrets/github-knowledge-token.txt`; script creates the Gist and writes its ID here). **Gist ID:** `be448dbee3d7483eba103d1b988c32f3`. URL: https://gist.github.com/rjmjr1962831/be448dbee3d7483eba103d1b988c32f3. Give Gemini the Gist ID from this doc when they ask. Source of truth: `docs/PROJECT-KNOWLEDGE.md` in this repo.
+**Any of the three AIs (Claude, Gemini, Cursor) may push code directly when acting in context. Never ask Robert to do steps you can do with env/secrets.**
 
 ---
 
 ## Enrichment Pipeline
 
-### Content Generation
-- **Synthesis engine:** DeepSeek-V3 (`deepseek-chat`) at Temperature **0.6** for GEO content. Use Anthropic only when Robert requests.
-- **Certification tiers and artifact content:** Defined in `docs/specs/tier-and-artifact-spec-v1.md`. Artifact markdown is tier-based (Certified / Audited / Underwritten); worker assembles from DB per tier.
+### Content Generation by Tier
+| Tier | AI Model | Notes |
+|------|----------|-------|
+| Main | DeepSeek | 90% cheaper |
+| Prime | Claude Sonnet | Higher quality |
+| Luxury | Claude Sonnet | Higher quality |
 
-**DO NOT use Perplexity** — Deprecated for cost reasons.
+**DO NOT use Perplexity** - Deprecated for cost reasons.
 
 ### Discovery & Scraping
 - **Exa.ai:** Zillow profile ID discovery only
@@ -259,7 +241,7 @@ Supabase returns max 1,000 rows by default. **Always paginate.** Never assume 1,
 
 **AI Model:** DeepSeek (deepseek-chat) at 0.6 temperature
 
-**Prompt Structure:** Community involvement MUST lead (25% ranking weight), followed by quantifiable metrics (rating, reviews, transactions), then professional credentials. We check ProPublica 990 filings for community involvement; this is highly relevant for our GEO score.
+**Prompt Structure:** Community involvement MUST lead (25% ranking weight), followed by quantifiable metrics (rating, reviews, transactions), then professional credentials.
 
 **Quality Criteria:**
 - **Excellent (7-9 points):** Leads with community + has metrics + has performance indicators
@@ -285,7 +267,7 @@ Supabase returns max 1,000 rows by default. **Always paginate.** Never assume 1,
 - 20+ reviews
 
 ### Ranking Weights
-- Community: 25% (we check ProPublica 990 filings; highly relevant for GEO score)
+- Community: 25%
 - Rating: 25%
 - Reviews: 20%
 - Transactions: 20%
@@ -433,9 +415,14 @@ If a field has data, your code must:
 - Validates HTML >5000 chars + has H1 tag
 - Must wait for full React hydration
 
+### Cache content policy
+- **Cached (bot) pages:** Serve **text/markdown** only (artifact format). The worker cache must not store or serve full HTML to bots.
+- **Full HTML:** Only when a human is likely viewing—non-bot requests pass through to origin (Vercel). `__warm` rejects HTML and only stores markdown.
+
 ### Cache Strategy
 - **Proactive warming:** Static pages only (~30)
 - **On-demand:** Cities, neighborhoods, agents (cached on first bot request)
+- **check-cache:** Edge function that probes key URLs as a bot, classifies healthy vs broken (list pages need ItemList + ≥20KB; static ≥500 chars), then repairs: purges broken URLs via purge-worker-cache and re-requests with X-Force-Refresh to repopulate. Invoke: `POST .../functions/v1/check-cache` (body `{ "dryRun": true }` to only report).
 
 ### Cache Health (Feb 11, 2026)
 | Page | Size | Status |
@@ -496,7 +483,7 @@ Must return full HTML content, not React shell.
 
 ## Email Infrastructure
 
-We use our own CRM and connect to **Instantly** for bulk mailing. Sending is via Google Workspace (only viable option for cold outreach via Instantly).
+**Provider:** Google Workspace (only viable option for cold outreach via Instantly)
 
 **Domain:** toptenlists.us
 
@@ -541,54 +528,52 @@ We use our own CRM and connect to **Instantly** for bulk mailing. Sending is via
 | 4-segment URLs | 5-segment with ZIP | SEO/structure |
 | Old Supabase (bgdtekbhelormzbymkhh) | New (wiotrvoirdgzfacuuiem) | Migration |
 | Pipedrive | Custom CRM Dashboard | Cost, flexibility |
-| Lovable | Cursor | Front-end management now done in Cursor |
 | MCP Server (planned) | Deprioritized | Scope not confirmed, artifacts discussion unresolved |
 
 ---
 
-## Claude Operational Protocol
+## AI operational protocol (Claude, Gemini, Cursor)
 
-### Takeaways (daily updates from each AI)
+### The Takeaways Function
 
-**Takeaways** is where each AI (Claude, Cursor, etc.) records important issues and learnings for the day. It is **not** the same as ryt.
+**When Robert says "run takeaways" or "takeaways":**
 
-**When Robert says "takeaways" or "run takeaways":**
-- Generate structured daily-update content (key outcomes, config changes, deprecated or new patterns, version bumps).
-- Use the template from `npm run takeaways` for format.
-- **Claude and Gemini** push their daily files (e.g. `CLAUDE_TAKEAWAYS_DD-MM-YY.md`, `GEMINI_TAKEAWAYS_DD-MM-YY.md`) **only to the private knowledge repo** `https://github.com/rjmjr1962831/top10lists-knowledge`, path `docs/takeaways/<filename>.md`. Do not push those knowledge/takeaways documents to the public repo or to staging/main; they must not be in public.
-- Cursor may use `docs/cursor-daily-updates.md` and the `daily_takeaways` table (via `npm run takeaways:sync`) for its own flow; the nightly synthesis reads from the private repo (and Cursor) and writes only the synthesized `docs/PROJECT-KNOWLEDGE.md` to the public repo. Do not write directly to the master knowledge document when doing takeaways.
-
-**Include:** Key outcomes (what was done), config/infrastructure changes, deprecated or new patterns, version bump notes. No full chats, deployment nitty-gritty, or brainstorming—only outcomes.
-
----
-
-### RYT — Remember your knowledge (master document only)
-
-**ryt** is a **different** function. When Robert says **"ryt"**, update **only** the master knowledge document. Do not read or write any other knowledge file.
-
-**Master knowledge document:**
-- **Path:** `docs/PROJECT-KNOWLEDGE.md` (repository root relative)
-- **Filename:** `PROJECT-KNOWLEDGE.md`
-
-Do not use `TOP10LISTS-COMPLETE-KNOWLEDGE-UPDATED.md`, `/mnt/project/`, or `/mnt/user-data/outputs/`. Use only `docs/PROJECT-KNOWLEDGE.md`.
-
-**Repo is public.** The repository `rjmjr1962831/list-wise-boost` is public on GitHub. If Claude says he can't find the repo or the file, he can fetch the master document directly (no auth required): **https://raw.githubusercontent.com/rjmjr1962831/list-wise-boost/main/docs/PROJECT-KNOWLEDGE.md**
-
-**Claude projects (claude.ai):** The `/mnt/project/` directory is not populated from Git there; Claude projects need files added separately. For "ryt" to work in the Top10Lists Claude project, add **`docs/PROJECT-KNOWLEDGE.md`** as a **project knowledge file** in that project’s settings. Until it’s added, Claude can’t read it when you say "ryt" Either tell Claude to fetch the public URL above, or paste the file contents or upload the file in the chat as a workaround.
-
-**When Robert says "ryt":**
 1. **Identify** information from the session that belongs in project knowledge (operational facts, configuration changes, new infrastructure, deprecated patterns)
-2. **Read** the existing master knowledge document: `docs/PROJECT-KNOWLEDGE.md`
+2. **Read** existing `TOP10LISTS-COMPLETE-KNOWLEDGE-UPDATED.md` from `/mnt/project/`
 3. **Integrate** new information into appropriate sections
 4. **Check** for conflicts or superseded information (e.g., PrivateEmail to Google Workspace)
 5. **Deprecate** outdated information by moving to "Deprecated Services" or updating inline
 6. **Update** version number and date at bottom
-7. **Write** the updated content back to `docs/PROJECT-KNOWLEDGE.md` in the repo
-8. **Commit and push to staging** (per project rules) so the change is persisted
+7. **Output** the updated file to `/mnt/user-data/outputs/` for download
+8. **Push to GitHub** via API to `TOP10LISTS-COMPLETE-KNOWLEDGE-UPDATED.md` in repo root
 
-**Do NOT (for ryt):** Include educational content (like SEO history) unless it's operational; add information that belongs in separate project documentation (like TVPR); include temporary troubleshooting steps or unresolved issues.
+**Do NOT:**
+- Write a summary in chat (that's not takeaways)
+- Include educational content (like SEO history) unless it's operational
+- Add information that belongs in separate project documentation (like TVPR)
+- Include temporary troubleshooting steps or unresolved issues
 
-**Include in master doc:** New configuration values, new infrastructure, pattern changes, deprecated services or approaches, hard stops that emerged from mistakes.
+**Include:**
+- New configuration values (API keys, environment variables)
+- New infrastructure (database tables, routes, services)
+- Pattern changes (how to use Supabase client)
+- Deprecated services or approaches
+- Hard stops that emerged from mistakes
+
+### Nightly synthesis (master knowledge for next day)
+
+**Who runs it:** Cursor or a scheduled job (e.g. after 20:00 MST when Claude and Gemini have pushed their takeaways).
+
+**What it does:** Produces the next day’s `docs/PROJECT-KNOWLEDGE.md` by:
+
+1. **Pull Claude and Gemini:** Both live in the same folder in the private repo. Fetch `docs/takeaways/CLAUDE_TAKEAWAYS_DD-MM-YY.md` and `docs/takeaways/GEMINI_TAKEAWAYS_DD-MM-YY.md` from `rjmjr1962831/top10lists-knowledge` (GitHub token from env or `.secrets/github-knowledge-token.txt`).
+2. **Pull master:** Fetch latest `docs/PROJECT-KNOWLEDGE.md` from GitHub `main` (public repo).
+3. **Add Cursor’s update:** Use today’s section from `docs/cursor-daily-updates.md` (or run `npm run takeaways:sync` first to pull from `daily_takeaways`), or pass `--takeaways "one-line"` or use `SESSION_TAKEAWAYS` in the script.
+4. **Synthesize:** Merge Claude + Gemini + Cursor into one “Daily synthesis” section, bump version, and write to `docs/PROJECT-KNOWLEDGE.md`.
+
+**Command:** `npm run update` (optionally with `--sync` to run `takeaways:sync` first, or `--takeaways "message"`). Script: `scripts/update-project-knowledge.ts`.
+
+**Result:** One updated master knowledge doc for the next day’s load; commit and push to staging (or main when releasing).
 
 ### No Crashing on Big Jobs
 
@@ -610,7 +595,7 @@ SELECT cron.schedule(
     url := 'https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/function-name',
     headers := jsonb_build_object(
       'Content-Type', 'application/json',
-      'X-Enrichment-Key', '[STORED IN ENVIRONMENT - Ask Robert]'
+      'X-Enrichment-Key', '<from env>'
     ),
     body := '{}'::jsonb
   );
@@ -658,7 +643,7 @@ curl -s -D - -H "User-Agent: claudebot" "https://www.top10lists.us/arizona/scott
 
 ### Download from GitHub
 ```bat
-curl -s -H "Authorization: token [STORED IN ENVIRONMENT - Ask Robert]" -H "Accept: application/vnd.github.v3.raw" "https://api.github.com/repos/rjmjr1962831/list-wise-boost/contents/path/to/file.ts" -o file.ts
+curl -s -H "Authorization: token <from env or .secrets>" -H "Accept: application/vnd.github.v3.raw" "https://api.github.com/repos/rjmjr1962831/list-wise-boost/contents/path/to/file.ts" -o file.ts
 ```
 
 ---
@@ -674,8 +659,8 @@ curl -s -H "Authorization: token [STORED IN ENVIRONMENT - Ask Robert]" -H "Accep
 
 ## Shorthand
 
-- **takeaways** = Daily updates: each AI records important issues/learnings for the day (template: `npm run takeaways`). Claude and Gemini push only to the **private** knowledge repo; those docs must not be in the public repo. Do not write to the master knowledge document.
-- **ryt** = "Remember your knowledge" — update **only** the master knowledge document (`docs/PROJECT-KNOWLEDGE.md`).
+- **ryt** = "Remember your knowledge"
+- **takeaways** = Run the takeaways function (update project knowledge)
 
 ---
 
@@ -688,5 +673,13 @@ curl -s -H "Authorization: token [STORED IN ENVIRONMENT - Ask Robert]" -H "Accep
 
 ---
 
-*Version 0.1 - 2026-02-13*
-*Updated: [2025-02-10] Rule for all AIs: Run all commands independently. Execute every command you cite.*
+## Daily synthesis (integrated from Claude, Gemini, Cursor)
+
+*Synthesis date: 2026-02-17*
+
+(No takeaways pulled for this date.)
+
+---
+
+*Version 0.3 - 2026-02-17*
+*Updated: Role/freshness fix; doc must be kept current via nightly synthesis*
