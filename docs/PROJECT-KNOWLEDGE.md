@@ -194,14 +194,16 @@ Supabase returns max 1,000 rows by default. **Always paginate.** Never assume 1,
 
 ---
 
-## GitHub Access
+## GitHub Access & Git Flow
 
 - **Repository:** rjmjr1962831/list-wise-boost
 - **Token:** [STORED IN ENVIRONMENT - Ask Robert]
 - **Method:** Always use GitHub API for read/write
 - **Deploy:** Push via API, Vercel auto-deploys
 
-**Any of the three AIs (Claude, Gemini, Cursor) may push code directly when acting in context. Never ask Robert to do steps you can do with env/secrets.**
+**Git flow (mandatory):** Push to **staging** by default after any change. Push to **main** only when Robert explicitly gives permission (e.g. "push to main" / "push to production"). Never push to main without his explicit instruction.
+
+**Any of the three AIs (Claude, Gemini, Cursor) may push code directly when acting in context—always to staging unless Robert has explicitly said to push to main. Never ask Robert to do steps you can do with env/secrets.**
 
 ---
 
@@ -573,7 +575,7 @@ Must return full HTML content, not React shell.
 
 **Command:** `npm run update` (optionally with `--sync` to run `takeaways:sync` first, or `--takeaways "message"`). Script: `scripts/update-project-knowledge.ts`.
 
-**Result:** One updated master knowledge doc for the next day’s load; commit and push to staging (or main when releasing).
+**Result:** One updated master knowledge doc for the next day’s load; commit and push to **staging** only. Do not push to main unless Robert explicitly says to push to main.
 
 ### No Crashing on Big Jobs
 
