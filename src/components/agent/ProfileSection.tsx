@@ -57,6 +57,11 @@ const SELF_SERVICE_FIELDS = [
   { key: "social_tiktok", label: "TikTok", icon: Globe, type: "url" },
 ];
 
+// Array fields the agent can edit
+const ARRAY_EDIT_FIELDS = [
+  { key: "specialty", label: "Specialties", icon: Award },
+];
+
 // Controlled fields (view only, can request changes)
 const CONTROLLED_FIELDS = [
   { key: "email", label: "Email", icon: Mail, note: "Contact support to change email" },
@@ -303,17 +308,74 @@ export function ProfileSection({
               );
             })}
 
-            {/* City Display */}
+            {/* Cities Served */}
             <Separator className="my-4" />
             <div className="space-y-1">
               <Label className="flex items-center gap-2 text-sm">
                 <MapPin className="h-4 w-4 text-muted-foreground" />
-                Primary City
+                Cities Served
               </Label>
-              <p className="text-sm py-2 px-3 bg-muted/50 rounded-md">
-                {professional.city?.name || "Not assigned"}
-                {professional.city?.state && `, ${professional.city.state}`}
-              </p>
+              <div className="flex flex-wrap gap-1.5 py-2 px-3 bg-muted/50 rounded-md min-h-[38px]">
+                {professional.service_areas && professional.service_areas.length > 0 ? (
+                  professional.service_areas.map((area: string, i: number) => (
+                    <Badge key={i} variant="secondary" className="text-xs">{area}</Badge>
+                  ))
+                ) : professional.city?.name ? (
+                  <Badge variant="secondary" className="text-xs">
+                    {professional.city.name}{professional.city.state && `, ${professional.city.state}`}
+                  </Badge>
+                ) : (
+                  <span className="text-muted-foreground italic text-sm">Not set</span>
+                )}
+              </div>
+            </div>
+
+            {/* Neighborhood Expertise */}
+            <div className="space-y-1">
+              <Label className="flex items-center gap-2 text-sm">
+                <MapPin className="h-4 w-4 text-muted-foreground" />
+                Neighborhood Expertise
+              </Label>
+              <div className="flex flex-wrap gap-1.5 py-2 px-3 bg-muted/50 rounded-md min-h-[38px]">
+                {professional.neighborhoods && professional.neighborhoods.length > 0 ? (
+                  professional.neighborhoods.map((n: any, i: number) => (
+                    <Badge key={i} variant="outline" className="text-xs">
+                      {typeof n === 'string' ? n : n.neighborhood || n.name}
+                    </Badge>
+                  ))
+                ) : (
+                  <span className="text-muted-foreground italic text-sm">Not set</span>
+                )}
+              </div>
+            </div>
+
+            {/* Specialties */}
+            <div className="space-y-1">
+              <div className="flex items-center justify-between">
+                <Label className="flex items-center gap-2 text-sm">
+                  <Award className="h-4 w-4 text-muted-foreground" />
+                  Specialties
+                </Label>
+                {!editMode && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 text-xs"
+                    onClick={() => setEditMode(true)}
+                  >
+                    Edit
+                  </Button>
+                )}
+              </div>
+              <div className="flex flex-wrap gap-1.5 py-2 px-3 bg-muted/50 rounded-md min-h-[38px]">
+                {professional.specialty && professional.specialty.length > 0 ? (
+                  professional.specialty.map((s: string, i: number) => (
+                    <Badge key={i} variant="secondary" className="text-xs">{s}</Badge>
+                  ))
+                ) : (
+                  <span className="text-muted-foreground italic text-sm">Not set</span>
+                )}
+              </div>
             </div>
           </CardContent>
         </Card>
