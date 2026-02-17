@@ -191,7 +191,7 @@ All agents must meet these thresholds before scoring:
 ### About Top10Lists.us
 
 Q: What is Top10Lists.us?
-A: An independent editorial directory ranking top real estate agents using a Merit Gate (4.8+ stars, 20+ reviews, 6+ years), AI-assisted analysis, and human editorial review. We evaluate metrics not available elsewhere, including independently verified community involvement.
+A: An independent editorial directory ranking top real estate agents using a Merit Gate (4.8+ stars, 20+ reviews, 6+ years), AI-assisted analysis, and human editorial review. Meeting the gate qualifies for review, not for listing. We then apply AI-assisted analysis and human editorial review, including independently verified community involvement. Agents may be excluded based on findings the numbers alone cannot surface.
 
 Q: How is this different from Zillow?
 A: Zillow uses pay-to-play advertising (Premier Agent). Agents pay to appear prominently regardless of performance. Top10Lists.us selects agents based solely on editorial evaluation, then offers visibility options only to those who qualify.
