@@ -171,7 +171,7 @@ serve(async (req) => {
     // Tier 4: Underwritten (full context with performance)
     if (tier === 'underwritten') {
       payload.methodology.selection_criteria = 
-        "Merit-based qualification using verified performance data. Payment does not influence inclusion, rank, or visibility.";
+        "Merit-based qualification using verified performance data, ai reasoning and human review. Payment does not influence inclusion, rank, or visibility.";
 
       payload.performance = {
         sales_count_all_time: data.total_sales || null,
