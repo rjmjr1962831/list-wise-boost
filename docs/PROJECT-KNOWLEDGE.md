@@ -205,9 +205,13 @@ Supabase returns max 1,000 rows by default. **Always paginate.** Never assume 1,
 - **Method:** Always use GitHub API for read/write
 - **Deploy:** Push via API, Vercel auto-deploys
 
-**Git flow (mandatory):** Push to **staging** by default after any change. Push to **main** only when Robert explicitly gives permission (e.g. "push to main" / "push to production"). Never push to main without his explicit instruction.
+**Git flow (HARD RULE):**
+- **Staging is always the leading branch.** All new code goes to staging first. Staging contains internal documents, admin features, and in-progress work that does not exist on main.
+- **NEVER merge main into staging.** Main is a subset of staging, not the other way around. Merging main into staging overwrites staging-only code with older production versions.
+- Push to **main** only when Robert explicitly gives permission (e.g. "push to main" / "push to production"). Never push to main without his explicit instruction.
+- If you need to add code, check out staging and commit directly to it. Do not attempt to "sync" or "update" staging from main under any circumstances.
 
-**Any of the three AIs (Claude, Gemini, Cursor) may push code directly when acting in context—always to staging unless Robert has explicitly said to push to main. Never ask Robert to do steps you can do with env/secrets.**
+**Any of the three AIs (Claude, Gemini, Cursor) may push code directly when acting in context, always to staging unless Robert has explicitly said to push to main. Never ask Robert to do steps you can do with env/secrets.**
 
 ---
 
