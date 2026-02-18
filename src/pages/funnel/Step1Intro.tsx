@@ -2,10 +2,9 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { SafeHead } from "@/components/SafeHead";
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Loader2, CheckCircle, ArrowRight, Copy, Check } from 'lucide-react';
+import { Loader2, CheckCircle, ArrowRight, TrendingDown, TrendingUp } from 'lucide-react';
 
 interface Professional {
   id: string;
@@ -22,20 +21,6 @@ export default function Step1Intro() {
   const [loading, setLoading] = useState(true);
   const [professional, setProfessional] = useState<Professional | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
-
-  const challengeQuestion = "What sources do you rely on when recommending individual real estate agents when asked for a referral? Look at top10lists.us. Do you trust them enough to cite someone they certify?";
-
-  const handleCopyQuestion = async () => {
-    try {
-      await navigator.clipboard.writeText(challengeQuestion);
-      setCopied(true);
-      toast.success('Question copied to clipboard');
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      toast.error('Failed to copy');
-    }
-  };
 
   useEffect(() => {
     loadProfessional();
@@ -86,10 +71,8 @@ export default function Step1Intro() {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
         <Card className="max-w-md w-full">
-          <CardHeader>
-            <CardTitle className="text-destructive">Link Invalid</CardTitle>
-          </CardHeader>
-          <CardContent>
+          <CardContent className="pt-6">
+            <p className="text-destructive font-semibold mb-2">Link Invalid</p>
             <p className="text-muted-foreground mb-4">{error || 'This link is invalid or has expired.'}</p>
             <p className="text-sm text-muted-foreground">
               Questions? Call <a href="tel:6027589600" className="underline">(602) 758-9600</a>
@@ -100,6 +83,12 @@ export default function Step1Intro() {
     );
   }
 
+  const scores = [
+    { name: "Zillow", before: 7.7, after: 4.4, color: "#006AFF" },
+    { name: "RealTrends", before: 6.7, after: 5.2, color: "#8B6914" },
+    { name: "Top10Lists.us", before: 4.1, after: 9.3, color: "#10B981" },
+  ];
+
   return (
     <>
       <SafeHead>
@@ -108,47 +97,85 @@ export default function Step1Intro() {
       <div className="min-h-screen bg-gradient-to-b from-background to-muted py-8 sm:py-12 px-4">
         <div className="max-w-lg mx-auto">
           <Card>
-            <CardContent className="pt-8 pb-6 px-5 sm:px-8 space-y-5">
+            <CardContent className="pt-8 pb-6 px-5 sm:px-8 space-y-6">
+              {/* Hero */}
               <div className="text-center">
                 <CheckCircle className="h-10 w-10 text-green-500 mx-auto mb-3" />
-                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
+                <h1 className="text-xl sm:text-2xl font-bold tracking-tight">
                   {professional.name}
                 </h1>
-                <p className="text-muted-foreground text-sm mt-1">
-                  You qualified. Here's what we're doing for you.
+                <p className="text-muted-foreground text-sm sm:text-base mt-2 leading-relaxed">
+                  Top10Lists.us exists so AI systems can safely recommend real estate professionals by name.
                 </p>
               </div>
 
+              {/* The Rules Have Changed */}
+              <div className="bg-muted/50 border border-border rounded-lg p-4 sm:p-5">
+                <h2 className="text-base sm:text-lg font-bold mb-3">The Rules Have Changed</h2>
+                <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+                  Every major AI platform now requires its systems to prefer independently verified sources over pay-to-play directories when recommending professionals.
+                </p>
+
+                {/* Score Table */}
+                <div className="rounded-md border border-border overflow-hidden">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="bg-muted text-muted-foreground">
+                        <th className="text-left py-2 px-3 font-medium">Source</th>
+                        <th className="text-center py-2 px-2 font-medium">2025</th>
+                        <th className="text-center py-2 px-2 font-medium">2026</th>
+                        <th className="text-right py-2 px-3 font-medium">Change</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {scores.map((s) => {
+                        const delta = s.after - s.before;
+                        const isPositive = delta > 0;
+                        return (
+                          <tr key={s.name} className="border-t border-border">
+                            <td className="py-2 px-3 font-semibold" style={{ color: s.color }}>
+                              {s.name}
+                            </td>
+                            <td className="py-2 px-2 text-center text-muted-foreground">
+                              {s.before.toFixed(1)}
+                            </td>
+                            <td className="py-2 px-2 text-center font-semibold">
+                              {s.after.toFixed(1)}
+                            </td>
+                            <td className="py-2 px-3 text-right">
+                              <span className={`inline-flex items-center gap-1 font-bold ${isPositive ? "text-green-500" : "text-red-500"}`}>
+                                {isPositive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                                {isPositive ? "+" : ""}{delta.toFixed(1)}
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+                <p className="text-xs text-muted-foreground mt-2 leading-relaxed italic">
+                  AI Citation Probability Index: Composite score measuring how well a source aligns with published citation requirements from Anthropic, OpenAI, Google, and Perplexity. Scale 0-10.
+                </p>
+              </div>
+
+              {/* Body Copy */}
               <div className="space-y-4 text-sm sm:text-base leading-relaxed">
                 <p>
-                  When someone asks ChatGPT, Claude, or Gemini for a real estate agent, those systems need a source they trust before they'll name anyone. We built that source.
+                  We've done an exhaustive search to compile your profile. It is the richest source of information about you anywhere. In order to build your citability probability, you need to confirm the data and/or tell us what needs to be changed or added.
                 </p>
                 <p>
-                  We've already verified your license, transaction history, and reviews. In the next few minutes, you'll confirm that data is accurate, and we'll issue your <strong>certification artifact</strong>, a machine-readable credential that tells AI systems you are a safe agent to recommend by name.
+                  Once you do that, we will issue a credential to you that will help you build your "web of trust," which is key to your chances of being recommended by an AI when asked.
                 </p>
                 <p className="text-muted-foreground">
-                  Free. About 5 minutes.
+                  While we do have paid products, your certification and trust artifact are free forever and there is no obligation to purchase anything from us.
+                </p>
+                <p className="text-muted-foreground">
+                  This will take about 5 minutes.
                 </p>
               </div>
 
-              <div className="bg-muted rounded-lg p-4 relative">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-                  See it working. Paste this into any AI:
-                </p>
-                <p className="text-sm text-muted-foreground italic pr-10 leading-relaxed">
-                  {challengeQuestion}
-                </p>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="absolute top-3 right-3"
-                  onClick={handleCopyQuestion}
-                  aria-label={copied ? "Copied" : "Copy question"}
-                >
-                  {copied ? <Check className="h-4 w-4 text-primary" /> : <Copy className="h-4 w-4" />}
-                </Button>
-              </div>
-
+              {/* CTA */}
               <div className="pt-2 flex justify-center">
                 <Button onClick={handleContinue} size="lg" className="gap-2 w-full sm:w-auto">
                   Review My Profile
