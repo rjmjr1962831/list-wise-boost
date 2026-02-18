@@ -47,7 +47,6 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
-    const action = url.searchParams.get('action');
 
     // ============ NEW: GET action=schema ============
     if (req.method === 'GET' && action === 'schema') {
@@ -212,6 +211,11 @@ serve(async (req) => {
         'profile_link', 'license_number', 'synthesized_bio', 'zillow_data_fetched_at',
         'zillow_search_city', 'zillow_search_position', 'zillow_search_total',
         'zillow_search_page', 'zillow_rank_captured_at',
+        // Sales and pricing fields
+        'sales_count_all_time', 'sales_count_last_year',
+        'price_range_3yr_min', 'price_range_3yr_max', 'average_value_3yr',
+        // Business location fields
+        'business_city', 'business_state', 'business_zip',
         // Profile enhancement fields
         'selection_rationale', 'selection_rationale_generated_at',
         'press_mentions', 'awards_verified', 'notable_achievements',
@@ -447,6 +451,16 @@ serve(async (req) => {
         'zillow_search_total',
         'zillow_search_page',
         'zillow_rank_captured_at',
+        // Sales and pricing fields
+        'sales_count_all_time',
+        'sales_count_last_year',
+        'price_range_3yr_min',
+        'price_range_3yr_max',
+        'average_value_3yr',
+        // Business location fields
+        'business_city',
+        'business_state',
+        'business_zip',
         // Profile enhancement fields
         'selection_rationale',
         'selection_rationale_generated_at',
