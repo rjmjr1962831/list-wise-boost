@@ -21,6 +21,9 @@ Claude (when in context) may handle:
 
 **Robert owns the systems; the AIs execute. When this doc is wrong or old, all three behave wrong.**
 
+### Deliverables to Robert
+**When giving Robert a source file or a test:** Always put it on **staging** and provide a **hyperlink**. Do not point to local paths or "run this locally"; use the live staging URL (e.g. `https://staging.top10lists.us/...`) so he can open it in one click.
+
 ---
 
 ## Project Overview
@@ -98,7 +101,7 @@ Claude (when in context) may handle:
 |------|-------|--------|
 | **Listed** | $0 | Public data only. No artifact/badge. |
 | **Certified** | $0 | Agent-verified. Standard artifact + badge. |
-| **Audited** | $50/mo | Certified + community involvement + cities. Monthly diligence. |
+| **Audited** | $50/mo | Certified + community involvement + cities. Quarterly diligence. |
 | **Underwritten** | $150/mo | Audited + neighborhoods + specialties. Real-time refresh. Max AI citation depth. |
 
 **Deprecated (do not use):** Main $25 / Prime $50 / Luxury $75 or "Accredited" — that revenue model is retired.
