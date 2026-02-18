@@ -179,7 +179,7 @@ export default function Step1Intro() {
                   We've done an <strong>exhaustive search</strong> to compile your profile. It is the <strong>richest source of information about you anywhere</strong>. In order to build your citability probability, you need to confirm the data and/or tell us what needs to be changed or added.
                 </p>
                 <p>
-                  Once you do that, we will issue a <strong>credential</strong> to you that will help you build your <strong>"web of trust,"</strong> which is key to your chances of being recommended by an AI when asked.
+                  Once you do that, we will issue a <strong>credential</strong> to you that will help you build your <strong>"web of trust"</strong> (we'll get to that later), which is key to your chances of being recommended by an AI when asked.
                 </p>
                 <p>
                   While we do have paid products, your certification and trust artifact are <strong>free forever</strong> and there is <strong>no obligation</strong> to purchase anything from us.
