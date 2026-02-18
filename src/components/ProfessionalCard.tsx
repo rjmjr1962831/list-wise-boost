@@ -1391,7 +1391,7 @@ export const ProfessionalCard = ({
                       {/* Total Sales */}
                       <div className="flex flex-col">
                         <span className="text-2xl font-bold text-foreground leading-none">
-                          {totalSales != null && totalSales > 0 ? `>${totalSales.toLocaleString('en-US')}` : 'NA'}
+                          {totalSales != null && totalSales > 0 ? `>${Math.max(0, Math.floor((totalSales - 10) / 10) * 10).toLocaleString('en-US')}` : 'NA'}
                         </span>
                         <span className="text-[0.65rem] uppercase tracking-wider text-muted-foreground mt-1">
                           Total Sales
