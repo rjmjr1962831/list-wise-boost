@@ -108,6 +108,7 @@ const VisibilityExpertisePage = lazy(() => import("@/pages/VisibilityExpertisePa
 const VisibilityReviewPage = lazy(() => import("@/pages/VisibilityReviewPage"));
 const VisibilitySuccessPage = lazy(() => import("@/pages/VisibilitySuccessPage"));
 const AgentLookup = lazy(() => import("@/pages/AgentLookup"));
+const CleanRoom = lazy(() => import("@/pages/CleanRoom"));
 const NeighborhoodApply = lazy(() => import("@/pages/NeighborhoodApply"));
 
 const AdminDashboard = lazy(() => import("@/pages/AdminDashboard"));
@@ -167,6 +168,7 @@ export const routeManifest: RouteObject[] = [
   { path: "/visibility/success", element: React.createElement(VisibilitySuccessPage, null) },
   { path: "/migrate-data", element: React.createElement(MigrateData, null) },
   { path: "/faq", element: React.createElement(FAQ, null) },
+  { path: "/clean-room", element: React.createElement(CleanRoom, null) },
   { path: "/privacy", element: React.createElement(Privacy, null) },
   { path: "/terms", element: React.createElement(TermsOfService, null) },
   { path: "/sms-terms", element: React.createElement(SMSTerms, null) },
