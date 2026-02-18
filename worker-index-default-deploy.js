@@ -16,6 +16,7 @@ const index_default = {
     const ua = request.headers.get("user-agent") || "";
 
     // 1. Warm & Purge Endpoints
+    // Policy: Cached (bot) pages = text/markdown only. Full HTML is only for human-facing (pass-through to origin).
     if (url.pathname === "/__warm" && request.method === "POST") {
       const secret = request.headers.get("X-Warm-Secret");
       if (secret && env.WARM_SECRET && secret === env.WARM_SECRET) {
@@ -24,12 +25,15 @@ const index_default = {
           const targetUrl = body.url;
           const content = body.html || body.content;
           const isMarkdown = body.format === "markdown" || (typeof content === "string" && content.includes("# ") && (content.includes("## `") || content.includes("REASONING_NUGGET")));
+          const looksLikeHtml = typeof content === "string" && (content.trimStart().startsWith("<!") || content.includes("</html>"));
           if (targetUrl && typeof content === "string") {
+            if (!isMarkdown || looksLikeHtml) {
+              return new Response(JSON.stringify({ ok: true, url: targetUrl, skipped: "cache_is_markdown_only" }), { status: 200, headers: { "Content-Type": "application/json" } });
+            }
             const cacheUrl = new URL(targetUrl);
             cacheUrl.search = "";
             const cacheKey = new Request(cacheUrl.toString(), { method: "GET", headers: { "User-Agent": "bot-cache-normalized" } });
-            const contentType = isMarkdown ? "text/markdown; charset=utf-8" : "text/html;charset=UTF-8";
-            await caches.default.put(cacheKey, new Response(content, { headers: { "Content-Type": contentType, "Cache-Control": "public, max-age=604800" } }));
+            await caches.default.put(cacheKey, new Response(content, { headers: { "Content-Type": "text/markdown; charset=utf-8", "Cache-Control": "public, max-age=604800" } }));
             return new Response(JSON.stringify({ ok: true, url: targetUrl }), { status: 200, headers: { "Content-Type": "application/json" } });
           }
         } catch (e) {}
@@ -48,13 +52,20 @@ const index_default = {
           }
           const cache = caches.default;
           let purged = 0;
+          const seen = new Set();
           for (let i = 0; i < urls.length; i++) {
             const u = urls[i];
             const purgeUrl = new URL(u);
             purgeUrl.search = "";
-            const key = new Request(purgeUrl.toString(), { method: "GET", headers: { "User-Agent": "bot-cache-normalized" } });
-            const deleted = await cache.delete(key);
-            if (deleted) purged++;
+            const path = purgeUrl.pathname.replace(/\/+$/, "") || "/";
+            for (const pathVariant of [path, path + "/"].filter((p) => p !== "//")) {
+              purgeUrl.pathname = pathVariant;
+              const urlStr = purgeUrl.toString();
+              if (seen.has(urlStr)) continue;
+              seen.add(urlStr);
+              const key = new Request(urlStr, { method: "GET", headers: { "User-Agent": "bot-cache-normalized" } });
+              if (await cache.delete(key)) purged++;
+            }
           }
           return new Response(JSON.stringify({ purged }), { status: 200, headers: { "Content-Type": "application/json" } });
         } catch (e) {
@@ -62,6 +73,68 @@ const index_default = {
         }
       }
       return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { "Content-Type": "application/json" } });
+    }
+
+    if (url.pathname === "/__prerender-store" && request.method === "POST" && env.PRERENDER_CACHE) {
+      const secret = request.headers.get("X-Warm-Secret");
+      if (!secret || !env.WARM_SECRET || secret !== env.WARM_SECRET) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { "Content-Type": "application/json" } });
+      }
+      try {
+        const body = await request.json();
+        const kvKey = body.key;
+        const html = body.html;
+        const metadata = body.metadata || {};
+        if (!kvKey || typeof html !== "string") {
+          return new Response(JSON.stringify({ error: "key and html required" }), { status: 400, headers: { "Content-Type": "application/json" } });
+        }
+        const encoder = new TextEncoder();
+        const blob = new Blob([encoder.encode(html)]);
+        const stream = blob.stream().pipeThrough(new CompressionStream("gzip"));
+        const gzipped = await new Response(stream).arrayBuffer();
+        metadata.content_encoding = "gzip";
+        await env.PRERENDER_CACHE.put(kvKey, gzipped, { metadata, expirationTtl: 86400 * 7 });
+        return new Response(JSON.stringify({ ok: true, key: kvKey }), { status: 200, headers: { "Content-Type": "application/json" } });
+      } catch (e) {
+        return new Response(JSON.stringify({ error: String(e && e.message) }), { status: 500, headers: { "Content-Type": "application/json" } });
+      }
+    }
+
+    // 1.5 Artifact (markdown) and Badge (PNG) by verification_token
+    const pathname = url.pathname.replace(/\/+$/, "") || "/";
+    const artifactMatch = pathname.match(/^\/artifact\/([a-f0-9-]{36})$/i);
+    if (artifactMatch) {
+      const token = artifactMatch[1];
+      const artifactFnUrl = (env.ARTIFACT_MARKDOWN_URL || "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/artifact-markdown") + "?token=" + encodeURIComponent(token);
+      try {
+        const artRes = await fetch(artifactFnUrl, { method: "GET", headers: { "Accept": "text/markdown" } });
+        const body = await artRes.text();
+        const artHdrs = new Headers();
+        artHdrs.set("Content-Type", "text/markdown; charset=utf-8");
+        artHdrs.set("Cache-Control", "public, max-age=3600, must-revalidate");
+        return new Response(body, { status: artRes.status, headers: artHdrs });
+      } catch (e) {}
+    }
+    const badgeMatch = pathname.match(/^\/badge\/([a-f0-9-]{36})$/i);
+    if (badgeMatch) {
+      const token = badgeMatch[1];
+      const badgeFnUrl = (env.BADGE_IMAGE_URL || "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/badge-image") + "?token=" + encodeURIComponent(token);
+      try {
+        const badgeRes = await fetch(badgeFnUrl, { method: "GET" });
+        if (badgeRes.ok) {
+          const buf = await badgeRes.arrayBuffer();
+          const badgeHdrs = new Headers();
+          badgeHdrs.set("Content-Type", "image/png");
+          badgeHdrs.set("Cache-Control", "public, max-age=86400");
+          const link = badgeRes.headers.get("Link");
+          if (link) badgeHdrs.set("Link", link);
+          const ct = badgeRes.headers.get("X-Certification-Tier");
+          if (ct) badgeHdrs.set("X-Certification-Tier", ct);
+          const an = badgeRes.headers.get("X-Agent-Name");
+          if (an) badgeHdrs.set("X-Agent-Name", an);
+          return new Response(buf, { status: 200, headers: badgeHdrs });
+        }
+      } catch (e) {}
     }
 
     // 2. Bot Identification
@@ -84,6 +157,32 @@ const index_default = {
     
     const isBot = botType !== null;
     const forceRefresh = request.headers.get("X-Force-Refresh") === "true";
+
+    // 2b. Pre-rendered KV (CleanRoom-style full HTML for city/neighborhood list pages)
+    function pathToKvKey(pathname) {
+      const p = pathname.replace(/\/+$/, "") || "/";
+      const parts = p.split("/").filter(Boolean);
+      if (parts.length === 3 && parts[2] === "top10realestateagents") return "clean/" + parts[0] + "/" + parts[1];
+      if (parts.length === 4 && parts[3] === "top10realestateagents") return "clean/" + parts[0] + "/" + parts[1] + "/" + parts[2];
+      return null;
+    }
+    if (isBot && !forceRefresh && env.PRERENDER_CACHE) {
+      const kvKey = pathToKvKey(url.pathname);
+      if (kvKey) {
+        try {
+          const { value: cached, metadata: meta } = await env.PRERENDER_CACHE.getWithMetadata(kvKey, { type: "arrayBuffer", cacheTtl: 3600 });
+          if (cached) {
+            const hdrs = new Headers();
+            hdrs.set("Content-Type", "text/html; charset=utf-8");
+            hdrs.set("Content-Encoding", "gzip");
+            hdrs.set("X-Prerender", "kv-cache");
+            hdrs.set("Cache-Control", "public, max-age=3600");
+            if (meta && meta.generated_at) hdrs.set("X-Generated-At", meta.generated_at);
+            return new Response(cached, { status: 200, headers: hdrs });
+          }
+        } catch (e) {}
+      }
+    }
 
     // 3. Cache Key Normalization
     const cache = caches.default;
@@ -147,9 +246,42 @@ const index_default = {
       return fetch(new Request(originUrl.toString(), { method: request.method, headers: originHeaders }));
     }
 
-    // Bot cache MISS: enqueue with Worker cache status before rendering
+    // Bot cache MISS: try data endpoint first so cache serves real list content (not SPA shell)
+    const path = url.pathname.replace(/\/+$/, "") || "/";
+    const pathSegments = path.split("/").filter(Boolean);
+    const isListPath = pathSegments.length >= 3 && (
+      pathSegments[pathSegments.length - 1] === "top10realestateagents" ||
+      pathSegments[pathSegments.length - 1] === "best-real-estate-agents" ||
+      pathSegments[pathSegments.length - 1]?.startsWith("best-real-estate-agents-")
+    );
+    const botListHtmlUrl = env.BOT_LIST_HTML_URL || "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/serve-bot-list-html";
+
+    if (isListPath) {
+      try {
+        const dataRes = await fetch(botListHtmlUrl + "?path=" + encodeURIComponent(path), {
+          method: "GET",
+          headers: { "Accept": "text/html" },
+        });
+        if (dataRes.ok) {
+          const body = await dataRes.text();
+          if (body && (body.includes("ItemList") || body.includes("RealEstateAgent") || dataRes.headers.get("X-Bot-List") === "1")) {
+            const dataHeaders = new Headers(dataRes.headers);
+            dataHeaders.set("X-Cache", "MISS");
+            dataHeaders.set("X-Render-Status", "BOT_LIST_HTML");
+            const toCache = new Response(body, { status: 200, headers: dataHeaders });
+            try {
+              await caches.default.put(cacheKey, toCache.clone());
+            } catch (e) {}
+            return toCache;
+          }
+        }
+      } catch (e) {
+        console.warn("Bot list HTML fetch failed:", e && e.message);
+      }
+    }
+
+    // Enqueue bot visit with Worker cache status before rendering
     if (env.NOTIFICATION_QUEUE) {
-      const path = url.pathname;
       let agentId = null, agentSlug = null;
       const artifactMatch = path.match(/^\/artifact\/([^/]+)/);
       if (artifactMatch) agentId = artifactMatch[1];
@@ -361,10 +493,19 @@ const index_default = {
         headers: originHeaders 
       }));
 
-      // Tag the response so you can identify failures in your logs
       const fallbackHeaders = new Headers(originResponse.headers);
       fallbackHeaders.set("X-Render-Status", "FAILED_FALLBACK");
-      
+
+      // Cache the origin response so the NEXT bot request gets a Worker HIT instead of re-failing render
+      const bodyBytes = await originResponse.clone().arrayBuffer();
+      const cacheHeaders = new Headers(fallbackHeaders);
+      cacheHeaders.set("Cache-Control", "public, max-age=3600, stale-while-revalidate=86400");
+      try {
+        await caches.default.put(cacheKey, new Response(bodyBytes, { status: originResponse.status, headers: cacheHeaders }));
+      } catch (putErr) {
+        console.warn("Fallback cache put failed:", putErr && putErr.message);
+      }
+
       return new Response(originResponse.body, {
         status: originResponse.status,
         headers: fallbackHeaders
