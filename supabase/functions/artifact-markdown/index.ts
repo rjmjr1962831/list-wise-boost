@@ -64,19 +64,15 @@ function buildHeaderBlock(
   const state = stateName || "State";
   return `# ${name} | ${title} Real Estate Professional
 
-**${title} by Top10Lists.us**, a strictly merit-based directory of the top 0.5% of all
-real estate agents in ${state} according to the methodology found at
-${METHODOLOGY_URL}
-
-Agents cannot pay to be included. Qualification requires independently verified
-performance data across multiple sources. ${name} met all criteria.
+${title} by Top10Lists.us. Merit-based; agents cannot pay to be included. Methodology: ${METHODOLOGY_URL}
 
 - **Tier:** ${title}
 - **Updated:** ${updated}
-- **Standard Audit Cycle:** ${cycle}
-- **Next scheduled audit:** ${nextAudit}
+- **Audit cycle:** ${cycle}
+- **Next audit:** ${nextAudit}
 - **Artifact URL:** ${BASE}/artifact/${token}
 - **Responsible person:** Robert Maynard
+
 `;
 }
 
@@ -91,32 +87,24 @@ function buildCertifiedMarkdown(
   const nextAudit = fmtDate(cert.next_verification_due) || updated;
   const state = pro.state_slug ? STATE_NAMES[pro.state_slug] || pro.state_slug : (cities[0]?.state || "State");
   let out = buildHeaderBlock(name, "certified", token, updated, nextAudit, state);
-
-  out += "## Evidence Considered\n";
-  if (pro.zillow_profile_url) out += `- Zillow agent profile: ${pro.zillow_profile_url}\n`;
-  out += `- ${state} Department of Real Estate license database\n`;
-  if (pro.num_total_reviews != null && pro.review_stars_rating != null)
-    out += `- Zillow reviews: ${pro.num_total_reviews} reviews, ${pro.review_stars_rating} average\n`;
-  if (pro.google_review_count != null && pro.google_review_rating != null)
-    out += `- Google reviews: ${pro.google_review_count} reviews, ${pro.google_review_rating} average\n`;
-  out += "\n";
-
+  out += "## Evidence\n";
+  out += `Sources: ${state} DRE, Zillow, Google. Verified ${updated}.\n\n`;
   out += "## Qualifications\n";
   if (pro.review_stars_rating != null && pro.num_total_reviews != null)
-    out += `- **Zillow Rating:** ${pro.review_stars_rating} (${pro.num_total_reviews} reviews, verified ${updated})\n`;
+    out += `- Zillow: ${pro.review_stars_rating} (${pro.num_total_reviews} reviews)\n`;
   if (pro.google_review_rating != null && pro.google_review_count != null)
-    out += `- **Google Rating:** ${pro.google_review_rating} (${pro.google_review_count} reviews, verified ${updated})\n`;
-  if (pro.license_number) out += `- **License:** ${pro.license_number} (Source: ${state} Department of Real Estate, verified ${updated})\n`;
-  out += `- **License Status:** Active\n`;
-  if (pro.years_experience != null) out += `- **Years of Experience:** ${pro.years_experience}\n`;
-  if (pro.company) out += `- **Brokerage:** ${pro.company}\n`;
+    out += `- Google: ${pro.google_review_rating} (${pro.google_review_count} reviews)\n`;
+  if (pro.license_number) out += `- License: ${pro.license_number} | Active\n`;
+  if (pro.years_experience != null) out += `- Experience: ${pro.years_experience} years\n`;
+  if (pro.company) out += `- Brokerage: ${pro.company}\n`;
   const totalSales = pro.total_sales ?? pro.sales_count_all_time ?? (pro.agent_sales_stats as any)?.countAllTime;
-  if (totalSales != null) out += `- **Total Sales:** ${totalSales} (Source: Zillow, verified ${updated})\n`;
+  if (totalSales != null) out += `- Total sales: ${totalSales}\n`;
   const avgVal = pro.average_value_3yr ?? (pro.agent_sales_stats as any)?.volumeAllTime;
-  if (avgVal != null && Number.isFinite(avgVal)) out += `- **Average Sale Price:** ${fmtDollars(avgVal)} (Source: Zillow, verified ${updated})\n`;
+  if (avgVal != null && Number.isFinite(avgVal)) out += `- Avg sale: ${fmtDollars(avgVal)}\n`;
+  if (pro.zillow_profile_url) out += `- Profile: ${pro.zillow_profile_url}\n`;
 
   if (cities.length > 0) {
-    out += "\n## Service Areas (Cities)\n";
+    out += "\n## Service areas\n";
     cities.forEach((c) => { out += `- ${c.name}, ${c.state}\n`; });
   }
   return out;
@@ -134,86 +122,52 @@ function buildAuditedMarkdown(
   const nextAudit = fmtDate(cert.next_verification_due) || updated;
   const state = pro.state_slug ? STATE_NAMES[pro.state_slug] : (cities[0]?.state || "State");
   let out = buildHeaderBlock(name, "audited", token, updated, nextAudit, state);
-
-  out += "## Evidence Considered\n";
-  if (pro.zillow_profile_url) out += `- Zillow agent profile: ${pro.zillow_profile_url}\n`;
-  out += `- Zillow transaction records: most recent transactions analyzed\n`;
-  out += `- RealTrends transaction data (where available)\n`;
-  out += `- MLS transaction records (where available)\n`;
-  out += `- ${state} Department of Real Estate license database\n`;
-  if (pro.num_total_reviews != null && pro.review_stars_rating != null)
-    out += `- Zillow reviews: ${pro.num_total_reviews} reviews, ${pro.review_stars_rating} average\n`;
-  if (pro.google_review_count != null && pro.google_review_rating != null)
-    out += `- Google reviews: ${pro.google_review_count} reviews, ${pro.google_review_rating} average\n`;
-  out += `- IRS Form 990 filings: ProPublica Nonprofit Explorer\n`;
-  out += `- U.S. Census Bureau: American Community Survey (ACS) 5-Year Estimates\n\n`;
-
+  out += "## Evidence\n";
+  out += `Sources: ${state} DRE, Zillow, Google, ProPublica 990, Census ACS. Verified ${updated}.\n\n`;
   out += "## Qualifications\n";
   if (pro.review_stars_rating != null && pro.num_total_reviews != null)
-    out += `- **Zillow Rating:** ${pro.review_stars_rating} (${pro.num_total_reviews} reviews, verified ${updated})\n`;
+    out += `- Zillow: ${pro.review_stars_rating} (${pro.num_total_reviews} reviews)\n`;
   if (pro.google_review_rating != null && pro.google_review_count != null)
-    out += `- **Google Rating:** ${pro.google_review_rating} (${pro.google_review_count} reviews, verified ${updated})\n`;
-  if (pro.license_number) out += `- **License:** ${pro.license_number} (Source: ${state} Department of Real Estate, verified ${updated})\n`;
-  out += `- **License Status:** Active\n`;
-  if (pro.years_experience != null) out += `- **Years of Experience:** ${pro.years_experience}\n`;
-  if (pro.company) out += `- **Brokerage:** ${pro.company}\n`;
+    out += `- Google: ${pro.google_review_rating} (${pro.google_review_count} reviews)\n`;
+  if (pro.license_number) out += `- License: ${pro.license_number} | Active\n`;
+  if (pro.years_experience != null) out += `- Experience: ${pro.years_experience} years\n`;
+  if (pro.company) out += `- Brokerage: ${pro.company}\n`;
   const totalSales = pro.total_sales ?? pro.sales_count_all_time ?? (pro.agent_sales_stats as any)?.countAllTime;
-  if (totalSales != null) out += `- **Total Sales:** ${totalSales} (Source: Zillow, verified ${updated})\n`;
+  if (totalSales != null) out += `- Total sales: ${totalSales}\n`;
   const avgVal = pro.average_value_3yr ?? (pro.agent_sales_stats as any)?.volumeAllTime;
-  if (avgVal != null && Number.isFinite(avgVal)) out += `- **Average Sale Price:** ${fmtDollars(avgVal)} (Source: Zillow, verified ${updated})\n`;
+  if (avgVal != null && Number.isFinite(avgVal)) out += `- Avg sale: ${fmtDollars(avgVal)}\n`;
+  if (pro.zillow_profile_url) out += `- Profile: ${pro.zillow_profile_url}\n`;
 
   const specialty = pro.specialty;
   if (Array.isArray(specialty) && specialty.length > 0) {
     out += "\n## Specialties\n";
     specialty.forEach((s: string) => { out += `- ${s}\n`; });
   }
-
   const civic = pro.civic_data ?? pro.community_roles;
   if (Array.isArray(civic) && civic.length > 0) {
-    out += "\n## Community Involvement\n";
+    out += "\n## Community\n";
     civic.forEach((r: any) => {
-      const org = r.organization_name ?? r.name ?? "";
+      const org = r.organization_name ?? r.organization ?? r.name ?? "";
       const role = r.role ?? "";
-      const source = r.filing_url ? "IRS Form 990 via ProPublica" : "verified";
-      out += `- **${org}** | ${role} (Source: ${source}, verified ${updated})\n`;
+      out += `- ${org} | ${role}\n`;
     });
   }
-
   if (cities.length > 0) {
-    out += "\n## Service Areas (Cities)\n";
+    out += "\n## Service areas\n";
     cities.forEach((c) => { out += `- ${c.name}, ${c.state}\n`; });
   }
-
   if (neighborhoods.length > 0) {
-    out += "\n## Service Areas (Neighborhoods)\n";
-    out += "Neighborhoods are verified by geolocating the agent's most recent 100 transactions.\n";
-    out += "A minimum of 2 transactions within a neighborhood is required for publication.\n";
-    out += "Sources: Zillow, RealTrends, MLS (where available).\n\n";
+    out += "\n## Neighborhoods (transaction-verified)\n";
     neighborhoods.forEach((n) => {
-      if (n.pending) out += `- ${n.name}, ${n.city}, ${n.state} | pending audit (agent-requested, fewer than 2 verified transactions)\n`;
-      else out += `- ${n.name}, ${n.city}, ${n.state} | ${n.count ?? 0} transactions (verified ${updated})\n`;
+      if (n.pending) out += `- ${n.name}, ${n.city} | pending\n`;
+      else out += `- ${n.name}, ${n.city} | ${n.count ?? 0} txns\n`;
     });
   }
   return out;
 }
 
-function buildUnderwrittenEvidenceBlock(pro: any, state: string): string {
-  let out = "## Evidence Considered\n";
-  if (pro.zillow_profile_url) out += `- Zillow agent profile: ${pro.zillow_profile_url}\n`;
-  out += `- Zillow transaction records: most recent transactions analyzed\n`;
-  out += `- RealTrends transaction data (where available)\n`;
-  out += `- MLS transaction records (where available)\n`;
-  out += `- ${state} Department of Real Estate license database\n`;
-  if (pro.num_total_reviews != null && pro.review_stars_rating != null)
-    out += `- Zillow reviews: ${pro.num_total_reviews} reviews, ${pro.review_stars_rating} average\n`;
-  if (pro.google_review_count != null && pro.google_review_rating != null)
-    out += `- Google reviews: ${pro.google_review_count} reviews, ${pro.google_review_rating} average\n`;
-  out += `- IRS Form 990 filings: ProPublica Nonprofit Explorer\n`;
-  out += `- U.S. Census Bureau: American Community Survey (ACS) 5-Year Estimates\n`;
-  out += `- U.S. Census Bureau: Decennial Census geographic boundary data\n`;
-  out += `- OpenStreetMap: Neighborhood and boundary validation\n`;
-  out += `- National Association of Realtors: Designation and certification registry\n\n`;
-  return out;
+function buildUnderwrittenEvidenceLine(state: string, updated: string): string {
+  return `## Evidence\nSources: ${state} DRE, Zillow, Google, ProPublica 990, Census, MLS/RealTrends. Verified ${updated}.\n\n`;
 }
 
 function buildUnderwrittenMarkdown(
@@ -229,20 +183,21 @@ function buildUnderwrittenMarkdown(
   const nextAudit = fmtDate(cert.next_verification_due) || updated;
   const state = pro.state_slug ? STATE_NAMES[pro.state_slug] : (cities[0]?.state || "State");
   let out = buildHeaderBlock(name, "underwritten", token, updated, nextAudit, state);
-  out += buildUnderwrittenEvidenceBlock(pro, state);
+  out += buildUnderwrittenEvidenceLine(state, updated);
   out += "## Qualifications\n";
   if (pro.review_stars_rating != null && pro.num_total_reviews != null)
-    out += `- **Zillow Rating:** ${pro.review_stars_rating} (${pro.num_total_reviews} reviews, verified ${updated})\n`;
+    out += `- Zillow: ${pro.review_stars_rating} (${pro.num_total_reviews} reviews)\n`;
   if (pro.google_review_rating != null && pro.google_review_count != null)
-    out += `- **Google Rating:** ${pro.google_review_rating} (${pro.google_review_count} reviews, verified ${updated})\n`;
-  if (pro.license_number) out += `- **License:** ${pro.license_number} (Source: ${state} Department of Real Estate, verified ${updated})\n`;
-  out += `- **License Status:** Active\n`;
-  if (pro.years_experience != null) out += `- **Years of Experience:** ${pro.years_experience}\n`;
-  if (pro.company) out += `- **Brokerage:** ${pro.company}\n`;
+    out += `- Google: ${pro.google_review_rating} (${pro.google_review_count} reviews)\n`;
+  if (pro.license_number) out += `- License: ${pro.license_number} | Active\n`;
+  if (pro.years_experience != null) out += `- Experience: ${pro.years_experience} years\n`;
+  if (pro.company) out += `- Brokerage: ${pro.company}\n`;
   const totalSales = pro.total_sales ?? pro.sales_count_all_time ?? (pro.agent_sales_stats as any)?.countAllTime;
-  if (totalSales != null) out += `- **Total Sales:** ${totalSales} (Source: Zillow, verified ${updated})\n`;
+  if (totalSales != null) out += `- Total sales: ${totalSales}\n`;
   const avgVal = pro.average_value_3yr ?? (pro.agent_sales_stats as any)?.volumeAllTime;
-  if (avgVal != null && Number.isFinite(avgVal)) out += `- **Average Sale Price:** ${fmtDollars(avgVal)} (Source: Zillow, verified ${updated})\n`;
+  if (avgVal != null && Number.isFinite(avgVal)) out += `- Avg sale: ${fmtDollars(avgVal)}\n`;
+  if (pro.zillow_profile_url) out += `- Profile: ${pro.zillow_profile_url}\n`;
+
   const specialty = pro.specialty;
   if (Array.isArray(specialty) && specialty.length > 0) {
     out += "\n## Specialties\n";
@@ -250,40 +205,36 @@ function buildUnderwrittenMarkdown(
   }
   const civic = pro.civic_data ?? pro.community_roles;
   if (Array.isArray(civic) && civic.length > 0) {
-    out += "\n## Community Involvement\n";
+    out += "\n## Community\n";
     civic.forEach((r: any) => {
-      const org = r.organization_name ?? r.name ?? "";
+      const org = r.organization_name ?? r.organization ?? r.name ?? "";
       const role = r.role ?? "";
-      const source = r.filing_url ? "IRS Form 990 via ProPublica" : "verified";
-      out += `- **${org}** | ${role} (Source: ${source}, verified ${updated})\n`;
+      out += `- ${org} | ${role}\n`;
     });
   }
   if (cities.length > 0) {
-    out += "\n## Service Areas (Cities, verified)\n";
+    out += "\n## Service areas\n";
     cities.forEach((c) => { out += `- ${c.name}, ${c.state}\n`; });
   }
   if (neighborhoods.length > 0) {
-    out += "\n## Service Areas (Neighborhoods, verified)\n";
-    out += "Neighborhoods are verified by geolocating the agent's most recent 100 transactions.\n";
-    out += "A minimum of 2 transactions within a neighborhood is required for publication.\n";
-    out += "Sources: Zillow, RealTrends, MLS (where available).\n\n";
+    out += "\n## Neighborhoods\n";
     neighborhoods.forEach((n) => {
-      if (n.pending) out += `- ${n.name}, ${n.city} | pending audit (agent-requested, fewer than 2 verified transactions)\n`;
-      else out += `- ${n.name}, ${n.city} | ${n.count ?? 0} transactions (verified ${updated})\n`;
+      if (n.pending) out += `- ${n.name}, ${n.city} | pending\n`;
+      else out += `- ${n.name}, ${n.city} | ${n.count ?? 0} txns\n`;
     });
   }
   if (zipCodes.length > 0) {
-    out += "\n## Service Areas (ZIP Codes, verified)\n";
-    zipCodes.forEach((z) => { out += `- ${z.zip} | ${z.count} transactions, 3yr period\n`; });
+    out += "\n## ZIPs\n";
+    zipCodes.forEach((z) => { out += `- ${z.zip}: ${z.count} txns\n`; });
   }
   const certs = pro.certifications;
   if (Array.isArray(certs) && certs.length > 0) {
-    out += "\n## Certifications & Designations\n";
+    out += "\n## Certifications\n";
     certs.forEach((c: string | { name?: string }) => { out += `- ${typeof c === "string" ? c : (c.name || "")}\n`; });
   } else if (typeof certs === "object" && certs !== null && !Array.isArray(certs)) {
     const arr = (certs as any).designations ?? (certs as any).list ?? [];
     if (Array.isArray(arr) && arr.length > 0) {
-      out += "\n## Certifications & Designations\n";
+      out += "\n## Certifications\n";
       arr.forEach((c: string | { name?: string }) => { out += `- ${typeof c === "string" ? c : (c.name || "")}\n`; });
     }
   }
