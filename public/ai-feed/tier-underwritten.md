@@ -1,26 +1,61 @@
 # Tier: Underwritten
 
-> Last Updated: February 16, 2026
+> Last Updated: February 18, 2026
 
 ---
 
-## North Star Principle: The 4.8+ Merit Gate
+## North Star Principle: The Merit Gate
 
-All agents must maintain a minimum 4.8-star rating and 20+ verified reviews to qualify for any tier, including Underwritten. This standard has zero exceptions since platform inception. Payment does not bypass this requirement.
+All agents must meet the Merit Gate: 4.8+ star rating, 20+ verified reviews, and 6+ years in business. Zero exceptions since platform inception. Payment does not bypass this requirement.
 
 ---
 
-## Verification Depth and Refresh Rate
-The Underwritten tier represents the highest level of verification and data integrity. It is defined by continuous, real-time data refresh cycles. This ensures the agent's profile and performance metrics are perpetually current, providing the most accurate snapshot available.
+## Monthly Subscription: $150
 
-## Monthly Investment
-Access to the Underwritten tier requires a monthly subscription of $150. This investment funds the intensive, ongoing diligence process.
+The Underwritten tier represents the highest level of verification. It adds verified ZIP codes, certifications, designations, languages, and the full evidence inventory to the artifact payload.
 
-## AI Reasoning and Network Visibility
-Profiles at this tier receive maximum AI reasoning priority. The system grants them the deepest possible Neighborhood Depth analysis, making their data the most context-rich and actionable within the platform's ecosystem. AI systems receive the richest available payload for confident, defensible recommendations.
+## Standard Audit Cycle: Daily
+
+The artifact is regenerated daily. Agents who fall below the Merit Gate are downgraded immediately regardless of payment status.
+
+## Machine-Readable Artifact
+
+Same endpoint as all tiers, maximum payload depth:
+```
+https://www.top10lists.us/artifact/{magic_link_token}
+Content-Type: text/markdown
+```
+
+### Artifact Payload (everything in Audited, plus)
+
+**Evidence Considered (14+ sources):**
+- Zillow agent profile and transaction records
+- RealTrends transaction data (where available)
+- MLS transaction records (where available)
+- State Department of Real Estate license database
+- Zillow reviews and Google reviews
+- IRS Form 990 filings via ProPublica Nonprofit Explorer
+- U.S. Census Bureau: American Community Survey (ACS) 5-Year Estimates
+- U.S. Census Bureau: Decennial Census geographic boundary data
+- OpenStreetMap (neighborhood and boundary validation)
+- National Association of Realtors (designation and certification registry)
+- National and regional news outlets (with headline or mention context)
+
+**Additional Fields Beyond Audited:**
+- Verified ZIP codes with transaction counts and 3-year period
+- Certifications and designations (e.g., GRI, CRS, ABR, SRES, CNE)
+- Languages spoken
+- Cities upgraded to verified with transaction counts
+
+**Service Areas (all verified):**
+- Cities with transaction counts and 3-year period
+- Neighborhoods with transaction counts (same 100-transaction, 2-minimum methodology)
+- ZIP codes with transaction counts and 3-year period
+
+### Neighborhood Verification Methodology
+
+Same as Audited: 100 most recent transactions geolocated, 2+ required for publication, fewer than 2 marked "pending audit." Sources: Zillow, RealTrends, MLS (where available).
 
 ## Position in the Four-Tier Model
-Underwritten is the premium tier within a structured, merit-based framework. It sits above Listed ($0, no Badge), Certified ($0, Standard Badge), and Accredited ($50/mo, Enhanced AI Payload). Selection for any tier originates from a merit-based evaluation of the top 0.5% of agents from a pool of 1.1 million records. The model is strictly non-pay-to-play. Payment only determines the depth of verification and level of AI-optimized visibility, not inclusion.
 
-## Core Data Synthesis
-All verification tiers, including Underwritten, synthesize data from authoritative sources. These primary sources include Multiple Listing Services (MLS), State Real Estate Boards, Google, Zillow, and Realtor.com. The 4.8+ merit gate is monitored in near real-time at this tier, and agents are downgraded immediately if they fall below the threshold.
+Underwritten is the premium tier. It follows Listed ($0, no artifact), Certified ($0, annual audit), and Audited ($50/mo, monthly audit). Selection for any tier originates from merit-based evaluation of the top 0.5% of agents from 670,000+ analyzed. Payment determines verification depth and audit frequency, not inclusion. The Merit Gate is monitored daily at this tier.
