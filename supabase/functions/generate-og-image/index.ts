@@ -153,7 +153,7 @@ serve(async (req) => {
         ` : ''}
         ${totalSales > 0 ? `
           <text x="480" y="280" font-family="Inter, sans-serif" font-size="19" fill="hsl(234, 45%, 41%)">
-            • ${totalSales}+ Sales
+            • >${Math.max(0, Math.floor((totalSales - 10) / 10) * 10).toLocaleString()} Sales
           </text>
         ` : ''}
         
