@@ -7,6 +7,7 @@ Disallow: /admin/
 Disallow: /api/
 Disallow: /agent/
 Disallow: /profile/
+Disallow: /funnel/
 
 # Explicitly allow state directories
 # Active
