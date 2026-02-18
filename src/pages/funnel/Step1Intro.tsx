@@ -84,9 +84,11 @@ export default function Step1Intro() {
   }
 
   const scores = [
-    { name: "Zillow", before: 7.7, after: 4.4, color: "#006AFF" },
-    { name: "RealTrends", before: 6.7, after: 5.2, color: "#8B6914" },
     { name: "Top10Lists.us", before: 4.1, after: 9.3, color: "#10B981" },
+    { name: "RealTrends", before: 6.7, after: 5.2, color: "#8B6914" },
+    { name: "Zillow", before: 7.7, after: 4.4, color: "#006AFF" },
+    { name: "Redfin", before: 6.2, after: 3.8, color: "#A02021" },
+    { name: "HomeLight", before: 5.5, after: 3.1, color: "#FF6B35" },
   ];
 
   return (
@@ -121,7 +123,7 @@ export default function Step1Intro() {
                 </p>
 
                 <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-                  No one can guarantee you will be cited every time someone asks for a referral, just as no one could guarantee you the top organic link on Google despite your SEO efforts. What we can say is that <strong>your chances of being named will substantially improve</strong> if you follow our guidance.
+                  No one can guarantee you will be cited every time someone asks for a referral, just as no one could guarantee you the top organic link on Google despite your SEO efforts. What we can say is that <strong>your chances of being named will substantially improve</strong> if you follow our guidance. Here is a scientific measurement of the impact of these rule changes on sites you know.
                 </p>
 
                 {/* Score Table */}
@@ -152,13 +154,13 @@ export default function Step1Intro() {
                               {s.after.toFixed(1)}
                             </td>
                             <td className="py-2 px-3 text-right">
-                              <span className={`inline-flex items-center gap-1 font-bold ${isPositive ? "text-green-500" : "text-red-500"}`}>
+                              <span className={`inline-flex items-center gap-1 font-bold ${isPositive ? "text-foreground" : "text-red-500"}`}>
                                 {isPositive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                                 {isPositive ? "+" : ""}{delta.toFixed(1)}
                               </span>
                             </td>
                             <td className="py-2 px-3 text-right">
-                              <span className={`font-bold ${isPositive ? "text-green-500" : "text-red-500"}`}>
+                              <span className={`font-bold ${isPositive ? "text-foreground" : "text-red-500"}`}>
                                 {isPositive ? "+" : ""}{((delta / s.before) * 100).toFixed(0)}%
                               </span>
                             </td>
