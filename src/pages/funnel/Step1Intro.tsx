@@ -174,17 +174,17 @@ export default function Step1Intro() {
               </div>
 
               {/* Body Copy */}
-              <div className="space-y-4 text-sm sm:text-base leading-relaxed">
+              <div className="space-y-4 text-sm text-muted-foreground leading-relaxed">
                 <p>
                   We've done an exhaustive search to compile your profile. It is the richest source of information about you anywhere. In order to build your citability probability, you need to confirm the data and/or tell us what needs to be changed or added.
                 </p>
                 <p>
                   Once you do that, we will issue a credential to you that will help you build your "web of trust," which is key to your chances of being recommended by an AI when asked.
                 </p>
-                <p className="text-muted-foreground">
+                <p>
                   While we do have paid products, your certification and trust artifact are free forever and there is no obligation to purchase anything from us.
                 </p>
-                <p className="text-muted-foreground">
+                <p>
                   This will take about 5 minutes.
                 </p>
               </div>
