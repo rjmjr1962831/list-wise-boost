@@ -71,7 +71,6 @@ export const ProfessionalCard = ({
   
   // Collapsible bar states - auto-expand if expandSections prop is true
   const [bioOpen, setBioOpen] = useState(expandSections);
-  const [showFullSynthesizedBio, setShowFullSynthesizedBio] = useState(expandSections);
   const [reviewsOpen, setReviewsOpen] = useState(expandSections);
   const [newsOpen, setNewsOpen] = useState(expandSections);
   
@@ -1707,12 +1706,7 @@ export const ProfessionalCard = ({
                   return paragraphs.map(p => `<p class="mb-4">${p}</p>`).join('');
                 };
                 
-                const CHAR_LIMIT = 400;
-                const needsTruncation = bioContent.length > CHAR_LIMIT;
-                const truncatedText = needsTruncation && !showFullSynthesizedBio
-                  ? bioContent.slice(0, CHAR_LIMIT) + '...'
-                  : bioContent;
-                const displayHtml = formatBioWithParagraphs(truncatedText);
+                const displayHtml = formatBioWithParagraphs(bioContent);
                 
                 return (
                   <div className="border rounded-lg p-4 bg-primary/5 mt-3">
@@ -1721,14 +1715,6 @@ export const ProfessionalCard = ({
                       className="prose prose-sm max-w-none text-sm text-foreground leading-relaxed [&>p]:mb-4 [&>p:last-child]:mb-0"
                       dangerouslySetInnerHTML={{ __html: displayHtml }}
                     />
-                    {needsTruncation && (
-                      <button
-                        onClick={() => setShowFullSynthesizedBio(!showFullSynthesizedBio)}
-                        className="text-primary hover:underline text-sm font-medium mt-2"
-                      >
-                        {showFullSynthesizedBio ? 'Show less' : 'Show more'}
-                      </button>
-                    )}
                     {(professional as any).profile_last_synthesized_at && (
                       <p className="text-xs text-muted-foreground mt-2">
                         Profile synthesized: {format(new Date((professional as any).profile_last_synthesized_at), 'MMM d, yyyy')}

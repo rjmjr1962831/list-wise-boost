@@ -1,5 +1,6 @@
 import React from "react";
 import { AgentSourcesBlock } from "@/components/AgentSourcesBlock";
+import { formatWithParagraphs } from "@/utils/formatParagraphs";
 
 /* -------------------------------------------------
    Machine-Native Artifact Types
@@ -228,7 +229,13 @@ export default function AgentProfileDossier(props: AgentProfileDossierProps) {
               backgroundColor: "#fafafa",
             }}
           >
-            {selectionRationale}
+            <div
+              style={{ margin: 0 }}
+              className="[&>p]:mb-4 [&>p:last-child]:mb-0"
+              dangerouslySetInnerHTML={{
+                __html: formatWithParagraphs(selectionRationale) ?? `<p>${selectionRationale.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</p>`,
+              }}
+            />
           </blockquote>
         </section>
       )}
@@ -438,6 +445,7 @@ export default function AgentProfileDossier(props: AgentProfileDossierProps) {
               fontSize: "12px",
               lineHeight: 1.6,
             }}
+            className="[&>p]:mb-4 [&>p:last-child]:mb-0"
             dangerouslySetInnerHTML={{ __html: synthesizedBio }}
           />
         </section>
