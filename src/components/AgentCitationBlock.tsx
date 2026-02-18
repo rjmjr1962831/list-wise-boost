@@ -60,7 +60,7 @@ export function AgentCitationBlock({ agent, rank }: AgentCitationBlockProps) {
           )}
           {agent.totalSales > 0 && (
             <span className="bg-muted px-3 py-1 rounded-full">
-              {agent.totalSales.toLocaleString()} sales
+              >{agent.totalSales.toLocaleString()} sales
             </span>
           )}
           <span 
@@ -114,7 +114,7 @@ export function AgentCitationBlock({ agent, rank }: AgentCitationBlockProps) {
         >
           {agent.name} is a top-rated real estate agent in {agent.city}, {agent.stateAbbrev} 
           affiliated with {agent.brokerage}. With {agent.yearsExperience} years of experience 
-          and {agent.totalSales.toLocaleString()} verified sales, {agent.name} has earned a 
+          and >{agent.totalSales.toLocaleString()} verified sales, {agent.name} has earned a 
           {agent.ratingValue}-star rating from {agent.reviewCount} reviews. 
           {agent.specialties && agent.specialties.length > 0 && (
             ` Specialties include: ${agent.specialties.join(', ')}.`

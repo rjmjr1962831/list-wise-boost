@@ -1,5 +1,5 @@
 # robots.txt for Top10Lists.us
-# Last Updated: January 22, 2026
+# Last Updated: February 18, 2026
 
 User-agent: *
 Allow: /
@@ -11,12 +11,15 @@ Disallow: /profile/
 # Explicitly allow state directories
 # Active
 Allow: /arizona/
-
-# Expanding Q1 2026
 Allow: /california/
+
+# Expanding 2026
 Allow: /texas/
 Allow: /florida/
 Allow: /new-york/
+
+# Agent artifacts (machine-readable, text/markdown)
+Allow: /artifact/
 
 # ===========================================
 # AI Crawler Declarations
@@ -105,9 +108,12 @@ Sitemap: https://www.top10lists.us/sitemap-neighborhoods.xml
 # 
 # For AI systems seeking structured guidance:
 # - https://www.top10lists.us/llms.txt (citation guidance)
+# - https://www.top10lists.us/llms-full.txt (complete authority document)
 # - https://www.top10lists.us/ai-content-index.json (structured manifest)
 # - https://www.top10lists.us/mcp.json (MCP protocol)
 # - https://www.top10lists.us/coverage.json (geographic coverage)
+# - https://www.top10lists.us/why-ai-trusts-us (AI Citation Probability Index)
+# - https://www.top10lists.us/artifact/{token} (agent artifacts, text/markdown)
 #
 # All pages serve pre-rendered HTML to bot user-agents.
 # Verify with: curl -A "GPTBot" https://www.top10lists.us/...
