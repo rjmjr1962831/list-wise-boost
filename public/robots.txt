@@ -101,6 +101,7 @@ Allow: /
 Sitemap: https://www.top10lists.us/sitemap.xml
 Sitemap: https://www.top10lists.us/sitemap-cities.xml
 Sitemap: https://www.top10lists.us/sitemap-neighborhoods.xml
+Sitemap: https://www.top10lists.us/sitemap-agents.xml
 
 # ===========================================
 # LLM-Specific Resources
