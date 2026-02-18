@@ -4,7 +4,7 @@ import { SafeHead } from "@/components/SafeHead";
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Loader2, CheckCircle, ArrowRight, Copy, Check } from 'lucide-react';
 
 interface Professional {
@@ -105,71 +105,59 @@ export default function Step1Intro() {
       <SafeHead>
         <title>Welcome {professional.name} | Top10Lists.us</title>
       </SafeHead>
-      <div className="min-h-screen bg-gradient-to-b from-background to-muted py-12 px-4">
-        <div className="max-w-3xl mx-auto">
+      <div className="min-h-screen bg-gradient-to-b from-background to-muted py-8 sm:py-12 px-4">
+        <div className="max-w-lg mx-auto">
           <Card>
-            <CardHeader className="text-center">
-              <div className="flex justify-center mb-4">
-                <CheckCircle className="h-12 w-12 text-green-500" />
-              </div>
-              <CardTitle className="text-3xl">Welcome, {professional.name}!</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="prose prose-sm max-w-none">
-                <p className="text-lg">
-                  We exist to increase the likelihood that you will be named by AI when asked for an agent referral.
-                </p>
-                <p className="text-lg mt-6">
-                  This is already happening. See for yourself. Enter this question in the AI you use:
-                </p>
-                <div className="my-6 p-4 bg-muted rounded-lg relative">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="absolute top-2 right-2"
-                    onClick={handleCopyQuestion}
-                    aria-label={copied ? "Copied" : "Copy question"}
-                  >
-                    {copied ? <Check className="h-5 w-5 text-primary" /> : <Copy className="h-5 w-5" />}
-                  </Button>
-                  <p className="text-muted-foreground italic pr-12">
-                    {challengeQuestion}
-                  </p>
-                </div>
-
-                <h3 className="text-xl font-semibold mt-6 mb-3">What happens next:</h3>
-                <ol className="space-y-3">
-                  <li>
-                    <strong>Review your profile</strong> - We'll show you the information we have gathered about you
-                  </li>
-                  <li>
-                    <strong>Update if needed</strong> - Make any corrections or additions
-                  </li>
-                  <li>
-                    <strong>Choose your coverage</strong> - Select which cities and neighborhoods you serve
-                  </li>
-                  <li>
-                    <strong>Select your tier</strong> - Pick the level of visibility that works for you
-                  </li>
-                </ol>
-
-                <p className="mt-6">
-                  There is no charge for your listing. This should only take about 5 minutes.
-                </p>
-                <p className="mt-4">
-                  When you finish confirming the data, we will issue you your free Badge and Artifact that tells AI that we have certified you as a safe agent to name when asked for a referral. This will substantially increase the likelihood that you will be recommended by AI.
+            <CardContent className="pt-8 pb-6 px-5 sm:px-8 space-y-5">
+              <div className="text-center">
+                <CheckCircle className="h-10 w-10 text-green-500 mx-auto mb-3" />
+                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
+                  {professional.name}
+                </h1>
+                <p className="text-muted-foreground text-sm mt-1">
+                  You qualified. Here's what we're doing for you.
                 </p>
               </div>
 
-              <div className="pt-6 flex justify-center">
-                <Button onClick={handleContinue} size="lg" className="gap-2">
-                  Let's Get Started
+              <div className="space-y-4 text-sm sm:text-base leading-relaxed">
+                <p>
+                  When someone asks ChatGPT, Claude, or Gemini for a real estate agent, those systems need a source they trust before they'll name anyone. We built that source.
+                </p>
+                <p>
+                  We've already verified your license, transaction history, and reviews. In the next few minutes, you'll confirm that data is accurate, and we'll issue your <strong>certification artifact</strong>, a machine-readable credential that tells AI systems you are a safe agent to recommend by name.
+                </p>
+                <p className="text-muted-foreground">
+                  Free. About 5 minutes.
+                </p>
+              </div>
+
+              <div className="bg-muted rounded-lg p-4 relative">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                  See it working. Paste this into any AI:
+                </p>
+                <p className="text-sm text-muted-foreground italic pr-10 leading-relaxed">
+                  {challengeQuestion}
+                </p>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute top-3 right-3"
+                  onClick={handleCopyQuestion}
+                  aria-label={copied ? "Copied" : "Copy question"}
+                >
+                  {copied ? <Check className="h-4 w-4 text-primary" /> : <Copy className="h-4 w-4" />}
+                </Button>
+              </div>
+
+              <div className="pt-2 flex justify-center">
+                <Button onClick={handleContinue} size="lg" className="gap-2 w-full sm:w-auto">
+                  Review My Profile
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </div>
 
-              <p className="text-center text-sm text-muted-foreground">
-                Questions? Call us at <a href="tel:6027589600" className="underline">(602) 758-9600</a>
+              <p className="text-center text-xs text-muted-foreground">
+                Questions? <a href="tel:6027589600" className="underline">(602) 758-9600</a>
               </p>
             </CardContent>
           </Card>
