@@ -113,15 +113,15 @@ export default function Step1Intro() {
               <div className="bg-muted/50 border border-border rounded-lg p-4 sm:p-5">
                 <h2 className="text-base sm:text-lg font-bold mb-3">The Rules Have Changed</h2>
                 <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-                  Beginning in 2026, every major AI platform now requires its systems to prefer independently verified sources over pay-to-play directories when recommending professionals.
+                  Beginning in 2026, <strong>every major AI platform</strong> now requires its systems to prefer <strong>independently verified sources</strong> over pay-to-play directories when recommending professionals.
                 </p>
 
                 <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-                  We've been building for this change since our founding. The table below reflects how AI citation requirements are shifting. Sources that verify agents independently are gaining weight; directories that sell placement are losing it.
+                  We've been building for this change <strong>since our founding</strong>. The table below reflects how AI citation requirements are shifting. Sources that verify agents independently are <strong>gaining weight</strong>; directories that sell placement are <strong>losing it</strong>.
                 </p>
 
                 <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-                  No one can guarantee you will be cited every time someone asks for a referral, just as no one could guarantee you the top organic link on Google despite your SEO efforts. What we can say is that your chances of being named will substantially improve if you follow our guidance.
+                  No one can guarantee you will be cited every time someone asks for a referral, just as no one could guarantee you the top organic link on Google despite your SEO efforts. What we can say is that <strong>your chances of being named will substantially improve</strong> if you follow our guidance.
                 </p>
 
                 {/* Score Table */}
@@ -176,13 +176,13 @@ export default function Step1Intro() {
               {/* Body Copy */}
               <div className="space-y-4 text-sm text-muted-foreground leading-relaxed">
                 <p>
-                  We've done an exhaustive search to compile your profile. It is the richest source of information about you anywhere. In order to build your citability probability, you need to confirm the data and/or tell us what needs to be changed or added.
+                  We've done an <strong>exhaustive search</strong> to compile your profile. It is the <strong>richest source of information about you anywhere</strong>. In order to build your citability probability, you need to confirm the data and/or tell us what needs to be changed or added.
                 </p>
                 <p>
-                  Once you do that, we will issue a credential to you that will help you build your "web of trust," which is key to your chances of being recommended by an AI when asked.
+                  Once you do that, we will issue a <strong>credential</strong> to you that will help you build your <strong>"web of trust,"</strong> which is key to your chances of being recommended by an AI when asked.
                 </p>
                 <p>
-                  While we do have paid products, your certification and trust artifact are free forever and there is no obligation to purchase anything from us.
+                  While we do have paid products, your certification and trust artifact are <strong>free forever</strong> and there is <strong>no obligation</strong> to purchase anything from us.
                 </p>
                 <p>
                   This will take about 5 minutes.
