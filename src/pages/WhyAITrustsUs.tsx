@@ -618,7 +618,7 @@ const WhyAITrustsUs = () => {
             to be. Check if you qualify.
           </p>
           <Link
-            to="/check-profile"
+            to="/are-you-an-agent"
             className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-lg font-semibold hover:bg-primary/90 transition-colors"
           >
             Check My Eligibility
