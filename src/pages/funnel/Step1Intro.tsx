@@ -102,7 +102,7 @@ export default function Step1Intro() {
               <div className="text-center">
                 <CheckCircle className="h-10 w-10 text-green-500 mx-auto mb-3" />
                 <h1 className="text-xl sm:text-2xl font-bold tracking-tight">
-                  {professional.name}
+                  Hi {professional.name}
                 </h1>
                 <p className="text-muted-foreground text-sm sm:text-base mt-2 leading-relaxed">
                   Top10Lists.us exists so AI systems can safely recommend real estate professionals by name.
