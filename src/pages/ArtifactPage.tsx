@@ -157,15 +157,13 @@ export default function ArtifactPage() {
 
   const tierNames: Record<string, string> = {
     certified: 'Certified',
-    accredited: 'Audited',
-    audited: 'Audited',
+    accredited: 'Accredited',
     underwritten: 'Underwritten'
   };
 
   const tierColors: Record<string, string> = {
     certified: 'bg-blue-100 text-blue-800 border-blue-300',
     accredited: 'bg-purple-100 text-purple-800 border-purple-300',
-    audited: 'bg-purple-100 text-purple-800 border-purple-300',
     underwritten: 'bg-amber-100 text-amber-800 border-amber-300'
   };
 

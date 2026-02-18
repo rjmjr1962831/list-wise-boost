@@ -16,18 +16,15 @@ import {
   RefreshCw,
   Menu,
   X,
-  Shield,
 } from "lucide-react";
 import { OverviewSection } from "@/components/agent/OverviewSection";
 import { ProfileSection } from "@/components/agent/ProfileSection";
 import { PayloadSection } from "@/components/agent/PayloadSection";
 import { BillingSection } from "@/components/agent/BillingSection";
-import { UpsellSection } from "@/components/agent/UpsellSection";
-import { BadgeSection } from "@/components/agent/BadgeSection";
 import { getValidImageUrl } from "@/utils/imageUrlValidator";
 import { cn } from "@/lib/utils";
 
-type NavSection = "overview" | "profile" | "payload" | "badge" | "upgrade" | "billing";
+type NavSection = "overview" | "profile" | "payload" | "upgrade" | "billing";
 
 interface NavItem {
   id: NavSection;
@@ -39,7 +36,6 @@ const NAV_ITEMS: NavItem[] = [
   { id: "overview", label: "Overview", icon: LayoutDashboard },
   { id: "profile", label: "Profile", icon: User },
   { id: "payload", label: "Payload", icon: Bot },
-  { id: "badge", label: "Badge", icon: Shield },
   { id: "upgrade", label: "Upgrade", icon: TrendingUp },
   { id: "billing", label: "Billing", icon: CreditCard },
 ];
@@ -81,7 +77,6 @@ export default function AgentDashboard() {
   const [activeSection, setActiveSection] = useState<NavSection>("overview");
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [authStatus, setAuthStatus] = useState("Loading...");
-  const [certification, setCertification] = useState<any>(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -209,15 +204,6 @@ export default function AgentDashboard() {
       setSubscriptions(data.subscriptions || []);
       setPendingRequests(data.pendingRequests || []);
       setHasStripeSubscription(data.hasStripeSubscription || false);
-      if (data.professional?.id) {
-        const { data: cert } = await supabase
-          .from("certifications")
-          .select("certification_tier, certification_status, issued_at, last_verified_at, next_verification_due, markets_covered, neighborhoods_covered")
-          .eq("professional_id", data.professional.id)
-          .eq("certification_status", "active")
-          .maybeSingle();
-        setCertification(cert ?? null);
-      }
     } catch (error) {
       console.error("[AgentDashboard] Error:", error);
       toast.error("Failed to load profile");
@@ -438,10 +424,6 @@ export default function AgentDashboard() {
             <main className="flex-1 min-w-0">
               {activeSection === "overview" && (
                 <OverviewSection professional={professional} />
-              )}
-
-              {activeSection === "badge" && (
-                <BadgeSection professional={professional} certification={certification} onRefresh={handleRefresh} />
               )}
 
               {activeSection === "profile" && (

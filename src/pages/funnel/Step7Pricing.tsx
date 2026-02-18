@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Loader2, Check, List, BadgeCheck, Shield, Zap } from 'lucide-react';
 import { toast } from 'sonner';
 
-type CertificationTier = 'listed' | 'certified' | 'audited' | 'underwritten';
+type CertificationTier = 'listed' | 'certified' | 'accredited' | 'underwritten';
 
 interface PricingRow {
   tier: CertificationTier;
@@ -22,7 +22,7 @@ interface PricingRow {
 const DEFAULT_PRICES: PricingRow[] = [
   { tier: 'listed', monthly_price: 0, payload_weight: 'basic', refresh_cadence: 'public_data_only' },
   { tier: 'certified', monthly_price: 0, payload_weight: 'standard', refresh_cadence: 'annual' },
-  { tier: 'audited', monthly_price: 50, payload_weight: 'enhanced', refresh_cadence: 'monthly' },
+  { tier: 'accredited', monthly_price: 50, payload_weight: 'enhanced', refresh_cadence: 'monthly' },
   { tier: 'underwritten', monthly_price: 150, payload_weight: 'maximum', refresh_cadence: 'real_time' },
 ];
 
@@ -46,8 +46,8 @@ const TIER_META: Record<CertificationTier, { name: string; icon: typeof List; fe
     ],
     popular: true,
   },
-  audited: {
-    name: 'Audited',
+  accredited: {
+    name: 'Accredited',
     icon: Shield,
     features: [
       'Enhanced AI payload',
@@ -76,7 +76,6 @@ export default function Step7Pricing() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [professional, setProfessional] = useState<{ id: string; name: string } | null>(null);
   const [selectedTier, setSelectedTier] = useState<CertificationTier>('certified');
   const [listedAction, setListedAction] = useState<'stay_listed' | 'delete_listing'>('stay_listed');
   const [isAnnual, setIsAnnual] = useState(true);
@@ -107,7 +106,6 @@ export default function Step7Pricing() {
         navigate('/404');
         return;
       }
-      setProfessional(prof);
 
       if (priceRes.data && priceRes.data.length > 0) {
         setPrices(priceRes.data as PricingRow[]);
@@ -139,7 +137,7 @@ export default function Step7Pricing() {
       const isFree = selectedTier === 'listed' || selectedTier === 'certified';
 
       if (isFree) {
-        const { data: tierData, error: tierError } = await supabase.functions.invoke('funnel-select-tier', {
+        const { data, error } = await supabase.functions.invoke('funnel-select-tier', {
           body: {
             token,
             tier: selectedTier,
@@ -147,36 +145,14 @@ export default function Step7Pricing() {
           },
         });
 
-        if (tierError) throw tierError;
-        if (tierData?.error) throw new Error(tierData.error);
+        if (error) throw error;
+        if (data?.error) throw new Error(data.error);
 
         if (selectedTier === 'listed' && listedAction === 'delete_listing') {
           toast.success('Your listing removal request has been recorded.');
-          navigate(`/funnel/${token}/success`);
-          return;
+        } else {
+          toast.success(selectedTier === 'certified' ? 'Certified! Badge issued.' : 'Saved.');
         }
-        if (selectedTier === 'listed') {
-          toast.success('Saved.');
-          navigate(`/funnel/${token}/success`);
-          return;
-        }
-        if (selectedTier === 'certified' && professional) {
-          const { data: certData, error: certError } = await supabase.functions.invoke('generate-certification', {
-            body: {
-              professional_id: professional.id,
-              tier: 'certified',
-              markets_covered: [],
-              neighborhoods_covered: [],
-              trigger: 'funnel_completion',
-            },
-          });
-          if (certError) throw certError;
-          if (certData?.error) throw new Error(certData.error);
-          toast.success('Certified! Badge issued.');
-          navigate(`/funnel/${token}/success`, { state: { certification: certData, tier: 'certified' } });
-          return;
-        }
-        toast.success('Certified! Badge issued.');
         navigate(`/funnel/${token}/success`);
         return;
       }
@@ -226,7 +202,7 @@ export default function Step7Pricing() {
             <CardContent>
               <RadioGroup value={selectedTier} onValueChange={(v) => setSelectedTier(v as CertificationTier)}>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
-                  {(['listed', 'certified', 'audited', 'underwritten'] as const).map((tier) => {
+                  {(['listed', 'certified', 'accredited', 'underwritten'] as const).map((tier) => {
                     const meta = TIER_META[tier];
                     const Icon = meta.icon;
                     const { display } = getPrice(tier);
