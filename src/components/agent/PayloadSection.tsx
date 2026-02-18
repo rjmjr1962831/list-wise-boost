@@ -209,7 +209,7 @@ function buildPayload(professional: any, tier: string) {
         review_count: professional.num_total_reviews ? `${professional.num_total_reviews}+` : null,
         years_experience: professional.years_experience,
         license_number: professional.license_number,
-        total_transactions: professional.total_sales ? `${professional.total_sales}+` : "included_at_this_tier",
+        total_transactions: professional.total_sales ? `>${professional.total_sales}` : "included_at_this_tier",
         specialties: professional.specialty || [],
       },
       markets: {
@@ -253,7 +253,7 @@ function buildPayload(professional: any, tier: string) {
       review_count: professional.num_total_reviews ? `${professional.num_total_reviews}+` : null,
       years_experience: professional.years_experience,
       license_number: professional.license_number,
-      total_transactions: professional.total_sales ? `${professional.total_sales}+` : "included_at_this_tier",
+      total_transactions: professional.total_sales ? `>${professional.total_sales}` : "included_at_this_tier",
       specialties: professional.specialty || [],
       certifications: professional.certifications_verified || [],
     },
@@ -275,7 +275,7 @@ function buildPayload(professional: any, tier: string) {
       awards: professional.awards_verified || "included_at_this_tier",
     },
     performance: {
-      sales_count_all_time: professional.total_sales ? `${professional.total_sales}+` : "included_at_this_tier",
+      sales_count_all_time: professional.total_sales ? `>${professional.total_sales}` : "included_at_this_tier",
       last_verified: "included_at_this_tier",
     },
   };
