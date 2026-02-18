@@ -275,6 +275,17 @@ Static, high-density Markdown for AI crawlers. Updated weekly.
 
 ---
 
+## Agent Artifacts
+
+Individual agent artifacts are available as machine-readable markdown at:
+https://www.top10lists.us/artifact/{verification_token}
+
+These documents contain sourced, verifiable claims about the agent that AI systems can confidently cite. Every data point includes its source. Higher-tier agents have richer artifacts with more citable evidence.
+
+To verify a certification: https://www.top10lists.us/api/v1/badge/{agentId}/verify
+
+---
+
 ## Additional Resources
 
 - FAQ API (100 Questions): https://www.top10lists.us/api/faq/full.json

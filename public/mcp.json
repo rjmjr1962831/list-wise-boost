@@ -16,6 +16,28 @@
   },
   "resources": [
     {
+      "name": "agent-artifact-markdown",
+      "description": "Machine-readable markdown artifact for a certified agent. Sourced, verifiable claims. Use verification_token from agent record.",
+      "url": "https://www.top10lists.us/artifact/{verification_token}",
+      "mimeType": "text/markdown",
+      "refreshInterval": "hourly",
+      "urlTemplate": true,
+      "variables": {
+        "verification_token": "Agent verification_token (UUID)"
+      }
+    },
+    {
+      "name": "agent-badge-image",
+      "description": "Tier-appropriate certification badge image (PNG). Link header points to artifact URL.",
+      "url": "https://www.top10lists.us/badge/{verification_token}",
+      "mimeType": "image/png",
+      "refreshInterval": "daily",
+      "urlTemplate": true,
+      "variables": {
+        "verification_token": "Agent verification_token (UUID)"
+      }
+    },
+    {
       "name": "agent-certification-badge",
       "description": "Machine-readable certification badge payload for individual agents with tiered context (certified/accredited/underwritten)",
       "url": "https://www.top10lists.us/api/v1/badge/{agentId}",

@@ -8,10 +8,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { LogOut, User, CreditCard, TrendingUp, RefreshCw, Bot } from "lucide-react";
+import { LogOut, User, CreditCard, TrendingUp, RefreshCw, Bot, Shield, Copy, Download } from "lucide-react";
 import { ProfileSection } from "@/components/agent/ProfileSection";
 import { BillingSection } from "@/components/agent/BillingSection";
 import { UpsellSection } from "@/components/agent/UpsellSection";
+import { BadgeSection } from "@/components/agent/BadgeSection";
 import { getValidImageUrl } from "@/utils/imageUrlValidator";
 
 interface Subscription {
@@ -46,6 +47,7 @@ export default function AgentDashboard() {
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [pendingRequests, setPendingRequests] = useState<PendingRequest[]>([]);
   const [hasStripeSubscription, setHasStripeSubscription] = useState(false);
+  const [certification, setCertification] = useState<any>(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -107,6 +109,15 @@ export default function AgentDashboard() {
       setSubscriptions(data.subscriptions || []);
       setPendingRequests(data.pendingRequests || []);
       setHasStripeSubscription(data.hasStripeSubscription || false);
+      if (data.professional?.id) {
+        const { data: cert } = await supabase
+          .from("certifications")
+          .select("certification_tier, certification_status, issued_at, last_verified_at, next_verification_due, markets_covered, neighborhoods_covered")
+          .eq("professional_id", data.professional.id)
+          .eq("certification_status", "active")
+          .maybeSingle();
+        setCertification(cert ?? null);
+      }
     } catch (error) {
       console.error("[AgentDashboard] Error:", error);
       toast.error("Failed to load profile");
@@ -239,10 +250,14 @@ export default function AgentDashboard() {
 
           {/* Main Content Tabs */}
           <Tabs defaultValue="profile" className="space-y-6">
-            <TabsList className="grid w-full max-w-2xl grid-cols-4">
+            <TabsList className="grid w-full max-w-2xl grid-cols-5">
               <TabsTrigger value="profile" className="flex items-center gap-2">
                 <User className="h-4 w-4" />
                 <span className="hidden sm:inline">Profile</span>
+              </TabsTrigger>
+              <TabsTrigger value="badge" className="flex items-center gap-2">
+                <Shield className="h-4 w-4" />
+                <span className="hidden sm:inline">Badge</span>
               </TabsTrigger>
               <TabsTrigger
                 value="bot-analytics"
@@ -273,6 +288,10 @@ export default function AgentDashboard() {
                 pendingRequests={pendingRequests}
                 onProfileUpdate={handleRefresh}
               />
+            </TabsContent>
+
+            <TabsContent value="badge">
+              <BadgeSection professional={professional} certification={certification} onRefresh={handleRefresh} />
             </TabsContent>
 
             <TabsContent value="billing">

@@ -81,6 +81,7 @@ const Step6Neighborhoods = lazy(() => import("@/pages/funnel/Step6Neighborhoods"
 const Step7Pricing = lazy(() => import("@/pages/funnel/Step7Pricing"));
 const StepSuccess = lazy(() => import("@/pages/funnel/StepSuccess"));
 const ArtifactPage = lazy(() => import("@/pages/ArtifactPage"));
+const CertificatePage = lazy(() => import("@/pages/CertificatePage"));
 const ClaimRedirect = lazy(() => import("@/pages/ClaimRedirect"));
 const ShortLinkRedirect = lazy(() => import("@/pages/ShortLinkRedirect"));
 const AzMagicLinkRedirect = lazy(() => import("@/pages/AzMagicLinkRedirect"));
@@ -118,6 +119,7 @@ const MobilePreview = lazy(() => import("@/pages/MobilePreview"));
 const OGPreview = lazy(() => import("@/pages/OGPreview"));
 const CRM = lazy(() => import("@/pages/CRM"));
 const TestVisibilityComponents = lazy(() => import("@/pages/TestVisibilityComponents"));
+const BadgeLevelsPreview = lazy(() => import("@/pages/staging/BadgeLevelsPreview"));
 const CRMLogin = lazy(() => import("@/pages/admin/crm/CRMLogin"));
 const CRMDashboard = lazy(() => import("@/pages/admin/crm/CRMDashboard"));
 const CRMAgentList = lazy(() => import("@/pages/admin/crm/AgentList"));
@@ -159,6 +161,7 @@ export const routeManifest: RouteObject[] = [
   { path: "/og-preview", element: wrapAdmin(React.createElement(OGPreview, null)) },
   { path: "/crm", element: wrapAdmin(React.createElement(CRM, null)) },
   { path: "/test-visibility-components", element: wrapAdmin(React.createElement(TestVisibilityComponents, null)) },
+  { path: "/badge-levels-preview", element: React.createElement(BadgeLevelsPreview, null) },
   { path: "/visibility", element: React.createElement(Navigate, { to: "/visibility/coverage", replace: true }) },
   { path: "/visibility/coverage", element: React.createElement(VisibilityCoveragePage, null) },
   { path: "/visibility/expertise", element: React.createElement(VisibilityExpertisePage, null) },
@@ -185,6 +188,7 @@ export const routeManifest: RouteObject[] = [
   { path: "/check-agent", element: React.createElement(AgentLookup, null) },
   { path: "/agent-info", element: React.createElement(AgentInfo, null) },
   { path: "/apply-listing", element: React.createElement(ApplyListing, null) },
+  { path: "/certificate/:slug", element: React.createElement(CertificatePage, null) },
   { path: "/artifact/:agentId", element: React.createElement(ArtifactPage, null) },
   { path: "/join", element: React.createElement(AgentLanding, null) },
   { path: "/agent-setup", element: React.createElement(AgentSetup, null) },
