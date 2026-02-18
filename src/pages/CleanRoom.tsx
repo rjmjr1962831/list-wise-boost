@@ -530,7 +530,7 @@ const CleanRoom = () => {
               <p>Phone: (480) 313-7090</p>
               <p>Website: <a href="http://www.marcelagrace.com" rel="nofollow">http://www.marcelagrace.com</a></p>
               <p>Zillow: <a href="https://www.zillow.com/profile/MarcelaGrace" rel="nofollow">https://www.zillow.com/profile/MarcelaGrace</a></p>
-              <p>Verified Profile: <a href="https://www.top10lists.us/p/wkKBdX">https://www.top10lists.us/p/wkKBdX</a></p>
+              <p>Verified Profile: <a href="https://www.top10lists.us/arizona/agents/marcela-grace-moat-7090">https://www.top10lists.us/arizona/agents/marcela-grace-moat-7090</a></p>
             </div>
           </article>
           <hr />
@@ -601,7 +601,7 @@ const CleanRoom = () => {
               <p>Phone: (480) 378-7760</p>
               <p>Website: <a href="https://gluchgroup.com/?utm_source=zillow&amp;utm_medium=main_page" rel="nofollow">https://gluchgroup.com/?utm_source=zillow&amp;utm_medium=main_page</a></p>
               <p>Zillow: <a href="https://www.zillow.com/profile/John-Gluch" rel="nofollow">https://www.zillow.com/profile/John-Gluch</a></p>
-              <p>Verified Profile: <a href="https://www.top10lists.us/p/fsj8gX">https://www.top10lists.us/p/fsj8gX</a></p>
+              <p>Verified Profile: <a href="https://www.top10lists.us/arizona/agents/john-gluch-7760">https://www.top10lists.us/arizona/agents/john-gluch-7760</a></p>
             </div>
           </article>
           <hr />
@@ -686,7 +686,7 @@ const CleanRoom = () => {
               <p>Phone: (480) 678-7308</p>
               <p>Website: <a href="http://www.teamostendorp.com/" rel="nofollow">http://www.teamostendorp.com/</a></p>
               <p>Zillow: <a href="https://www.zillow.com/profile/HomesByJillO" rel="nofollow">https://www.zillow.com/profile/HomesByJillO</a></p>
-              <p>Verified Profile: <a href="https://www.top10lists.us/p/pWrz3H">https://www.top10lists.us/p/pWrz3H</a></p>
+              <p>Verified Profile: <a href="https://www.top10lists.us/arizona/agents/jill-ostendorp-7308">https://www.top10lists.us/arizona/agents/jill-ostendorp-7308</a></p>
             </div>
           </article>
           <hr />
@@ -758,7 +758,7 @@ const CleanRoom = () => {
               <p>Phone: (602) 757-6249</p>
               <p>Website: <a href="http://Themininberggroup.com" rel="nofollow">http://Themininberggroup.com</a></p>
               <p>Zillow: <a href="https://www.zillow.com/profile/eric-mininberg" rel="nofollow">https://www.zillow.com/profile/eric-mininberg</a></p>
-              <p>Verified Profile: <a href="https://www.top10lists.us/p/mGjavU">https://www.top10lists.us/p/mGjavU</a></p>
+              <p>Verified Profile: <a href="https://www.top10lists.us/arizona/agents/eric-mininberg-6249">https://www.top10lists.us/arizona/agents/eric-mininberg-6249</a></p>
             </div>
           </article>
           <hr />
@@ -835,7 +835,7 @@ const CleanRoom = () => {
               <p>Phone: (602) 369-1085</p>
               <p>Website: <a href="http://leadingluxuryexperts.com/" rel="nofollow">http://leadingluxuryexperts.com/</a></p>
               <p>Zillow: <a href="https://www.zillow.com/profile/Bonny-Holland" rel="nofollow">https://www.zillow.com/profile/Bonny-Holland</a></p>
-              <p>Verified Profile: <a href="https://www.top10lists.us/p/6mKfFB">https://www.top10lists.us/p/6mKfFB</a></p>
+              <p>Verified Profile: <a href="https://www.top10lists.us/arizona/agents/bonny-holland-1085">https://www.top10lists.us/arizona/agents/bonny-holland-1085</a></p>
             </div>
           </article>
           <hr />
@@ -905,7 +905,7 @@ const CleanRoom = () => {
               <p>Phone: (480) 759-2242</p>
               <p>Website: <a href="http://www.canamrealty.com" rel="nofollow">http://www.canamrealty.com</a></p>
               <p>Zillow: <a href="https://www.zillow.com/profile/Rick-Metcalfe" rel="nofollow">https://www.zillow.com/profile/Rick-Metcalfe</a></p>
-              <p>Verified Profile: <a href="https://www.top10lists.us/p/9cpUV4">https://www.top10lists.us/p/9cpUV4</a></p>
+              <p>Verified Profile: <a href="https://www.top10lists.us/arizona/agents/rick-metcalfe-2242">https://www.top10lists.us/arizona/agents/rick-metcalfe-2242</a></p>
             </div>
           </article>
           <hr />
@@ -971,7 +971,7 @@ const CleanRoom = () => {
               <p>Phone: (602) 692-2853</p>
               <p>Website: <a href="http://www.agentnies.com/" rel="nofollow">http://www.agentnies.com/</a></p>
               <p>Zillow: <a href="https://www.zillow.com/profile/Agent-Nies" rel="nofollow">https://www.zillow.com/profile/Agent-Nies</a></p>
-              <p>Verified Profile: <a href="https://www.top10lists.us/p/fYyKja">https://www.top10lists.us/p/fYyKja</a></p>
+              <p>Verified Profile: <a href="https://www.top10lists.us/arizona/agents/josh-a-nies-2853">https://www.top10lists.us/arizona/agents/josh-a-nies-2853</a></p>
             </div>
           </article>
           <hr />
@@ -1028,7 +1028,7 @@ const CleanRoom = () => {
               <p>Phone: (480) 818-2005</p>
               <p>Website: <a href="http://www.takemehomejamesaz.com" rel="nofollow">http://www.takemehomejamesaz.com</a></p>
               <p>Zillow: <a href="https://www.zillow.com/profile/James-Wedell7" rel="nofollow">https://www.zillow.com/profile/James-Wedell7</a></p>
-              <p>Verified Profile: <a href="https://www.top10lists.us/p/Nl6N7F">https://www.top10lists.us/p/Nl6N7F</a></p>
+              <p>Verified Profile: <a href="https://www.top10lists.us/arizona/agents/james-wedell-2005">https://www.top10lists.us/arizona/agents/james-wedell-2005</a></p>
             </div>
           </article>
           <hr />
@@ -1079,7 +1079,7 @@ const CleanRoom = () => {
               <p>Phone: (623) 910-3250</p>
               <p>Website: <a href="http://www.DaleChandler.com" rel="nofollow">http://www.DaleChandler.com</a></p>
               <p>Zillow: <a href="https://www.zillow.com/profile/The-Chandlers" rel="nofollow">https://www.zillow.com/profile/The-Chandlers</a></p>
-              <p>Verified Profile: <a href="https://www.top10lists.us/p/XNG1ZQ">https://www.top10lists.us/p/XNG1ZQ</a></p>
+              <p>Verified Profile: <a href="https://www.top10lists.us/arizona/agents/dale-and-shirley-chandler-3250">https://www.top10lists.us/arizona/agents/dale-and-shirley-chandler-3250</a></p>
             </div>
           </article>
           <hr />
@@ -1162,7 +1162,7 @@ const CleanRoom = () => {
               <p>Phone: (480) 463-4373</p>
               <p>Website: <a href="https://abresidential.co/" rel="nofollow">https://abresidential.co/</a></p>
               <p>Zillow: <a href="https://www.zillow.com/profile/thebriancnorth" rel="nofollow">https://www.zillow.com/profile/thebriancnorth</a></p>
-              <p>Verified Profile: <a href="https://www.top10lists.us/p/ZATpmU">https://www.top10lists.us/p/ZATpmU</a></p>
+              <p>Verified Profile: <a href="https://www.top10lists.us/arizona/agents/brian-north-4373">https://www.top10lists.us/arizona/agents/brian-north-4373</a></p>
             </div>
           </article>
           <hr />
@@ -1251,7 +1251,7 @@ const CleanRoom = () => {
               <p>Phone: (602) 762-7653</p>
               <p>Website: <a href="http://www.agentabove.com/" rel="nofollow">http://www.agentabove.com/</a></p>
               <p>Zillow: <a href="https://www.zillow.com/profile/David-Tucker" rel="nofollow">https://www.zillow.com/profile/David-Tucker</a></p>
-              <p>Verified Profile: <a href="https://www.top10lists.us/p/8MjbAm">https://www.top10lists.us/p/8MjbAm</a></p>
+              <p>Verified Profile: <a href="https://www.top10lists.us/arizona/agents/david-tucker-7653">https://www.top10lists.us/arizona/agents/david-tucker-7653</a></p>
             </div>
           </article>
           <hr />
@@ -1315,7 +1315,7 @@ const CleanRoom = () => {
               <p>Phone: (480) 405-1265</p>
               <p>Website: <a href="https://azbrian.com/" rel="nofollow">https://azbrian.com/</a></p>
               <p>Zillow: <a href="https://www.zillow.com/profile/AZBrian" rel="nofollow">https://www.zillow.com/profile/AZBrian</a></p>
-              <p>Verified Profile: <a href="https://www.top10lists.us/p/nUAHT0">https://www.top10lists.us/p/nUAHT0</a></p>
+              <p>Verified Profile: <a href="https://www.top10lists.us/arizona/agents/brian-adamski-1265">https://www.top10lists.us/arizona/agents/brian-adamski-1265</a></p>
             </div>
           </article>
           <hr />
@@ -1390,7 +1390,7 @@ const CleanRoom = () => {
               <p>Phone: (602) 882-4921</p>
               <p>Website: <a href="http://www.sachablanchet.com/" rel="nofollow">http://www.sachablanchet.com/</a></p>
               <p>Zillow: <a href="https://www.zillow.com/profile/Skaice" rel="nofollow">https://www.zillow.com/profile/Skaice</a></p>
-              <p>Verified Profile: <a href="https://www.top10lists.us/p/gDiYDa">https://www.top10lists.us/p/gDiYDa</a></p>
+              <p>Verified Profile: <a href="https://www.top10lists.us/arizona/agents/sacha-blanchet-4921">https://www.top10lists.us/arizona/agents/sacha-blanchet-4921</a></p>
             </div>
           </article>
           <hr />
@@ -1459,7 +1459,7 @@ const CleanRoom = () => {
               <p>Phone: (602) 725-2609</p>
               <p>Website: <a href="https://s4grouprealestate.com/" rel="nofollow">https://s4grouprealestate.com/</a></p>
               <p>Zillow: <a href="https://www.zillow.com/profile/The-S4-Team" rel="nofollow">https://www.zillow.com/profile/The-S4-Team</a></p>
-              <p>Verified Profile: <a href="https://www.top10lists.us/p/gDCqoV">https://www.top10lists.us/p/gDCqoV</a></p>
+              <p>Verified Profile: <a href="https://www.top10lists.us/arizona/agents/s-real-estate-2609">https://www.top10lists.us/arizona/agents/s-real-estate-2609</a></p>
             </div>
           </article>
           <hr />
@@ -1525,7 +1525,7 @@ const CleanRoom = () => {
               <p>Phone: (602) 334-8887</p>
               <p>Website: <a href="http://www.mindfulagent.com" rel="nofollow">http://www.mindfulagent.com</a></p>
               <p>Zillow: <a href="https://www.zillow.com/profile/mclaughlin-kris" rel="nofollow">https://www.zillow.com/profile/mclaughlin-kris</a></p>
-              <p>Verified Profile: <a href="https://www.top10lists.us/p/H27XO1">https://www.top10lists.us/p/H27XO1</a></p>
+              <p>Verified Profile: <a href="https://www.top10lists.us/arizona/agents/kris-mclaughlin-8887">https://www.top10lists.us/arizona/agents/kris-mclaughlin-8887</a></p>
             </div>
           </article>
           <hr />
@@ -1593,7 +1593,7 @@ const CleanRoom = () => {
               <p>Phone: (480) 217-9184</p>
               <p>Website: <a href="https://www.fineAZliving.com" rel="nofollow">https://www.fineAZliving.com</a></p>
               <p>Zillow: <a href="https://www.zillow.com/profile/OwensKevin" rel="nofollow">https://www.zillow.com/profile/OwensKevin</a></p>
-              <p>Verified Profile: <a href="https://www.top10lists.us/p/SHZOzv">https://www.top10lists.us/p/SHZOzv</a></p>
+              <p>Verified Profile: <a href="https://www.top10lists.us/arizona/agents/kevin-owens-and-the-owens-collective-9184">https://www.top10lists.us/arizona/agents/kevin-owens-and-the-owens-collective-9184</a></p>
             </div>
           </article>
           <hr />
@@ -1654,7 +1654,7 @@ const CleanRoom = () => {
               <p>Phone: (602) 478-1957</p>
               <p>Website: <a href="http://www.bretburkerealtor.com" rel="nofollow">http://www.bretburkerealtor.com</a></p>
               <p>Zillow: <a href="https://www.zillow.com/profile/bretburke" rel="nofollow">https://www.zillow.com/profile/bretburke</a></p>
-              <p>Verified Profile: <a href="https://www.top10lists.us/p/rNkUHE">https://www.top10lists.us/p/rNkUHE</a></p>
+              <p>Verified Profile: <a href="https://www.top10lists.us/arizona/agents/bret-burke-1957">https://www.top10lists.us/arizona/agents/bret-burke-1957</a></p>
             </div>
           </article>
           <hr />
@@ -1706,7 +1706,7 @@ const CleanRoom = () => {
               <p>Phone: (623) 401-1842</p>
               <p>Website: <a href="https://theemirlopezteam.com" rel="nofollow">https://theemirlopezteam.com</a></p>
               <p>Zillow: <a href="https://www.zillow.com/profile/Emirlopez" rel="nofollow">https://www.zillow.com/profile/Emirlopez</a></p>
-              <p>Verified Profile: <a href="https://www.top10lists.us/p/PUTZO8">https://www.top10lists.us/p/PUTZO8</a></p>
+              <p>Verified Profile: <a href="https://www.top10lists.us/arizona/agents/emir-lopez-1842">https://www.top10lists.us/arizona/agents/emir-lopez-1842</a></p>
             </div>
           </article>
           <hr />
@@ -1773,7 +1773,7 @@ const CleanRoom = () => {
               <p>Phone: (602) 820-9000</p>
               <p>Website: <a href="http://www.corymishkin.com/" rel="nofollow">http://www.corymishkin.com/</a></p>
               <p>Zillow: <a href="https://www.zillow.com/profile/Realtor-Cory" rel="nofollow">https://www.zillow.com/profile/Realtor-Cory</a></p>
-              <p>Verified Profile: <a href="https://www.top10lists.us/p/0HHIaW">https://www.top10lists.us/p/0HHIaW</a></p>
+              <p>Verified Profile: <a href="https://www.top10lists.us/arizona/agents/cory-mishkin-9000">https://www.top10lists.us/arizona/agents/cory-mishkin-9000</a></p>
             </div>
           </article>
           <hr />
@@ -1845,7 +1845,7 @@ const CleanRoom = () => {
               <p>Phone: (602) 469-0388</p>
               <p>Website: <a href="http://thebillwatsongroup.com/" rel="nofollow">http://thebillwatsongroup.com/</a></p>
               <p>Zillow: <a href="https://www.zillow.com/profile/watsonhwr7" rel="nofollow">https://www.zillow.com/profile/watsonhwr7</a></p>
-              <p>Verified Profile: <a href="https://www.top10lists.us/p/seH2mE">https://www.top10lists.us/p/seH2mE</a></p>
+              <p>Verified Profile: <a href="https://www.top10lists.us/arizona/agents/bill-watson-0388">https://www.top10lists.us/arizona/agents/bill-watson-0388</a></p>
             </div>
           </article>
           <hr />
@@ -1898,7 +1898,7 @@ const CleanRoom = () => {
               <p>Phone: (928) 232-0777</p>
               <p>Website: <a href="https://huberhomesales.com/" rel="nofollow">https://huberhomesales.com/</a></p>
               <p>Zillow: <a href="https://www.zillow.com/profile/huberhomesales" rel="nofollow">https://www.zillow.com/profile/huberhomesales</a></p>
-              <p>Verified Profile: <a href="https://www.top10lists.us/p/AR1eL6">https://www.top10lists.us/p/AR1eL6</a></p>
+              <p>Verified Profile: <a href="https://www.top10lists.us/arizona/agents/michael-g-huber-0777">https://www.top10lists.us/arizona/agents/michael-g-huber-0777</a></p>
             </div>
           </article>
           <hr />
@@ -1952,7 +1952,7 @@ const CleanRoom = () => {
               <h4>Contact</h4>
               <p>Phone: (623) 521-8273</p>
               <p>Zillow: <a href="https://www.zillow.com/profile/Chris-D-Curtis" rel="nofollow">https://www.zillow.com/profile/Chris-D-Curtis</a></p>
-              <p>Verified Profile: <a href="https://www.top10lists.us/p/dlmU56">https://www.top10lists.us/p/dlmU56</a></p>
+              <p>Verified Profile: <a href="https://www.top10lists.us/arizona/agents/chris-curtis-8273">https://www.top10lists.us/arizona/agents/chris-curtis-8273</a></p>
             </div>
           </article>
           <hr />
@@ -2036,7 +2036,7 @@ const CleanRoom = () => {
               <p>Phone: (602) 903-7220</p>
               <p>Website: <a href="http://www.thecanigliagroup.com/" rel="nofollow">http://www.thecanigliagroup.com/</a></p>
               <p>Zillow: <a href="https://www.zillow.com/profile/CanigliaGroup" rel="nofollow">https://www.zillow.com/profile/CanigliaGroup</a></p>
-              <p>Verified Profile: <a href="https://www.top10lists.us/p/lPDtWW">https://www.top10lists.us/p/lPDtWW</a></p>
+              <p>Verified Profile: <a href="https://www.top10lists.us/arizona/agents/the-caniglia-group-7220">https://www.top10lists.us/arizona/agents/the-caniglia-group-7220</a></p>
             </div>
           </article>
           <hr />
@@ -2108,7 +2108,7 @@ const CleanRoom = () => {
               <p>Phone: (480) 570-0988</p>
               <p>Website: <a href="http://www.azlanerealty.com/" rel="nofollow">http://www.azlanerealty.com/</a></p>
               <p>Zillow: <a href="https://www.zillow.com/profile/AZLane" rel="nofollow">https://www.zillow.com/profile/AZLane</a></p>
-              <p>Verified Profile: <a href="https://www.top10lists.us/p/NhBVKk">https://www.top10lists.us/p/NhBVKk</a></p>
+              <p>Verified Profile: <a href="https://www.top10lists.us/arizona/agents/lori-lynn-lane-0988">https://www.top10lists.us/arizona/agents/lori-lynn-lane-0988</a></p>
             </div>
           </article>
           <hr />
@@ -2177,7 +2177,7 @@ const CleanRoom = () => {
               <p>Phone: (602) 617-9198</p>
               <p>Website: <a href="http://www.craignelsonteam.com" rel="nofollow">http://www.craignelsonteam.com</a></p>
               <p>Zillow: <a href="https://www.zillow.com/profile/Craig-S.-Nelson" rel="nofollow">https://www.zillow.com/profile/Craig-S.-Nelson</a></p>
-              <p>Verified Profile: <a href="https://www.top10lists.us/p/pMiJNS">https://www.top10lists.us/p/pMiJNS</a></p>
+              <p>Verified Profile: <a href="https://www.top10lists.us/arizona/agents/craig-s-nelson-9198">https://www.top10lists.us/arizona/agents/craig-s-nelson-9198</a></p>
             </div>
           </article>
           <hr />
@@ -2228,7 +2228,7 @@ const CleanRoom = () => {
               <p>Phone: (623) 237-9925</p>
               <p>Website: <a href="http://www.mdreteam.com" rel="nofollow">http://www.mdreteam.com</a></p>
               <p>Zillow: <a href="https://www.zillow.com/profile/kkdeblanc" rel="nofollow">https://www.zillow.com/profile/kkdeblanc</a></p>
-              <p>Verified Profile: <a href="https://www.top10lists.us/p/c2LQyH">https://www.top10lists.us/p/c2LQyH</a></p>
+              <p>Verified Profile: <a href="https://www.top10lists.us/arizona/agents/korinna-deblanc-9925">https://www.top10lists.us/arizona/agents/korinna-deblanc-9925</a></p>
             </div>
           </article>
           <hr />
@@ -2304,7 +2304,7 @@ const CleanRoom = () => {
               <p>Phone: (480) 266-8785</p>
               <p>Website: <a href="https://henbest.com/" rel="nofollow">https://henbest.com/</a></p>
               <p>Zillow: <a href="https://www.zillow.com/profile/Henbest" rel="nofollow">https://www.zillow.com/profile/Henbest</a></p>
-              <p>Verified Profile: <a href="https://www.top10lists.us/p/v3EtSU">https://www.top10lists.us/p/v3EtSU</a></p>
+              <p>Verified Profile: <a href="https://www.top10lists.us/arizona/agents/holly-henbest-8785">https://www.top10lists.us/arizona/agents/holly-henbest-8785</a></p>
             </div>
           </article>
           <hr />
@@ -2387,7 +2387,7 @@ const CleanRoom = () => {
               <p>Phone: (602) 430-3917</p>
               <p>Website: <a href="http://www.mendozateam.com/" rel="nofollow">http://www.mendozateam.com/</a></p>
               <p>Zillow: <a href="https://www.zillow.com/profile/Mike-Mendoza" rel="nofollow">https://www.zillow.com/profile/Mike-Mendoza</a></p>
-              <p>Verified Profile: <a href="https://www.top10lists.us/p/Sa7BQW">https://www.top10lists.us/p/Sa7BQW</a></p>
+              <p>Verified Profile: <a href="https://www.top10lists.us/arizona/agents/mike-mendoza-3917">https://www.top10lists.us/arizona/agents/mike-mendoza-3917</a></p>
             </div>
           </article>
           <hr />
@@ -2472,7 +2472,7 @@ const CleanRoom = () => {
               <p>Phone: (480) 282-1053</p>
               <p>Website: <a href="http://www.nardicoury.com/" rel="nofollow">http://www.nardicoury.com/</a></p>
               <p>Zillow: <a href="https://www.zillow.com/profile/NCresidential" rel="nofollow">https://www.zillow.com/profile/NCresidential</a></p>
-              <p>Verified Profile: <a href="https://www.top10lists.us/p/e9fdvX">https://www.top10lists.us/p/e9fdvX</a></p>
+              <p>Verified Profile: <a href="https://www.top10lists.us/arizona/agents/nc-residential-1053">https://www.top10lists.us/arizona/agents/nc-residential-1053</a></p>
             </div>
           </article>
           <hr />
@@ -2543,7 +2543,7 @@ const CleanRoom = () => {
               <p>Phone: (480) 486-6887</p>
               <p>Website: <a href="http://phoenixhomecollective.com/" rel="nofollow">http://phoenixhomecollective.com/</a></p>
               <p>Zillow: <a href="https://www.zillow.com/profile/Jason4028" rel="nofollow">https://www.zillow.com/profile/Jason4028</a></p>
-              <p>Verified Profile: <a href="https://www.top10lists.us/p/CI4bgM">https://www.top10lists.us/p/CI4bgM</a></p>
+              <p>Verified Profile: <a href="https://www.top10lists.us/arizona/agents/jason-serikaku-6887">https://www.top10lists.us/arizona/agents/jason-serikaku-6887</a></p>
             </div>
           </article>
           <hr />
@@ -2603,7 +2603,7 @@ const CleanRoom = () => {
               <p>Phone: (480) 206-5789</p>
               <p>Website: <a href="http://www.keytoAZdreamhomes.com" rel="nofollow">http://www.keytoAZdreamhomes.com</a></p>
               <p>Zillow: <a href="https://www.zillow.com/profile/jenniferfinken" rel="nofollow">https://www.zillow.com/profile/jenniferfinken</a></p>
-              <p>Verified Profile: <a href="https://www.top10lists.us/p/BP6iCw">https://www.top10lists.us/p/BP6iCw</a></p>
+              <p>Verified Profile: <a href="https://www.top10lists.us/arizona/agents/jennifer-finken-5789">https://www.top10lists.us/arizona/agents/jennifer-finken-5789</a></p>
             </div>
           </article>
           <hr />
@@ -2661,7 +2661,7 @@ const CleanRoom = () => {
               <p>Phone: (631) 617-9743</p>
               <p>Website: <a href="https://thecalamiagroup.com/" rel="nofollow">https://thecalamiagroup.com/</a></p>
               <p>Zillow: <a href="https://www.zillow.com/profile/nickcalamia" rel="nofollow">https://www.zillow.com/profile/nickcalamia</a></p>
-              <p>Verified Profile: <a href="https://www.top10lists.us/p/yMenhw">https://www.top10lists.us/p/yMenhw</a></p>
+              <p>Verified Profile: <a href="https://www.top10lists.us/arizona/agents/nick-calamia-9743">https://www.top10lists.us/arizona/agents/nick-calamia-9743</a></p>
             </div>
           </article>
           <hr />
@@ -2727,7 +2727,7 @@ const CleanRoom = () => {
               <p>Phone: (480) 444-6058</p>
               <p>Website: <a href="http://www.lisamiguel.com" rel="nofollow">http://www.lisamiguel.com</a></p>
               <p>Zillow: <a href="https://www.zillow.com/profile/lisamiguel3" rel="nofollow">https://www.zillow.com/profile/lisamiguel3</a></p>
-              <p>Verified Profile: <a href="https://www.top10lists.us/p/bnAhsh">https://www.top10lists.us/p/bnAhsh</a></p>
+              <p>Verified Profile: <a href="https://www.top10lists.us/arizona/agents/lisa-miguel-6058">https://www.top10lists.us/arizona/agents/lisa-miguel-6058</a></p>
             </div>
           </article>
           <hr />
@@ -2795,7 +2795,7 @@ const CleanRoom = () => {
               <p>Phone: (508) 523-9252</p>
               <p>Website: <a href="http://www.sellingazhouses.com/" rel="nofollow">http://www.sellingazhouses.com/</a></p>
               <p>Zillow: <a href="https://www.zillow.com/profile/user2869195" rel="nofollow">https://www.zillow.com/profile/user2869195</a></p>
-              <p>Verified Profile: <a href="https://www.top10lists.us/p/OXyST7">https://www.top10lists.us/p/OXyST7</a></p>
+              <p>Verified Profile: <a href="https://www.top10lists.us/arizona/agents/john-prescott-and-jacie-coleman-9252">https://www.top10lists.us/arizona/agents/john-prescott-and-jacie-coleman-9252</a></p>
             </div>
           </article>
           <hr />
@@ -2856,7 +2856,7 @@ const CleanRoom = () => {
               <h4>Contact</h4>
               <p>Phone: (623) 261-9078</p>
               <p>Zillow: <a href="https://www.zillow.com/profile/mary0055" rel="nofollow">https://www.zillow.com/profile/mary0055</a></p>
-              <p>Verified Profile: <a href="https://www.top10lists.us/p/vjTQZa">https://www.top10lists.us/p/vjTQZa</a></p>
+              <p>Verified Profile: <a href="https://www.top10lists.us/arizona/agents/mary-groff-9078">https://www.top10lists.us/arizona/agents/mary-groff-9078</a></p>
             </div>
           </article>
           <hr />
@@ -2899,7 +2899,7 @@ const CleanRoom = () => {
               <p>Phone: (480) 306-0730</p>
               <p>Website: <a href="http://arcadiamls.com" rel="nofollow">http://arcadiamls.com</a></p>
               <p>Zillow: <a href="https://www.zillow.com/profile/JMagnotto" rel="nofollow">https://www.zillow.com/profile/JMagnotto</a></p>
-              <p>Verified Profile: <a href="https://www.top10lists.us/p/FsiSao">https://www.top10lists.us/p/FsiSao</a></p>
+              <p>Verified Profile: <a href="https://www.top10lists.us/arizona/agents/jean-leon-magnotto-0730">https://www.top10lists.us/arizona/agents/jean-leon-magnotto-0730</a></p>
             </div>
           </article>
           <hr />
@@ -2942,7 +2942,7 @@ const CleanRoom = () => {
               <p>Phone: (602) 370-8106</p>
               <p>Website: <a href="http://www.SearchAhwatukeeHomes.com" rel="nofollow">http://www.SearchAhwatukeeHomes.com</a></p>
               <p>Zillow: <a href="https://www.zillow.com/profile/Kevin-Houston" rel="nofollow">https://www.zillow.com/profile/Kevin-Houston</a></p>
-              <p>Verified Profile: <a href="https://www.top10lists.us/p/upgEgX">https://www.top10lists.us/p/upgEgX</a></p>
+              <p>Verified Profile: <a href="https://www.top10lists.us/arizona/agents/kevin-houston-8106">https://www.top10lists.us/arizona/agents/kevin-houston-8106</a></p>
             </div>
           </article>
           <hr />
@@ -3001,7 +3001,7 @@ const CleanRoom = () => {
               <p>Phone: (480) 242-3003</p>
               <p>Website: <a href="http://www.padlabaz.com/" rel="nofollow">http://www.padlabaz.com/</a></p>
               <p>Zillow: <a href="https://www.zillow.com/profile/PADLAB" rel="nofollow">https://www.zillow.com/profile/PADLAB</a></p>
-              <p>Verified Profile: <a href="https://www.top10lists.us/p/l6jgEe">https://www.top10lists.us/p/l6jgEe</a></p>
+              <p>Verified Profile: <a href="https://www.top10lists.us/arizona/agents/stephen-villabona-3003">https://www.top10lists.us/arizona/agents/stephen-villabona-3003</a></p>
             </div>
           </article>
           <hr />
@@ -3064,7 +3064,7 @@ const CleanRoom = () => {
               <p>Phone: (602) 373-6345</p>
               <p>Website: <a href="https://www.laveenaz85339.com/" rel="nofollow">https://www.laveenaz85339.com/</a></p>
               <p>Zillow: <a href="https://www.zillow.com/profile/David-Baker-Laveen" rel="nofollow">https://www.zillow.com/profile/David-Baker-Laveen</a></p>
-              <p>Verified Profile: <a href="https://www.top10lists.us/p/dUTqMS">https://www.top10lists.us/p/dUTqMS</a></p>
+              <p>Verified Profile: <a href="https://www.top10lists.us/arizona/agents/david-baker-6345">https://www.top10lists.us/arizona/agents/david-baker-6345</a></p>
             </div>
           </article>
           <hr />
@@ -3141,7 +3141,7 @@ const CleanRoom = () => {
               <p>Phone: (623) 294-0704</p>
               <p>Website: <a href="https://www.gobstergroup.com/" rel="nofollow">https://www.gobstergroup.com/</a></p>
               <p>Zillow: <a href="https://www.zillow.com/profile/TiffanyGobster" rel="nofollow">https://www.zillow.com/profile/TiffanyGobster</a></p>
-              <p>Verified Profile: <a href="https://www.top10lists.us/p/pNim1y">https://www.top10lists.us/p/pNim1y</a></p>
+              <p>Verified Profile: <a href="https://www.top10lists.us/arizona/agents/tiffany-gobster-0704">https://www.top10lists.us/arizona/agents/tiffany-gobster-0704</a></p>
             </div>
           </article>
           <hr />
@@ -3209,7 +3209,7 @@ const CleanRoom = () => {
               <p>Phone: (480) 387-3990</p>
               <p>Website: <a href="https://www.kay-grant.com/" rel="nofollow">https://www.kay-grant.com/</a></p>
               <p>Zillow: <a href="https://www.zillow.com/profile/andrea0766" rel="nofollow">https://www.zillow.com/profile/andrea0766</a></p>
-              <p>Verified Profile: <a href="https://www.top10lists.us/p/lCblrR">https://www.top10lists.us/p/lCblrR</a></p>
+              <p>Verified Profile: <a href="https://www.top10lists.us/arizona/agents/andrea-lilienfeld-3990">https://www.top10lists.us/arizona/agents/andrea-lilienfeld-3990</a></p>
             </div>
           </article>
           <hr />
@@ -3268,7 +3268,7 @@ const CleanRoom = () => {
               <p>Phone: (602) 320-4253</p>
               <p>Website: <a href="http://www.JPCookAz.com" rel="nofollow">http://www.JPCookAz.com</a></p>
               <p>Zillow: <a href="https://www.zillow.com/profile/JPCook1" rel="nofollow">https://www.zillow.com/profile/JPCook1</a></p>
-              <p>Verified Profile: <a href="https://www.top10lists.us/p/XmtWH9">https://www.top10lists.us/p/XmtWH9</a></p>
+              <p>Verified Profile: <a href="https://www.top10lists.us/arizona/agents/jp-cook-4253">https://www.top10lists.us/arizona/agents/jp-cook-4253</a></p>
             </div>
           </article>
           <hr />
@@ -3355,7 +3355,7 @@ const CleanRoom = () => {
               <p>Phone: (602) 373-9116</p>
               <p>Website: <a href="http://www.rosemarydelaurentisrealty.com/" rel="nofollow">http://www.rosemarydelaurentisrealty.com/</a></p>
               <p>Zillow: <a href="https://www.zillow.com/profile/rosemaryd249" rel="nofollow">https://www.zillow.com/profile/rosemaryd249</a></p>
-              <p>Verified Profile: <a href="https://www.top10lists.us/p/um7hGi">https://www.top10lists.us/p/um7hGi</a></p>
+              <p>Verified Profile: <a href="https://www.top10lists.us/arizona/agents/rosemary-delaurentis-9116">https://www.top10lists.us/arizona/agents/rosemary-delaurentis-9116</a></p>
             </div>
           </article>
           <hr />
@@ -3451,7 +3451,7 @@ const CleanRoom = () => {
               <p>Phone: (623) 640-7683</p>
               <p>Website: <a href="https://www.ironwoodteam.com/" rel="nofollow">https://www.ironwoodteam.com/</a></p>
               <p>Zillow: <a href="https://www.zillow.com/profile/Jeff-Seman" rel="nofollow">https://www.zillow.com/profile/Jeff-Seman</a></p>
-              <p>Verified Profile: <a href="https://www.top10lists.us/p/knqmQ4">https://www.top10lists.us/p/knqmQ4</a></p>
+              <p>Verified Profile: <a href="https://www.top10lists.us/arizona/agents/jeff-seman-7683">https://www.top10lists.us/arizona/agents/jeff-seman-7683</a></p>
             </div>
           </article>
           <hr />
@@ -3520,7 +3520,7 @@ const CleanRoom = () => {
               <p>Phone: (602) 625-7652</p>
               <p>Website: <a href="https://eric-j-swiatek.remax.com/" rel="nofollow">https://eric-j-swiatek.remax.com/</a></p>
               <p>Zillow: <a href="https://www.zillow.com/profile/Eric-Swiatek" rel="nofollow">https://www.zillow.com/profile/Eric-Swiatek</a></p>
-              <p>Verified Profile: <a href="https://www.top10lists.us/p/cfXjd2">https://www.top10lists.us/p/cfXjd2</a></p>
+              <p>Verified Profile: <a href="https://www.top10lists.us/arizona/agents/eric-swiatek-7652">https://www.top10lists.us/arizona/agents/eric-swiatek-7652</a></p>
             </div>
           </article>
           <hr />
@@ -3585,7 +3585,7 @@ const CleanRoom = () => {
               <p>Phone: (602) 390-5740</p>
               <p>Website: <a href="http://www.pameagan.com" rel="nofollow">http://www.pameagan.com</a></p>
               <p>Zillow: <a href="https://www.zillow.com/profile/Pam-Eagan" rel="nofollow">https://www.zillow.com/profile/Pam-Eagan</a></p>
-              <p>Verified Profile: <a href="https://www.top10lists.us/p/njfLfa">https://www.top10lists.us/p/njfLfa</a></p>
+              <p>Verified Profile: <a href="https://www.top10lists.us/arizona/agents/pam-eagan-5740">https://www.top10lists.us/arizona/agents/pam-eagan-5740</a></p>
             </div>
           </article>
           <hr />
