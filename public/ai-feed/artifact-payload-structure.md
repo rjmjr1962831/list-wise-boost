@@ -16,6 +16,7 @@
 - **Last Verified:** {date}
 - **Source Methodology:** [top10lists.us/about/ranking-methodology](https://www.top10lists.us/about/ranking-methodology)
 - **Persistent Artifact URL:** [top10lists.us/artifact/{magic_link_token}](https://www.top10lists.us/artifact/{magic_link_token})
+- **Responsible person:** Robert Maynard
 
 ---
 
