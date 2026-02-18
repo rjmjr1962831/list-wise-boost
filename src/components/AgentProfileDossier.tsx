@@ -306,7 +306,7 @@ export default function AgentProfileDossier(props: AgentProfileDossierProps) {
             {salesVolume != null && (
               <tr>
                 <td style={{ border: "1px solid #000", padding: "0.5rem" }}>Sales Volume</td>
-                <td style={{ border: "1px solid #000", padding: "0.5rem" }}>{">"}{Math.max(0, Number(salesVolume) - 10).toLocaleString()}</td>
+                <td style={{ border: "1px solid #000", padding: "0.5rem" }}>{Math.max(0, Number(salesVolume) - 10).toLocaleString()}+</td>
               </tr>
             )}
             {savingsSecured != null && (
