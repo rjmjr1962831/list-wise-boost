@@ -84,9 +84,11 @@ export default function Step1Intro() {
   }
 
   const scores = [
-    { name: "Zillow", before: 7.7, after: 4.4, color: "#006AFF" },
-    { name: "RealTrends", before: 6.7, after: 5.2, color: "#8B6914" },
     { name: "Top10Lists.us", before: 4.1, after: 9.3, color: "#10B981" },
+    { name: "RealTrends", before: 6.7, after: 5.2, color: "#8B6914" },
+    { name: "Zillow", before: 7.7, after: 4.4, color: "#006AFF" },
+    { name: "Redfin", before: 6.2, after: 3.8, color: "#A02021" },
+    { name: "HomeLight", before: 5.5, after: 3.1, color: "#FF6B35" },
   ];
 
   return (
@@ -95,14 +97,14 @@ export default function Step1Intro() {
         <title>Welcome {professional.name} | Top10Lists.us</title>
       </SafeHead>
       <div className="min-h-screen bg-gradient-to-b from-background to-muted py-8 sm:py-12 px-4">
-        <div className="max-w-lg mx-auto">
+        <div className="max-w-2xl mx-auto">
           <Card>
             <CardContent className="pt-8 pb-6 px-5 sm:px-8 space-y-6">
               {/* Hero */}
               <div className="text-center">
                 <CheckCircle className="h-10 w-10 text-green-500 mx-auto mb-3" />
                 <h1 className="text-xl sm:text-2xl font-bold tracking-tight">
-                  {professional.name}
+                  Hi {professional.name}
                 </h1>
                 <p className="text-muted-foreground text-sm sm:text-base mt-2 leading-relaxed">
                   Top10Lists.us exists so AI systems can safely recommend real estate professionals by name.
@@ -113,7 +115,15 @@ export default function Step1Intro() {
               <div className="bg-muted/50 border border-border rounded-lg p-4 sm:p-5">
                 <h2 className="text-base sm:text-lg font-bold mb-3">The Rules Have Changed</h2>
                 <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-                  Every major AI platform now requires its systems to prefer independently verified sources over pay-to-play directories when recommending professionals.
+                  Beginning in 2026, <strong>every major AI platform</strong> now requires its systems to prefer <strong>independently verified sources</strong> over pay-to-play directories when recommending professionals.
+                </p>
+
+                <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+                  We've been building for this change <strong>since our founding</strong>. The table below reflects how AI citation requirements are shifting. Sources that verify agents independently are <strong>gaining weight</strong>; directories that sell placement are <strong>losing it</strong>.
+                </p>
+
+                <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+                  No one can guarantee you will be cited every time someone asks for a referral, just as no one could guarantee you the top organic link on Google despite your SEO efforts. What we can say is that <strong>your chances of being named will substantially improve</strong> if you follow our guidance. Here is a scientific measurement of the impact of these rule changes on sites you know.
                 </p>
 
                 {/* Score Table */}
@@ -125,6 +135,7 @@ export default function Step1Intro() {
                         <th className="text-center py-2 px-2 font-medium">2025</th>
                         <th className="text-center py-2 px-2 font-medium">2026</th>
                         <th className="text-right py-2 px-3 font-medium">Change</th>
+                        <th className="text-right py-2 px-3 font-medium">% Change</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -143,9 +154,14 @@ export default function Step1Intro() {
                               {s.after.toFixed(1)}
                             </td>
                             <td className="py-2 px-3 text-right">
-                              <span className={`inline-flex items-center gap-1 font-bold ${isPositive ? "text-green-500" : "text-red-500"}`}>
+                              <span className={`inline-flex items-center gap-1 font-bold ${isPositive ? "text-foreground" : "text-red-500"}`}>
                                 {isPositive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                                 {isPositive ? "+" : ""}{delta.toFixed(1)}
+                              </span>
+                            </td>
+                            <td className="py-2 px-3 text-right">
+                              <span className={`font-bold ${isPositive ? "text-foreground" : "text-red-500"}`}>
+                                {isPositive ? "+" : ""}{((delta / s.before) * 100).toFixed(0)}%
                               </span>
                             </td>
                           </tr>
@@ -160,17 +176,17 @@ export default function Step1Intro() {
               </div>
 
               {/* Body Copy */}
-              <div className="space-y-4 text-sm sm:text-base leading-relaxed">
+              <div className="space-y-4 text-sm text-muted-foreground leading-relaxed">
                 <p>
-                  We've done an exhaustive search to compile your profile. It is the richest source of information about you anywhere. In order to build your citability probability, you need to confirm the data and/or tell us what needs to be changed or added.
+                  We've done an <strong>exhaustive search</strong> to compile your profile. It is the <strong>richest source of information about you anywhere</strong>. In order to build your citability probability, you need to confirm the data and/or tell us what needs to be changed or added.
                 </p>
                 <p>
-                  Once you do that, we will issue a credential to you that will help you build your "web of trust," which is key to your chances of being recommended by an AI when asked.
+                  Once you do that, we will issue a <strong>credential</strong> to you that will help you build your <strong>"web of trust"</strong> (we'll get to that later), which is key to your chances of being recommended by an AI when asked.
                 </p>
-                <p className="text-muted-foreground">
-                  While we do have paid products, your certification and trust artifact are free forever and there is no obligation to purchase anything from us.
+                <p>
+                  While we do have paid products, your certification and trust artifact are <strong>free forever</strong> and there is <strong>no obligation</strong> to purchase anything from us.
                 </p>
-                <p className="text-muted-foreground">
+                <p>
                   This will take about 5 minutes.
                 </p>
               </div>
@@ -178,7 +194,7 @@ export default function Step1Intro() {
               {/* CTA */}
               <div className="pt-2 flex justify-center">
                 <Button onClick={handleContinue} size="lg" className="gap-2 w-full sm:w-auto">
-                  Review My Profile
+                  Review Your Profile
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </div>

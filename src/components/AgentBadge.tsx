@@ -414,7 +414,7 @@ export const AgentBadge = ({
                     {totalSales && totalSales > 0 && (
                       <div className="flex items-center gap-1 text-xs text-muted-foreground">
                         <Home className="h-3 w-3" />
-                        <span>>{totalSales.toLocaleString()} sales</span>
+                        <span>{totalSales.toLocaleString()}+ sales</span>
                       </div>
                     )}
                     {avgSalePrice && (

@@ -249,7 +249,7 @@ const Index = () => {
                   </p>
                   
                   <p className="font-medium text-foreground">
-                    We do not guarantee recommendations. We make them safer to give.
+                    No one can guarantee you will be cited every time someone asks for a referral, just as no one could guarantee you the top organic link on Google despite your SEO efforts. What we can say is that your chances of being named will substantially improve if you follow our guidance.
                   </p>
                   
                   <div className="pt-6 flex flex-col gap-3">
