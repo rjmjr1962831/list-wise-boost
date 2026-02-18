@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Shield, Check, Copy, ExternalLink, Calendar, MapPin, Star, Award } from "lucide-react";
 import { toast } from "sonner";
+import { AgentSourcesBlock } from "@/components/AgentSourcesBlock";
 
 interface CertificationData {
   id: string;
@@ -157,12 +158,14 @@ export default function ArtifactPage() {
 
   const tierNames: Record<string, string> = {
     certified: 'Certified',
-    accredited: 'Accredited',
+    audited: 'Audited',
+    accredited: 'Audited', // legacy: accredited renamed to Audited
     underwritten: 'Underwritten'
   };
 
   const tierColors: Record<string, string> = {
     certified: 'bg-blue-100 text-blue-800 border-blue-300',
+    audited: 'bg-purple-100 text-purple-800 border-purple-300',
     accredited: 'bg-purple-100 text-purple-800 border-purple-300',
     underwritten: 'bg-amber-100 text-amber-800 border-amber-300'
   };
@@ -409,6 +412,13 @@ export default function ArtifactPage() {
                   View Full Methodology →
                 </Button>
               </Link>
+            </CardContent>
+          </Card>
+
+          {/* Sources we use */}
+          <Card className="mb-8">
+            <CardContent className="pt-6">
+              <AgentSourcesBlock className="text-muted-foreground text-sm leading-relaxed [&_h3]:text-base [&_h3]:font-semibold [&_p]:mb-3" />
             </CardContent>
           </Card>
 

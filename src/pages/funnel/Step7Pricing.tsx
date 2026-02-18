@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Loader2, Check, List, BadgeCheck, Shield, Zap } from 'lucide-react';
 import { toast } from 'sonner';
 
-type CertificationTier = 'listed' | 'certified' | 'accredited' | 'underwritten';
+type CertificationTier = 'listed' | 'certified' | 'audited' | 'underwritten';
 
 interface PricingRow {
   tier: CertificationTier;
@@ -22,7 +22,7 @@ interface PricingRow {
 const DEFAULT_PRICES: PricingRow[] = [
   { tier: 'listed', monthly_price: 0, payload_weight: 'basic', refresh_cadence: 'public_data_only' },
   { tier: 'certified', monthly_price: 0, payload_weight: 'standard', refresh_cadence: 'annual' },
-  { tier: 'accredited', monthly_price: 50, payload_weight: 'enhanced', refresh_cadence: 'monthly' },
+  { tier: 'audited', monthly_price: 50, payload_weight: 'enhanced', refresh_cadence: 'quarterly' },
   { tier: 'underwritten', monthly_price: 150, payload_weight: 'maximum', refresh_cadence: 'real_time' },
 ];
 
@@ -46,12 +46,12 @@ const TIER_META: Record<CertificationTier, { name: string; icon: typeof List; fe
     ],
     popular: true,
   },
-  accredited: {
-    name: 'Accredited',
+  audited: {
+    name: 'Audited',
     icon: Shield,
     features: [
       'Enhanced AI payload',
-      'Monthly diligence updates',
+      'Quarterly diligence updates',
       'Transaction volume stats',
     ],
   },
@@ -179,6 +179,8 @@ export default function Step7Pricing() {
     <>
       <SafeHead>
         <title>Choose Your Certification Tier | Top10Lists.us</title>
+        <meta name="robots" content="noindex, nofollow" />
+        <meta name="googlebot" content="noindex, nofollow" />
       </SafeHead>
       <div className="min-h-screen bg-gradient-to-b from-background to-muted py-12 px-4">
         <div className="max-w-6xl mx-auto">
@@ -202,7 +204,7 @@ export default function Step7Pricing() {
             <CardContent>
               <RadioGroup value={selectedTier} onValueChange={(v) => setSelectedTier(v as CertificationTier)}>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
-                  {(['listed', 'certified', 'accredited', 'underwritten'] as const).map((tier) => {
+                  {(['listed', 'certified', 'audited', 'underwritten'] as const).map((tier) => {
                     const meta = TIER_META[tier];
                     const Icon = meta.icon;
                     const { display } = getPrice(tier);

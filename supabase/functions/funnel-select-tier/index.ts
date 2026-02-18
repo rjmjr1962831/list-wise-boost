@@ -6,7 +6,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-type CertificationTier = "listed" | "certified" | "accredited" | "underwritten";
+type CertificationTier = "listed" | "certified" | "audited" | "underwritten";
 
 interface FunnelSelectTierRequest {
   token: string;
@@ -30,7 +30,7 @@ serve(async (req) => {
       );
     }
 
-    const validTiers: CertificationTier[] = ["listed", "certified", "accredited", "underwritten"];
+    const validTiers: CertificationTier[] = ["listed", "certified", "audited", "underwritten"];
     if (!validTiers.includes(body.tier)) {
       return new Response(
         JSON.stringify({ error: "Invalid tier" }),

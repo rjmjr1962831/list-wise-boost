@@ -63,7 +63,7 @@ Agent has personally verified their profile. Artifact includes:
 - Qualifications: Zillow rating, Google rating, license number, years experience, brokerage, total sales, average sale price
 - Service areas (cities)
 
-**Audited ($50/mo, Standard Audit Cycle: Monthly):**
+**Audited ($50/mo, Standard Audit Cycle: Quarterly):**
 Everything in Certified, plus:
 - Expanded evidence: Zillow/RealTrends/MLS transaction records, IRS Form 990 filings via ProPublica, U.S. Census ACS data
 - Specialties

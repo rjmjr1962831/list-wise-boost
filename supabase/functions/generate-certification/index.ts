@@ -8,7 +8,7 @@ const corsHeaders = {
 
 interface CertificationRequest {
   agent_id: string;
-  tier: 'certified' | 'accredited' | 'underwritten';
+  tier: 'certified' | 'audited' | 'underwritten';
   markets_covered: string[];
   neighborhoods_covered?: string[];
   verified_transactions?: Record<string, number>;
@@ -63,8 +63,8 @@ serve(async (req) => {
       case 'certified':
         nextVerificationDue.setFullYear(now.getFullYear() + 1); // +1 year
         break;
-      case 'accredited':
-        nextVerificationDue.setMonth(now.getMonth() + 1); // +1 month
+      case 'audited':
+        nextVerificationDue.setMonth(now.getMonth() + 3); // +3 months (quarterly)
         break;
       case 'underwritten':
         nextVerificationDue.setDate(now.getDate() + 1); // +1 day
