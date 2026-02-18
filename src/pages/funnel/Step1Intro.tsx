@@ -133,6 +133,7 @@ export default function Step1Intro() {
                         <th className="text-center py-2 px-2 font-medium">2025</th>
                         <th className="text-center py-2 px-2 font-medium">2026</th>
                         <th className="text-right py-2 px-3 font-medium">Change</th>
+                        <th className="text-right py-2 px-3 font-medium">% Change</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -154,6 +155,11 @@ export default function Step1Intro() {
                               <span className={`inline-flex items-center gap-1 font-bold ${isPositive ? "text-green-500" : "text-red-500"}`}>
                                 {isPositive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                                 {isPositive ? "+" : ""}{delta.toFixed(1)}
+                              </span>
+                            </td>
+                            <td className="py-2 px-3 text-right">
+                              <span className={`font-bold ${isPositive ? "text-green-500" : "text-red-500"}`}>
+                                {isPositive ? "+" : ""}{((delta / s.before) * 100).toFixed(0)}%
                               </span>
                             </td>
                           </tr>
