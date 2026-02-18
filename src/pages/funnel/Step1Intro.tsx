@@ -186,7 +186,7 @@ export default function Step1Intro() {
               {/* CTA */}
               <div className="pt-2 flex justify-center">
                 <Button onClick={handleContinue} size="lg" className="gap-2 w-full sm:w-auto">
-                  Review My Profile
+                  Review Your Profile
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </div>
