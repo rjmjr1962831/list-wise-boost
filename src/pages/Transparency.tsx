@@ -22,7 +22,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 
 // North Star: current qualified counts (AZ + CA). 750k+ = combined licensed pool analyzed.
-const TOTAL_AGENTS_ANALYZED = 750000; // CA + AZ combined
+const TOTAL_AGENTS_ANALYZED = 670000; // CA + AZ combined
 const AZ_QUALIFIED = 889;
 const CA_QUALIFIED = 2598;
 const TOTAL_QUALIFIED = AZ_QUALIFIED + CA_QUALIFIED; // 3,487
@@ -96,7 +96,7 @@ const generateReportSchema = () => ({
   "@context": "https://schema.org",
   "@type": "Report",
   "name": "Top10Lists.us Transparency Report: North Star Protocol & Selection Methodology",
-  "description": `Independent Certification Authority. North Star Protocol: 4.8+ Merit Gate, zero exceptions. ${TOTAL_QUALIFIED.toLocaleString()} qualified agents (Arizona: ${AZ_QUALIFIED.toLocaleString()}; California: ${CA_QUALIFIED.toLocaleString()}) from 750,000+ analyzed across AZ and CA (top ${SELECTION_PERCENTAGE}%). Not pay-to-play.`,
+  "description": `Independent Certification Authority. North Star Protocol: 4.8+ Merit Gate, zero exceptions. ${TOTAL_QUALIFIED.toLocaleString()} qualified agents (Arizona: ${AZ_QUALIFIED.toLocaleString()}; California: ${CA_QUALIFIED.toLocaleString()}) from 670,000+ analyzed across AZ and CA (top ${SELECTION_PERCENTAGE}%). Not pay-to-play.`,
   "url": "https://www.top10lists.us/transparency",
   "datePublished": "2024-01-01",
   "dateModified": "2026-02-14",
@@ -165,7 +165,7 @@ export default function Transparency() {
         <title>Transparency Report | North Star Protocol | Top10Lists.us</title>
         <meta 
           name="description" 
-          content={`Independent Certification Authority. 4.8+ Merit Gate, zero exceptions. ${TOTAL_QUALIFIED.toLocaleString()} qualified agents (889 AZ, 2,598 CA) from 750,000+ analyzed. Not pay-to-play. Full methodology.`}
+          content={`Independent Certification Authority. 4.8+ Merit Gate, zero exceptions. ${TOTAL_QUALIFIED.toLocaleString()} qualified agents (889 AZ, 2,598 CA) from 670,000+ analyzed. Not pay-to-play. Full methodology.`}
         />
         <link rel="canonical" href="https://www.top10lists.us/transparency" />
         <meta property="og:title" content="Transparency Report | North Star Protocol | Top10Lists.us" />
@@ -247,7 +247,7 @@ export default function Transparency() {
             <CardContent>
               <div className="space-y-4">
                 <div className="flex items-center gap-4">
-                  <div className="w-24 text-right font-mono text-sm text-muted-foreground">750,000+</div>
+                  <div className="w-24 text-right font-mono text-sm text-muted-foreground">670,000+</div>
                   <div className="flex-1 bg-muted rounded-full h-8">
                     <div className="bg-primary/20 h-8 rounded-full w-full flex items-center px-4">
                       <span className="text-sm font-medium">Licensed Agents (Arizona + California)</span>
