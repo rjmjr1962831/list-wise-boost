@@ -11,7 +11,7 @@ const CleanRoom = () => {
         main h4 { margin-top: 1.2em; margin-bottom: 0.4em; }
         main hr { margin: 2em 0; }
         .kpi-block { margin: 1em 0; }
-        .agent-record { margin-bottom: 3em; }
+        .agent-profile { margin-bottom: 3em; }
       ` }} />
       <main style={{ maxWidth: "900px", margin: "0 auto", padding: "2rem 1rem", fontFamily: "Georgia, serif", lineHeight: "1.7", color: "#1a1a1a", whiteSpace: "normal" }}>
 
@@ -486,11 +486,12 @@ const CleanRoom = () => {
 
           <hr />
 
-          <article className="agent-record" id="SA511926000">
+          <article className="agent-profile" id="SA511926000">
             <header><h3>Marcela Grace Moat</h3></header>
 
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
+                <thead><tr><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Metric</th><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Value</th></tr></thead>
                 <tbody>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>33 verified</td></tr>
@@ -544,11 +545,12 @@ const CleanRoom = () => {
           </article>
           <hr />
 
-          <article className="agent-record" id="fsj8gX">
+          <article className="agent-profile" id="fsj8gX">
             <header><h3>John Gluch</h3></header>
 
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
+                <thead><tr><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Metric</th><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Value</th></tr></thead>
                 <tbody>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>291 verified</td></tr>
@@ -614,11 +616,12 @@ const CleanRoom = () => {
           </article>
           <hr />
 
-          <article className="agent-record" id="SA563850000">
+          <article className="agent-profile" id="SA563850000">
             <header><h3>Jill Ostendorp</h3></header>
 
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
+                <thead><tr><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Metric</th><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Value</th></tr></thead>
                 <tbody>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>76 verified</td></tr>
@@ -698,11 +701,12 @@ const CleanRoom = () => {
           </article>
           <hr />
 
-          <article className="agent-record" id="BR657684000">
+          <article className="agent-profile" id="BR657684000">
             <header><h3>Eric Mininberg</h3></header>
 
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
+                <thead><tr><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Metric</th><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Value</th></tr></thead>
                 <tbody>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>74 verified</td></tr>
@@ -769,11 +773,12 @@ const CleanRoom = () => {
           </article>
           <hr />
 
-          <article className="agent-record" id="SA11074900">
+          <article className="agent-profile" id="SA11074900">
             <header><h3>Bonny Holland</h3></header>
 
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
+                <thead><tr><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Metric</th><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Value</th></tr></thead>
                 <tbody>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>58 verified</td></tr>
@@ -845,11 +850,12 @@ const CleanRoom = () => {
           </article>
           <hr />
 
-          <article className="agent-record" id="SA561835000">
+          <article className="agent-profile" id="SA561835000">
             <header><h3>Rick Metcalfe</h3></header>
 
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
+                <thead><tr><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Metric</th><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Value</th></tr></thead>
                 <tbody>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>270 verified</td></tr>
@@ -914,11 +920,12 @@ const CleanRoom = () => {
           </article>
           <hr />
 
-          <article className="agent-record" id="fYyKja">
+          <article className="agent-profile" id="fYyKja">
             <header><h3>Josh A. Nies</h3></header>
 
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
+                <thead><tr><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Metric</th><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Value</th></tr></thead>
                 <tbody>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>80 verified</td></tr>
@@ -979,11 +986,12 @@ const CleanRoom = () => {
           </article>
           <hr />
 
-          <article className="agent-record" id="SA519553000">
+          <article className="agent-profile" id="SA519553000">
             <header><h3>James Wedell</h3></header>
 
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
+                <thead><tr><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Metric</th><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Value</th></tr></thead>
                 <tbody>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>44 verified</td></tr>
@@ -1035,11 +1043,12 @@ const CleanRoom = () => {
           </article>
           <hr />
 
-          <article className="agent-record" id="BR113578000">
+          <article className="agent-profile" id="BR113578000">
             <header><h3>Dale and Shirley Chandler</h3></header>
 
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
+                <thead><tr><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Metric</th><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Value</th></tr></thead>
                 <tbody>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>24 verified</td></tr>
@@ -1085,11 +1094,12 @@ const CleanRoom = () => {
           </article>
           <hr />
 
-          <article className="agent-record" id="SA635186000">
+          <article className="agent-profile" id="SA635186000">
             <header><h3>Brian North</h3></header>
 
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
+                <thead><tr><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Metric</th><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Value</th></tr></thead>
                 <tbody>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>50 verified</td></tr>
@@ -1167,11 +1177,12 @@ const CleanRoom = () => {
           </article>
           <hr />
 
-          <article className="agent-record" id="SA062900000">
+          <article className="agent-profile" id="SA062900000">
             <header><h3>David Tucker</h3></header>
 
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
+                <thead><tr><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Metric</th><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Value</th></tr></thead>
                 <tbody>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>163 verified</td></tr>
@@ -1255,11 +1266,12 @@ const CleanRoom = () => {
           </article>
           <hr />
 
-          <article className="agent-record" id="SA584331000">
+          <article className="agent-profile" id="SA584331000">
             <header><h3>Brian Adamski</h3></header>
 
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
+                <thead><tr><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Metric</th><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Value</th></tr></thead>
                 <tbody>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>108 verified</td></tr>
@@ -1318,11 +1330,12 @@ const CleanRoom = () => {
           </article>
           <hr />
 
-          <article className="agent-record" id="gDiYDa">
+          <article className="agent-profile" id="gDiYDa">
             <header><h3>Sacha Blanchet</h3></header>
 
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
+                <thead><tr><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Metric</th><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Value</th></tr></thead>
                 <tbody>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>102 verified</td></tr>
@@ -1392,11 +1405,12 @@ const CleanRoom = () => {
           </article>
           <hr />
 
-          <article className="agent-record" id="SA648869000">
+          <article className="agent-profile" id="SA648869000">
             <header><h3>S4 Real Estate</h3></header>
 
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
+                <thead><tr><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Metric</th><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Value</th></tr></thead>
                 <tbody>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>119 verified</td></tr>
@@ -1460,11 +1474,12 @@ const CleanRoom = () => {
           </article>
           <hr />
 
-          <article className="agent-record" id="SA570033000">
+          <article className="agent-profile" id="SA570033000">
             <header><h3>Kris McLaughlin</h3></header>
 
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
+                <thead><tr><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Metric</th><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Value</th></tr></thead>
                 <tbody>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>36 verified</td></tr>
@@ -1525,11 +1540,12 @@ const CleanRoom = () => {
           </article>
           <hr />
 
-          <article className="agent-record" id="SA628414000">
+          <article className="agent-profile" id="SA628414000">
             <header><h3>Kevin Owens and  The Owens Collective</h3></header>
 
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
+                <thead><tr><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Metric</th><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Value</th></tr></thead>
                 <tbody>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>49 verified</td></tr>
@@ -1592,11 +1608,12 @@ const CleanRoom = () => {
           </article>
           <hr />
 
-          <article className="agent-record" id="BR644773000">
+          <article className="agent-profile" id="BR644773000">
             <header><h3>Bret Burke</h3></header>
 
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
+                <thead><tr><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Metric</th><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Value</th></tr></thead>
                 <tbody>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>30 verified</td></tr>
@@ -1619,10 +1636,7 @@ const CleanRoom = () => {
               <div dangerouslySetInnerHTML={{ __html: `Bret Burke operates as an Associate Broker with HomeSmart Elite Group, building his practice since <strong>2023</strong> and establishing a strong foundation with <strong>86 transactions</strong> and a perfect <strong>5-star rating</strong> across <strong>30 client reviews</strong>. Burke brings extensive market knowledge to his role, working with diverse client segments including first-time homebuyers, investors, and families navigating relocation. His transaction history demonstrates consistent performance across varied property types and price points, with deals ranging from <strong>$280,000</strong> to <strong>$662,500</strong> and an average transaction value of <strong>$471,333</strong>. His market expertise has gained recognition in the industry, with Burke being featured in <strong>Phoenix Magazine's Top Producers of 2025</strong>, highlighting his rapid rise and achievements within just two years of practice. Beyond his professional achievements, Burke maintains active involvement in his community through various service initiatives and volunteer commitments that support local organizations and charitable causes throughout the region.` }} />
             </div>
 
-            <div className="community-record">
-              <h4>Verified Community Involvement</h4>
-              <p>volunteer at &lt;UNKNOWN&gt;</p>
-            </div>
+            
 
             <div className="achievements-record">
               <h4>Notable Achievements</h4>
@@ -1657,11 +1671,12 @@ const CleanRoom = () => {
           </article>
           <hr />
 
-          <article className="agent-record" id="SA668385000">
+          <article className="agent-profile" id="SA668385000">
             <header><h3>Emir Lopez</h3></header>
 
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
+                <thead><tr><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Metric</th><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Value</th></tr></thead>
                 <tbody>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>66 verified</td></tr>
@@ -1708,11 +1723,12 @@ const CleanRoom = () => {
           </article>
           <hr />
 
-          <article className="agent-record" id="See-license-information">
+          <article className="agent-profile" id="See-license-information">
             <header><h3>Cory Mishkin</h3></header>
 
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
+                <thead><tr><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Metric</th><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Value</th></tr></thead>
                 <tbody>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>80 verified</td></tr>
@@ -1774,11 +1790,12 @@ const CleanRoom = () => {
           </article>
           <hr />
 
-          <article className="agent-record" id="seH2mE">
+          <article className="agent-profile" id="seH2mE">
             <header><h3>Bill Watson</h3></header>
 
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
+                <thead><tr><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Metric</th><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Value</th></tr></thead>
                 <tbody>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>109 verified</td></tr>
@@ -1845,11 +1862,12 @@ const CleanRoom = () => {
           </article>
           <hr />
 
-          <article className="agent-record" id="BR686238000">
+          <article className="agent-profile" id="BR686238000">
             <header><h3>Michael G. Huber</h3></header>
 
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
+                <thead><tr><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Metric</th><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Value</th></tr></thead>
                 <tbody>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>20 verified</td></tr>
@@ -1897,11 +1915,12 @@ const CleanRoom = () => {
           </article>
           <hr />
 
-          <article className="agent-record" id="SA694878000">
+          <article className="agent-profile" id="SA694878000">
             <header><h3>Chris Curtis</h3></header>
 
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
+                <thead><tr><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Metric</th><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Value</th></tr></thead>
                 <tbody>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>23 verified</td></tr>
@@ -1950,11 +1969,12 @@ const CleanRoom = () => {
           </article>
           <hr />
 
-          <article className="agent-record" id="Not-provided">
+          <article className="agent-profile" id="Not-provided">
             <header><h3>The Caniglia Group</h3></header>
 
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
+                <thead><tr><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Metric</th><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Value</th></tr></thead>
                 <tbody>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>158 verified</td></tr>
@@ -2033,11 +2053,12 @@ const CleanRoom = () => {
           </article>
           <hr />
 
-          <article className="agent-record" id="BR541814000">
+          <article className="agent-profile" id="BR541814000">
             <header><h3>Lori Lynn Lane</h3></header>
 
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
+                <thead><tr><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Metric</th><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Value</th></tr></thead>
                 <tbody>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>104 verified</td></tr>
@@ -2104,11 +2125,12 @@ const CleanRoom = () => {
           </article>
           <hr />
 
-          <article className="agent-record" id="SA542790000">
+          <article className="agent-profile" id="SA542790000">
             <header><h3>Craig S. Nelson</h3></header>
 
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
+                <thead><tr><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Metric</th><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Value</th></tr></thead>
                 <tbody>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>29 verified</td></tr>
@@ -2172,11 +2194,12 @@ const CleanRoom = () => {
           </article>
           <hr />
 
-          <article className="agent-record" id="SA663427000">
+          <article className="agent-profile" id="SA663427000">
             <header><h3>Korinna DeBlanc</h3></header>
 
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
+                <thead><tr><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Metric</th><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Value</th></tr></thead>
                 <tbody>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>50 verified</td></tr>
@@ -2222,11 +2245,12 @@ const CleanRoom = () => {
           </article>
           <hr />
 
-          <article className="agent-record" id="v3EtSU">
+          <article className="agent-profile" id="v3EtSU">
             <header><h3>Holly Henbest</h3></header>
 
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
+                <thead><tr><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Metric</th><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Value</th></tr></thead>
                 <tbody>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>93 verified</td></tr>
@@ -2297,11 +2321,12 @@ const CleanRoom = () => {
           </article>
           <hr />
 
-          <article className="agent-record" id="Sa7BQW">
+          <article className="agent-profile" id="Sa7BQW">
             <header><h3>Mike Mendoza</h3></header>
 
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
+                <thead><tr><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Metric</th><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Value</th></tr></thead>
                 <tbody>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>149 verified</td></tr>
@@ -2350,7 +2375,7 @@ const CleanRoom = () => {
               <h4>Awards and Recognition</h4>
               <p>Multiple years: #1 REALTOR® S.E. Valley Board</p>
               <p>Multiple years: #1 Keller Williams Agent Nationwide</p>
-              <p>&lt;UNKNOWN&gt;: Howard Britton Star Power Star</p>
+              <p>Howard Britton Star Power Star</p>
               <p>Ten awards: #1 Top Producer</p>
             </div>
 
@@ -2379,11 +2404,12 @@ const CleanRoom = () => {
           </article>
           <hr />
 
-          <article className="agent-record" id="SA650511000">
+          <article className="agent-profile" id="SA650511000">
             <header><h3>NC Residential</h3></header>
 
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
+                <thead><tr><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Metric</th><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Value</th></tr></thead>
                 <tbody>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>81 verified</td></tr>
@@ -2463,11 +2489,12 @@ const CleanRoom = () => {
           </article>
           <hr />
 
-          <article className="agent-record" id="Not-specified">
+          <article className="agent-profile" id="Not-specified">
             <header><h3>Jason Serikaku</h3></header>
 
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
+                <thead><tr><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Metric</th><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Value</th></tr></thead>
                 <tbody>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>105 verified</td></tr>
@@ -2533,11 +2560,12 @@ const CleanRoom = () => {
           </article>
           <hr />
 
-          <article className="agent-record" id="BR552711000">
+          <article className="agent-profile" id="BR552711000">
             <header><h3>Jennifer Finken</h3></header>
 
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
+                <thead><tr><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Metric</th><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Value</th></tr></thead>
                 <tbody>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>23 verified</td></tr>
@@ -2592,11 +2620,12 @@ const CleanRoom = () => {
           </article>
           <hr />
 
-          <article className="agent-record" id="SA685761000">
+          <article className="agent-profile" id="SA685761000">
             <header><h3>Nick Calamia</h3></header>
 
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
+                <thead><tr><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Metric</th><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Value</th></tr></thead>
                 <tbody>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>44 verified</td></tr>
@@ -2649,11 +2678,12 @@ const CleanRoom = () => {
           </article>
           <hr />
 
-          <article className="agent-record" id="SA568277000">
+          <article className="agent-profile" id="SA568277000">
             <header><h3>Lisa Miguel</h3></header>
 
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
+                <thead><tr><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Metric</th><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Value</th></tr></thead>
                 <tbody>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>52 verified</td></tr>
@@ -2714,11 +2744,12 @@ const CleanRoom = () => {
           </article>
           <hr />
 
-          <article className="agent-record" id="OXyST7">
+          <article className="agent-profile" id="OXyST7">
             <header><h3>John Prescott And Jacie Coleman</h3></header>
 
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
+                <thead><tr><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Metric</th><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Value</th></tr></thead>
                 <tbody>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>55 verified</td></tr>
@@ -2781,11 +2812,12 @@ const CleanRoom = () => {
           </article>
           <hr />
 
-          <article className="agent-record" id="SA638181000">
+          <article className="agent-profile" id="SA638181000">
             <header><h3>Mary Groff</h3></header>
 
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
+                <thead><tr><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Metric</th><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Value</th></tr></thead>
                 <tbody>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>42 verified</td></tr>
@@ -2841,11 +2873,12 @@ const CleanRoom = () => {
           </article>
           <hr />
 
-          <article className="agent-record" id="BR636486000">
+          <article className="agent-profile" id="BR636486000">
             <header><h3>Jean-Leon Magnotto</h3></header>
 
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
+                <thead><tr><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Metric</th><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Value</th></tr></thead>
                 <tbody>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>36 verified</td></tr>
@@ -2883,11 +2916,12 @@ const CleanRoom = () => {
           </article>
           <hr />
 
-          <article className="agent-record" id="SA575371000">
+          <article className="agent-profile" id="SA575371000">
             <header><h3>Kevin Houston</h3></header>
 
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
+                <thead><tr><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Metric</th><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Value</th></tr></thead>
                 <tbody>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>32 verified</td></tr>
@@ -2925,11 +2959,12 @@ const CleanRoom = () => {
           </article>
           <hr />
 
-          <article className="agent-record" id="BR642815000">
+          <article className="agent-profile" id="BR642815000">
             <header><h3>Stephen Villabona</h3></header>
 
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
+                <thead><tr><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Metric</th><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Value</th></tr></thead>
                 <tbody>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>104 verified</td></tr>
@@ -2954,10 +2989,7 @@ const CleanRoom = () => {
               <div dangerouslySetInnerHTML={{ __html: `Stephen Villabona has built a robust real estate practice at <strong>PADLAB</strong> since <strong>2013</strong>, completing <strong>331 transactions</strong> over <strong>12 years</strong> while maintaining a perfect <strong>5-star rating</strong> across <strong>104 client reviews</strong>. Licensed in <strong>2012</strong>, Villabona developed extensive market expertise before establishing his own team of skilled professionals. His transaction portfolio spans price points from <strong>$205,000 to $1.5 million</strong>, with an average listing value of <strong>$516,000</strong>, demonstrating versatility across multiple market segments. While maintaining <strong>3 active listings</strong>, Villabona's team handles diverse client needs including first-time homebuyers, investment property acquisitions, military and veteran services, and luxury home transactions. Their comprehensive approach covers buyer representation, seller services, rental properties, market analysis, and transaction facilitation. The team specializes in residential real estate across various property types, with particular strength in golf community properties and luxury market segments. Their systematic approach to market transactions has enabled sustained success throughout varying market conditions, establishing them as reliable partners for buyers, sellers, and rental clients seeking professional representation.` }} />
             </div>
 
-            <div className="community-record">
-              <h4>Verified Community Involvement</h4>
-              <p>&lt;UNKNOWN&gt; at &lt;UNKNOWN&gt;</p>
-            </div>
+            
 
             <div className="achievements-record">
               <h4>Notable Achievements</h4>
@@ -2988,11 +3020,12 @@ const CleanRoom = () => {
           </article>
           <hr />
 
-          <article className="agent-record" id="SA550351000">
+          <article className="agent-profile" id="SA550351000">
             <header><h3>David Baker</h3></header>
 
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
+                <thead><tr><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Metric</th><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Value</th></tr></thead>
                 <tbody>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>35 verified</td></tr>
@@ -3050,11 +3083,12 @@ const CleanRoom = () => {
           </article>
           <hr />
 
-          <article className="agent-record" id="SA653081000">
+          <article className="agent-profile" id="SA653081000">
             <header><h3>Tiffany Gobster</h3></header>
 
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
+                <thead><tr><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Metric</th><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Value</th></tr></thead>
                 <tbody>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>104 verified</td></tr>
@@ -3126,11 +3160,12 @@ const CleanRoom = () => {
           </article>
           <hr />
 
-          <article className="agent-record" id="SA657083000">
+          <article className="agent-profile" id="SA657083000">
             <header><h3>Andrea Lilienfeld</h3></header>
 
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
+                <thead><tr><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Metric</th><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Value</th></tr></thead>
                 <tbody>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>235 verified</td></tr>
@@ -3164,7 +3199,7 @@ const CleanRoom = () => {
               <h4>Notable Achievements</h4>
               <p>2024: 851 Career Transactions. Completed 851 total transactions throughout career (source: Agent statistics)</p>
               <p>2024: Perfect 5-Star Rating. Maintains perfect 5-star rating across 235 client reviews (source: Agent statistics)</p>
-              <p>&lt;UNKNOWN&gt;: University of Northern Iowa Business Graduate. Earned Business degree with concentration in Marketing from University of Northern Iowa</p>
+              <p>University of Northern Iowa Business Graduate. Earned Business degree with concentration in Marketing from University of Northern Iowa</p>
               <p>2022: 40 Under 40 Honoree. Recognized by Phoenix Business Journal as one of the top young professionals in real estate (source: Phoenix Business Journal)</p>
               <p>Certified Luxury Home Marketing Specialist (CLHMS). Achieved elite certification for luxury home marketing expertise (source: PRWeb)</p>
               <p>2015: Chairman&#39;s Circle. Joined elite Chairman&#39;s Circle at Coldwell Banker (source: Coldwell Banker)</p>
@@ -3193,11 +3228,12 @@ const CleanRoom = () => {
           </article>
           <hr />
 
-          <article className="agent-record" id="BR524608000">
+          <article className="agent-profile" id="BR524608000">
             <header><h3>JP Cook</h3></header>
 
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
+                <thead><tr><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Metric</th><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Value</th></tr></thead>
                 <tbody>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>28 verified</td></tr>
@@ -3251,11 +3287,12 @@ const CleanRoom = () => {
           </article>
           <hr />
 
-          <article className="agent-record" id="Not-provided">
+          <article className="agent-profile" id="Not-provided">
             <header><h3>Rosemary DeLaurentis</h3></header>
 
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
+                <thead><tr><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Metric</th><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Value</th></tr></thead>
                 <tbody>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>127 verified</td></tr>
@@ -3337,11 +3374,12 @@ const CleanRoom = () => {
           </article>
           <hr />
 
-          <article className="agent-record" id="Not-provided">
+          <article className="agent-profile" id="Not-provided">
             <header><h3>Jeff Seman</h3></header>
 
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
+                <thead><tr><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Metric</th><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Value</th></tr></thead>
                 <tbody>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>4.9 / 5 stars</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>67 verified</td></tr>
@@ -3387,7 +3425,7 @@ const CleanRoom = () => {
               <p>Former PGA Golf Professional. Professional athletic career before real estate (source: Agent biography)</p>
               <p>Best of Zillow Award. Distinguished recognition earned through sustained client votes and five-star reviews (source: Client voting on Zillow platform)</p>
               <p>4.9-Star Rating Across 67 Reviews. Maintained exceptional client satisfaction rating across 67 client reviews (source: Client review platforms)</p>
-              <p>&lt;UNKNOWN&gt;: 4.9-Star Client Rating. Maintains 4.9-star rating across 67 client reviews (source: Client reviews)</p>
+              <p>4.9-Star Client Rating. Maintains 4.9-star rating across 67 client reviews (source: Client reviews)</p>
               <p>4.9 Star Rating. Maintained exceptional client satisfaction with 4.9 stars across 67 reviews (source: Client review aggregation)</p>
               <p>$250 Million in Career Sales. Successfully closed over $250 million in real estate transactions (source: Team performance data)</p>
             </div>
@@ -3432,11 +3470,12 @@ const CleanRoom = () => {
           </article>
           <hr />
 
-          <article className="agent-record" id="SA566923000">
+          <article className="agent-profile" id="SA566923000">
             <header><h3>Eric Swiatek</h3></header>
 
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
+                <thead><tr><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Metric</th><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Value</th></tr></thead>
                 <tbody>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>4.9 / 5 stars</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>67 verified</td></tr>
@@ -3500,11 +3539,12 @@ const CleanRoom = () => {
           </article>
           <hr />
 
-          <article className="agent-record" id="BR008660000">
+          <article className="agent-profile" id="BR008660000">
             <header><h3>Pam Eagan</h3></header>
 
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
+                <thead><tr><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Metric</th><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Value</th></tr></thead>
                 <tbody>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>4.9 / 5 stars</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>48 verified</td></tr>
