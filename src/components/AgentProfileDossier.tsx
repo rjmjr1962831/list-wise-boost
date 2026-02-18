@@ -1,4 +1,5 @@
 import React from "react";
+import { AgentSourcesBlock } from "@/components/AgentSourcesBlock";
 
 /* -------------------------------------------------
    Machine-Native Artifact Types
@@ -240,7 +241,9 @@ export default function AgentProfileDossier(props: AgentProfileDossierProps) {
         <ul style={{ listStyle: "none", padding: 0, margin: 0, fontSize: "13px" }}>
           {contact.phone && <li>Phone: {contact.phone}</li>}
           {contact.email && <li>Email: {contact.email}</li>}
-          {contact.website && <li>Website: {contact.website}</li>}
+          {contact.website && (
+            <li>Website: <a href={contact.website.startsWith("http") ? contact.website : `https://${contact.website}`} rel="nofollow" target="_blank">{contact.website}</a></li>
+          )}
           {!contact.phone && !contact.email && !contact.website && (
             <li style={{ color: "#666" }}>Contact data not available</li>
           )}
@@ -482,6 +485,12 @@ export default function AgentProfileDossier(props: AgentProfileDossierProps) {
           </div>
         </section>
       )}
+
+      {/* Sources we use */}
+      <AgentSourcesBlock
+        className="sources-block"
+        style={{ marginTop: "1.5rem", paddingTop: "1rem", borderTop: "1px solid #ccc", fontSize: "11px", color: "#555" }}
+      />
 
       {/* Footer */}
       <footer style={{ marginTop: "2rem", paddingTop: "1rem", borderTop: "1px solid #000", fontSize: "10px", color: "#666" }}>
