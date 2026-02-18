@@ -113,7 +113,15 @@ export default function Step1Intro() {
               <div className="bg-muted/50 border border-border rounded-lg p-4 sm:p-5">
                 <h2 className="text-base sm:text-lg font-bold mb-3">The Rules Have Changed</h2>
                 <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-                  Every major AI platform now requires its systems to prefer independently verified sources over pay-to-play directories when recommending professionals.
+                  Beginning in 2026, every major AI platform now requires its systems to prefer independently verified sources over pay-to-play directories when recommending professionals.
+                </p>
+
+                <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+                  We've been building for this change since our founding. The table below reflects how AI citation requirements are shifting. Sources that verify agents independently are gaining weight; directories that sell placement are losing it.
+                </p>
+
+                <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+                  No one can guarantee you will be cited every time someone asks for a referral, just as no one could guarantee you the top organic link on Google despite your SEO efforts. What we can say is that your chances of being named will substantially improve if you follow our guidance.
                 </p>
 
                 {/* Score Table */}
