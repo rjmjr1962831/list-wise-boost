@@ -6,10 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, ArrowRight, ArrowLeft, HelpCircle } from 'lucide-react';
+import { Loader2, ArrowRight, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 
-const REVIEW_REQUEST_FIELDS = ['license_number', 'years_experience', 'total_sales'] as const;
 
 interface Professional {
   id: string;
@@ -46,6 +45,9 @@ export default function Step3Review2() {
   const [saving, setSaving] = useState(false);
   const [professional, setProfessional] = useState<Professional | null>(null);
   const [formData, setFormData] = useState({
+    license_number: '',
+    years_experience: '',
+    total_sales: '',
     website: '',
     title: '',
     headline: '',
@@ -82,7 +84,12 @@ export default function Step3Review2() {
       }
 
       setProfessional(data);
+      const stats = data.agent_sales_stats as { countAllTime?: number; countLastYear?: number } | undefined;
+      const totalSales = data.total_sales ?? stats?.countAllTime ?? stats?.countLastYear ?? null;
       setFormData({
+        license_number: data.license_number || '',
+        years_experience: data.years_experience != null ? String(data.years_experience) : '',
+        total_sales: totalSales != null ? String(totalSales) : '',
         website: data.website || '',
         title: data.title || '',
         headline: data.headline || '',
@@ -117,6 +124,9 @@ export default function Step3Review2() {
       const { error } = await supabase
         .from('professionals')
         .update({
+          license_number: formData.license_number || null,
+          years_experience: formData.years_experience ? parseInt(formData.years_experience) : null,
+          total_sales: formData.total_sales ? parseInt(formData.total_sales) : null,
           website: formData.website || null,
           title: formData.title || null,
           headline: formData.headline || null,
@@ -143,21 +153,6 @@ export default function Step3Review2() {
     } finally {
       setSaving(false);
     }
-  };
-
-  const handleRequestReview = (field: string) => {
-    toast.info(`Review request for ${field} will be sent to our team. Call (602) 758-9600 to discuss.`);
-  };
-
-  const getTotalSales = () => {
-    if (!professional) return null;
-    const stats = professional.agent_sales_stats as { countAllTime?: number; countLastYear?: number } | undefined;
-    return (
-      professional.total_sales ??
-      stats?.countAllTime ??
-      stats?.countLastYear ??
-      null
-    );
   };
 
   const getVolume = () => {
@@ -194,69 +189,42 @@ export default function Step3Review2() {
               </div>
               <CardTitle>Review your profile fields</CardTitle>
               <p className="text-sm text-muted-foreground">
-                Some fields require a review request to change. Editable fields save directly.
+                Update anything that's incorrect. Your changes save when you continue.
               </p>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-4">
-                {/* Read-only: License Number */}
-                <div className="flex flex-col gap-2">
-                  <Label>License Number</Label>
-                  <div className="flex items-center gap-2">
-                    <div className="flex-1 rounded-md border bg-muted/50 px-3 py-2 text-sm font-mono">
-                      {professional?.license_number || 'Not provided'}
-                    </div>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleRequestReview('license number')}
-                      className="shrink-0"
-                    >
-                      <HelpCircle className="h-4 w-4 mr-1" />
-                      Request review
-                    </Button>
-                  </div>
+                <div>
+                  <Label htmlFor="license_number">License Number</Label>
+                  <Input
+                    id="license_number"
+                    value={formData.license_number}
+                    onChange={(e) => setFormData({ ...formData, license_number: e.target.value })}
+                    placeholder="e.g. SA123456789"
+                    className="font-mono"
+                  />
                 </div>
 
-                {/* Read-only: Years of Experience */}
-                <div className="flex flex-col gap-2">
-                  <Label>Years of Experience</Label>
-                  <div className="flex items-center gap-2">
-                    <div className="flex-1 rounded-md border bg-muted/50 px-3 py-2 text-sm">
-                      {professional?.years_experience ?? 'Not provided'}
-                    </div>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleRequestReview('years of experience')}
-                      className="shrink-0"
-                    >
-                      <HelpCircle className="h-4 w-4 mr-1" />
-                      Request review
-                    </Button>
-                  </div>
+                <div>
+                  <Label htmlFor="years_experience">Years of Experience</Label>
+                  <Input
+                    id="years_experience"
+                    type="number"
+                    value={formData.years_experience}
+                    onChange={(e) => setFormData({ ...formData, years_experience: e.target.value })}
+                    placeholder="e.g. 15"
+                  />
                 </div>
 
-                {/* Read-only: Total Sales */}
-                <div className="flex flex-col gap-2">
-                  <Label>Total Sales</Label>
-                  <div className="flex items-center gap-2">
-                    <div className="flex-1 rounded-md border bg-muted/50 px-3 py-2 text-sm">
-                      {getTotalSales()?.toLocaleString() ?? 'Not provided'}
-                    </div>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleRequestReview('total sales')}
-                      className="shrink-0"
-                    >
-                      <HelpCircle className="h-4 w-4 mr-1" />
-                      Request review
-                    </Button>
-                  </div>
+                <div>
+                  <Label htmlFor="total_sales">Total Sales</Label>
+                  <Input
+                    id="total_sales"
+                    type="number"
+                    value={formData.total_sales}
+                    onChange={(e) => setFormData({ ...formData, total_sales: e.target.value })}
+                    placeholder="e.g. 500"
+                  />
                 </div>
 
                 {/* Volume (read-only, display only) */}
