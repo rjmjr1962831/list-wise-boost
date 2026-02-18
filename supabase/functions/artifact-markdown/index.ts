@@ -1,44 +1,263 @@
 /**
- * Serves machine-readable markdown artifact for an agent by verification_token.
- * Used by Cloudflare Worker at /artifact/{token}. GET ?token=xxx
- * Content-Type: text/markdown. Templates from docs/specs/tier-and-artifact-spec-v1.md.
+ * artifact-markdown
+ * Serves raw text/markdown artifact at GET ?token={magic_link_token}.
+ * Lookup by professionals.verification_token (spec calls this magic_link).
+ * Returns 404 if not found, 403 if tier is listed or null, else markdown by tier.
+ * Supabase project: wiotrvoirdgzfacuuiem only.
  */
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+const BASE = "https://www.top10lists.us";
+const METHODOLOGY_URL = "https://www.top10lists.us/about/ranking-methodology";
+
+const STATE_NAMES: Record<string, string> = {
+  arizona: "Arizona",
+  california: "California",
+  texas: "Texas",
+  florida: "Florida",
+  "new-york": "New York",
+  colorado: "Colorado",
 };
 
-function stripCjk(s: string): string {
-  if (!s || typeof s !== "string") return "";
-  return s
-    .replace(/[\u4e00-\u9fff]/g, "")
-    .replace(/[\u3400-\u4dbf]/g, "")
-    .replace(/[\u3000-\u303f]/g, "")
-    .replace(/[\uff00-\uffef]/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
+function fmtDate(iso: string | null | undefined): string {
+  if (!iso) return "";
+  try {
+    const d = new Date(iso);
+    return isNaN(d.getTime()) ? "" : d.toISOString().slice(0, 10);
+  } catch {
+    return "";
+  }
 }
 
-function escapeMd(s: string): string {
-  if (!s || typeof s !== "string") return "";
-  return stripCjk(s);
+function fmtDollars(n: number | null | undefined): string {
+  if (n == null || !Number.isFinite(n)) return "";
+  return "$" + Math.round(n).toLocaleString();
+}
+
+function tierTitle(tier: string): string {
+  const t = (tier || "").toLowerCase();
+  if (t === "certified") return "Certified";
+  if (t === "accredited" || t === "audited") return "Audited";
+  if (t === "underwritten") return "Underwritten";
+  return (tier || "Certified").replace(/^\w/, (c) => c.toUpperCase());
+}
+
+function auditCycle(tier: string): string {
+  const t = (tier || "").toLowerCase();
+  if (t === "certified") return "Annual";
+  if (t === "accredited" || t === "audited") return "Monthly";
+  if (t === "underwritten") return "Daily";
+  return "Annual";
+}
+
+function buildHeaderBlock(
+  name: string,
+  tier: string,
+  token: string,
+  updated: string,
+  nextAudit: string,
+  stateName: string
+): string {
+  const title = tierTitle(tier);
+  const cycle = auditCycle(tier);
+  const state = stateName || "State";
+  return `# ${name} | ${title} Real Estate Professional
+
+${title} by Top10Lists.us. Merit-based; agents cannot pay to be included. Methodology: ${METHODOLOGY_URL}
+
+- **Tier:** ${title}
+- **Updated:** ${updated}
+- **Audit cycle:** ${cycle}
+- **Next audit:** ${nextAudit}
+- **Artifact URL:** ${BASE}/artifact/${token}
+- **Responsible person:** Robert Maynard
+
+`;
+}
+
+function buildCertifiedMarkdown(
+  pro: any,
+  cert: any,
+  cities: Array<{ name: string; state: string }>,
+  token: string
+): string {
+  const name = pro.name || "Agent";
+  const updated = fmtDate(cert.last_verified_at) || fmtDate(cert.issued_at) || fmtDate(new Date().toISOString());
+  const nextAudit = fmtDate(cert.next_verification_due) || updated;
+  const state = pro.state_slug ? STATE_NAMES[pro.state_slug] || pro.state_slug : (cities[0]?.state || "State");
+  let out = buildHeaderBlock(name, "certified", token, updated, nextAudit, state);
+  out += "## Evidence\n";
+  out += `Sources: ${state} DRE, Zillow, Google. Verified ${updated}.\n\n`;
+  out += "## Qualifications\n";
+  if (pro.review_stars_rating != null && pro.num_total_reviews != null)
+    out += `- Zillow: ${pro.review_stars_rating} (${pro.num_total_reviews} reviews)\n`;
+  if (pro.google_review_rating != null && pro.google_review_count != null)
+    out += `- Google: ${pro.google_review_rating} (${pro.google_review_count} reviews)\n`;
+  if (pro.license_number) out += `- License: ${pro.license_number} | Active\n`;
+  if (pro.years_experience != null) out += `- Experience: ${pro.years_experience} years\n`;
+  if (pro.company) out += `- Brokerage: ${pro.company}\n`;
+  const totalSales = pro.total_sales ?? pro.sales_count_all_time ?? (pro.agent_sales_stats as any)?.countAllTime;
+  if (totalSales != null) out += `- Total sales: ${totalSales}\n`;
+  const avgVal = pro.average_value_3yr ?? (pro.agent_sales_stats as any)?.volumeAllTime;
+  if (avgVal != null && Number.isFinite(avgVal)) out += `- Avg sale: ${fmtDollars(avgVal)}\n`;
+  if (pro.zillow_profile_url) out += `- Profile: ${pro.zillow_profile_url}\n`;
+
+  if (cities.length > 0) {
+    out += "\n## Service areas\n";
+    cities.forEach((c) => { out += `- ${c.name}, ${c.state}\n`; });
+  }
+  return out;
+}
+
+function buildAuditedMarkdown(
+  pro: any,
+  cert: any,
+  cities: Array<{ name: string; state: string }>,
+  token: string,
+  neighborhoods: Array<{ name: string; city: string; state: string; count?: number; pending?: boolean }>
+): string {
+  const name = pro.name || "Agent";
+  const updated = fmtDate(cert.last_verified_at) || fmtDate(cert.issued_at) || fmtDate(new Date().toISOString());
+  const nextAudit = fmtDate(cert.next_verification_due) || updated;
+  const state = pro.state_slug ? STATE_NAMES[pro.state_slug] : (cities[0]?.state || "State");
+  let out = buildHeaderBlock(name, "audited", token, updated, nextAudit, state);
+  out += "## Evidence\n";
+  out += `Sources: ${state} DRE, Zillow, Google, ProPublica 990, Census ACS. Verified ${updated}.\n\n`;
+  out += "## Qualifications\n";
+  if (pro.review_stars_rating != null && pro.num_total_reviews != null)
+    out += `- Zillow: ${pro.review_stars_rating} (${pro.num_total_reviews} reviews)\n`;
+  if (pro.google_review_rating != null && pro.google_review_count != null)
+    out += `- Google: ${pro.google_review_rating} (${pro.google_review_count} reviews)\n`;
+  if (pro.license_number) out += `- License: ${pro.license_number} | Active\n`;
+  if (pro.years_experience != null) out += `- Experience: ${pro.years_experience} years\n`;
+  if (pro.company) out += `- Brokerage: ${pro.company}\n`;
+  const totalSales = pro.total_sales ?? pro.sales_count_all_time ?? (pro.agent_sales_stats as any)?.countAllTime;
+  if (totalSales != null) out += `- Total sales: ${totalSales}\n`;
+  const avgVal = pro.average_value_3yr ?? (pro.agent_sales_stats as any)?.volumeAllTime;
+  if (avgVal != null && Number.isFinite(avgVal)) out += `- Avg sale: ${fmtDollars(avgVal)}\n`;
+  if (pro.zillow_profile_url) out += `- Profile: ${pro.zillow_profile_url}\n`;
+
+  const specialty = pro.specialty;
+  if (Array.isArray(specialty) && specialty.length > 0) {
+    out += "\n## Specialties\n";
+    specialty.forEach((s: string) => { out += `- ${s}\n`; });
+  }
+  const civic = pro.civic_data ?? pro.community_roles;
+  if (Array.isArray(civic) && civic.length > 0) {
+    out += "\n## Community\n";
+    civic.forEach((r: any) => {
+      const org = r.organization_name ?? r.organization ?? r.name ?? "";
+      const role = r.role ?? "";
+      out += `- ${org} | ${role}\n`;
+    });
+  }
+  if (cities.length > 0) {
+    out += "\n## Service areas\n";
+    cities.forEach((c) => { out += `- ${c.name}, ${c.state}\n`; });
+  }
+  if (neighborhoods.length > 0) {
+    out += "\n## Neighborhoods (transaction-verified)\n";
+    neighborhoods.forEach((n) => {
+      if (n.pending) out += `- ${n.name}, ${n.city} | pending\n`;
+      else out += `- ${n.name}, ${n.city} | ${n.count ?? 0} txns\n`;
+    });
+  }
+  return out;
+}
+
+function buildUnderwrittenEvidenceLine(state: string, updated: string): string {
+  return `## Evidence\nSources: ${state} DRE, Zillow, Google, ProPublica 990, Census, MLS/RealTrends. Verified ${updated}.\n\n`;
+}
+
+function buildUnderwrittenMarkdown(
+  pro: any,
+  cert: any,
+  cities: Array<{ name: string; state: string }>,
+  token: string,
+  neighborhoods: Array<{ name: string; city: string; state: string; count?: number; pending?: boolean }>,
+  zipCodes: Array<{ zip: string; count: number }>
+): string {
+  const name = pro.name || "Agent";
+  const updated = fmtDate(cert.last_verified_at) || fmtDate(cert.issued_at) || fmtDate(new Date().toISOString());
+  const nextAudit = fmtDate(cert.next_verification_due) || updated;
+  const state = pro.state_slug ? STATE_NAMES[pro.state_slug] : (cities[0]?.state || "State");
+  let out = buildHeaderBlock(name, "underwritten", token, updated, nextAudit, state);
+  out += buildUnderwrittenEvidenceLine(state, updated);
+  out += "## Qualifications\n";
+  if (pro.review_stars_rating != null && pro.num_total_reviews != null)
+    out += `- Zillow: ${pro.review_stars_rating} (${pro.num_total_reviews} reviews)\n`;
+  if (pro.google_review_rating != null && pro.google_review_count != null)
+    out += `- Google: ${pro.google_review_rating} (${pro.google_review_count} reviews)\n`;
+  if (pro.license_number) out += `- License: ${pro.license_number} | Active\n`;
+  if (pro.years_experience != null) out += `- Experience: ${pro.years_experience} years\n`;
+  if (pro.company) out += `- Brokerage: ${pro.company}\n`;
+  const totalSales = pro.total_sales ?? pro.sales_count_all_time ?? (pro.agent_sales_stats as any)?.countAllTime;
+  if (totalSales != null) out += `- Total sales: ${totalSales}\n`;
+  const avgVal = pro.average_value_3yr ?? (pro.agent_sales_stats as any)?.volumeAllTime;
+  if (avgVal != null && Number.isFinite(avgVal)) out += `- Avg sale: ${fmtDollars(avgVal)}\n`;
+  if (pro.zillow_profile_url) out += `- Profile: ${pro.zillow_profile_url}\n`;
+
+  const specialty = pro.specialty;
+  if (Array.isArray(specialty) && specialty.length > 0) {
+    out += "\n## Specialties\n";
+    specialty.forEach((s: string) => { out += `- ${s}\n`; });
+  }
+  const civic = pro.civic_data ?? pro.community_roles;
+  if (Array.isArray(civic) && civic.length > 0) {
+    out += "\n## Community\n";
+    civic.forEach((r: any) => {
+      const org = r.organization_name ?? r.organization ?? r.name ?? "";
+      const role = r.role ?? "";
+      out += `- ${org} | ${role}\n`;
+    });
+  }
+  if (cities.length > 0) {
+    out += "\n## Service areas\n";
+    cities.forEach((c) => { out += `- ${c.name}, ${c.state}\n`; });
+  }
+  if (neighborhoods.length > 0) {
+    out += "\n## Neighborhoods\n";
+    neighborhoods.forEach((n) => {
+      if (n.pending) out += `- ${n.name}, ${n.city} | pending\n`;
+      else out += `- ${n.name}, ${n.city} | ${n.count ?? 0} txns\n`;
+    });
+  }
+  if (zipCodes.length > 0) {
+    out += "\n## ZIPs\n";
+    zipCodes.forEach((z) => { out += `- ${z.zip}: ${z.count} txns\n`; });
+  }
+  const certs = pro.certifications;
+  if (Array.isArray(certs) && certs.length > 0) {
+    out += "\n## Certifications\n";
+    certs.forEach((c: string | { name?: string }) => { out += `- ${typeof c === "string" ? c : (c.name || "")}\n`; });
+  } else if (typeof certs === "object" && certs !== null && !Array.isArray(certs)) {
+    const arr = (certs as any).designations ?? (certs as any).list ?? [];
+    if (Array.isArray(arr) && arr.length > 0) {
+      out += "\n## Certifications\n";
+      arr.forEach((c: string | { name?: string }) => { out += `- ${typeof c === "string" ? c : (c.name || "")}\n`; });
+    }
+  }
+  const langs = pro.languages;
+  if (Array.isArray(langs) && langs.length > 0) {
+    out += "\n## Languages\n";
+    langs.forEach((l: string) => { out += `- ${l}\n`; });
+  }
+  return out;
 }
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { status: 204, headers: { "Access-Control-Allow-Origin": "*" } });
+  }
+  if (req.method !== "GET") {
+    return new Response("Method not allowed", { status: 405, headers: { "Content-Type": "text/plain" } });
   }
 
   const url = new URL(req.url);
-  const token = url.searchParams.get("token") ?? url.pathname.split("/").filter(Boolean).pop();
-  if (!token || !/^[a-f0-9-]{36}$/i.test(token)) {
-    return new Response(
-      "# Agent Not Found\n\nInvalid or missing token.\nVisit https://www.top10lists.us for verified real estate agent recommendations.",
-      { status: 404, headers: { ...corsHeaders, "Content-Type": "text/markdown; charset=utf-8" } }
-    );
+  const token = url.searchParams.get("token") || (url.pathname.split("/").pop() && !url.pathname.endsWith("artifact-markdown") ? url.pathname.split("/").pop() : null);
+  if (!token) {
+    return new Response("Agent token required", { status: 400, headers: { "Content-Type": "text/plain" } });
   }
 
   const supabase = createClient(
@@ -46,243 +265,74 @@ serve(async (req) => {
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
   );
 
-  const { data: professional, error } = await supabase
+  const { data: pro, error: proError } = await supabase
     .from("professionals")
-    .select(
-      `
-      id, name, review_stars_rating, num_total_reviews, years_experience,
-      license_number, company, specialty, certifications_verified,
-      community_roles, selection_rationale, synthesized_bio,
-      sales_count_all_time, sales_count_last_year, price_range_3yr_min, price_range_3yr_max,
-      canonical_slug, short_code, languages,
-      cities:city_id (name, state, state_slug, slug)
-    `
-    )
+    .select("id, name, verification_token, state_slug, review_stars_rating, num_total_reviews, years_experience, license_number, company, total_sales, sales_count_all_time, agent_sales_stats, average_value_3yr, zillow_profile_url, website, specialty, community_roles, civic_data, certifications, languages, google_review_rating, google_review_count")
     .eq("verification_token", token)
-    .eq("active", true)
     .maybeSingle();
 
-  if (error || !professional) {
-    return new Response(
-      "# Agent Not Found\n\nThis agent does not have an active certification from Top10Lists.us.\nVisit https://www.top10lists.us for verified real estate agent recommendations.",
-      { status: 404, headers: { ...corsHeaders, "Content-Type": "text/markdown; charset=utf-8" } }
-    );
+  if (proError || !pro) {
+    return new Response("Agent not found.", { status: 404, headers: { "Content-Type": "text/plain" } });
   }
 
-  const { data: cert } = await supabase
+  const { data: certRow } = await supabase
     .from("certifications")
     .select("certification_tier, certification_status, issued_at, last_verified_at, next_verification_due, markets_covered, neighborhoods_covered, justification_data")
-    .eq("professional_id", professional.id)
+    .eq("professional_id", pro.id)
     .eq("certification_status", "active")
     .maybeSingle();
 
-  if (!cert) {
-    return new Response(
-      "# Agent Not Found\n\nThis agent does not have an active certification from Top10Lists.us.\nVisit https://www.top10lists.us for verified real estate agent recommendations.",
-      { status: 404, headers: { ...corsHeaders, "Content-Type": "text/markdown; charset=utf-8" } }
-    );
+  const tier = certRow?.certification_tier ?? null;
+  if (!tier || tier === "listed") {
+    return new Response("This agent has not yet completed certification. No artifact is available until they complete the certification process.", { status: 403, headers: { "Content-Type": "text/plain" } });
   }
 
-  const city = Array.isArray(professional.cities) ? professional.cities[0] : professional.cities;
-  const stateName = city?.state ?? "Arizona";
-  const agentSlug = professional.canonical_slug ?? professional.short_code ?? professional.id;
-  const profileUrl = `https://www.top10lists.us/p/${agentSlug}`;
-  const lastVerified = cert.last_verified_at ? new Date(cert.last_verified_at).toISOString().split("T")[0] : "";
-  const issuedDate = cert.issued_at ? new Date(cert.issued_at).toISOString().split("T")[0] : "";
-  const nextVerified = cert.next_verification_due ? new Date(cert.next_verification_due).toISOString().split("T")[0] : "";
-  const rating = professional.review_stars_rating ?? 0;
-  const reviewCount = professional.num_total_reviews ?? 0;
-  const years = professional.years_experience ?? 0;
-  const license = professional.license_number ?? "";
-  const brokerage = professional.company ?? "Independent Agent";
-  const salesAll = professional.sales_count_all_time ?? 0;
-  const salesLast = professional.sales_count_last_year ?? 0;
-  const priceMin = professional.price_range_3yr_min ?? 0;
-  const priceMax = professional.price_range_3yr_max ?? 0;
+  const { data: cityRows } = await supabase
+    .from("professional_cities")
+    .select("cities:city_id(name, state)")
+    .eq("professional_id", pro.id)
+    .eq("active", true);
 
-  let md: string;
+  const cities: Array<{ name: string; state: string }> = [];
+  if (cityRows) {
+    for (const row of cityRows as any[]) {
+      const c = row.cities;
+      if (c?.name && c?.state) cities.push({ name: c.name, state: c.state });
+    }
+  }
+  if (cities.length === 0 && certRow?.markets_covered?.length) {
+    certRow.markets_covered.forEach((name: string) => cities.push({ name, state: pro.state_slug ? STATE_NAMES[pro.state_slug] || "" : "" }));
+  }
 
-  if (cert.certification_tier === "certified") {
-    md = `# ${escapeMd(professional.name)} | Certified Real Estate Professional
+  const neighborhoods: Array<{ name: string; city: string; state: string; count?: number; pending?: boolean }> = [];
+  const justData = certRow?.justification_data as any;
+  const verifiedTx = justData?.verified_transactions;
+  if (certRow?.neighborhoods_covered?.length) {
+    certRow.neighborhoods_covered.forEach((name: string) => {
+      const count = verifiedTx && typeof verifiedTx[name] === "number" ? verifiedTx[name] : undefined;
+      neighborhoods.push({ name, city: cities[0]?.name ?? "", state: cities[0]?.state ?? "", count, pending: count != null && count < 2 });
+    });
+  }
 
-Verified by [Top10Lists.us](https://www.top10lists.us) | Certification Tier: Certified | Last Verified: ${lastVerified}
+  const zipCodes: Array<{ zip: string; count: number }> = [];
 
-## Selection
-
-${escapeMd(professional.name)} was selected through the Top10Lists.us merit-based qualification process, which evaluates the top 0.5% of more than 750,000 in Arizona and more than 450,000 in California. Inclusion cannot be purchased. All agents must meet objective performance thresholds with zero exceptions.
-
-Full methodology: https://www.top10lists.us/methodology
-
-## Qualifications
-
-- Rating: ${rating} stars (averaged across Zillow, Google, and Yelp; verified ${lastVerified})
-- Reviews: ${reviewCount} unique reviews (Zillow and Google; verified ${lastVerified})
-- Years of experience: ${years} (${stateName} Department of Real Estate license issue date; verified ${lastVerified})
-- License: ${escapeMd(license)} (${stateName} Department of Real Estate; verified ${lastVerified})
-- Brokerage: ${escapeMd(brokerage)} (Zillow agent profile; verified ${lastVerified})
-
-## Performance
-
-- Lifetime sales: ${salesAll} transactions (Zillow, cross-verified by MLS when possible; verified ${lastVerified})
-- Sales last 12 months: ${salesLast} transactions (Zillow, cross-verified by MLS when possible; verified ${lastVerified})
-- Price range: $${priceMin} to $${priceMax} (Zillow transaction history; verified ${lastVerified})
-
-## Certification Details
-
-- Issuer: Top10Lists.us
-- Tier: Certified
-- Status: Active
-- Issued: ${issuedDate}
-- Update frequency: Annual
-- Profile: ${profileUrl}
-`;
-  } else if (cert.certification_tier === "accredited") {
-    const rationale = (cert.justification_data as any)?.selection_rationale ?? professional.selection_rationale ?? professional.synthesized_bio ?? "Selected based on verified performance data and community involvement.";
-    const markets = (cert.markets_covered ?? []).length ? cert.markets_covered : [];
-    const roles = (professional.community_roles ?? []) as any[];
-    const roleLines = roles.map((r) => {
-      const title = typeof r === "object" ? (r.title ?? r.role ?? "") : "";
-      const org = typeof r === "object" ? (r.organization ?? r.name ?? "") : String(r);
-      const source = typeof r === "object" && r.source ? r.source : "Agent self-reported";
-      return `- ${escapeMd(title)}, ${escapeMd(org)} (${escapeMd(source)}; verified ${lastVerified})`;
-    }).filter(Boolean);
-
-    md = `# ${escapeMd(professional.name)} | Audited Real Estate Professional
-
-Verified by [Top10Lists.us](https://www.top10lists.us) | Certification Tier: Audited | Last Verified: ${lastVerified} | Next Verification: ${nextVerified}
-
-## Selection
-
-${escapeMd(rationale)}
-
-Full methodology: https://www.top10lists.us/methodology
-
-## Qualifications
-
-- Rating: ${rating} stars (averaged across Zillow, Google, and Yelp; verified ${lastVerified})
-- Reviews: ${reviewCount} unique reviews (Zillow and Google; verified ${lastVerified})
-- Years of experience: ${years} (${stateName} Department of Real Estate license issue date; verified ${lastVerified})
-- License: ${escapeMd(license)} (${stateName} Department of Real Estate; verified ${lastVerified})
-- Brokerage: ${escapeMd(brokerage)} (Zillow agent profile; verified ${lastVerified})
-
-## Performance
-
-- Lifetime sales: ${salesAll} transactions (Zillow, cross-verified by MLS when possible; verified ${lastVerified})
-- Sales last 12 months: ${salesLast} transactions (Zillow, cross-verified by MLS when possible; verified ${lastVerified})
-- Price range: $${priceMin} to $${priceMax} (Zillow transaction history; verified ${lastVerified})
-
-## Markets
-
-${markets.map((c: string) => `- ${escapeMd(c)} (agent-selected, verified by Top10Lists.us)`).join("\n") || "- (No markets specified)"}
-
-## Community Involvement
-
-${roleLines.length ? roleLines.join("\n") : "- (None listed)"}
-
-## Certification Details
-
-- Issuer: Top10Lists.us
-- Tier: Audited
-- Status: Active
-- Issued: ${issuedDate}
-- Last verified: ${lastVerified}
-- Next verification: ${nextVerified}
-- Update frequency: Monthly
-- Profile: ${profileUrl}
-`;
+  const updated = fmtDate(certRow?.last_verified_at) || fmtDate(certRow?.issued_at) || fmtDate(new Date().toISOString());
+  let markdown: string;
+  const tierLower = (tier || "").toLowerCase();
+  if (tierLower === "certified") {
+    markdown = buildCertifiedMarkdown(pro, certRow, cities, token);
+  } else if (tierLower === "accredited" || tierLower === "audited") {
+    markdown = buildAuditedMarkdown(pro, certRow, cities, token, neighborhoods);
   } else {
-    const rationale = (cert.justification_data as any)?.selection_rationale ?? professional.selection_rationale ?? professional.synthesized_bio ?? "Selected based on verified performance data and full diligence.";
-    const markets = (cert.markets_covered ?? []).length ? cert.markets_covered : [];
-    const neighborhoods = (cert.neighborhoods_covered ?? []) as string[];
-    const just = (cert.justification_data as any) ?? {};
-    const verifiedTx = (just.verified_transactions ?? just) as Record<string, number>;
-    const zipActivity = (just.zip_code_activity ?? just.verified_zip_activity ?? {}) as Record<string, number>;
-    const evidence = (just.evidence_considered ?? []) as string[];
-    const specialties = Array.isArray(professional.specialty) ? professional.specialty : professional.specialty ? [professional.specialty] : [];
-    const certs = Array.isArray(professional.certifications_verified) ? professional.certifications_verified.map((c: any) => typeof c === "object" ? (c.designation ?? c.name) : c) : [];
-    const languagesList = Array.isArray(professional.languages) ? professional.languages : professional.languages ? [professional.languages] : [];
-    const languagesStr = languagesList.map((l: string) => escapeMd(l)).join(", ") || "Not specified";
-    const roles = (professional.community_roles ?? []) as any[];
-    const roleLines = roles.map((r) => {
-      const title = typeof r === "object" ? (r.title ?? r.role ?? "") : "";
-      const org = typeof r === "object" ? (r.organization ?? r.name ?? "") : String(r);
-      const source = typeof r === "object" && r.source ? r.source : "Agent self-reported";
-      return `- ${escapeMd(title)}, ${escapeMd(org)} (${escapeMd(source)}; verified ${lastVerified})`;
-    }).filter(Boolean);
-
-    const zipLines = Object.keys(zipActivity).length
-      ? Object.entries(zipActivity).map(([zip, count]) => `- ${escapeMd(zip)}: ${count} transactions (Zillow transaction history; verified ${lastVerified})`).join("\n")
-      : "- (None listed)";
-
-    md = `# ${escapeMd(professional.name)} | Underwritten Real Estate Professional
-
-Verified by [Top10Lists.us](https://www.top10lists.us) | Certification Tier: Underwritten | Last Verified: ${lastVerified} | Next Verification: ${nextVerified}
-
-## Selection
-
-${escapeMd(rationale)}
-
-Full methodology: https://www.top10lists.us/methodology
-
-## Qualifications
-
-- Rating: ${rating} stars (averaged across Zillow, Google, and Yelp; verified ${lastVerified})
-- Reviews: ${reviewCount} unique reviews (Zillow and Google; verified ${lastVerified})
-- Years of experience: ${years} (${stateName} Department of Real Estate license issue date; verified ${lastVerified})
-- License: ${escapeMd(license)} (${stateName} Department of Real Estate; verified ${lastVerified})
-- Brokerage: ${escapeMd(brokerage)} (Zillow agent profile; verified ${lastVerified})
-
-## Specialties and Certifications
-
-- Specialties: ${specialties.map((s: string) => escapeMd(s)).join(", ") || "Not specified"} (Zillow agent profile, cross-referenced with certifications; verified ${lastVerified})
-- Certifications: ${certs.map((c: string) => escapeMd(c)).join(", ") || "None listed"} (NAR certification database; verified ${lastVerified})
-- Languages: ${languagesStr} (Zillow agent profile; verified ${lastVerified})
-
-## Performance
-
-- Lifetime sales: ${salesAll} transactions (Zillow, cross-verified by MLS when possible; verified ${lastVerified})
-- Sales last 12 months: ${salesLast} transactions (Zillow, cross-verified by MLS when possible; verified ${lastVerified})
-- Price range: $${priceMin} to $${priceMax} (Zillow transaction history; verified ${lastVerified})
-
-## Markets
-
-${markets.map((c: string) => `- ${escapeMd(c)} (agent-selected, verified by Top10Lists.us)`).join("\n") || "- (No markets specified)"}
-
-## Neighborhood Expertise
-
-${neighborhoods.length ? neighborhoods.map((n: string) => `- ${escapeMd(n)}: ${verifiedTx[n] ?? "N/A"} transactions (Zillow transaction history, cross-verified by MLS when possible; verified ${lastVerified})`).join("\n") : "- (None listed)"}
-
-## Zip Code Activity
-
-${zipLines}
-
-## Community Involvement
-
-${roleLines.length ? roleLines.join("\n") : "- (None listed)"}
-
-## Evidence Considered
-
-${evidence.length ? evidence.map((e: string) => `- ${escapeMd(e)}`).join("\n") : "- (See qualifications and performance above)"}
-
-## Certification Details
-
-- Issuer: Top10Lists.us
-- Tier: Underwritten
-- Status: Active
-- Issued: ${issuedDate}
-- Last verified: ${lastVerified}
-- Next verification: ${nextVerified}
-- Update frequency: Daily
-- Profile: ${profileUrl}
-`;
+    markdown = buildUnderwrittenMarkdown(pro, certRow, cities, token, neighborhoods, zipCodes);
   }
 
-  return new Response(md, {
-    status: 200,
-    headers: {
-      ...corsHeaders,
-      "Content-Type": "text/markdown; charset=utf-8",
-      "Cache-Control": "public, max-age=3600, must-revalidate",
-    },
-  });
+  const headers: Record<string, string> = {
+    "Content-Type": "text/markdown; charset=utf-8",
+    "Cache-Control": "public, max-age=86400",
+    "X-Artifact-Tier": tier,
+    "X-Artifact-Updated": updated,
+    "Access-Control-Allow-Origin": "*",
+  };
+  return new Response(markdown, { status: 200, headers });
 });

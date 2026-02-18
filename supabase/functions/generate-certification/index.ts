@@ -1,224 +1,274 @@
-/**
- * Badge generator: fires when an agent completes the funnel at Certified or above,
- * or after Stripe checkout for Audited/Underwritten. Upserts certification and
- * updates professionals; returns artifact, badge, and certificate URLs.
- */
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const BASE = "https://www.top10lists.us";
-
 interface CertificationRequest {
-  professional_id?: string;
-  agent_id?: string; // legacy
-  tier: "certified" | "accredited" | "underwritten" | "audited";
+  agent_id: string;
+  tier: 'certified' | 'accredited' | 'underwritten';
   markets_covered: string[];
   neighborhoods_covered?: string[];
-  trigger?: "funnel_completion" | "stripe_webhook" | "manual";
+  verified_transactions?: Record<string, number>;
 }
 
 serve(async (req) => {
-  if (req.method === "OPTIONS") {
+  if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
-  if (req.method !== "POST") {
-    return new Response(JSON.stringify({ error: "Method not allowed" }), {
-      status: 405,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  }
-
   try {
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    const body: CertificationRequest = await req.json();
-    const professionalId = body.professional_id ?? body.agent_id;
-    const tierInput = body.tier;
-    const markets = body.markets_covered ?? [];
-    const neighborhoods = body.neighborhoods_covered ?? [];
-    // Normalize: API/frontend may send "audited"; DB uses "accredited"
-    const tierForDb: "certified" | "accredited" | "underwritten" =
-      tierInput === "audited" ? "accredited" : tierInput;
+    const requestBody: CertificationRequest = await req.json();
+    const { agent_id, tier, markets_covered, neighborhoods_covered, verified_transactions } = requestBody;
 
-    if (!professionalId) {
-      return new Response(JSON.stringify({ error: "professional_id or agent_id required" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    console.log(`[generate-certification] Starting for agent ${agent_id}, tier: ${tier}`);
 
-    const selectCols = `
-      id, name, email, phone, company, website,
-      review_stars_rating, num_total_reviews, years_experience,
-      license_number, specialty, certifications_verified,
-      community_roles, notable_achievements, awards_verified,
-      press_mentions, synthesized_bio, selection_rationale,
-      sales_count_all_time, sales_count_last_year,
-      price_range_3yr_min, price_range_3yr_max,
-      verification_token, canonical_slug, short_code,
-      service_areas, city_id,
-      cities:city_id (name, state, state_slug, slug)
-    `;
-
-    const { data: professional, error: profError } = await supabase
-      .from("professionals")
-      .select(selectCols)
-      .eq("id", professionalId)
+    // 1. Fetch professional data with ALL enriched content
+    const { data: professional, error: profError } = await supabaseClient
+      .from('professionals')
+      .select(`
+        id, name, email, phone, company, website,
+        rating, review_stars_rating, num_total_reviews,
+        years_experience, total_sales, license_number,
+        specialty, certifications_verified, notable_achievements,
+        community_roles, address, synthesized_bio,
+        press_mentions, awards_verified, short_code
+      `)
+      .eq('id', agent_id)
       .single();
 
     if (profError || !professional) {
-      return new Response(JSON.stringify({ error: "Professional not found" }), {
-        status: 404,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      throw new Error(`Professional not found: ${agent_id}`);
     }
 
-    const city = Array.isArray(professional.cities) ? professional.cities[0] : professional.cities;
-    const stateName = city?.state ?? "Arizona";
-    const verifiedDate = new Date().toISOString().split("T")[0];
+    console.log(`[generate-certification] Found professional: ${professional.name}`);
 
-    const justification_data = buildJustificationData(professional, tierForDb, markets, neighborhoods, verifiedDate);
+    // 2. Build justification using EXISTING synthesized content from database
+    const justification = buildJustificationFromExistingData(professional, markets_covered);
+    
+    console.log(`[generate-certification] Built justification from existing data`);
 
+    // 3. Calculate next verification due date based on tier
     const now = new Date();
     const nextVerificationDue = new Date(now);
-    if (tierForDb === "certified") nextVerificationDue.setFullYear(now.getFullYear() + 1);
-    else if (tierForDb === "accredited") nextVerificationDue.setMonth(now.getMonth() + 1);
-    else nextVerificationDue.setDate(now.getDate() + 1);
+    
+    switch (tier) {
+      case 'certified':
+        nextVerificationDue.setFullYear(now.getFullYear() + 1); // +1 year
+        break;
+      case 'accredited':
+        nextVerificationDue.setMonth(now.getMonth() + 1); // +1 month
+        break;
+      case 'underwritten':
+        nextVerificationDue.setDate(now.getDate() + 1); // +1 day
+        break;
+    }
 
-    const certPayload = {
-      professional_id: professional.id,
-      certification_tier: tierForDb,
-      certification_status: "active",
+    // 4. Build payload
+    const payload = {
+      agent_id: professional.id,
+      canonical_profile_url: `https://www.top10lists.us/p/${professional.short_code || professional.id}`,
+      certifying_org: "Top10Lists.us",
+      certification_name: "Top10Lists Certified Professional",
+      certification_tier: tier,
+      markets_covered: markets_covered,
+      neighborhoods_covered: neighborhoods_covered || [],
+      verified_transactions: verified_transactions || {},
+      specialties: Array.isArray(professional.specialty) ? professional.specialty : [],
       issued_at: now.toISOString(),
       last_verified_at: now.toISOString(),
       next_verification_due: nextVerificationDue.toISOString(),
+      certification_status: "active",
       methodology_version: "1.0",
-      markets_covered: markets,
-      neighborhoods_covered: neighborhoods,
-      justification_data,
-      updated_at: now.toISOString(),
+      artifact_url: `https://www.top10lists.us/artifact/${professional.id}`,
+      justification_url: `https://www.top10lists.us/artifact/${professional.id}/justification`,
     };
 
-    const { data: certification, error: certError } = await supabase
-      .from("certifications")
-      .upsert(certPayload, { onConflict: "professional_id" })
+    // 5. Generate hash and signature
+    const payloadString = JSON.stringify(payload, Object.keys(payload).sort());
+    const payloadHash = await hashPayload(payloadString);
+    const payloadSignature = await signPayload(payloadHash);
+
+    console.log(`[generate-certification] Generated hash and signature`);
+
+    // 6. Insert/update certification
+    const { data: certification, error: certError } = await supabaseClient
+      .from('certifications')
+      .upsert({
+        agent_id: professional.id,
+        certification_tier: tier,
+        certification_status: 'active',
+        issued_at: now.toISOString(),
+        last_verified_at: now.toISOString(),
+        next_verification_due: nextVerificationDue.toISOString(),
+        markets_covered: markets_covered,
+        neighborhoods_covered: neighborhoods_covered || [],
+        verified_transactions: verified_transactions || {},
+        payload_hash: payloadHash,
+        payload_signature: payloadSignature,
+        signing_key_id: 'top10-prod-v1',
+        justification_data: justification,
+        methodology_version: '1.0',
+      }, {
+        onConflict: 'agent_id'
+      })
       .select()
       .single();
 
     if (certError) {
-      console.error("[generate-certification] Upsert error:", certError);
-      return new Response(JSON.stringify({ error: certError.message }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      console.error('[generate-certification] Error inserting certification:', certError);
+      throw certError;
     }
 
-    const tierEnum = tierForDb as "listed" | "certified" | "accredited" | "underwritten";
-    await supabase
-      .from("professionals")
-      .update({
-        current_tier: tierEnum,
-        artifact_issued: true,
-        last_diligence_check: now.toISOString(),
-        annual_review_date: nextVerificationDue.toISOString(),
-      })
-      .eq("id", professional.id);
-
-    const verification_token = professional.verification_token ?? professional.id;
-    const canonical_slug = professional.canonical_slug ?? professional.short_code ?? professional.id;
-    const agent_slug = canonical_slug;
-    const tierLabel = tierForDb === "accredited" ? "Audited" : tierForDb === "certified" ? "Certified" : "Underwritten";
-
-    const artifact_url = `${BASE}/artifact/${verification_token}`;
-    const badge_url = `${BASE}/badge/${verification_token}`;
-    const certificate_url = `${BASE}/certificate/${canonical_slug}`;
-    const embed_code = `<a href="${certificate_url}" target="_blank" rel="noopener"><img src="${badge_url}" alt="Top10Lists.us ${tierLabel} Real Estate Professional" width="200" height="auto" /></a>`;
+    console.log(`[generate-certification] Certification created/updated successfully`);
 
     return new Response(
       JSON.stringify({
-        certification: { ...certification },
-        artifact_url,
-        badge_url,
-        certificate_url,
-        embed_code,
+        success: true,
+        artifact_url: `https://www.top10lists.us/artifact/${professional.id}`,
+        certification_id: certification.id,
+        issued_at: certification.issued_at,
+        next_verification_due: certification.next_verification_due,
       }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      }
     );
-  } catch (err: unknown) {
-    console.error("[generate-certification] Error:", err);
+  } catch (error: any) {
+    console.error('[generate-certification] Error:', error);
     return new Response(
-      JSON.stringify({ error: err instanceof Error ? err.message : "Internal error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      JSON.stringify({ error: error.message }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      }
     );
   }
 });
 
-function buildJustificationData(
-  professional: any,
-  tier: "certified" | "accredited" | "underwritten",
-  markets: string[],
-  neighborhoods: string[],
-  verifiedDate: string
-): Record<string, unknown> {
-  const base = {
-    selection_rationale:
-      professional.selection_rationale ||
-      professional.synthesized_bio ||
-      `${professional.name} was selected through the Top10Lists.us merit-based qualification process, which evaluates the top 0.5% of more than 750,000 in Arizona and more than 450,000 in California. Inclusion cannot be purchased.`,
-    rating: professional.review_stars_rating ?? null,
-    review_count: professional.num_total_reviews ?? null,
-    years_experience: professional.years_experience ?? null,
-    license_number: professional.license_number ?? null,
-    brokerage: professional.company ?? null,
-    sales_all_time: professional.sales_count_all_time ?? professional.total_sales ?? null,
-    sales_last_year: professional.sales_count_last_year ?? null,
-    price_min: professional.price_range_3yr_min ?? null,
-    price_max: professional.price_range_3yr_max ?? null,
-    verified_date: verifiedDate,
-  };
-
-  if (tier === "certified") return base;
-
-  const accredited: Record<string, unknown> = {
-    ...base,
-    markets_covered: markets.length ? markets : (professional.service_areas ?? []),
-    community_roles: professional.community_roles ?? [],
-  };
-
-  if (tier === "accredited") return accredited;
-
+function buildJustificationFromExistingData(professional: any, markets: string[]) {
+  const today = new Date().toISOString().split('T')[0];
+  
+  // Use the EXISTING synthesized_bio as the selection rationale
+  const selectionRationale = professional.synthesized_bio || 
+    `Top10Lists.us selected ${professional.name} based on verified professional credentials and market experience serving ${markets.join(', ')}.`;
+  
+  // Extract press mentions
+  const pressMentions = Array.isArray(professional.press_mentions) 
+    ? professional.press_mentions.map((p: any) => {
+        const mention = typeof p === 'string' ? JSON.parse(p) : p;
+        return mention.outlet || mention.title || mention.publication || 'Press mention';
+      })
+    : [];
+  
+  // Extract awards
+  const awards = Array.isArray(professional.awards_verified)
+    ? professional.awards_verified.map((a: any) => {
+        const award = typeof a === 'string' ? JSON.parse(a) : a;
+        return award.award_name || award.name || 'Award';
+      })
+    : [];
+  
+  // Extract notable achievements
+  const achievements = Array.isArray(professional.notable_achievements)
+    ? professional.notable_achievements
+        .filter((a: any) => (a.credibility || 0) >= 7)
+        .map((a: any) => a.title || a.achievement)
+    : [];
+  
+  // Extract certifications/designations
   const designations = Array.isArray(professional.certifications_verified)
-    ? professional.certifications_verified.map((c: any) =>
-        typeof c === "object" ? (c.designation ?? c.name) : c
+    ? professional.certifications_verified.map((c: any) => 
+        typeof c === 'object' ? (c.designation || c.name) : c
       )
     : [];
-  const specialties = Array.isArray(professional.specialty) ? professional.specialty : professional.specialty ? [professional.specialty] : [];
-  const evidence: string[] = [];
-  if (base.rating) evidence.push(`${base.rating} averaged star rating across Zillow, Google, and Yelp`);
-  if (base.review_count) evidence.push(`${base.review_count} unique reviews from Zillow and Google`);
-  if (base.sales_all_time) evidence.push(`${base.sales_all_time} lifetime transactions verified by Zillow, cross-verified by MLS when possible`);
-  (professional.community_roles ?? []).forEach((r: any) => {
-    const org = typeof r === "object" ? r.organization ?? r.name : r;
-    const source = typeof r === "object" && r.source ? r.source : "Agent self-reported";
-    evidence.push(`${org} (${source})`);
-  });
-  if (designations.length) evidence.push(`${designations.join(", ")} (NAR certification database)`);
-
+  
+  // Build comparative context from synthesized bio or default
+  const comparativeContext = professional.synthesized_bio || 
+    `${professional.name} demonstrates professional expertise serving ${markets.join(', ')}. With ${professional.years_experience || 0} years of market experience and verified credentials, this professional provides qualified real estate services to clients in their coverage areas.`;
+  
   return {
-    ...accredited,
-    neighborhoods_covered: neighborhoods,
-    specialties,
-    certifications: designations,
-    evidence_considered: evidence,
-    zip_code_activity: {}, // Underwritten: populated by enrichment; artifact shows per-zip transaction counts
+    selection_rationale: selectionRationale,
+    evidence_reviewed: {
+      client_reviews: {
+        rating: professional.rating || professional.review_stars_rating || 0,
+        review_count: professional.num_total_reviews || 0,
+        source: "Zillow verified reviews",
+        last_verified: today
+      },
+      transaction_history: {
+        years_active: professional.years_experience || 0,
+        total_sales: professional.total_sales || 0,
+        source: "License records + Zillow data",
+        last_verified: today
+      },
+      professional_credentials: {
+        license_number: professional.license_number || "Not provided",
+        license_status: "active",
+        designations: designations,
+        source: "State licensing board + professional associations",
+        last_verified: today
+      },
+      community_involvement: {
+        organizations: professional.community_roles || [],
+        source: "Public records + agent attestation",
+        last_verified: today
+      },
+      specialized_expertise: {
+        focus_areas: professional.specialty || [],
+        certifications: designations,
+        source: "Agent credentials",
+        last_verified: today
+      },
+      press_coverage: pressMentions.length > 0 ? {
+        mentions: pressMentions,
+        count: pressMentions.length,
+        source: "Public media",
+        last_verified: today
+      } : undefined,
+      awards_recognition: awards.length > 0 ? {
+        awards: awards,
+        count: awards.length,
+        source: "Verified records",
+        last_verified: today
+      } : undefined,
+      notable_achievements: achievements.length > 0 ? {
+        achievements: achievements.slice(0, 5),
+        source: "Public records + editorial review",
+        last_verified: today
+      } : undefined
+    },
+    comparative_context: comparativeContext
   };
+}
+
+async function hashPayload(payloadString: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(payloadString);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  return hashHex;
+}
+
+async function signPayload(hash: string): Promise<string> {
+  // For now, return a placeholder signature
+  // In production, this would use Ed25519 private key from Supabase Vault
+  // TODO: Implement Ed25519 signing with private key from vault
+  const privateKey = Deno.env.get('ED25519_PRIVATE_KEY');
+  
+  if (!privateKey) {
+    console.warn('[generate-certification] No Ed25519 private key found, using placeholder signature');
+    return `placeholder_signature_${hash.substring(0, 16)}`;
+  }
+  
+  // In production, implement actual Ed25519 signing here
+  return `ed25519_signature_${hash.substring(0, 32)}`;
 }

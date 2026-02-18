@@ -54,11 +54,6 @@ serve(async (req) => {
     console.log('Stripe webhook received:', event.type)
 
     switch (event.type) {
-      case 'checkout.session.completed': {
-        await handleCheckoutSessionCompleted(event.data.object, supabase)
-        break
-      }
-
       case 'invoice.paid':
       case 'invoice.payment_succeeded': {
         await handleInvoicePaid(event.data.object, supabase)
@@ -97,48 +92,6 @@ serve(async (req) => {
   }
 })
 
-async function handleCheckoutSessionCompleted(session: any, supabase: any) {
-  const professionalId = session.metadata?.professional_id
-  const tier = session.metadata?.tier
-  if (!professionalId || !tier) {
-    console.log('checkout.session.completed: missing professional_id or tier in metadata, skipping generate-certification')
-    return
-  }
-  const markets = typeof session.metadata?.markets_covered === 'string'
-    ? (() => { try { return JSON.parse(session.metadata.markets_covered) } catch { return [] } })()
-    : (session.metadata?.markets_covered ?? [])
-  const neighborhoods = typeof session.metadata?.neighborhoods_covered === 'string'
-    ? (() => { try { return JSON.parse(session.metadata.neighborhoods_covered) } catch { return [] } })()
-    : (session.metadata?.neighborhoods_covered ?? [])
-  const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? ''
-  const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-  const fnUrl = `${supabaseUrl}/functions/v1/generate-certification`
-  try {
-    const res = await fetch(fnUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${serviceKey}`,
-      },
-      body: JSON.stringify({
-        professional_id: professionalId,
-        tier: tier === 'audited' ? 'accredited' : tier,
-        markets_covered: Array.isArray(markets) ? markets : [],
-        neighborhoods_covered: Array.isArray(neighborhoods) ? neighborhoods : [],
-        trigger: 'stripe_webhook',
-      }),
-    })
-    if (!res.ok) {
-      const text = await res.text()
-      console.error('generate-certification failed:', res.status, text)
-      return
-    }
-    console.log('generate-certification succeeded for', professionalId, tier)
-  } catch (e) {
-    console.error('Failed to call generate-certification:', e)
-  }
-}
-
 async function handleInvoicePaid(invoice: any, supabase: any) {
   const customerEmail = invoice.customer_email
   const amountPaid = invoice.amount_paid / 100
@@ -155,7 +108,7 @@ async function handleInvoicePaid(invoice: any, supabase: any) {
   if (amountPaid >= 150) {
     tier = 'underwritten'
   } else if (amountPaid >= 50) {
-    tier = 'accredited' // Audited tier; DB still stores as 'accredited' (legacy)
+    tier = 'accredited'
   }
 
   console.log('Determined tier:', tier)

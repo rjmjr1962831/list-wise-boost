@@ -33,7 +33,7 @@ serve(async (req) => {
     const { data: session, error: sessionError } = await supabase
       .from("agent_sessions")
       .select("id, professional_id, expires_at")
-      .eq("session_token", sessionToken)
+      .eq("token", sessionToken)
       .gt("expires_at", now)
       .maybeSingle();
 
@@ -49,7 +49,7 @@ serve(async (req) => {
     const newExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
     await supabase
       .from("agent_sessions")
-      .update({ last_active_at: now, expires_at: newExpiresAt })
+      .update({ expires_at: newExpiresAt })
       .eq("id", session.id);
 
     console.log(`[get-agent-profile] Fetching professional: ${session.professional_id}`);

@@ -15,7 +15,6 @@ import {
   Phone,
   Globe,
   Video,
-  FileText,
   Star,
   Building2,
   Award,
@@ -47,8 +46,6 @@ interface ProfileSectionProps {
 // Self-service fields that agents can edit directly
 const SELF_SERVICE_FIELDS = [
   { key: "phone", label: "Phone Number", icon: Phone, type: "tel" },
-  { key: "description", label: "Bio / Description", icon: FileText, type: "textarea" },
-  { key: "get_to_know_me", label: "Get To Know Me", icon: User, type: "textarea" },
   { key: "image_url", label: "Photo URL", icon: User, type: "url" },
   { key: "website", label: "Website", icon: Globe, type: "url" },
   { key: "sidebar_video_url", label: "Video URL", icon: Video, type: "url" },
@@ -57,6 +54,11 @@ const SELF_SERVICE_FIELDS = [
   { key: "social_linkedin", label: "LinkedIn", icon: Globe, type: "url" },
   { key: "social_twitter", label: "Twitter", icon: Globe, type: "url" },
   { key: "social_tiktok", label: "TikTok", icon: Globe, type: "url" },
+];
+
+// Array fields the agent can edit
+const ARRAY_EDIT_FIELDS = [
+  { key: "specialty", label: "Specialties", icon: Award },
 ];
 
 // Controlled fields (view only, can request changes)
@@ -229,7 +231,9 @@ export function ProfileSection({
                 ) : (
                   <p className="text-sm py-2 px-3 bg-muted/50 rounded-md min-h-[38px]">
                     {professional[field.key] || (
-                      <span className="text-muted-foreground italic">Not set</span>
+                      <span className="text-muted-foreground italic">
+                        {field.key.startsWith("social_") ? "Very Important in Your Web of Trust" : "Not set"}
+                      </span>
                     )}
                   </p>
                 )}
@@ -290,17 +294,100 @@ export function ProfileSection({
               );
             })}
 
-            {/* City Display */}
+            {/* Cities Served */}
             <Separator className="my-4" />
             <div className="space-y-1">
-              <Label className="flex items-center gap-2 text-sm">
-                <MapPin className="h-4 w-4 text-muted-foreground" />
-                Primary City
-              </Label>
-              <p className="text-sm py-2 px-3 bg-muted/50 rounded-md">
-                {professional.city?.name || "Not assigned"}
-                {professional.city?.state && `, ${professional.city.state}`}
-              </p>
+              <div className="flex items-center justify-between">
+                <Label className="flex items-center gap-2 text-sm">
+                  <MapPin className="h-4 w-4 text-muted-foreground" />
+                  Cities Served
+                </Label>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 text-xs"
+                  onClick={() => {
+                    sessionStorage.setItem('visibility_professional_id', professional.id);
+                    window.location.href = '/visibility/coverage?returnTo=dashboard';
+                  }}
+                >
+                  Edit
+                </Button>
+              </div>
+              <div className="flex flex-wrap gap-1.5 py-2 px-3 bg-muted/50 rounded-md min-h-[38px]">
+                {professional.service_areas && professional.service_areas.length > 0 ? (
+                  professional.service_areas.map((area: string, i: number) => (
+                    <Badge key={i} variant="secondary" className="text-xs">{area}</Badge>
+                  ))
+                ) : professional.city?.name ? (
+                  <Badge variant="secondary" className="text-xs">
+                    {professional.city.name}{professional.city.state && `, ${professional.city.state}`}
+                  </Badge>
+                ) : (
+                  <span className="text-muted-foreground italic text-sm">Not set</span>
+                )}
+              </div>
+            </div>
+
+            {/* Neighborhood Expertise */}
+            <div className="space-y-1">
+              <div className="flex items-center justify-between">
+                <Label className="flex items-center gap-2 text-sm">
+                  <MapPin className="h-4 w-4 text-muted-foreground" />
+                  Neighborhood Expertise
+                </Label>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 text-xs"
+                  onClick={() => {
+                    sessionStorage.setItem('visibility_professional_id', professional.id);
+                    window.location.href = '/visibility/expertise?returnTo=dashboard';
+                  }}
+                >
+                  Edit
+                </Button>
+              </div>
+              <div className="flex flex-wrap gap-1.5 py-2 px-3 bg-muted/50 rounded-md min-h-[38px]">
+                {professional.neighborhoods && professional.neighborhoods.length > 0 ? (
+                  professional.neighborhoods.map((n: any, i: number) => (
+                    <Badge key={i} variant="outline" className="text-xs">
+                      {typeof n === 'string' ? n : n.neighborhood || n.name}
+                    </Badge>
+                  ))
+                ) : (
+                  <span className="text-muted-foreground italic text-sm">Not set</span>
+                )}
+              </div>
+            </div>
+
+            {/* Specialties */}
+            <div className="space-y-1">
+              <div className="flex items-center justify-between">
+                <Label className="flex items-center gap-2 text-sm">
+                  <Award className="h-4 w-4 text-muted-foreground" />
+                  Specialties
+                </Label>
+                {!editMode && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 text-xs"
+                    onClick={() => setEditMode(true)}
+                  >
+                    Edit
+                  </Button>
+                )}
+              </div>
+              <div className="flex flex-wrap gap-1.5 py-2 px-3 bg-muted/50 rounded-md min-h-[38px]">
+                {professional.specialty && professional.specialty.length > 0 ? (
+                  professional.specialty.map((s: string, i: number) => (
+                    <Badge key={i} variant="secondary" className="text-xs">{s}</Badge>
+                  ))
+                ) : (
+                  <span className="text-muted-foreground italic text-sm">Not set</span>
+                )}
+              </div>
             </div>
           </CardContent>
         </Card>

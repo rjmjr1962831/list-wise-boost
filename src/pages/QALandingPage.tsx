@@ -216,7 +216,7 @@ const QALandingPage = () => {
             {professionals.slice(0, 3).map((pro, idx) => (
               <li key={pro.id || idx} className="text-foreground">
                 <strong>{pro.name}</strong> — {pro.rating}★ ({pro.reviews} reviews)
-                {pro.total_sales && `, ${pro.total_sales.toLocaleString()} sales`}
+                {pro.total_sales && `, >${pro.total_sales.toLocaleString()} sales`}
               </li>
             ))}
           </ol>

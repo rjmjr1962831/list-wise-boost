@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
@@ -47,6 +47,7 @@ export const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Check for custom agent session token (OTP-based login)
   const checkAgentSession = useCallback(async () => {
@@ -179,6 +180,9 @@ export const Header = () => {
   const displayProfile = agentSession?.professional || agentProfile;
   const displayEmail = agentSession?.professional?.email || user?.email;
 
+  // Hide header on funnel pages
+  if (location.pathname.startsWith('/funnel/')) return null;
+
   return (
     <header className="border-b bg-background/80 backdrop-blur-sm sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4">
@@ -200,6 +204,9 @@ export const Header = () => {
             </Link>
             <Link to="/compare" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
               Compare Us
+            </Link>
+            <Link to="/why-ai-trusts-us" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+              Why AI Trusts Us
             </Link>
 {IS_ADMIN && (
               <Link to="/admin" className="text-sm font-medium text-primary hover:text-primary/80 transition-colors">
@@ -332,6 +339,14 @@ export const Header = () => {
                     className="text-base font-medium text-foreground hover:text-primary transition-colors py-2"
                   >
                     Compare Us
+                  </Link>
+                </SheetClose>
+                <SheetClose asChild>
+                  <Link 
+                    to="/why-ai-trusts-us" 
+                    className="text-base font-medium text-foreground hover:text-primary transition-colors py-2"
+                  >
+                    Why AI Trusts Us
                   </Link>
                 </SheetClose>
                 {IS_ADMIN && (

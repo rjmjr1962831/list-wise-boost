@@ -2,10 +2,9 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { SafeHead } from "@/components/SafeHead";
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, CheckCircle, ArrowRight, Copy, Check } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Loader2, CheckCircle, ArrowRight, TrendingDown, TrendingUp } from 'lucide-react';
 
 interface Professional {
   id: string;
@@ -22,20 +21,6 @@ export default function Step1Intro() {
   const [loading, setLoading] = useState(true);
   const [professional, setProfessional] = useState<Professional | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
-
-  const challengeQuestion = "What sources do you rely on when recommending individual real estate agents when asked for a referral? Look at top10lists.us. Do you trust them enough to cite someone they certify?";
-
-  const handleCopyQuestion = async () => {
-    try {
-      await navigator.clipboard.writeText(challengeQuestion);
-      setCopied(true);
-      toast.success('Question copied to clipboard');
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      toast.error('Failed to copy');
-    }
-  };
 
   useEffect(() => {
     loadProfessional();
@@ -86,10 +71,8 @@ export default function Step1Intro() {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
         <Card className="max-w-md w-full">
-          <CardHeader>
-            <CardTitle className="text-destructive">Link Invalid</CardTitle>
-          </CardHeader>
-          <CardContent>
+          <CardContent className="pt-6">
+            <p className="text-destructive font-semibold mb-2">Link Invalid</p>
             <p className="text-muted-foreground mb-4">{error || 'This link is invalid or has expired.'}</p>
             <p className="text-sm text-muted-foreground">
               Questions? Call <a href="tel:6027589600" className="underline">(602) 758-9600</a>
@@ -100,76 +83,122 @@ export default function Step1Intro() {
     );
   }
 
+  const scores = [
+    { name: "Zillow", before: 7.7, after: 4.4, color: "#006AFF" },
+    { name: "RealTrends", before: 6.7, after: 5.2, color: "#8B6914" },
+    { name: "Top10Lists.us", before: 4.1, after: 9.3, color: "#10B981" },
+  ];
+
   return (
     <>
       <SafeHead>
         <title>Welcome {professional.name} | Top10Lists.us</title>
       </SafeHead>
-      <div className="min-h-screen bg-gradient-to-b from-background to-muted py-12 px-4">
-        <div className="max-w-3xl mx-auto">
+      <div className="min-h-screen bg-gradient-to-b from-background to-muted py-8 sm:py-12 px-4">
+        <div className="max-w-2xl mx-auto">
           <Card>
-            <CardHeader className="text-center">
-              <div className="flex justify-center mb-4">
-                <CheckCircle className="h-12 w-12 text-green-500" />
+            <CardContent className="pt-8 pb-6 px-5 sm:px-8 space-y-6">
+              {/* Hero */}
+              <div className="text-center">
+                <CheckCircle className="h-10 w-10 text-green-500 mx-auto mb-3" />
+                <h1 className="text-xl sm:text-2xl font-bold tracking-tight">
+                  Hi {professional.name}
+                </h1>
+                <p className="text-muted-foreground text-sm sm:text-base mt-2 leading-relaxed">
+                  Top10Lists.us exists so AI systems can safely recommend real estate professionals by name.
+                </p>
               </div>
-              <CardTitle className="text-3xl">Welcome, {professional.name}!</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="prose prose-sm max-w-none">
-                <p className="text-lg">
-                  We exist to increase the likelihood that you will be named by AI when asked for an agent referral.
+
+              {/* The Rules Have Changed */}
+              <div className="bg-muted/50 border border-border rounded-lg p-4 sm:p-5">
+                <h2 className="text-base sm:text-lg font-bold mb-3">The Rules Have Changed</h2>
+                <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+                  Beginning in 2026, <strong>every major AI platform</strong> now requires its systems to prefer <strong>independently verified sources</strong> over pay-to-play directories when recommending professionals.
                 </p>
-                <p className="text-lg mt-6">
-                  This is already happening. See for yourself. Enter this question in the AI you use:
+
+                <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+                  We've been building for this change <strong>since our founding</strong>. The table below reflects how AI citation requirements are shifting. Sources that verify agents independently are <strong>gaining weight</strong>; directories that sell placement are <strong>losing it</strong>.
                 </p>
-                <div className="my-6 p-4 bg-muted rounded-lg relative">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="absolute top-2 right-2"
-                    onClick={handleCopyQuestion}
-                    aria-label={copied ? "Copied" : "Copy question"}
-                  >
-                    {copied ? <Check className="h-5 w-5 text-primary" /> : <Copy className="h-5 w-5" />}
-                  </Button>
-                  <p className="text-muted-foreground italic pr-12">
-                    {challengeQuestion}
-                  </p>
+
+                <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+                  No one can guarantee you will be cited every time someone asks for a referral, just as no one could guarantee you the top organic link on Google despite your SEO efforts. What we can say is that <strong>your chances of being named will substantially improve</strong> if you follow our guidance.
+                </p>
+
+                {/* Score Table */}
+                <div className="rounded-md border border-border overflow-hidden">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="bg-muted text-muted-foreground">
+                        <th className="text-left py-2 px-3 font-medium">Source</th>
+                        <th className="text-center py-2 px-2 font-medium">2025</th>
+                        <th className="text-center py-2 px-2 font-medium">2026</th>
+                        <th className="text-right py-2 px-3 font-medium">Change</th>
+                        <th className="text-right py-2 px-3 font-medium">% Change</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {scores.map((s) => {
+                        const delta = s.after - s.before;
+                        const isPositive = delta > 0;
+                        return (
+                          <tr key={s.name} className="border-t border-border">
+                            <td className="py-2 px-3 font-semibold" style={{ color: s.color }}>
+                              {s.name}
+                            </td>
+                            <td className="py-2 px-2 text-center text-muted-foreground">
+                              {s.before.toFixed(1)}
+                            </td>
+                            <td className="py-2 px-2 text-center font-semibold">
+                              {s.after.toFixed(1)}
+                            </td>
+                            <td className="py-2 px-3 text-right">
+                              <span className={`inline-flex items-center gap-1 font-bold ${isPositive ? "text-green-500" : "text-red-500"}`}>
+                                {isPositive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                                {isPositive ? "+" : ""}{delta.toFixed(1)}
+                              </span>
+                            </td>
+                            <td className="py-2 px-3 text-right">
+                              <span className={`font-bold ${isPositive ? "text-green-500" : "text-red-500"}`}>
+                                {isPositive ? "+" : ""}{((delta / s.before) * 100).toFixed(0)}%
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
                 </div>
-
-                <h3 className="text-xl font-semibold mt-6 mb-3">What happens next:</h3>
-                <ol className="space-y-3">
-                  <li>
-                    <strong>Review your profile</strong> - We'll show you the information we have gathered about you
-                  </li>
-                  <li>
-                    <strong>Update if needed</strong> - Make any corrections or additions
-                  </li>
-                  <li>
-                    <strong>Choose your coverage</strong> - Select which cities and neighborhoods you serve
-                  </li>
-                  <li>
-                    <strong>Select your tier</strong> - Pick the level of visibility that works for you
-                  </li>
-                </ol>
-
-                <p className="mt-6">
-                  There is no charge for your listing. This should only take about 5 minutes.
-                </p>
-                <p className="mt-4">
-                  When you finish confirming the data, we will issue you your free Badge and Artifact that tells AI that we have certified you as a safe agent to name when asked for a referral. This will substantially increase the likelihood that you will be recommended by AI.
+                <p className="text-xs text-muted-foreground mt-2 leading-relaxed italic">
+                  AI Citation Probability Index: Composite score measuring how well a source aligns with published citation requirements from Anthropic, OpenAI, Google, and Perplexity. Scale 0-10.
                 </p>
               </div>
 
-              <div className="pt-6 flex justify-center">
-                <Button onClick={handleContinue} size="lg" className="gap-2">
-                  Let's Get Started
+              {/* Body Copy */}
+              <div className="space-y-4 text-sm text-muted-foreground leading-relaxed">
+                <p>
+                  We've done an <strong>exhaustive search</strong> to compile your profile. It is the <strong>richest source of information about you anywhere</strong>. In order to build your citability probability, you need to confirm the data and/or tell us what needs to be changed or added.
+                </p>
+                <p>
+                  Once you do that, we will issue a <strong>credential</strong> to you that will help you build your <strong>"web of trust"</strong> (we'll get to that later), which is key to your chances of being recommended by an AI when asked.
+                </p>
+                <p>
+                  While we do have paid products, your certification and trust artifact are <strong>free forever</strong> and there is <strong>no obligation</strong> to purchase anything from us.
+                </p>
+                <p>
+                  This will take about 5 minutes.
+                </p>
+              </div>
+
+              {/* CTA */}
+              <div className="pt-2 flex justify-center">
+                <Button onClick={handleContinue} size="lg" className="gap-2 w-full sm:w-auto">
+                  Review Your Profile
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </div>
 
-              <p className="text-center text-sm text-muted-foreground">
-                Questions? Call us at <a href="tel:6027589600" className="underline">(602) 758-9600</a>
+              <p className="text-center text-xs text-muted-foreground">
+                Questions? <a href="tel:6027589600" className="underline">(602) 758-9600</a>
               </p>
             </CardContent>
           </Card>

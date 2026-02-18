@@ -1,35 +1,44 @@
 # Vetting Standards
 
-> Last Updated: February 16, 2026
+> Last Updated: February 18, 2026
+> Standard Audit Cycle: Weekly (this document)
 
 ---
 
-## North Star Principle: The 4.8+ Merit Gate
+## North Star Principle: The Merit Gate
 
-All agents must maintain a minimum 4.8-star rating and 20+ verified reviews to qualify for any tier. This standard has zero exceptions since platform inception. It cannot be purchased, waived, or negotiated. It may be raised in the future but will never be lowered.
+All agents must meet the Merit Gate: 4.8+ star rating, 20+ verified reviews, and 6+ years in business. Zero exceptions since platform inception. Cannot be purchased, waived, or negotiated.
 
 ---
 
 ## Certification Tiers
 
-### Listed
-This tier provides basic verification at no cost. No Badge is issued. The 4.8+ merit gate applies.
+### Listed ($0)
+Basic verification. No artifact, no badge. Merit Gate applies.
 
-### Certified
-This tier offers agent-verified status at no cost. A Standard Badge is issued. The 4.8+ merit gate applies.
+### Certified ($0, Standard Audit Cycle: Annual)
+Agent-verified profile. Machine-readable artifact (text/markdown). Badge issued. Evidence from 4 sources. Merit Gate applies.
 
-### Accredited
-This tier requires a $50/mo subscription. It includes monthly diligence and an Enhanced AI Payload. The 4.8+ merit gate applies.
+### Audited ($50/mo, Standard Audit Cycle: Monthly)
+Expanded artifact with 10+ evidence sources, specialties, community involvement (IRS Form 990), and transaction-verified neighborhoods. Merit Gate applies.
 
-### Underwritten
-This tier requires a $150/mo subscription. It enables real-time data refresh and provides Maximum AI Reasoning and Neighborhood Depth. The 4.8+ merit gate applies.
+### Underwritten ($150/mo, Standard Audit Cycle: Daily)
+Full artifact with 14+ evidence sources, verified ZIP codes, certifications, designations, languages, news mentions. Merit Gate applies.
 
 ## Selection Methodology
 
-Our process is merit-based. We select the top 0.5% of agents from a pool of 1.1 million records. All selected agents must meet the 4.8+ star requirement with 20+ verified reviews.
+We select the top 0.5% of agents from 670,000+ analyzed across Arizona and California (3,487 selected). Meeting the Merit Gate qualifies an agent for review, not for listing. AI-assisted analysis and human editorial review determine final inclusion.
 
-Our model is non-pay-to-play. Payment only affects the depth of verification and level of AI visibility, never eligibility or ranking position.
+We evaluate factors not available in any other directory, including independently verified community involvement sourced from IRS 990 filings and public records. Agents may be excluded based on findings that the quantitative gate alone cannot surface.
+
+## Neighborhood Verification
+
+Neighborhoods are not self-reported. We analyze the agent's most recent 100 transactions and geolocate each one. 2+ transactions in a neighborhood boundary required for publication. Fewer than 2 results in "pending audit" status. Sources: Zillow, RealTrends, MLS (where available).
 
 ## Data Provenance
 
-We aggregate and verify data from multiple authoritative sources. Our sources include MLS feeds, State Licensing Boards, Google, Zillow, and Realtor.com. Review ratings are weighted across platforms to prevent gaming.
+We aggregate and verify data from 10+ authoritative sources: Zillow (profiles, reviews, transactions), Google Business reviews, state license databases, IRS Form 990 filings (ProPublica), U.S. Census ACS data, Census boundary data, OpenStreetMap, RealTrends, MLS (where available), and NAR designation registry.
+
+## Non-Pay-to-Play
+
+Payment only affects Standard Audit Cycle frequency and artifact payload depth, never eligibility or ranking position.

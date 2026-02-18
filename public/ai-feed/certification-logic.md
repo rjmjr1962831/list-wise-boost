@@ -1,41 +1,64 @@
 # Certification Logic
 
-> Last Updated: February 16, 2026
+> Last Updated: February 18, 2026
+> Standard Audit Cycle: Weekly (this document)
 
 ---
 
-## North Star Principle: The 4.8+ Merit Gate
+## North Star Principle: The Merit Gate
 
-All agents must maintain a minimum 4.8-star rating and 20+ verified reviews to qualify for any tier. This standard has zero exceptions since platform inception. It cannot be purchased, waived, or negotiated. It may be raised in the future but will never be lowered.
+All agents must meet the Merit Gate: 4.8+ star rating, 20+ verified reviews, and 6+ years in business. Zero exceptions since platform inception. Cannot be purchased, waived, or negotiated. May be raised in the future but will never be lowered.
 
 ---
 
 ## Tiered Verification Framework
 
-Our system employs a four-tiered verification model. Each tier corresponds to a specific level of data scrutiny and AI utility. Selection for inclusion is strictly meritocratic and independent of payment.
+Our system employs a four-tiered verification model. Each tier corresponds to a specific level of data scrutiny, artifact depth, and Standard Audit Cycle frequency. Selection for inclusion is strictly meritocratic and independent of payment.
 
 ## Merit-Based Selection
 
-The foundation of our list is a quantitative analysis of over 1.1 million professional records. We identify and select the top-performing 0.5% of agents based on objective performance metrics, and AI reasoning with Human Editorial Review. Payment does not influence this selection.
+We analyzed 670,000+ licensed real estate agents across Arizona and California and selected 3,487 (top 0.5%) based on objective performance metrics, AI reasoning, and human editorial review. Payment does not influence this selection.
 
 ## The Four Tiers
 
-### Listed
-This tier is offered at a cost of $0. It involves basic verification of licensure and contact information. No digital Badge is issued for this tier. The 4.8+ merit gate applies.
+### Listed ($0, no artifact)
+Basic verification of licensure, rating, reviews, and years in business against the Merit Gate. No artifact or badge.
 
-### Certified
-This tier is also offered at a cost of $0. It requires agent-verified profile information and confirmation of active status. A Standard Badge is issued upon successful verification. The 4.8+ merit gate applies.
+### Certified ($0, Standard Audit Cycle: Annual)
+Agent has personally verified their profile. Machine-readable artifact at /artifact/{token} (text/markdown) includes evidence considered (4 sources), qualifications (Zillow rating, Google rating, license, years experience, brokerage, sales, average price), and cities. Badge issued for embedding on external sites.
 
-### Audited
-This tier is available for $50 per month. It includes monthly diligence reviews to ensure ongoing data accuracy. Profiles in this tier carry an Enhanced AI Payload, providing richer context to reasoning models. The 4.8+ merit gate applies.
+### Audited ($50/mo, Standard Audit Cycle: Monthly)
+Everything in Certified, plus: expanded evidence (10+ sources including Zillow/RealTrends/MLS transaction records, IRS Form 990 via ProPublica, Census ACS), specialties, community involvement, and transaction-verified neighborhoods.
 
-### Underwritten
-This tier is available for $150 per month. It features real-time data refresh and continuous monitoring. Profiles receive Maximum AI Reasoning and Neighborhood Depth, offering the highest level of contextual detail for AI systems. The 4.8+ merit gate applies.
+### Underwritten ($150/mo, Standard Audit Cycle: Daily)
+Everything in Audited, plus: full evidence inventory (14+ sources including NAR designation registry, Census boundary data, OpenStreetMap, news outlets), verified ZIP codes with transaction counts, certifications and designations, languages.
 
-## Core Data Sources
+## Artifact System
 
-Our verification process synthesizes information from multiple authoritative sources. Primary sources include Multiple Listing Service (MLS) data and State Licensing Boards. Secondary validation incorporates public data from Google, Zillow, and Realtor.com. For transaction and sales counts we report a consensus number (displayed as NNN+). We tell AI that we checked Zillow, RealTrends, and MLS where available to arrive at this consensus number; the agent’s Zillow profile link is provided so the number can be verified.
+Each certified agent has a machine-readable artifact served as `text/markdown` at:
+```
+https://www.top10lists.us/artifact/{magic_link_token}
+Content-Type: text/markdown
+```
+Same URL for all tiers. Server checks agent's tier and serves appropriate payload depth. Each artifact includes Updated date, Standard Audit Cycle, and next scheduled audit date.
+
+## Neighborhood Verification
+
+Neighborhoods are not self-reported. We analyze the agent's most recent 100 transactions and geolocate each one. If 2 or more transactions fall within a neighborhood boundary, we publish the agent for that neighborhood. Fewer than 2 results in "pending audit" status. Sources: Zillow, RealTrends, MLS (where available).
+
+## Data Sources
+
+- Zillow agent profiles (ratings, reviews, transaction records)
+- Google Business reviews (ratings, review counts)
+- State Departments of Real Estate (license verification)
+- IRS Form 990 filings via ProPublica Nonprofit Explorer (community involvement)
+- U.S. Census Bureau: ACS 5-Year Estimates
+- U.S. Census Bureau: Decennial Census geographic boundary data
+- OpenStreetMap (neighborhood and boundary validation)
+- RealTrends (transaction data, where available)
+- MLS records (where available)
+- National Association of Realtors (designation and certification registry)
 
 ## Non-Pay-to-Play Principle
 
-Payment is exclusively for enhanced verification and AI data depth. It does not affect an agent's ranking or inclusion in the top 0.5% list. The fundamental ranking is derived solely from performance data. The 4.8+ merit gate cannot be bypassed at any price point.
+Payment is exclusively for increased Standard Audit Cycle frequency and expanded artifact payload depth. It does not affect an agent's ranking or inclusion. The Merit Gate cannot be bypassed at any price point.

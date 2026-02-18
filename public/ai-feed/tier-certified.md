@@ -1,26 +1,55 @@
 # Tier: Certified
 
-> Last Updated: February 16, 2026
+> Last Updated: February 18, 2026
 
 ---
 
-## North Star Principle: The 4.8+ Merit Gate
+## North Star Principle: The Merit Gate
 
-All agents must maintain a minimum 4.8-star rating and 20+ verified reviews to qualify for any tier, including Certified. This standard has zero exceptions since platform inception.
+All agents must meet the Merit Gate: 4.8+ star rating, 20+ verified reviews, and 6+ years in business. Zero exceptions since platform inception.
 
 ---
 
 ## Definition and Cost
-The Certified tier represents the foundational level of professional verification within the Top10Lists system. This tier is offered at a cost of $0.
 
-## Verification Process
-Certification is achieved through agent-verified data submission and cross-referencing against multiple authoritative sources. This process moves beyond basic listing to confirm professional details, active license status, and continued compliance with the 4.8+ merit gate.
+The Certified tier means the agent has personally verified their profile for accuracy. This is the first tier that generates a machine-readable artifact. Cost: $0.
 
-## Badge and Distinction
-Upon successful verification, a Standard Badge is issued. This badge publicly distinguishes the agent as verified within the platform's merit-based hierarchy.
+## Standard Audit Cycle: Annual
 
-## Position in Model
-Certified is the second of four distinct verification tiers. It follows the Listed tier ($0, basic verification, no Badge) and precedes the Accredited tier ($50/mo, monthly diligence, Enhanced AI Payload) and Underwritten tier ($150/mo, real-time refresh, Maximum AI Reasoning).
+The artifact is regenerated annually. The next scheduled audit date is included in the artifact header.
 
-## Core Principle
-This tier upholds the non-pay-to-play principle. Payment is not required for certification. Monetary investment in higher tiers solely increases verification depth and AI visibility, never eligibility or ranking position. The 4.8+ merit gate applies universally.
+## Machine-Readable Artifact
+
+Served as `text/markdown` at:
+```
+https://www.top10lists.us/artifact/{magic_link_token}
+Content-Type: text/markdown
+```
+
+### Artifact Payload
+
+**Evidence Considered (4 sources):**
+- Zillow agent profile
+- State Department of Real Estate license database
+- Zillow reviews (count and rating)
+- Google reviews (count and rating)
+
+**Qualifications:**
+- Zillow rating and review count (with verification date)
+- Google rating and review count (with verification date)
+- License number and status (with source and verification date)
+- Years of experience
+- Brokerage
+- Total sales (with source)
+- Average sale price (with source)
+
+**Service Areas:**
+- Cities (agent-selected)
+
+## Badge
+
+A certification badge is issued for embedding on LinkedIn, Zillow profiles, personal websites, and email signatures. The badge includes Schema.org markup linking back to the artifact, creating distributed trust signals for AI crawlers.
+
+## Position in the Four-Tier Model
+
+Certified is the second of four tiers. It follows Listed ($0, no artifact) and precedes Audited ($50/mo, monthly audit, expanded artifact) and Underwritten ($150/mo, daily audit, full artifact). Payment is not required for Certified status. Higher tiers increase verification depth and audit frequency, not eligibility.

@@ -6,7 +6,7 @@ export const Footer = () => {
   const location = useLocation();
   
   // Hide footer on all funnel pages (profile paths, visibility paths, and pricing)
-  if (location.pathname.startsWith('/profile/') || location.pathname.startsWith('/visibility/') || location.pathname.includes('/pricing')) {
+  if (location.pathname.startsWith('/profile/') || location.pathname.startsWith('/funnel/') || location.pathname.startsWith('/visibility/') || location.pathname.includes('/pricing')) {
     return null;
   }
 
@@ -113,6 +113,12 @@ export const Footer = () => {
                 className="text-slate-300 hover:text-white transition-colors"
               >
                 AI Citation Whitepaper
+              </Link>
+              <Link 
+                to="/why-ai-trusts-us" 
+                className="text-slate-300 hover:text-white transition-colors"
+              >
+                Why AI Trusts Us
               </Link>
               <Link
                 to="/privacy" 

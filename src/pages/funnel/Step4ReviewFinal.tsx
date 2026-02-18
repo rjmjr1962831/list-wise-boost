@@ -169,7 +169,7 @@ export default function Step4ReviewFinal() {
                   </div>
                   <div className="flex gap-2">
                     <dt className="font-medium w-32">Total Sales:</dt>
-                    <dd><span className="text-muted-foreground">(Request review to change)</span> {professional.total_sales?.toLocaleString() || 'Not provided'}</dd>
+                    <dd><span className="text-muted-foreground">(Request review to change)</span> {professional.total_sales ? `>${professional.total_sales.toLocaleString()}` : 'Not provided'}</dd>
                   </div>
                   <div className="flex gap-2">
                     <dt className="font-medium w-32">Website:</dt>

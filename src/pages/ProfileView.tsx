@@ -222,7 +222,7 @@ export default function ProfileView() {
                 )}
                 {professional.total_sales !== undefined && professional.total_sales > 0 && (
                   <div>
-                    <div className="text-2xl font-bold text-primary">{professional.total_sales}</div>
+                    <div className="text-2xl font-bold text-primary">{Math.max(0, Math.floor((professional.total_sales - 10) / 10) * 10).toLocaleString('en-US') + '+'}</div>
                     <div className="text-sm text-muted-foreground">Total Sales</div>
                   </div>
                 )}
