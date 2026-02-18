@@ -95,7 +95,7 @@ export default function Step1Intro() {
         <title>Welcome {professional.name} | Top10Lists.us</title>
       </SafeHead>
       <div className="min-h-screen bg-gradient-to-b from-background to-muted py-8 sm:py-12 px-4">
-        <div className="max-w-lg mx-auto">
+        <div className="max-w-2xl mx-auto">
           <Card>
             <CardContent className="pt-8 pb-6 px-5 sm:px-8 space-y-6">
               {/* Hero */}
