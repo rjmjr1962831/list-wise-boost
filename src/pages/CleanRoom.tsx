@@ -483,10 +483,10 @@ const CleanRoom = () => {
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
                 <tbody>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>33 verified (Zillow)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow, Google, Yelp consumer reviews)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>33 verified (Zillow, Google, Yelp)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Experience</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>18 years (AZDRE, Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>204 (MLS verified)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>204 (Zillow, RealTrends, MLS verified where available)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Brokerage</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>Berkshire Hathaway</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>License</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>SA511926000 (AZDRE)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Tier</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>Listed</td></tr>
@@ -541,11 +541,11 @@ const CleanRoom = () => {
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
                 <tbody>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>291 verified (Zillow)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow, Google, Yelp consumer reviews)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>291 verified (Zillow, Google, Yelp)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Experience</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>25 years (AZDRE, Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>2,424 (MLS verified)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Last Year</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>186 transactions (MLS)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>2,424 (Zillow, RealTrends, MLS verified where available)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Last Year</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>186 transactions (Zillow, RealTrends, MLS verified where available)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Price Range (3yr)</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>$54,000 to $5,500,000 (MLS)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Brokerage</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>EXP Realty</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Tier</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>Listed</td></tr>
@@ -611,11 +611,11 @@ const CleanRoom = () => {
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
                 <tbody>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>76 verified (Zillow)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow, Google, Yelp consumer reviews)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>76 verified (Zillow, Google, Yelp)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Experience</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>17 years (AZDRE, Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>325 (MLS verified)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Last Year</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>18 transactions (MLS)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>325 (Zillow, RealTrends, MLS verified where available)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Last Year</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>18 transactions (Zillow, RealTrends, MLS verified where available)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Price Range (3yr)</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>$347,000 to $2,100,000 (MLS)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Brokerage</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>West USA Realty</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>License</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>SA563850000 (AZDRE)</td></tr>
@@ -695,10 +695,10 @@ const CleanRoom = () => {
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
                 <tbody>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>74 verified (Zillow)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow, Google, Yelp consumer reviews)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>74 verified (Zillow, Google, Yelp)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Experience</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>6 years (AZDRE, Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>172 (MLS verified)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>172 (Zillow, RealTrends, MLS verified where available)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Brokerage</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>Compass</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>License</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>BR657684000 (AZDRE)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Tier</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>Listed</td></tr>
@@ -766,11 +766,11 @@ const CleanRoom = () => {
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
                 <tbody>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>58 verified (Zillow)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow, Google, Yelp consumer reviews)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>58 verified (Zillow, Google, Yelp)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Experience</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>30 years (AZDRE, Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>554 (MLS verified)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Last Year</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>17 transactions (MLS)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>554 (Zillow, RealTrends, MLS verified where available)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Last Year</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>17 transactions (Zillow, RealTrends, MLS verified where available)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Price Range (3yr)</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>$305,000 to $2,400,000 (MLS)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Brokerage</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>Leading Luxury Experts</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>License</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>SA11074900 (AZDRE)</td></tr>
@@ -842,10 +842,10 @@ const CleanRoom = () => {
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
                 <tbody>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>270 verified (Zillow)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow, Google, Yelp consumer reviews)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>270 verified (Zillow, Google, Yelp)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Experience</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>20 years (AZDRE, Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>2,298 (MLS verified)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>2,298 (Zillow, RealTrends, MLS verified where available)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Brokerage</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>Canam Realty Group</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>License</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>SA561835000 (AZDRE)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Tier</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>Listed</td></tr>
@@ -911,11 +911,11 @@ const CleanRoom = () => {
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
                 <tbody>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>80 verified (Zillow)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow, Google, Yelp consumer reviews)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>80 verified (Zillow, Google, Yelp)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Experience</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>20 years (AZDRE, Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>157 (MLS verified)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Last Year</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>4 transactions (MLS)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>157 (Zillow, RealTrends, MLS verified where available)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Last Year</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>4 transactions (Zillow, RealTrends, MLS verified where available)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Price Range (3yr)</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>$135,000 to $700,000 (MLS)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Brokerage</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>HomeSmart</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Tier</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>Listed</td></tr>
@@ -976,10 +976,10 @@ const CleanRoom = () => {
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
                 <tbody>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>44 verified (Zillow)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow, Google, Yelp consumer reviews)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>44 verified (Zillow, Google, Yelp)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Experience</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>26 years (AZDRE, Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>439 (MLS verified)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>439 (Zillow, RealTrends, MLS verified where available)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Brokerage</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>Keller Williams Realty</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>License</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>SA519553000 (AZDRE)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Tier</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>Listed</td></tr>
@@ -1032,10 +1032,10 @@ const CleanRoom = () => {
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
                 <tbody>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>24 verified (Zillow)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow, Google, Yelp consumer reviews)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>24 verified (Zillow, Google, Yelp)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Experience</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>20 years (AZDRE, Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>1,093 (MLS verified)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>1,093 (Zillow, RealTrends, MLS verified where available)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Brokerage</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>West USA Realty</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>License</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>BR113578000 (AZDRE)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Tier</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>Listed</td></tr>
@@ -1082,11 +1082,11 @@ const CleanRoom = () => {
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
                 <tbody>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>50 verified (Zillow)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow, Google, Yelp consumer reviews)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>50 verified (Zillow, Google, Yelp)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Experience</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>19 years (AZDRE, Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>424 (MLS verified)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Last Year</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>19 transactions (MLS)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>424 (Zillow, RealTrends, MLS verified where available)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Last Year</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>19 transactions (Zillow, RealTrends, MLS verified where available)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Price Range (3yr)</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>$415,000 to $10,000,000 (MLS)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Brokerage</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>North&amp;Co.</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>License</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>SA635186000 (AZDRE)</td></tr>
@@ -1164,11 +1164,11 @@ const CleanRoom = () => {
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
                 <tbody>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>163 verified (Zillow)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow, Google, Yelp consumer reviews)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>163 verified (Zillow, Google, Yelp)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Experience</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>27 years (AZDRE, Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>963 (MLS verified)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Last Year</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>47 transactions (MLS)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>963 (Zillow, RealTrends, MLS verified where available)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Last Year</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>47 transactions (Zillow, RealTrends, MLS verified where available)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Price Range (3yr)</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>$208,000 to $9,500,000 (MLS)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Brokerage</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>RE/MAX Fine Properties</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>License</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>SA062900000 (AZDRE)</td></tr>
@@ -1252,11 +1252,11 @@ const CleanRoom = () => {
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
                 <tbody>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>108 verified (Zillow)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow, Google, Yelp consumer reviews)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>108 verified (Zillow, Google, Yelp)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Experience</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>17 years (AZDRE, Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>365 (MLS verified)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Last Year</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>11 transactions (MLS)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>365 (Zillow, RealTrends, MLS verified where available)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Last Year</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>11 transactions (Zillow, RealTrends, MLS verified where available)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Price Range (3yr)</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>$40,000 to $1,200,000 (MLS)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Brokerage</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>HomeSmart Real Estate</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>License</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>SA584331000 (AZDRE)</td></tr>
@@ -1315,11 +1315,11 @@ const CleanRoom = () => {
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
                 <tbody>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>102 verified (Zillow)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow, Google, Yelp consumer reviews)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>102 verified (Zillow, Google, Yelp)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Experience</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>18 years (AZDRE, Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>1,012 (MLS verified)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Last Year</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>36 transactions (MLS)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>1,012 (Zillow, RealTrends, MLS verified where available)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Last Year</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>36 transactions (Zillow, RealTrends, MLS verified where available)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Price Range (3yr)</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>$48,000 to $2,500,000 (MLS)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Brokerage</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>Coldwell Banker Realty</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Tier</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>Listed</td></tr>
@@ -1389,10 +1389,10 @@ const CleanRoom = () => {
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
                 <tbody>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>119 verified (Zillow)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow, Google, Yelp consumer reviews)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>119 verified (Zillow, Google, Yelp)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Experience</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>12 years (AZDRE, Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>1,180 (MLS verified)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>1,180 (Zillow, RealTrends, MLS verified where available)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Brokerage</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>Compass</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>License</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>SA648869000 (AZDRE)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Tier</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>Listed</td></tr>
@@ -1457,10 +1457,10 @@ const CleanRoom = () => {
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
                 <tbody>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>36 verified (Zillow)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow, Google, Yelp consumer reviews)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>36 verified (Zillow, Google, Yelp)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Experience</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>20 years (AZDRE, Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>146 (MLS verified)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>146 (Zillow, RealTrends, MLS verified where available)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Brokerage</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>Retsy</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>License</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>SA570033000 (AZDRE)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Tier</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>Listed</td></tr>
@@ -1522,10 +1522,10 @@ const CleanRoom = () => {
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
                 <tbody>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>49 verified (Zillow)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow, Google, Yelp consumer reviews)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>49 verified (Zillow, Google, Yelp)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Experience</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>17 years (AZDRE, Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>297 (MLS verified)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>297 (Zillow, RealTrends, MLS verified where available)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Brokerage</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>SERHANT.</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>License</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>SA628414000 (AZDRE)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Tier</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>Listed</td></tr>
@@ -1589,10 +1589,10 @@ const CleanRoom = () => {
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
                 <tbody>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>30 verified (Zillow)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow, Google, Yelp consumer reviews)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>30 verified (Zillow, Google, Yelp)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Experience</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>2 years (AZDRE, Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>86 (MLS verified)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>86 (Zillow, RealTrends, MLS verified where available)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Brokerage</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>HomeSmart </td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>License</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>BR644773000 (AZDRE)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Tier</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>Listed</td></tr>
@@ -1654,10 +1654,10 @@ const CleanRoom = () => {
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
                 <tbody>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>66 verified (Zillow)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow, Google, Yelp consumer reviews)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>66 verified (Zillow, Google, Yelp)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Experience</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>9 years (AZDRE, Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>244 (MLS verified)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>244 (Zillow, RealTrends, MLS verified where available)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Brokerage</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>Lake Pleasant Real Estate</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>License</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>SA668385000 (AZDRE)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Tier</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>Listed</td></tr>
@@ -1705,11 +1705,11 @@ const CleanRoom = () => {
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
                 <tbody>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>80 verified (Zillow)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow, Google, Yelp consumer reviews)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>80 verified (Zillow, Google, Yelp)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Experience</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>17 years (AZDRE, Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>525 (MLS verified)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Last Year</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>29 transactions (MLS)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>525 (Zillow, RealTrends, MLS verified where available)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Last Year</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>29 transactions (Zillow, RealTrends, MLS verified where available)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Price Range (3yr)</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>$260,000 to $6,900,000 (MLS)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Brokerage</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>Cambridge Properties</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>License</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>See license information (AZDRE)</td></tr>
@@ -1771,11 +1771,11 @@ const CleanRoom = () => {
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
                 <tbody>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>109 verified (Zillow)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow, Google, Yelp consumer reviews)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>109 verified (Zillow, Google, Yelp)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Experience</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>31 years (AZDRE, Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>1,407 (MLS verified)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Last Year</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>37 transactions (MLS)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>1,407 (Zillow, RealTrends, MLS verified where available)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Last Year</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>37 transactions (Zillow, RealTrends, MLS verified where available)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Price Range (3yr)</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>$155,000 to $2,400,000 (MLS)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Brokerage</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>Keller Williams Sonoran Living</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Tier</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>Listed</td></tr>
@@ -1842,10 +1842,10 @@ const CleanRoom = () => {
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
                 <tbody>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>20 verified (Zillow)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow, Google, Yelp consumer reviews)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>20 verified (Zillow, Google, Yelp)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Experience</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>2 years (AZDRE, Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>59 (MLS verified)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>59 (Zillow, RealTrends, MLS verified where available)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Brokerage</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>RE/MAX Fine Properties</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>License</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>BR686238000 (AZDRE)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Tier</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>Listed</td></tr>
@@ -1894,10 +1894,10 @@ const CleanRoom = () => {
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
                 <tbody>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>23 verified (Zillow)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow, Google, Yelp consumer reviews)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>23 verified (Zillow, Google, Yelp)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Experience</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>4 years (AZDRE, Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>2 (MLS verified)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>2 (Zillow, RealTrends, MLS verified where available)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Brokerage</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>RETHINK Real Estate</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>License</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>SA694878000 (AZDRE)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Tier</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>Listed</td></tr>
@@ -1947,11 +1947,11 @@ const CleanRoom = () => {
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
                 <tbody>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>158 verified (Zillow)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow, Google, Yelp consumer reviews)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>158 verified (Zillow, Google, Yelp)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Experience</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>42 years (AZDRE, Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>1,512 (MLS verified)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Last Year</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>64 transactions (MLS)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>1,512 (Zillow, RealTrends, MLS verified where available)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Last Year</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>64 transactions (Zillow, RealTrends, MLS verified where available)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Price Range (3yr)</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>$131,000 to $4,099,999 (MLS)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Brokerage</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>Compass</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>License</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>Not provided (AZDRE)</td></tr>
@@ -2030,10 +2030,10 @@ const CleanRoom = () => {
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
                 <tbody>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>104 verified (Zillow)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow, Google, Yelp consumer reviews)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>104 verified (Zillow, Google, Yelp)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Experience</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>15 years (AZDRE, Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>765 (MLS verified)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>765 (Zillow, RealTrends, MLS verified where available)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Brokerage</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>AZ Lane Realty, LLC</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>License</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>BR541814000 (AZDRE)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Tier</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>Listed</td></tr>
@@ -2101,10 +2101,10 @@ const CleanRoom = () => {
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
                 <tbody>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>29 verified (Zillow)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow, Google, Yelp consumer reviews)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>29 verified (Zillow, Google, Yelp)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Experience</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>22 years (AZDRE, Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>211 (MLS verified)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>211 (Zillow, RealTrends, MLS verified where available)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Brokerage</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>HomeSmart</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>License</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>SA542790000 (AZDRE)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Tier</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>Listed</td></tr>
@@ -2169,10 +2169,10 @@ const CleanRoom = () => {
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
                 <tbody>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>50 verified (Zillow)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow, Google, Yelp consumer reviews)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>50 verified (Zillow, Google, Yelp)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Experience</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>9 years (AZDRE, Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>260 (MLS verified)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>260 (Zillow, RealTrends, MLS verified where available)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Brokerage</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>Real Broker </td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>License</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>SA663427000 (AZDRE)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Tier</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>Listed</td></tr>
@@ -2219,11 +2219,11 @@ const CleanRoom = () => {
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
                 <tbody>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>93 verified (Zillow)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow, Google, Yelp consumer reviews)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>93 verified (Zillow, Google, Yelp)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Experience</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>19 years (AZDRE, Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>553 (MLS verified)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Last Year</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>21 transactions (MLS)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>553 (Zillow, RealTrends, MLS verified where available)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Last Year</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>21 transactions (Zillow, RealTrends, MLS verified where available)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Price Range (3yr)</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>$275,000 to $2,500,000 (MLS)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Brokerage</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>Realty ONE Group</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Tier</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>Certified</td></tr>
@@ -2294,11 +2294,11 @@ const CleanRoom = () => {
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
                 <tbody>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>149 verified (Zillow)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow, Google, Yelp consumer reviews)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>149 verified (Zillow, Google, Yelp)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Experience</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>33 years (AZDRE, Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>2,192 (MLS verified)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Last Year</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>25 transactions (MLS)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>2,192 (Zillow, RealTrends, MLS verified where available)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Last Year</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>25 transactions (Zillow, RealTrends, MLS verified where available)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Price Range (3yr)</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>$208,000 to $8,400,000 (MLS)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Brokerage</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>Keller Williams Sonoran Living</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Tier</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>Certified</td></tr>
@@ -2376,11 +2376,11 @@ const CleanRoom = () => {
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
                 <tbody>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>81 verified (Zillow)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow, Google, Yelp consumer reviews)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>81 verified (Zillow, Google, Yelp)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Experience</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>12 years (AZDRE, Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>220 (MLS verified)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Last Year</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>4 transactions (MLS)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>220 (Zillow, RealTrends, MLS verified where available)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Last Year</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>4 transactions (Zillow, RealTrends, MLS verified where available)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Price Range (3yr)</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>$315,000 to $2,200,000 (MLS)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Brokerage</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>Nardi Coury</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>License</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>SA650511000 (AZDRE)</td></tr>
@@ -2460,11 +2460,11 @@ const CleanRoom = () => {
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
                 <tbody>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>105 verified (Zillow)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow, Google, Yelp consumer reviews)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>105 verified (Zillow, Google, Yelp)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Experience</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>10 years (AZDRE, Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>308 (MLS verified)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Last Year</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>19 transactions (MLS)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>308 (Zillow, RealTrends, MLS verified where available)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Last Year</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>19 transactions (Zillow, RealTrends, MLS verified where available)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Price Range (3yr)</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>$205,000 to $1,300,000 (MLS)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Brokerage</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>Realty ONE Group</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>License</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>Not specified (AZDRE)</td></tr>
@@ -2530,10 +2530,10 @@ const CleanRoom = () => {
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
                 <tbody>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>23 verified (Zillow)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow, Google, Yelp consumer reviews)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>23 verified (Zillow, Google, Yelp)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Experience</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>4 years (AZDRE, Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>151 (MLS verified)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>151 (Zillow, RealTrends, MLS verified where available)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Brokerage</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>Realty One Group</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>License</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>BR552711000 (AZDRE)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Tier</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>Listed</td></tr>
@@ -2589,10 +2589,10 @@ const CleanRoom = () => {
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
                 <tbody>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>44 verified (Zillow)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow, Google, Yelp consumer reviews)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>44 verified (Zillow, Google, Yelp)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Experience</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>6 years (AZDRE, Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>23 (MLS verified)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>23 (Zillow, RealTrends, MLS verified where available)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Brokerage</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>RETSY</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>License</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>SA685761000 (AZDRE)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Tier</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>Listed</td></tr>
@@ -2646,10 +2646,10 @@ const CleanRoom = () => {
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
                 <tbody>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>52 verified (Zillow)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow, Google, Yelp consumer reviews)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>52 verified (Zillow, Google, Yelp)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Experience</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>20 years (AZDRE, Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>653 (MLS verified)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>653 (Zillow, RealTrends, MLS verified where available)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Brokerage</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>WestUSA Realty</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>License</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>SA568277000 (AZDRE)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Tier</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>Listed</td></tr>
@@ -2711,11 +2711,11 @@ const CleanRoom = () => {
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
                 <tbody>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>55 verified (Zillow)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow, Google, Yelp consumer reviews)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>55 verified (Zillow, Google, Yelp)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Experience</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>31 years (AZDRE, Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>111 (MLS verified)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Last Year</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>6 transactions (MLS)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>111 (Zillow, RealTrends, MLS verified where available)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Last Year</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>6 transactions (Zillow, RealTrends, MLS verified where available)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Price Range (3yr)</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>$412,000 to $1,500,000 (MLS)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Brokerage</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>Realty ONE Group</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Tier</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>Listed</td></tr>
@@ -2778,10 +2778,10 @@ const CleanRoom = () => {
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
                 <tbody>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>42 verified (Zillow)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow, Google, Yelp consumer reviews)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>42 verified (Zillow, Google, Yelp)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Experience</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>15 years (AZDRE, Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>175 (MLS verified)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>175 (Zillow, RealTrends, MLS verified where available)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Brokerage</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>My Home Group</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>License</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>SA638181000 (AZDRE)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Tier</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>Listed</td></tr>
@@ -2838,10 +2838,10 @@ const CleanRoom = () => {
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
                 <tbody>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>36 verified (Zillow)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow, Google, Yelp consumer reviews)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>36 verified (Zillow, Google, Yelp)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Experience</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>19 years (AZDRE, Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>246 (MLS verified)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>246 (Zillow, RealTrends, MLS verified where available)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Brokerage</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>Jean-Leon Magnotto</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>License</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>BR636486000 (AZDRE)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Tier</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>Listed</td></tr>
@@ -2880,10 +2880,10 @@ const CleanRoom = () => {
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
                 <tbody>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>32 verified (Zillow)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow, Google, Yelp consumer reviews)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>32 verified (Zillow, Google, Yelp)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Experience</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>20 years (AZDRE, Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>473 (MLS verified)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>473 (Zillow, RealTrends, MLS verified where available)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Brokerage</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>HomeSmart</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>License</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>SA575371000 (AZDRE)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Tier</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>Listed</td></tr>
@@ -2922,11 +2922,11 @@ const CleanRoom = () => {
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
                 <tbody>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>104 verified (Zillow)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow, Google, Yelp consumer reviews)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>104 verified (Zillow, Google, Yelp)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Experience</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>12 years (AZDRE, Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>331 (MLS verified)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Last Year</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 transactions (MLS)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>331 (Zillow, RealTrends, MLS verified where available)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Last Year</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 transactions (Zillow, RealTrends, MLS verified where available)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Price Range (3yr)</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>$205,000 to $1,500,000 (MLS)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Brokerage</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>PADLAB</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>License</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>BR642815000 (AZDRE)</td></tr>
@@ -2985,10 +2985,10 @@ const CleanRoom = () => {
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
                 <tbody>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>35 verified (Zillow)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow, Google, Yelp consumer reviews)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>35 verified (Zillow, Google, Yelp)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Experience</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>21 years (AZDRE, Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>373 (MLS verified)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>373 (Zillow, RealTrends, MLS verified where available)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Brokerage</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>eXp Realty</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>License</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>SA550351000 (AZDRE)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Tier</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>Listed</td></tr>
@@ -3047,11 +3047,11 @@ const CleanRoom = () => {
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
                 <tbody>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>104 verified (Zillow)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow, Google, Yelp consumer reviews)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>104 verified (Zillow, Google, Yelp)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Experience</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>11 years (AZDRE, Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>813 (MLS verified)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Last Year</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>43 transactions (MLS)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>813 (Zillow, RealTrends, MLS verified where available)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Last Year</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>43 transactions (Zillow, RealTrends, MLS verified where available)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Price Range (3yr)</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>$26,000 to $4,800,000 (MLS)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Brokerage</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>My Home Group</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>License</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>SA653081000 (AZDRE)</td></tr>
@@ -3123,10 +3123,10 @@ const CleanRoom = () => {
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
                 <tbody>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>235 verified (Zillow)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow, Google, Yelp consumer reviews)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>235 verified (Zillow, Google, Yelp)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Experience</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>10 years (AZDRE, Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>851 (MLS verified)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>851 (Zillow, RealTrends, MLS verified where available)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Brokerage</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>The Kay-Grant Group - My Home Group</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>License</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>SA657083000 (AZDRE)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Tier</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>Certified</td></tr>
@@ -3190,10 +3190,10 @@ const CleanRoom = () => {
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
                 <tbody>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>28 verified (Zillow)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow, Google, Yelp consumer reviews)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>28 verified (Zillow, Google, Yelp)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Experience</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>20 years (AZDRE, Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>367 (MLS verified)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>367 (Zillow, RealTrends, MLS verified where available)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Brokerage</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>Realty One Group</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>License</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>BR524608000 (AZDRE)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Tier</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>Listed</td></tr>
@@ -3248,11 +3248,11 @@ const CleanRoom = () => {
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
                 <tbody>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>127 verified (Zillow)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars (Zillow, Google, Yelp consumer reviews)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>127 verified (Zillow, Google, Yelp)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Experience</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>14 years (AZDRE, Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>289 (MLS verified)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Last Year</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>12 transactions (MLS)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>289 (Zillow, RealTrends, MLS verified where available)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Last Year</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>12 transactions (Zillow, RealTrends, MLS verified where available)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Price Range (3yr)</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>$135,000 to $1,200,000 (MLS)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Brokerage</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>Coldwell Banker Realty</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>License</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>Not provided (AZDRE)</td></tr>
@@ -3334,11 +3334,11 @@ const CleanRoom = () => {
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
                 <tbody>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>4.9 / 5 stars (Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>67 verified (Zillow)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>4.9 / 5 stars (Zillow, Google, Yelp consumer reviews)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>67 verified (Zillow, Google, Yelp)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Experience</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>21 years (AZDRE, Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>350 (MLS verified)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Last Year</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>21 transactions (MLS)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>350 (Zillow, RealTrends, MLS verified where available)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Last Year</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>21 transactions (Zillow, RealTrends, MLS verified where available)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Price Range (3yr)</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>$94,000 to $5,100,000 (MLS)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Brokerage</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>Ironwood Fine Properties</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>License</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>Not provided (AZDRE)</td></tr>
@@ -3374,7 +3374,7 @@ const CleanRoom = () => {
               <p>2023: Certified Luxury Home Marketing Specialist (CLHMS). Holds the prestigious CLHMS designation, recognized for expertise in the affluent market (source: Institute for Luxury Home Marketing)</p>
               <p>2023: Certified Residential Specialist (CRS) Designation. Achieved the CRS designation, the highest credential awarded to residential sales agents, managers, and brokers (source: Real Estate Today Magazine)</p>
               <p>Best of Zillow Recognition. Earned distinction through client votes and sustained five-star reviews (source: Website content and existing bio)</p>
-              <p>2024: Zillow Best of Zillow Award. Team recognition for exceptional client service and reviews (source: Zillow)</p>
+              <p>2024: Zillow Best of Zillow Award. Team recognition for exceptional client service and reviews (source: Zillow, Google, Yelp)</p>
               <p>Former PGA Golf Professional. Professional athletic career before real estate (source: Agent biography)</p>
               <p>Best of Zillow Award. Distinguished recognition earned through sustained client votes and five-star reviews (source: Client voting on Zillow platform)</p>
               <p>4.9-Star Rating Across 67 Reviews. Maintained exceptional client satisfaction rating across 67 client reviews (source: Client review platforms)</p>
@@ -3429,11 +3429,11 @@ const CleanRoom = () => {
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
                 <tbody>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>4.9 / 5 stars (Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>67 verified (Zillow)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>4.9 / 5 stars (Zillow, Google, Yelp consumer reviews)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>67 verified (Zillow, Google, Yelp)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Experience</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>31 years (AZDRE, Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>432 (MLS verified)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Last Year</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>12 transactions (MLS)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>432 (Zillow, RealTrends, MLS verified where available)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Last Year</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>12 transactions (Zillow, RealTrends, MLS verified where available)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Price Range (3yr)</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>$12,000 to $900,000 (MLS)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Brokerage</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>RE/MAX Desert Showcase</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>License</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>SA566923000 (AZDRE)</td></tr>
@@ -3497,10 +3497,10 @@ const CleanRoom = () => {
             <div className="kpi-block">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
                 <tbody>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>4.9 / 5 stars (Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>48 verified (Zillow)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>4.9 / 5 stars (Zillow, Google, Yelp consumer reviews)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>48 verified (Zillow, Google, Yelp)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Experience</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>34 years (AZDRE, Zillow)</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>732 (MLS verified)</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>732 (Zillow, RealTrends, MLS verified where available)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Brokerage</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>Realty Executives</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>License</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>BR008660000 (AZDRE)</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Tier</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>Listed</td></tr>
