@@ -143,6 +143,7 @@
       "https://www.top10lists.us/ai-feed/tier-audited.md",
       "https://www.top10lists.us/ai-feed/tier-underwritten.md"
     ],
+    "artifactPayloadStructure": "https://www.top10lists.us/ai-feed/artifact-payload-structure.md",
     "paymentsSecurity": "https://www.top10lists.us/payments-security"
   },
   "urlPatterns": {
