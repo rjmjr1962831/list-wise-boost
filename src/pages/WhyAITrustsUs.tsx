@@ -335,7 +335,7 @@ const WhyAITrustsUs = () => {
           <div className="grid md:grid-cols-2 gap-6">
             <div className="space-y-3">
               <p className="text-sm font-semibold text-destructive uppercase tracking-wider">
-                Before 2025
+                Before 2026
               </p>
               <p className="text-muted-foreground leading-relaxed">
                 AI assistants answered "Who's the best real estate agent?"
@@ -365,7 +365,7 @@ const WhyAITrustsUs = () => {
         {/* Period Toggle */}
         <div className="flex gap-1 mb-6 bg-muted rounded-lg p-1 w-fit">
           {[
-            { key: "before" as PeriodKey, label: "Pre-2025" },
+            { key: "before" as PeriodKey, label: "2025" },
             { key: "now" as PeriodKey, label: "2026 (Current)" },
           ].map((p) => (
             <button
@@ -400,7 +400,7 @@ const WhyAITrustsUs = () => {
         {/* Movement Chart */}
         <div className="bg-card border border-border rounded-xl p-6 mb-8">
           <h3 className="text-sm font-bold text-foreground uppercase tracking-wider mb-5">
-            Score Movement: Pre-2025 to 2026
+            Score Movement: 2025 to 2026
           </h3>
           {platforms.map((platform) => {
             const before = scores[platform.key].before;
@@ -429,38 +429,37 @@ const WhyAITrustsUs = () => {
                     {delta.toFixed(1)})
                   </span>
                 </div>
-                <div className="relative h-7 bg-muted rounded">
-                  {/* Before bar (ghost) */}
-                  <div
-                    className="absolute top-0 left-0 h-full rounded"
-                    style={{
-                      width: `${(before / 10) * 100}%`,
-                      background: `${platform.color}15`,
-                      borderRight: `2px dashed ${platform.color}30`,
-                    }}
-                  />
-                  {/* Now bar */}
-                  <div
-                    className="absolute top-1 left-0 h-5 rounded transition-all duration-700"
-                    style={{
-                      width: `${(now / 10) * 100}%`,
-                      background: `linear-gradient(90deg, ${platform.color}88, ${platform.color})`,
-                    }}
-                  />
+                {/* 2025 bar */}
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="w-10 text-xs text-muted-foreground text-right">2025</span>
+                  <div className="flex-1 h-5 bg-muted rounded overflow-hidden">
+                    <div
+                      className="h-full rounded"
+                      style={{
+                        width: `${(before / 10) * 100}%`,
+                        background: `${platform.color}55`,
+                      }}
+                    />
+                  </div>
+                  <span className="w-7 text-xs text-muted-foreground font-mono text-right">{before.toFixed(1)}</span>
+                </div>
+                {/* 2026 bar */}
+                <div className="flex items-center gap-2">
+                  <span className="w-10 text-xs text-foreground font-medium text-right">2026</span>
+                  <div className="flex-1 h-5 bg-muted rounded overflow-hidden">
+                    <div
+                      className="h-full rounded"
+                      style={{
+                        width: `${(now / 10) * 100}%`,
+                        background: `linear-gradient(90deg, ${platform.color}bb, ${platform.color})`,
+                      }}
+                    />
+                  </div>
+                  <span className="w-7 text-xs text-foreground font-mono font-semibold text-right">{now.toFixed(1)}</span>
                 </div>
               </div>
             );
           })}
-          <div className="flex gap-5 mt-3 text-xs text-muted-foreground">
-            <div className="flex items-center gap-2">
-              <div className="w-5 h-2 bg-muted-foreground/10 rounded border-r border-dashed border-muted-foreground/30" />
-              Pre-2025 score
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-5 h-2 bg-primary rounded" />
-              2026 score
-            </div>
-          </div>
         </div>
 
         {/* Criteria Breakdown */}
@@ -519,7 +518,7 @@ const WhyAITrustsUs = () => {
                         </div>
                         <div className="flex gap-2 items-center">
                           <div className="w-14 text-xs text-muted-foreground">
-                            Pre-2025
+                            2025
                           </div>
                           <div className="flex-1">
                             <ScoreBar
