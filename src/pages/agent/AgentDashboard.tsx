@@ -98,12 +98,25 @@ export default function AgentDashboard() {
   const handleAdminOpenDashboard = async (professionalId: string) => {
     try {
       setAuthStatus("Checking admin access...");
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        setAuthStatus("Sign in to the admin panel first, then use the Test Agent Dashboard button.");
-        setLoading(false);
-        return;
+      // Prefer getSession() so we see persisted session immediately after full-page nav from admin
+      let { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          // Give storage a moment to rehydrate after full-page load (admin → test dashboard)
+          await new Promise((r) => setTimeout(r, 400));
+          const { data: { session: retrySession } } = await supabase.auth.getSession();
+          if (!retrySession?.user) {
+            setAuthStatus("Sign in to the admin panel first, then use the Test Agent Dashboard button.");
+            setLoading(false);
+            return;
+          }
+          session = retrySession;
+        } else {
+          session = { user } as any;
+        }
       }
+      const user = session!.user;
       const { data: roles } = await supabase
         .from("admin_users")
         .select("role")
