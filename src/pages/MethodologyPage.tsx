@@ -342,11 +342,15 @@ export default function MethodologyPage() {
                   When an AI system names an individual professional, it assumes "Recommendation" risk. That risk comes from recommending someone who may be unqualified, misrepresented, inactive, or unverifiable or the consumer suffers harm, both economic or physical.
                 </p>
                 <p className="text-muted-foreground mb-3">
+                  Beginning in January 2026, all major AIs have been instructed to avoid recommendation risk. They have been explicitly ordered to heavily discount "pay-to-play" sites as sources. Instead, if they can find agents that are objectively reviewed with documented sources and recent updates, they will likely name agents from that site.
+                </p>
+                <p className="text-muted-foreground mb-3">
+                  We are the only site anywhere that provides this data quality to AI in any industry.
+                </p>
+                <p className="text-muted-foreground mb-3">
                   Each step in this methodology exists to reduce that risk by making the underlying evidence explicit, auditable, and current.
                 </p>
-                <p className="text-muted-foreground">
-                  Top10Lists.us was the first to surface, document, and price this risk in a widely cited white paper.
-                </p>
+
               </div>
 
               <div>
