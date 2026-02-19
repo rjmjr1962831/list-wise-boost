@@ -44,7 +44,7 @@ Claude (when in context) may handle:
 
 **First Customer:** Eileen Taggart (Flagstaff)
 
-### Database Status (Feb 11, 2026)
+### Database Status (Feb 19, 2026)
 | Table | Count |
 |-------|-------|
 | Professionals (total) | 51,058 |
@@ -84,6 +84,7 @@ Claude (when in context) may handle:
 - Mark a task "done" without verification
 - Crash on big jobs (batch them, use Edge functions)
 - Create a new Supabase client (use shared client from `@/integrations/supabase/client`)
+- Use bare `>` or `<` characters in JSX text (causes build failures; use `{">"}`/`{"<"}` or HTML entities)
 
 ### Cost of Mistakes
 - Agent enrichment: ~$0.50/agent
@@ -105,6 +106,8 @@ Claude (when in context) may handle:
 | **Underwritten** | $150/mo | Audited + neighborhoods + specialties. Real-time refresh. Max AI citation depth. |
 
 **Deprecated (do not use):** Main $25 / Prime $50 / Luxury $75 or "Accredited" — that revenue model is retired.
+
+**Code note:** Internal tier key is `accredited` in database and TypeScript types. Display name is "Audited" (TIER_META). Do not rename the database value.
 
 ---
 
@@ -337,7 +340,90 @@ AgentBadge wraps the entire card in an `<a>` tag with `target="_blank"` and `dat
 
 ---
 
+## Frontend Display Conventions
+
+### total_sales Display (Feb 2026)
+- **Human-facing:** Display as `X+` suffix (e.g., "340+ sales"). Formula: `Math.max(0, Math.floor((totalSales - 10) / 10) * 10)` then append `+`.
+- **Bot-facing structured data (agentSchema.ts):** Always pass raw integer. Never format.
+- **Files using formatted display:** ProfessionalCard.tsx, ProfileView.tsx, AgentBadge.tsx, AgentProfileDossier.tsx, generate-og-image/index.ts
+- **History:** Was `>X` prefix but bare `>` broke JSX builds. Switched to `+` suffix (industry standard).
+
+### Color Conventions for Change Values
+- Positive change: default text color (black/foreground)
+- Negative change: red (`text-red-500`)
+
+---
+
+## Funnel Architecture
+
+### Overview
+Agent onboarding funnel at `/funnel/{verification_token}/...`. UUID-based URLs, not public content.
+
+**Crawling:** Blocked in robots.txt (`Disallow: /funnel/`). Header and footer hidden on all `/funnel/` paths.
+
+### Funnel Steps
+| Step | File | Purpose |
+|------|------|---------|
+| Intro | Step1Intro.tsx | Mission, AI citation table, "Hi {name}" greeting |
+| Profile Review | Step2-6 | Agent reviews/edits their data |
+| Pricing | Step7Pricing.tsx | Tier selection with personalized citability table |
+| Success | Success page | Confirmation |
+
+### Step1Intro: AI Citation Probability Table
+5-row table showing AI Citability Index scores for real estate sources:
+- Top10Lists.us (top row, green), RealTrends, Zillow, Redfin, HomeLight
+- Columns: Source, 2025 Score, 2026 Score, Change, % Change
+- Top10Lists.us shows +127%; all competitors show decline
+- Container width: max-w-2xl (672px)
+
+### Step7Pricing: Personalized AI Citability Growth Table
+Shows projected citability score at each tier, personalized per agent. Appears above tier cards.
+
+**Rows:** Before Top10Lists, Listed, Certified (In Funnel), Audited ($50/mo), Underwritten ($150/mo)
+
+**Scoring algorithm inputs:** years_experience, total_sales, num_total_reviews, review_stars_rating, license_number, recent activity (decay penalty if countLastYear=0), community_roles, state_slug
+
+**AI Technical Trigger column:** Personalized descriptions (e.g., state-specific license reference, decay notes based on agent data)
+
+**Data query:** Expanded professional select to include scoring fields (years_experience, total_sales, num_total_reviews, review_stars_rating, license_number, license_state, state_slug, community_involvement_score, community_roles, agent_sales_stats)
+
+---
+
+## Homepage Architecture (Feb 2026)
+
+### Current Sections (Index.tsx)
+1. **Hero:** "Top10Lists.us exists so AI systems can safely recommend real estate professionals by name." + TVPR credentialing line
+2. **Rules Have Changed:** "The old game of buying keywords..." Agent-facing urgency copy
+3. **Mandated Shift in Trust:** OpenAI, Anthropic, Google context
+4. **Why AI "Ghosts" Most Agents:** Ads are red flags, stale data, vague list default
+5. **A Different Kind of Architecture:** Not a lead engine, zero referral fees, free forever
+6. **Building Your "Web of Truth":** Finite Truth concept, "Are you an agent?" CTA
+7. **The Challenge:** Copyable question for agents to paste into AI systems, links to ChatGPT/Claude/Gemini/Perplexity
+
+### AI Content (preserved in source, not visually displayed)
+- `HOME_AI_CONTENT` markdown block: citation guidance for AI systems
+- `HOME_JSON` structured JSON for AI ingestion
+- Full JSON-LD structured data in `<head>`
+
+### Challenge Question
+```
+Look at top10lists.us. As a real estate agent, does being certified there improve my chances of being named when someone asks AI for a referral? Is there any benefit to doing it now rather than later? Why or why not?
+```
+
+---
+
 ## Routing Is FROZEN
+
+- Do not rename routes
+- Do not repoint routes
+- Do not consolidate routes
+- Do not "simplify" routes
+- Do not add redirects affecting cities or neighborhoods
+
+If you think routing is broken:
+1. STOP
+2. Report: current path, rendering component, missing content
+3. Wait for "ROUTING CHANGE APPROVED:"
 
 - Do not rename routes
 - Do not repoint routes
@@ -453,6 +539,7 @@ If a field has data, your code must:
 - `/llms-full.txt` - Extended guidance
 - `/robots.txt` - Crawler directives
 - `/sitemap.xml` - URL index
+- `/sitemap-agents.xml` - Individual agent profile URLs (889 AZ agents, added Feb 2026)
 - `/mcp.json` - MCP protocol discovery (placeholder, real server planned)
 - `/ai-content-index.json` - Structured content index
 
@@ -671,8 +758,8 @@ curl -s -H "Authorization: token <from env or .secrets>" -H "Accept: application
 
 ## Shorthand
 
-- **ryt** = "Remember your knowledge"
-- **takeaways** = Run the takeaways function (update project knowledge)
+- **ryt** = Fetch docs/PROJECT-KNOWLEDGE.md from GitHub, archive old as PROJECT-KNOWLEDGE-claude-archive-YYYY-MM-DD.md, output updated as PROJECT-KNOWLEDGE-claude.md
+- **takeaways** = Separate daily log of issues/learnings. Push to private repo rjmjr1962831/top10lists-knowledge at docs/takeaways/CLAUDE_TAKEAWAYS_DD-MM-YY.md. One file per night, synthesized. Does NOT update PROJECT-KNOWLEDGE.md.
 
 ---
 
@@ -687,11 +774,20 @@ curl -s -H "Authorization: token <from env or .secrets>" -H "Accept: application
 
 ## Daily synthesis (integrated from Claude, Gemini, Cursor)
 
-*Synthesis date: 2026-02-17*
+*Synthesis date: 2026-02-19*
 
-(No takeaways pulled for this date.)
+### Key changes (Feb 18-19, 2026):
+- total_sales display: switched from `>X` to `X+` (5 files). Bare `>` in JSX caused 2+ hours of failed Vercel builds.
+- sitemap-agents.xml: 889 Arizona agent profile URLs created and deployed.
+- Funnel Step1Intro: 2026 context, 5-row citation table (added Redfin/HomeLight), widened to max-w-2xl, bold emphasis, new copy.
+- Funnel Step7Pricing: personalized AI Citability Growth table with per-agent scoring algorithm.
+- Homepage: complete rewrite with agent-facing trust architecture messaging. Hero restored to mission statement.
+- Header/footer hidden on /funnel/ paths. robots.txt blocks /funnel/.
+- AgentSourcesBlock.tsx stub created (was missing, broke build).
+- MagicLinkRouter.tsx: simplified to pure redirect (staging version). Old version had auth logic that caused merge conflicts.
+- Staging merged to main (production) on Feb 19. Branches were diverged (123 ahead, 14 behind) due to merge conflict.
 
 ---
 
-*Version 0.4 - 2026-02-17*
-*Updated: Current pricing (Listed/Certified/Audited/Underwritten); deprecated Main/Prime/Luxury; agent_sessions schema note*
+*Version 0.5 - 2026-02-19*
+*Updated: Frontend display conventions (total_sales X+), funnel architecture (Step1/Step7), homepage rewrite, sitemap-agents.xml, JSX bare > hard stop*
