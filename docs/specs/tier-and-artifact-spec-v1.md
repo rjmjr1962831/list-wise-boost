@@ -26,6 +26,10 @@ Every data point includes its source. Unsourced claims do not get cited by AI sy
 
 **Tier behavior:** One URL per agent. The server checks the agent's tier and serves the appropriate depth of markdown. Higher tiers get richer documents.
 
+**Verification period (from last update):** Listed 365 days | Certified 90 days | Audited 30 days | Underwritten 1 day.
+
+**Service areas:** Multiple cities per agent (array). **Neighborhoods:** Published only at Underwritten tier.
+
 ---
 
 ## Tiers
@@ -38,7 +42,7 @@ The agent has been selected through the Top10Lists.us merit-based qualification 
 
 The agent has not yet personally confirmed or approved their profile data. Listed agents appear on city and state pages when AI systems or users request top agent recommendations.
 
-**Update frequency:** None (static until agent enters the funnel)
+**Verification period from last update:** 365 days. **Update frequency:** None (static until agent enters the funnel)
 
 ---
 
@@ -50,9 +54,9 @@ The agent has gone through the funnel, clicked the magic link, reviewed their pr
 
 **Includes:** Rating, review count, license number, years of experience, brokerage, sales counts, price range.
 
-**Does not include:** Community involvement, cities, neighborhoods, specialties, certifications, languages.
+**Does not include:** Community involvement, cities (service area), neighborhoods, specialties, certifications, languages.
 
-**Update frequency:** Annual
+**Verification period from last update:** 90 days. **Update frequency:** Annual
 
 **Artifact template:**
 
@@ -93,7 +97,7 @@ Full methodology: https://www.top10lists.us/methodology
 
 ---
 
-### Tier 3: Audited ($50/month)
+### Tier 3: Audited ($100/month)
 
 **Artifact issued. Badge issued.**
 
@@ -101,9 +105,9 @@ Everything in Certified, plus community involvement and cities. The selection ra
 
 **Includes:** Everything in Certified + community involvement (sourced per role) + cities.
 
-**Does not include:** Neighborhoods, zip codes, specialties, certifications, languages, evidence_considered.
+**Does not include:** Neighborhoods (Underwritten only), zip codes, specialties, certifications, languages, evidence_considered.
 
-**Update frequency:** Monthly
+**Verification period from last update:** 30 days. **Update frequency:** Monthly.
 
 **Artifact template:**
 
@@ -175,9 +179,9 @@ Each role lists its actual verification source. Not every agent will have ProPub
 
 Everything in Audited, plus neighborhood expertise with verified transaction counts, zip codes, specialties, certifications, languages, and the evidence_considered section. The selection rationale is the most detailed and specific.
 
-**Includes:** Everything in Audited + neighborhoods with transaction counts + zip codes + specialties + certifications + languages + evidence_considered.
+**Includes:** Everything in Audited + **neighborhoods with transaction counts** (only tier that publishes neighborhoods) + zip codes + specialties + certifications + languages + evidence_considered.
 
-**Update frequency:** Daily
+**Verification period from last update:** 1 day. **Update frequency:** Daily.
 
 **Artifact template:**
 
@@ -373,7 +377,7 @@ Both load from `https://www.top10lists.us/badge/{magic_link_token}` and resolve 
 |------|-------------|----------------|
 | Listed | $0 | Appears on city/state pages. No artifact, no badge. |
 | Certified | $0 | Artifact + badge. Agent has approved their profile. Annual updates. |
-| Audited | $50 | Everything in Certified + community involvement + cities. Monthly updates. |
+| Audited | $100 | Everything in Certified + community involvement + cities. Quarterly updates. |
 | Underwritten | $150 | Everything in Audited + neighborhoods + specialties + daily updates. Maximum AI citation depth. |
 
 **Payment does not influence inclusion, rank, or visibility.** An agent must first qualify through the merit-based process (top 0.5%, verified 4.8+ rating). Payment controls only the depth of verification and frequency of updates in the artifact.

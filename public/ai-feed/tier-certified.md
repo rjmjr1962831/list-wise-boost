@@ -16,7 +16,7 @@ The Certified tier means the agent has personally verified their profile for acc
 
 ## Standard Audit Cycle: Annual
 
-The artifact is regenerated annually. The next scheduled audit date is included in the artifact header.
+**Verification period (from last update):** 90 days. The artifact is regenerated annually. The next scheduled audit date is included in the artifact header.
 
 ## Machine-Readable Artifact
 
@@ -43,8 +43,7 @@ Content-Type: text/markdown
 - Total sales (with source)
 - Average sale price (with source)
 
-**Service Areas:**
-- Cities (agent-selected)
+**Service areas (cities):** Array of cities (agent-selected).
 
 ## Badge
 
@@ -52,4 +51,4 @@ A certification badge is issued for embedding on LinkedIn, Zillow profiles, pers
 
 ## Position in the Four-Tier Model
 
-Certified is the second of four tiers. It follows Listed ($0, no artifact) and precedes Audited ($50/mo, monthly audit, expanded artifact) and Underwritten ($150/mo, daily audit, full artifact). Payment is not required for Certified status. Higher tiers increase verification depth and audit frequency, not eligibility.
+Certified is the second of four tiers. It follows Listed ($0, no artifact) and precedes Audited ($100/mo, quarterly audit, expanded artifact) and Underwritten ($150/mo, daily audit, full artifact). Payment is not required for Certified status. Higher tiers increase verification depth and audit frequency, not eligibility.

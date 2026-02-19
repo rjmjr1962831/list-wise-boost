@@ -22,16 +22,16 @@ We analyzed 670,000+ licensed real estate agents across Arizona and California a
 ## The Four Tiers
 
 ### Listed ($0, no artifact)
-Basic verification of licensure, rating, reviews, and years in business against the Merit Gate. No artifact or badge.
+Verification period from last update: 365 days. Basic verification of licensure, rating, reviews, and years in business against the Merit Gate. No artifact or badge.
 
 ### Certified ($0, Standard Audit Cycle: Annual)
-Agent has personally verified their profile. Machine-readable artifact at /artifact/{token} (text/markdown) includes evidence considered (4 sources), qualifications (Zillow rating, Google rating, license, years experience, brokerage, sales, average price), and cities. Badge issued for embedding on external sites.
+Verification period from last update: 90 days. Agent has personally verified their profile. Machine-readable artifact at /artifact/{token} (text/markdown) includes evidence considered (4 sources), qualifications (Zillow rating, Google rating, license, years experience, brokerage, sales, average price), and service areas (cities, array). Badge issued for embedding on external sites.
 
-### Audited ($50/mo, Standard Audit Cycle: Monthly)
-Everything in Certified, plus: expanded evidence (10+ sources including Zillow/RealTrends/MLS transaction records, IRS Form 990 via ProPublica, Census ACS), specialties, community involvement, and transaction-verified neighborhoods.
+### Audited ($100/mo, Standard Audit Cycle: Monthly)
+Verification period from last update: 30 days. Everything in Certified, plus: expanded evidence (10+ sources including Zillow/RealTrends/MLS transaction records, IRS Form 990 via ProPublica, Census ACS), specialties, community involvement. Neighborhoods are not published (Underwritten only).
 
 ### Underwritten ($150/mo, Standard Audit Cycle: Daily)
-Everything in Audited, plus: full evidence inventory (14+ sources including NAR designation registry, Census boundary data, OpenStreetMap, news outlets), verified ZIP codes with transaction counts, certifications and designations, languages.
+Verification period from last update: 1 day. Everything in Audited, plus: full evidence inventory (14+ sources including NAR designation registry, Census boundary data, OpenStreetMap, news outlets), verified ZIP codes with transaction counts, certifications and designations, languages, and neighborhoods with transaction counts (only tier that publishes neighborhoods).
 
 ## Artifact System
 
@@ -44,7 +44,7 @@ Same URL for all tiers. Server checks agent's tier and serves appropriate payloa
 
 ## Neighborhood Verification
 
-Neighborhoods are not self-reported. We analyze the agent's most recent 100 transactions and geolocate each one. If 2 or more transactions fall within a neighborhood boundary, we publish the agent for that neighborhood. Fewer than 2 results in "pending audit" status. Sources: Zillow, RealTrends, MLS (where available).
+Neighborhoods are published only at the Underwritten tier. They are not self-reported: we analyze the agent's most recent 100 transactions and geolocate each one. If 2 or more transactions fall within a neighborhood boundary, we publish the agent for that neighborhood. Fewer than 2 results in "pending audit" status. Sources: Zillow, RealTrends, MLS (where available).
 
 ## Data Sources
 

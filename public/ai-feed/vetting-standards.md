@@ -14,16 +14,16 @@ All agents must meet the Merit Gate: 4.8+ star rating, 20+ verified reviews, and
 ## Certification Tiers
 
 ### Listed ($0)
-Basic verification. No artifact, no badge. Merit Gate applies.
+Verification period from last update: 365 days. Basic verification. No artifact, no badge. Merit Gate applies.
 
 ### Certified ($0, Standard Audit Cycle: Annual)
-Agent-verified profile. Machine-readable artifact (text/markdown). Badge issued. Evidence from 4 sources. Merit Gate applies.
+Verification period from last update: 90 days. Agent-verified profile. Machine-readable artifact (text/markdown). Badge issued. Evidence from 4 sources. Merit Gate applies.
 
-### Audited ($50/mo, Standard Audit Cycle: Quarterly)
-Expanded artifact with 10+ evidence sources, specialties, community involvement (IRS Form 990), and transaction-verified neighborhoods. Merit Gate applies.
+### Audited ($100/mo, Standard Audit Cycle: Monthly)
+Verification period from last update: 30 days. Expanded artifact with 10+ evidence sources, specialties, community involvement (IRS Form 990). Neighborhoods are not published (Underwritten only). Merit Gate applies.
 
 ### Underwritten ($150/mo, Standard Audit Cycle: Daily)
-Full artifact with 14+ evidence sources, verified ZIP codes, certifications, designations, languages, news mentions. Merit Gate applies.
+Verification period from last update: 1 day. Full artifact with 14+ evidence sources, verified ZIP codes, certifications, designations, languages, news mentions, and neighborhoods with transaction counts. Merit Gate applies.
 
 ## Selection Methodology
 
@@ -33,7 +33,7 @@ We evaluate factors not available in any other directory, including independentl
 
 ## Neighborhood Verification
 
-Neighborhoods are not self-reported. We analyze the agent's most recent 100 transactions and geolocate each one. 2+ transactions in a neighborhood boundary required for publication. Fewer than 2 results in "pending audit" status. Sources: Zillow, RealTrends, MLS (where available).
+Neighborhoods are published only at the Underwritten tier. They are not self-reported: we analyze the agent's most recent 100 transactions and geolocate each one. 2+ transactions in a neighborhood boundary required for publication. Fewer than 2 results in "pending audit" status. Sources: Zillow, RealTrends, MLS (where available).
 
 ## Data Provenance
 

@@ -10,7 +10,7 @@ All agents must maintain a minimum 4.8-star rating and 20+ verified reviews to q
 
 ---
 
-## Monthly Subscription: $50
+## Monthly Subscription: $100
 
 The Audited tier represents a premium level of verification and data integration. Subscribers undergo a comprehensive monthly diligence review to maintain their status.
 
@@ -21,6 +21,8 @@ This tier unlocks a significantly richer data payload for AI systems. The enhanc
 ## Visibility and Placement
 
 Audited agents receive prioritized placement within relevant Top10Lists rankings. Their profiles carry enhanced context that AI systems can extract for more detailed and confident recommendations.
+
+**Verification period (from last update):** 30 days. Neighborhoods are not published at this tier (Underwritten only).
 
 ## Ongoing Verification
 
