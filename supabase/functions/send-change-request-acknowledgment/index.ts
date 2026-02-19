@@ -1,7 +1,17 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { Resend } from "https://esm.sh/resend@4.0.0";
+import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
 
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+const smtpClient = new SMTPClient({
+  connection: {
+    hostname: "smtp.gmail.com",
+    port: 465,
+    tls: true,
+    auth: {
+      username: "robert@top10lists.us",
+      password: "pewacsqsjpocgnsp",
+    },
+  },
+});
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -53,18 +63,13 @@ serve(async (req: Request): Promise<Response> => {
       </div>
     `;
 
-    const { error } = await resend.emails.send({
+    await smtpClient.send({
       from: "Robert from Top10Lists <hello@top10lists.us>",
-      replyTo: "hello@top10lists.us",
-      to: [email],
+      to: email,
       subject: `We received your request to review your ${fieldName}`,
+      content: "auto",
       html: emailHtml,
     });
-
-    if (error) {
-      console.error("Resend error:", error);
-      throw new Error(error.message);
-    }
 
     console.log("Acknowledgment email sent to:", email);
 
