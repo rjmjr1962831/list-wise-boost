@@ -380,7 +380,25 @@ export default function Step3Review2() {
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  <Label>Total Sales</Label>
+                  <div className="flex items-center gap-1.5">
+                    <Label>Total Sales</Label>
+                    <div className="relative group">
+                      <button
+                        type="button"
+                        className="text-muted-foreground hover:text-foreground"
+                        onClick={(e) => {
+                          const tip = e.currentTarget.nextElementSibling;
+                          if (tip) tip.classList.toggle('hidden');
+                        }}
+                      >
+                        <HelpCircle className="h-3.5 w-3.5" />
+                      </button>
+                      <div className="hidden absolute z-50 left-0 top-6 w-72 rounded-md border bg-popover p-3 text-xs text-popover-foreground shadow-md">
+                        <p className="font-medium mb-1">Why the + sign?</p>
+                        <p>AI systems see different numbers on different sites. If we published an exact count, any discrepancy would reduce AI trust in your profile. By showing a verified floor (e.g. 150+), the AI understands this is a minimum we stand behind, and that variation elsewhere is expected. This protects your citation score.</p>
+                      </div>
+                    </div>
+                  </div>
                   <div className="flex items-center gap-2">
                     <div className="flex-1 rounded-md border bg-muted/50 px-3 py-2 text-sm">
                       {totalSalesDisplay != null ? `${totalSalesDisplay.toLocaleString()}+` : 'Not provided'}

@@ -5,13 +5,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Loader2, ArrowRight, ArrowLeft } from 'lucide-react';
+import { Loader2, ArrowRight, ArrowLeft, Search } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 
-interface City {
-  id: string;
-  name: string;
-  slug: string;
+interface CityArea {
+  city_area: string;
+  city_area_slug: string;
   state: string;
 }
 
@@ -19,9 +19,10 @@ export default function Step5Cities() {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const [cities, setCities] = useState<City[]>([]);
-  const [selectedCities, setSelectedCities] = useState<Set<string>>(new Set());
+  const [cityAreas, setCityAreas] = useState<CityArea[]>([]);
+  const [selectedSlugs, setSelectedSlugs] = useState<Set<string>>(new Set());
   const [professionalId, setProfessionalId] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     loadData();
@@ -34,10 +35,10 @@ export default function Step5Cities() {
     }
 
     try {
-      // Get professional
+      // Get professional with state info
       const { data: prof, error: profError } = await supabase
         .from('professionals')
-        .select('id')
+        .select('id, state_slug, license_state')
         .eq('verification_token', token)
         .single();
 
@@ -48,15 +49,63 @@ export default function Step5Cities() {
 
       setProfessionalId(prof.id);
 
-      // Get cities
-      const { data: citiesData, error: citiesError } = await supabase
-        .from('cities')
-        .select('id, name, slug, state')
-        .order('name');
+      // Determine the agent's state for filtering
+      const agentState = prof.license_state || prof.state_slug || '';
 
-      if (citiesError) throw citiesError;
+      // Pull distinct city_area groups from neighborhood_catalog
+      const allRows: { city_area: string; city_area_slug: string; state: string }[] = [];
+      let offset = 0;
+      const pageSize = 1000;
+      let hasMore = true;
 
-      setCities(citiesData || []);
+      while (hasMore) {
+        let query = supabase
+          .from('neighborhood_catalog')
+          .select('city_area, city_area_slug, state')
+          .eq('is_active', true)
+          .order('city_area')
+          .range(offset, offset + pageSize - 1);
+
+        // Filter by agent's state if we know it
+        if (agentState) {
+          query = query.ilike('state', agentState.replace(/-/g, ' '));
+        }
+
+        const { data, error } = await query;
+        if (error) throw error;
+
+        allRows.push(...(data || []));
+        hasMore = (data?.length || 0) === pageSize;
+        offset += pageSize;
+      }
+
+      // Deduplicate by city_area_slug, filter junk
+      const seen = new Map<string, CityArea>();
+      for (const row of allRows) {
+        if (
+          row.city_area &&
+          row.city_area_slug &&
+          row.city_area.length > 1 &&
+          !row.city_area.includes('null') &&
+          !row.city_area.includes('Placeholder') &&
+          !row.city_area.startsWith('/') &&
+          !row.city_area.startsWith(':')
+        ) {
+          if (!seen.has(row.city_area_slug)) {
+            seen.set(row.city_area_slug, {
+              city_area: row.city_area,
+              city_area_slug: row.city_area_slug,
+              state: row.state,
+            });
+          }
+        }
+      }
+
+      const sorted = Array.from(seen.values()).sort((a, b) =>
+        a.city_area.localeCompare(b.city_area)
+      );
+
+      setCityAreas(sorted);
     } catch (err) {
       console.error(err);
       toast.error('Failed to load cities');
@@ -65,25 +114,31 @@ export default function Step5Cities() {
     }
   };
 
-  const toggleCity = (cityId: string) => {
-    const newSelected = new Set(selectedCities);
-    if (newSelected.has(cityId)) {
-      newSelected.delete(cityId);
+  const toggleCity = (slug: string) => {
+    const newSelected = new Set(selectedSlugs);
+    if (newSelected.has(slug)) {
+      newSelected.delete(slug);
     } else {
-      newSelected.add(cityId);
+      newSelected.add(slug);
     }
-    setSelectedCities(newSelected);
+    setSelectedSlugs(newSelected);
   };
 
   const handleContinue = () => {
-    if (selectedCities.size === 0) {
+    if (selectedSlugs.size === 0) {
       toast.error('Please select at least one city');
       return;
     }
 
-    toast.success(`${selectedCities.size} cities selected!`);
+    toast.success(`${selectedSlugs.size} cities selected!`);
     navigate(`/funnel/${token}/neighborhoods`);
   };
+
+  const filtered = searchTerm
+    ? cityAreas.filter((c) =>
+        c.city_area.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    : cityAreas;
 
   if (loading) {
     return (
@@ -111,28 +166,43 @@ export default function Step5Cities() {
                 Select all the cities where you help clients. You can select multiple.
               </p>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search cities..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-[500px] overflow-y-auto p-4 border rounded-lg">
-                {cities.map((city) => (
+                {filtered.map((city) => (
                   <div
-                    key={city.id}
+                    key={city.city_area_slug}
                     className="flex items-center space-x-2 p-3 rounded-lg hover:bg-accent cursor-pointer"
-                    onClick={() => toggleCity(city.id)}
+                    onClick={() => toggleCity(city.city_area_slug)}
                   >
                     <Checkbox
-                      checked={selectedCities.has(city.id)}
-                      onCheckedChange={() => toggleCity(city.id)}
+                      checked={selectedSlugs.has(city.city_area_slug)}
+                      onCheckedChange={() => toggleCity(city.city_area_slug)}
                     />
                     <label className="cursor-pointer flex-1">
-                      {city.name}, {city.state}
+                      {city.city_area}, {city.state}
                     </label>
                   </div>
                 ))}
+                {filtered.length === 0 && (
+                  <p className="text-sm text-muted-foreground col-span-3 text-center py-4">
+                    No cities found{searchTerm ? ` matching "${searchTerm}"` : ''}.
+                  </p>
+                )}
               </div>
 
-              {selectedCities.size > 0 && (
+              {selectedSlugs.size > 0 && (
                 <div className="text-sm text-muted-foreground text-center">
-                  {selectedCities.size} {selectedCities.size === 1 ? 'city' : 'cities'} selected
+                  {selectedSlugs.size} {selectedSlugs.size === 1 ? 'city' : 'cities'} selected
                 </div>
               )}
 
@@ -147,7 +217,7 @@ export default function Step5Cities() {
                 </Button>
                 <Button
                   onClick={handleContinue}
-                  disabled={selectedCities.size === 0}
+                  disabled={selectedSlugs.size === 0}
                   className="flex-1 gap-2"
                 >
                   Continue

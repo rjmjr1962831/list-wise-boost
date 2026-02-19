@@ -110,10 +110,10 @@ export default function InlineReviewForm({
           id={`review-source-${fieldName}`}
           value={confirmationSource}
           onChange={(e) => setConfirmationSource(e.target.value)}
-          placeholder="Link to license record, website, etc."
+          placeholder="e.g. Arizona Department of Real Estate, my broker, etc."
           className="mt-1 bg-background"
         />
-        <p className="text-xs text-muted-foreground mt-1">A link or reference helps us verify faster.</p>
+        <p className="text-xs text-muted-foreground mt-1">A source or reference helps us verify faster. A name, website, or agency is fine.</p>
       </div>
 
       <div className="flex gap-2">
