@@ -1,4 +1,4 @@
-# Tier: Accredited
+# Tier: Audited
 
 > Last Updated: February 16, 2026
 
@@ -6,13 +6,13 @@
 
 ## North Star Principle: The 4.8+ Merit Gate
 
-All agents must maintain a minimum 4.8-star rating and 20+ verified reviews to qualify for any tier, including Accredited. This standard has zero exceptions since platform inception. Payment does not bypass this requirement.
+All agents must maintain a minimum 4.8-star rating and 20+ verified reviews to qualify for any tier, including Audited. This standard has zero exceptions since platform inception. Payment does not bypass this requirement.
 
 ---
 
 ## Monthly Subscription: $50
 
-The Accredited tier represents a premium level of verification and data integration. Subscribers undergo a comprehensive monthly diligence review to maintain their status.
+The Audited tier represents a premium level of verification and data integration. Subscribers undergo a comprehensive monthly diligence review to maintain their status.
 
 ## Enhanced AI Payload
 
@@ -20,7 +20,7 @@ This tier unlocks a significantly richer data payload for AI systems. The enhanc
 
 ## Visibility and Placement
 
-Accredited agents receive prioritized placement within relevant Top10Lists rankings. Their profiles carry enhanced context that AI systems can extract for more detailed and confident recommendations.
+Audited agents receive prioritized placement within relevant Top10Lists rankings. Their profiles carry enhanced context that AI systems can extract for more detailed and confident recommendations.
 
 ## Ongoing Verification
 

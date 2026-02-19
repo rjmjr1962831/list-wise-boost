@@ -265,37 +265,31 @@ serve(async (req) => {
       }
     }
     
-    let host: string | null = payloadHost && typeof payloadHost === "string" ? payloadHost : null;
-    if (!host && url) {
-      try {
-        const u = typeof url === "string" && url.startsWith("http") ? new URL(url) : new URL(url, "https://www.top10lists.us");
-        host = u.hostname || null;
-      } catch (_) {}
-    }
+    // host omitted from insert until migration 20260214 adds column; url used for www filter
+    const row: Record<string, unknown> = {
+      timestamp: timestamp || new Date().toISOString(),
+      client_ip: client_ip || null,
+      user_agent: user_agent || null,
+      url: url,
+      path: path || url,
+      method: method || 'GET',
+      cache_status: cache_status || 'UNKNOWN',
+      cache_response_status: null,
+      country: country || null,
+      ray_id: ray_id || null,
+      bot_type: finalBotType,
+      is_bot: isBot,
+      agent_id: agentId,
+      list_page_type,
+      location_display,
+      agents_shown: agents_shown ?? null,
+      raw_log: payload,
+    };
 
-    const { error } = await supabase
-      .from("cloudflare_request_logs")
-      .insert({
-        timestamp: timestamp || new Date().toISOString(),
-        client_ip: client_ip || null,
-        user_agent: user_agent || null,
-        url: url,
-        path: path || url,
-        method: method || 'GET',
-        cache_status: cache_status || 'UNKNOWN',
-        cache_response_status: null,
-        country: country || null,
-        ray_id: ray_id || null,
-        bot_type: finalBotType,
-        is_bot: isBot,
-        host,
-        agent_id: agentId,
-        list_page_type,
-        location_display,
-        agents_shown: agents_shown ?? null,
-        raw_log: payload,
-      });
-    
+    const { error } = ray_id
+      ? await supabase.from("cloudflare_request_logs").upsert(row, { onConflict: "ray_id" })
+      : await supabase.from("cloudflare_request_logs").insert(row);
+
     if (error && error.code !== '23505') { // Ignore duplicate errors
       console.error("Insert error:", error);
       const errorMsg = error.message || JSON.stringify(error);

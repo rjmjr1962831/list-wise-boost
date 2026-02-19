@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { SafeHead } from "@/components/SafeHead";
 import { Loader2, ChevronDown } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -29,6 +29,9 @@ interface StoredSelection {
 
 export default function VisibilityExpertisePage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const returnTo = searchParams.get('returnTo');
+  const isDashboardEdit = returnTo === 'dashboard';
   const { toast } = useToast();
   
   const [selectedCityIds, setSelectedCityIds] = useState<string[]>([]);
@@ -38,6 +41,7 @@ export default function VisibilityExpertisePage() {
   const [isMobile, setIsMobile] = useState(false);
   const [isFooterExpanded, setIsFooterExpanded] = useState(false);
   const [isAddingNeighborhood, setIsAddingNeighborhood] = useState(false);
+  const [professionalId, setProfessionalId] = useState<string | null>(null);
 
   // Get professional token for tracking
   const professionalToken = sessionStorage.getItem('visibility_professional_token') || undefined;
@@ -56,11 +60,73 @@ export default function VisibilityExpertisePage() {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Load selection from sessionStorage
+  // Load selection from sessionStorage or from database (dashboard mode)
   useEffect(() => {
     async function loadSelection() {
       setIsLoading(true);
       try {
+        if (isDashboardEdit) {
+          // Dashboard mode: load from agent session and database
+          const sessionToken = localStorage.getItem('agent_session_token');
+          if (!sessionToken) { navigate('/agent/login'); return; }
+
+          const { data: sessionData } = await supabase.functions.invoke('validate-agent-session', {
+            body: { sessionToken },
+          });
+          if (!sessionData?.valid) { navigate('/agent/login'); return; }
+
+          setProfessionalId(sessionData.professionalId);
+
+          // Load professional's service_areas for city display
+          const { data: prof } = await supabase
+            .from('professionals')
+            .select('service_areas, state_slug')
+            .eq('id', sessionData.professionalId)
+            .single();
+
+          // Load city IDs from service_areas names
+          if (prof?.service_areas && prof.service_areas.length > 0 && prof?.state_slug) {
+            const cityNameList = prof.service_areas.map((a: string) => a.replace(/,\s*[A-Z]{2}$/, '').trim());
+            const { data: citiesData } = await supabase
+              .from('cities')
+              .select('id, name')
+              .eq('state_slug', prof.state_slug)
+              .in('name', cityNameList);
+
+            if (citiesData) {
+              const ids = citiesData.map(c => c.id);
+              setSelectedCityIds(ids);
+              const map = new Map<string, string>();
+              citiesData.forEach(c => map.set(c.id, c.name));
+              setCityNames(map);
+            }
+          }
+
+          // Load existing neighborhood subscriptions
+          const { data: subs } = await supabase
+            .from('agent_neighborhood_subscriptions')
+            .select('*, neighborhood_catalog(id, neighborhood, city_area_name, state)')
+            .eq('professional_id', sessionData.professionalId)
+            .eq('is_active', true);
+
+          if (subs && subs.length > 0) {
+            const existingNeighborhoods: SelectedNeighborhood[] = subs.map((s: any) => ({
+              id: s.neighborhood_catalog?.id || s.neighborhood_id,
+              neighborhood: s.neighborhood_catalog?.neighborhood || '',
+              city_area: s.neighborhood_catalog?.city_area_name || '',
+              state: s.neighborhood_catalog?.state || '',
+              tier_at_selection: s.subscription_type || 'main',
+              price_monthly: 0,
+              price_source: 'existing',
+            }));
+            setSelectedNeighborhoods(existingNeighborhoods);
+          }
+
+          setIsLoading(false);
+          return;
+        }
+
+        // Normal funnel mode: load from sessionStorage
         const stored = sessionStorage.getItem(STORAGE_KEY);
         if (!stored) {
           toast({
@@ -156,8 +222,18 @@ export default function VisibilityExpertisePage() {
     });
   };
 
-  // Handle continue to review
+  // Handle continue to review or save and return to dashboard
   const handleContinue = () => {
+    if (isDashboardEdit) {
+      // Dashboard mode: neighborhoods are saved via subscriptions during add/remove
+      toast({
+        title: 'Neighborhoods updated',
+        description: `${selectedNeighborhoods.length} neighborhoods saved.`,
+      });
+      navigate('/agent/dashboard');
+      return;
+    }
+
     const selection: StoredSelection = {
       selectedCityIds,
       selectedNeighborhoods,
@@ -182,6 +258,11 @@ export default function VisibilityExpertisePage() {
 
   // Handle skip
   const handleSkip = () => {
+    if (isDashboardEdit) {
+      navigate('/agent/dashboard');
+      return;
+    }
+
     const selection: StoredSelection = {
       selectedCityIds,
       selectedNeighborhoods: [],

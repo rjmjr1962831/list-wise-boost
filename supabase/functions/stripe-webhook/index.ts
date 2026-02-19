@@ -108,7 +108,7 @@ async function handleInvoicePaid(invoice: any, supabase: any) {
   if (amountPaid >= 150) {
     tier = 'underwritten'
   } else if (amountPaid >= 50) {
-    tier = 'accredited'
+    tier = 'audited'
   }
 
   console.log('Determined tier:', tier)

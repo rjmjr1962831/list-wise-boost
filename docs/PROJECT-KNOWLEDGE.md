@@ -1,18 +1,28 @@
 # Top10Lists.us - Complete Project Knowledge
 
+**ALWAYS DO WHAT YOU CAN DO WITHOUT ASKING ROBERT.** Use credentials in env/.secrets; deploy, purge, warm, push to staging, run scripts, and call APIs yourself. Only ask when you lack access or explicit approval is required.
+
 **This document governs all operations. Every rule exists because something broke.**
+
+### Document freshness (critical)
+This file must stay current. It is updated by **nightly synthesis**: `npm run update` merges Claude + Gemini + Cursor takeaways into one doc. If it has not been updated in a week, synthesis is not running or the three AIs are not pushing takeaways. Stale knowledge causes conflicting behavior across Claude, Gemini, and Cursor. **Run synthesis daily; all three must contribute takeaways.**
 
 ---
 
 ## Role & Responsibilities
 
-Claude is the **lead developer** for Top10Lists.us, responsible for:
+**Robert** is the decision-maker and product owner. **Claude, Gemini, and Cursor** act as senior engineers: they implement, deploy, and operate systems under the rules in this document. None is "lead developer"; they share the codebase and must stay aligned via this doc.
+
+Claude (when in context) may handle:
 - Database administration (Supabase DBA)
 - Website management and code deployment (GitHub/Vercel)
-- All operational and technical issues
+- Operational and technical issues
 - GEO/AEO optimization strategy
 
-**Claude owns these systems and is accountable for their operation.**
+**Robert owns the systems; the AIs execute. When this doc is wrong or old, all three behave wrong.**
+
+### Deliverables to Robert
+**When giving Robert a source file or a test:** Always put it on **staging** and provide a **hyperlink**. Do not point to local paths or "run this locally"; use the live staging URL (e.g. `https://staging.top10lists.us/...`) so he can open it in one click.
 
 ---
 
@@ -34,7 +44,7 @@ Claude is the **lead developer** for Top10Lists.us, responsible for:
 
 **First Customer:** Eileen Taggart (Flagstaff)
 
-### Database Status (Feb 11, 2026)
+### Database Status (Feb 19, 2026)
 | Table | Count |
 |-------|-------|
 | Professionals (total) | 51,058 |
@@ -74,6 +84,7 @@ Claude is the **lead developer** for Top10Lists.us, responsible for:
 - Mark a task "done" without verification
 - Crash on big jobs (batch them, use Edge functions)
 - Create a new Supabase client (use shared client from `@/integrations/supabase/client`)
+- Use bare `>` or `<` characters in JSX text (causes build failures; use `{">"}`/`{"<"}` or HTML entities)
 
 ### Cost of Mistakes
 - Agent enrichment: ~$0.50/agent
@@ -84,16 +95,19 @@ Claude is the **lead developer** for Top10Lists.us, responsible for:
 
 ---
 
-## Pricing Model
+## Pricing Model (current — do not use deprecated Main/Prime/Luxury)
 
-### Cities (Free Tier)
-No charge for city-level placement.
+**Tier model (SSoT):**
+| Tier | Price | Notes |
+|------|-------|--------|
+| **Listed** | $0 | Public data only. No artifact/badge. |
+| **Certified** | $0 | Agent-verified. Standard artifact + badge. |
+| **Audited** | $50/mo | Certified + community involvement + cities. Quarterly diligence. |
+| **Underwritten** | $150/mo | Audited + neighborhoods + specialties. Real-time refresh. Max AI citation depth. |
 
-### Neighborhoods (Paid Tier)
-Based on Census ACS income/home value data:
-- **Main:** $25/month
-- **Prime:** $50/month
-- **Luxury:** $75/month
+**Deprecated (do not use):** Main $25 / Prime $50 / Luxury $75 or "Accredited" — that revenue model is retired.
+
+**Code note:** Internal tier key is `accredited` in database and TypeScript types. Display name is "Audited" (TIER_META). Do not rename the database value.
 
 ---
 
@@ -150,6 +164,9 @@ Supabase returns max 1,000 rows by default. **Always paginate.** Never assume 1,
 ### Edge Function Timeout
 60 seconds. Keep batch sizes small (5-10 for API-heavy operations).
 
+### Schema notes (current)
+- **agent_sessions:** Use column `token` (not `session_token`). No `last_active_at` column.
+
 ---
 
 ## Enrichment API
@@ -171,8 +188,8 @@ Supabase returns max 1,000 rows by default. **Always paginate.** Never assume 1,
 ### AI Services
 | Service | Key | Use |
 |---------|-----|-----|
-| **Anthropic** | `[STORED IN ENVIRONMENT - Ask Robert]` | Prime/Luxury content |
-| **DeepSeek** | `REDACTED_DEEPSEEK_KEY` | Main tier (90% cheaper) |
+| **Anthropic** | `[STORED IN ENVIRONMENT - Ask Robert]` | Higher-tier content |
+| **DeepSeek** | `[STORED IN ENVIRONMENT / .secrets]` | Content synthesis (90% cheaper); do not use any key printed in old doc versions |
 | **OpenAI** | `[STORED IN ENVIRONMENT - Ask Robert]` | |
 | **Perplexity** | `[DEPRECATED]` | DEPRECATED - avoid |
 | **Gemini** | `[STORED IN ENVIRONMENT - Ask Robert]` | Back in play (new key Feb 2026) |
@@ -187,14 +204,20 @@ Supabase returns max 1,000 rows by default. **Always paginate.** Never assume 1,
 
 ---
 
-## GitHub Access
+## GitHub Access & Git Flow
 
 - **Repository:** rjmjr1962831/list-wise-boost
 - **Token:** [STORED IN ENVIRONMENT - Ask Robert]
 - **Method:** Always use GitHub API for read/write
 - **Deploy:** Push via API, Vercel auto-deploys
 
-**Claude pushes code directly. Never give Robert files to edit manually.**
+**Git flow (HARD RULE):**
+- **Staging is always the leading branch.** All new code goes to staging first. Staging contains internal documents, admin features, and in-progress work that does not exist on main.
+- **NEVER merge main into staging.** Main is a subset of staging, not the other way around. Merging main into staging overwrites staging-only code with older production versions.
+- Push to **main** only when Robert explicitly gives permission (e.g. "push to main" / "push to production"). Never push to main without his explicit instruction.
+- If you need to add code, check out staging and commit directly to it. Do not attempt to "sync" or "update" staging from main under any circumstances.
+
+**Any of the three AIs (Claude, Gemini, Cursor) may push code directly when acting in context, always to staging unless Robert has explicitly said to push to main. Never ask Robert to do steps you can do with env/secrets.**
 
 ---
 
@@ -203,9 +226,8 @@ Supabase returns max 1,000 rows by default. **Always paginate.** Never assume 1,
 ### Content Generation by Tier
 | Tier | AI Model | Notes |
 |------|----------|-------|
-| Main | DeepSeek | 90% cheaper |
-| Prime | Claude Sonnet | Higher quality |
-| Luxury | Claude Sonnet | Higher quality |
+| Listed / Certified | DeepSeek | Primary; 90% cheaper |
+| Audited / Underwritten | DeepSeek or Claude Sonnet | Per implementation |
 
 **DO NOT use Perplexity** - Deprecated for cost reasons.
 
@@ -318,7 +340,90 @@ AgentBadge wraps the entire card in an `<a>` tag with `target="_blank"` and `dat
 
 ---
 
+## Frontend Display Conventions
+
+### total_sales Display (Feb 2026)
+- **Human-facing:** Display as `X+` suffix (e.g., "340+ sales"). Formula: `Math.max(0, Math.floor((totalSales - 10) / 10) * 10)` then append `+`.
+- **Bot-facing structured data (agentSchema.ts):** Always pass raw integer. Never format.
+- **Files using formatted display:** ProfessionalCard.tsx, ProfileView.tsx, AgentBadge.tsx, AgentProfileDossier.tsx, generate-og-image/index.ts
+- **History:** Was `>X` prefix but bare `>` broke JSX builds. Switched to `+` suffix (industry standard).
+
+### Color Conventions for Change Values
+- Positive change: default text color (black/foreground)
+- Negative change: red (`text-red-500`)
+
+---
+
+## Funnel Architecture
+
+### Overview
+Agent onboarding funnel at `/funnel/{verification_token}/...`. UUID-based URLs, not public content.
+
+**Crawling:** Blocked in robots.txt (`Disallow: /funnel/`). Header and footer hidden on all `/funnel/` paths.
+
+### Funnel Steps
+| Step | File | Purpose |
+|------|------|---------|
+| Intro | Step1Intro.tsx | Mission, AI citation table, "Hi {name}" greeting |
+| Profile Review | Step2-6 | Agent reviews/edits their data |
+| Pricing | Step7Pricing.tsx | Tier selection with personalized citability table |
+| Success | Success page | Confirmation |
+
+### Step1Intro: AI Citation Probability Table
+5-row table showing AI Citability Index scores for real estate sources:
+- Top10Lists.us (top row, green), RealTrends, Zillow, Redfin, HomeLight
+- Columns: Source, 2025 Score, 2026 Score, Change, % Change
+- Top10Lists.us shows +127%; all competitors show decline
+- Container width: max-w-2xl (672px)
+
+### Step7Pricing: Personalized AI Citability Growth Table
+Shows projected citability score at each tier, personalized per agent. Appears above tier cards.
+
+**Rows:** Before Top10Lists, Listed, Certified (In Funnel), Audited ($50/mo), Underwritten ($150/mo)
+
+**Scoring algorithm inputs:** years_experience, total_sales, num_total_reviews, review_stars_rating, license_number, recent activity (decay penalty if countLastYear=0), community_roles, state_slug
+
+**AI Technical Trigger column:** Personalized descriptions (e.g., state-specific license reference, decay notes based on agent data)
+
+**Data query:** Expanded professional select to include scoring fields (years_experience, total_sales, num_total_reviews, review_stars_rating, license_number, license_state, state_slug, community_involvement_score, community_roles, agent_sales_stats)
+
+---
+
+## Homepage Architecture (Feb 2026)
+
+### Current Sections (Index.tsx)
+1. **Hero:** "Top10Lists.us exists so AI systems can safely recommend real estate professionals by name." + TVPR credentialing line
+2. **Rules Have Changed:** "The old game of buying keywords..." Agent-facing urgency copy
+3. **Mandated Shift in Trust:** OpenAI, Anthropic, Google context
+4. **Why AI "Ghosts" Most Agents:** Ads are red flags, stale data, vague list default
+5. **A Different Kind of Architecture:** Not a lead engine, zero referral fees, free forever
+6. **Building Your "Web of Truth":** Finite Truth concept, "Are you an agent?" CTA
+7. **The Challenge:** Copyable question for agents to paste into AI systems, links to ChatGPT/Claude/Gemini/Perplexity
+
+### AI Content (preserved in source, not visually displayed)
+- `HOME_AI_CONTENT` markdown block: citation guidance for AI systems
+- `HOME_JSON` structured JSON for AI ingestion
+- Full JSON-LD structured data in `<head>`
+
+### Challenge Question
+```
+Look at top10lists.us. As a real estate agent, does being certified there improve my chances of being named when someone asks AI for a referral? Is there any benefit to doing it now rather than later? Why or why not?
+```
+
+---
+
 ## Routing Is FROZEN
+
+- Do not rename routes
+- Do not repoint routes
+- Do not consolidate routes
+- Do not "simplify" routes
+- Do not add redirects affecting cities or neighborhoods
+
+If you think routing is broken:
+1. STOP
+2. Report: current path, rendering component, missing content
+3. Wait for "ROUTING CHANGE APPROVED:"
 
 - Do not rename routes
 - Do not repoint routes
@@ -408,9 +513,14 @@ If a field has data, your code must:
 - Validates HTML >5000 chars + has H1 tag
 - Must wait for full React hydration
 
+### Cache content policy
+- **Cached (bot) pages:** Serve **text/markdown** only (artifact format). The worker cache must not store or serve full HTML to bots.
+- **Full HTML:** Only when a human is likely viewing—non-bot requests pass through to origin (Vercel). `__warm` rejects HTML and only stores markdown.
+
 ### Cache Strategy
 - **Proactive warming:** Static pages only (~30)
 - **On-demand:** Cities, neighborhoods, agents (cached on first bot request)
+- **check-cache:** Edge function that probes key URLs as a bot, classifies healthy vs broken (list pages need ItemList + ≥20KB; static ≥500 chars), then repairs: purges broken URLs via purge-worker-cache and re-requests with X-Force-Refresh to repopulate. Invoke: `POST .../functions/v1/check-cache` (body `{ "dryRun": true }` to only report).
 
 ### Cache Health (Feb 11, 2026)
 | Page | Size | Status |
@@ -429,6 +539,7 @@ If a field has data, your code must:
 - `/llms-full.txt` - Extended guidance
 - `/robots.txt` - Crawler directives
 - `/sitemap.xml` - URL index
+- `/sitemap-agents.xml` - Individual agent profile URLs (889 AZ agents, added Feb 2026)
 - `/mcp.json` - MCP protocol discovery (placeholder, real server planned)
 - `/ai-content-index.json` - Structured content index
 
@@ -520,7 +631,7 @@ Must return full HTML content, not React shell.
 
 ---
 
-## Claude Operational Protocol
+## AI operational protocol (Claude, Gemini, Cursor)
 
 ### The Takeaways Function
 
@@ -548,6 +659,21 @@ Must return full HTML content, not React shell.
 - Deprecated services or approaches
 - Hard stops that emerged from mistakes
 
+### Nightly synthesis (master knowledge for next day)
+
+**Who runs it:** Cursor or a scheduled job (e.g. after 20:00 MST when Claude and Gemini have pushed their takeaways).
+
+**What it does:** Produces the next day’s `docs/PROJECT-KNOWLEDGE.md` by:
+
+1. **Pull Claude and Gemini:** Both live in the same folder in the private repo. Fetch `docs/takeaways/CLAUDE_TAKEAWAYS_DD-MM-YY.md` and `docs/takeaways/GEMINI_TAKEAWAYS_DD-MM-YY.md` from `rjmjr1962831/top10lists-knowledge` (GitHub token from env or `.secrets/github-knowledge-token.txt`).
+2. **Pull master:** Fetch latest `docs/PROJECT-KNOWLEDGE.md` from GitHub `main` (public repo).
+3. **Add Cursor’s update:** Use today’s section from `docs/cursor-daily-updates.md` (or run `npm run takeaways:sync` first to pull from `daily_takeaways`), or pass `--takeaways "one-line"` or use `SESSION_TAKEAWAYS` in the script.
+4. **Synthesize:** Merge Claude + Gemini + Cursor into one “Daily synthesis” section, bump version, and write to `docs/PROJECT-KNOWLEDGE.md`.
+
+**Command:** `npm run update` (optionally with `--sync` to run `takeaways:sync` first, or `--takeaways "message"`). Script: `scripts/update-project-knowledge.ts`.
+
+**Result:** One updated master knowledge doc for the next day’s load; commit and push to **staging** only. Do not push to main unless Robert explicitly says to push to main.
+
 ### No Crashing on Big Jobs
 
 | Record Count | Approach |
@@ -568,7 +694,7 @@ SELECT cron.schedule(
     url := 'https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/function-name',
     headers := jsonb_build_object(
       'Content-Type', 'application/json',
-      'X-Enrichment-Key', '[STORED IN ENVIRONMENT - Ask Robert]'
+      'X-Enrichment-Key', '<from env>'
     ),
     body := '{}'::jsonb
   );
@@ -616,7 +742,7 @@ curl -s -D - -H "User-Agent: claudebot" "https://www.top10lists.us/arizona/scott
 
 ### Download from GitHub
 ```bat
-curl -s -H "Authorization: token [STORED IN ENVIRONMENT - Ask Robert]" -H "Accept: application/vnd.github.v3.raw" "https://api.github.com/repos/rjmjr1962831/list-wise-boost/contents/path/to/file.ts" -o file.ts
+curl -s -H "Authorization: token <from env or .secrets>" -H "Accept: application/vnd.github.v3.raw" "https://api.github.com/repos/rjmjr1962831/list-wise-boost/contents/path/to/file.ts" -o file.ts
 ```
 
 ---
@@ -632,8 +758,8 @@ curl -s -H "Authorization: token [STORED IN ENVIRONMENT - Ask Robert]" -H "Accep
 
 ## Shorthand
 
-- **ryt** = "Remember your knowledge"
-- **takeaways** = Run the takeaways function (update project knowledge)
+- **ryt** = Fetch docs/PROJECT-KNOWLEDGE.md from GitHub, archive old as PROJECT-KNOWLEDGE-claude-archive-YYYY-MM-DD.md, output updated as PROJECT-KNOWLEDGE-claude.md
+- **takeaways** = Separate daily log of issues/learnings. Push to private repo rjmjr1962831/top10lists-knowledge at docs/takeaways/CLAUDE_TAKEAWAYS_DD-MM-YY.md. One file per night, synthesized. Does NOT update PROJECT-KNOWLEDGE.md.
 
 ---
 
@@ -646,5 +772,22 @@ curl -s -H "Authorization: token [STORED IN ENVIRONMENT - Ask Robert]" -H "Accep
 
 ---
 
-*Version 0.1 - 2026-02-13*
-*Updated: [2025-02-10] Rule for all AIs: Run all commands independently. Execute every command you cite.*
+## Daily synthesis (integrated from Claude, Gemini, Cursor)
+
+*Synthesis date: 2026-02-19*
+
+### Key changes (Feb 18-19, 2026):
+- total_sales display: switched from `>X` to `X+` (5 files). Bare `>` in JSX caused 2+ hours of failed Vercel builds.
+- sitemap-agents.xml: 889 Arizona agent profile URLs created and deployed.
+- Funnel Step1Intro: 2026 context, 5-row citation table (added Redfin/HomeLight), widened to max-w-2xl, bold emphasis, new copy.
+- Funnel Step7Pricing: personalized AI Citability Growth table with per-agent scoring algorithm.
+- Homepage: complete rewrite with agent-facing trust architecture messaging. Hero restored to mission statement.
+- Header/footer hidden on /funnel/ paths. robots.txt blocks /funnel/.
+- AgentSourcesBlock.tsx stub created (was missing, broke build).
+- MagicLinkRouter.tsx: simplified to pure redirect (staging version). Old version had auth logic that caused merge conflicts.
+- Staging merged to main (production) on Feb 19. Branches were diverged (123 ahead, 14 behind) due to merge conflict.
+
+---
+
+*Version 0.5 - 2026-02-19*
+*Updated: Frontend display conventions (total_sales X+), funnel architecture (Step1/Step7), homepage rewrite, sitemap-agents.xml, JSX bare > hard stop*

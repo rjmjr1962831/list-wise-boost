@@ -71,7 +71,6 @@ export const ProfessionalCard = ({
   
   // Collapsible bar states - auto-expand if expandSections prop is true
   const [bioOpen, setBioOpen] = useState(expandSections);
-  const [showFullSynthesizedBio, setShowFullSynthesizedBio] = useState(expandSections);
   const [reviewsOpen, setReviewsOpen] = useState(expandSections);
   const [newsOpen, setNewsOpen] = useState(expandSections);
   
@@ -1392,7 +1391,7 @@ export const ProfessionalCard = ({
                       {/* Total Sales */}
                       <div className="flex flex-col">
                         <span className="text-2xl font-bold text-foreground leading-none">
-                          {totalSales != null && totalSales > 0 ? totalSales.toLocaleString('en-US') : 'NA'}
+                          {totalSales != null && totalSales > 0 ? `${Math.max(0, Math.floor((totalSales - 10) / 10) * 10).toLocaleString('en-US')}+` : 'NA'}
                         </span>
                         <span className="text-[0.65rem] uppercase tracking-wider text-muted-foreground mt-1">
                           Total Sales
@@ -1707,12 +1706,7 @@ export const ProfessionalCard = ({
                   return paragraphs.map(p => `<p class="mb-4">${p}</p>`).join('');
                 };
                 
-                const CHAR_LIMIT = 400;
-                const needsTruncation = bioContent.length > CHAR_LIMIT;
-                const truncatedText = needsTruncation && !showFullSynthesizedBio
-                  ? bioContent.slice(0, CHAR_LIMIT) + '...'
-                  : bioContent;
-                const displayHtml = formatBioWithParagraphs(truncatedText);
+                const displayHtml = formatBioWithParagraphs(bioContent);
                 
                 return (
                   <div className="border rounded-lg p-4 bg-primary/5 mt-3">
@@ -1721,14 +1715,6 @@ export const ProfessionalCard = ({
                       className="prose prose-sm max-w-none text-sm text-foreground leading-relaxed [&>p]:mb-4 [&>p:last-child]:mb-0"
                       dangerouslySetInnerHTML={{ __html: displayHtml }}
                     />
-                    {needsTruncation && (
-                      <button
-                        onClick={() => setShowFullSynthesizedBio(!showFullSynthesizedBio)}
-                        className="text-primary hover:underline text-sm font-medium mt-2"
-                      >
-                        {showFullSynthesizedBio ? 'Show less' : 'Show more'}
-                      </button>
-                    )}
                     {(professional as any).profile_last_synthesized_at && (
                       <p className="text-xs text-muted-foreground mt-2">
                         Profile synthesized: {format(new Date((professional as any).profile_last_synthesized_at), 'MMM d, yyyy')}

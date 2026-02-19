@@ -79,53 +79,45 @@ export default function BotAnalyticsDashboard() {
     const daysAgo = dateRange === "24h" ? 1 : dateRange === "7d" ? 7 : 30;
     const startDate = new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000).toISOString();
 
-    // Summary stats (MAIN only)
-    const { data: summaryData } = await supabase
-      .from("cloudflare_request_logs")
-      .select("*")
-      .eq("is_bot", true)
-      .eq("host", MAIN_HOST)
-      .gte("timestamp", startDate);
-
-    if (summaryData) {
-      const hits = summaryData.filter(r => r.cache_status === 'HIT').length;
-      const total = summaryData.length;
-      const uniqueAgents = new Set(
-        summaryData
-          .map(r => getAgentSlugFromPath(r.path))
-          .filter((s): s is string => s != null)
-      ).size;
-
-      setSummary({
-        total_bot_visits: total,
-        unique_bots: new Set(summaryData.map(r => r.bot_type)).size,
-        unique_agents_viewed: uniqueAgents,
-        cache_hit_rate: total > 0 ? (hits / total) * 100 : 0,
-      });
-    }
-
-    // Bot type breakdown
+    // Bot type breakdown (MAIN only) – same filter as summary
     const { data: botData } = await supabase.rpc('get_bot_stats', {
       start_date: startDate
     });
 
     if (botData) {
       setBotStats(botData);
+      // Derive summary from same data so summary and table always match (no separate get_bot_summary RPC)
+      const total = botData.reduce((s, r) => s + Number(r.total_visits ?? 0), 0);
+      const hits = botData.reduce((s, r) => s + Number(r.cache_hits ?? 0), 0);
+      const misses = botData.reduce((s, r) => s + Number(r.cache_misses ?? 0), 0);
+      const hitRate = hits + misses > 0 ? (100 * hits / (hits + misses)) : 0;
+      setSummary(prev => ({
+        total_bot_visits: total,
+        unique_bots: botData.length,
+        unique_agents_viewed: prev?.unique_agents_viewed ?? 0, // set below from agentData
+        cache_hit_rate: hitRate,
+      }));
+    } else {
+      setSummary({ total_bot_visits: 0, unique_bots: 0, unique_agents_viewed: 0, cache_hit_rate: 0 });
     }
 
     // Agent-specific views (MAIN only): only paths that are agent profile URLs
+    // Use same host filter as get_bot_stats: host = www OR (host IS NULL and url contains www)
     const { data: agentData } = await supabase
       .from("cloudflare_request_logs")
-      .select("path, bot_type, timestamp, cache_status, user_agent")
+      .select("path, bot_type, timestamp, cache_status, user_agent, host, url")
       .eq("is_bot", true)
-      .eq("host", MAIN_HOST)
       .gte("timestamp", startDate)
       .or("path.ilike.%/agents/%,path.ilike.%/top10realestateagents/%")
       .order("timestamp", { ascending: false })
-      .limit(200);
+      .limit(500);
 
     if (agentData) {
-      const views = agentData
+      // Restrict to MAIN (www) in JS so we match get_bot_stats when host column is NULL
+      const mainData = agentData.filter(
+        r => r.host === MAIN_HOST || (r.host == null && r.url?.toLowerCase().includes('www.top10lists.us'))
+      );
+      const views = mainData
         .map(record => {
           const agent_slug = getAgentSlugFromPath(record.path);
           if (!agent_slug) return null;
@@ -140,20 +132,24 @@ export default function BotAnalyticsDashboard() {
         .filter((v): v is AgentView => v !== null);
 
       setAgentViews(views);
+      const uniqueAgents = new Set(views.map(v => v.agent_slug)).size;
+      setSummary(prev => prev ? { ...prev, unique_agents_viewed: uniqueAgents } : { total_bot_visits: 0, unique_bots: 0, unique_agents_viewed: uniqueAgents, cache_hit_rate: 0 });
     }
 
-    // List page crawls (MAIN only): neighborhood/city pages with agents shown
-    const { data: listPageData } = await supabase
+    // List page crawls (MAIN only): same host filter as get_bot_stats
+    const { data: listPageRaw } = await supabase
       .from("cloudflare_request_logs")
-      .select("list_page_type, location_display, agents_shown, bot_type, timestamp, cache_status")
+      .select("list_page_type, location_display, agents_shown, bot_type, timestamp, cache_status, host, url")
       .eq("is_bot", true)
-      .eq("host", MAIN_HOST)
       .gte("timestamp", startDate)
       .not("list_page_type", "is", null)
       .order("timestamp", { ascending: false })
       .limit(100);
 
-    if (listPageData) {
+    if (listPageRaw) {
+      const listPageData = listPageRaw.filter(
+        r => r.host === MAIN_HOST || (r.host == null && r.url?.toLowerCase().includes('www.top10lists.us'))
+      );
       setListPageViews(
         listPageData
           .filter((r): r is typeof r & { location_display: string; list_page_type: "city" | "neighborhood" } =>
@@ -269,7 +265,7 @@ export default function BotAnalyticsDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {summary?.cache_hit_rate.toFixed(1)}%
+              {(summary?.cache_hit_rate ?? 0).toFixed(1)}%
             </div>
             <p className="text-xs text-muted-foreground">
               Served from cache

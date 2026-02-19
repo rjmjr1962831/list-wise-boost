@@ -1,4 +1,6 @@
 import React from "react";
+import { AgentSourcesBlock } from "@/components/AgentSourcesBlock";
+import { formatWithParagraphs } from "@/utils/formatParagraphs";
 
 /* -------------------------------------------------
    Machine-Native Artifact Types
@@ -227,7 +229,13 @@ export default function AgentProfileDossier(props: AgentProfileDossierProps) {
               backgroundColor: "#fafafa",
             }}
           >
-            {selectionRationale}
+            <div
+              style={{ margin: 0 }}
+              className="[&>p]:mb-4 [&>p:last-child]:mb-0"
+              dangerouslySetInnerHTML={{
+                __html: formatWithParagraphs(selectionRationale) ?? `<p>${selectionRationale.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</p>`,
+              }}
+            />
           </blockquote>
         </section>
       )}
@@ -240,7 +248,9 @@ export default function AgentProfileDossier(props: AgentProfileDossierProps) {
         <ul style={{ listStyle: "none", padding: 0, margin: 0, fontSize: "13px" }}>
           {contact.phone && <li>Phone: {contact.phone}</li>}
           {contact.email && <li>Email: {contact.email}</li>}
-          {contact.website && <li>Website: {contact.website}</li>}
+          {contact.website && (
+            <li>Website: <a href={contact.website.startsWith("http") ? contact.website : `https://${contact.website}`} rel="nofollow" target="_blank">{contact.website}</a></li>
+          )}
           {!contact.phone && !contact.email && !contact.website && (
             <li style={{ color: "#666" }}>Contact data not available</li>
           )}
@@ -296,7 +306,7 @@ export default function AgentProfileDossier(props: AgentProfileDossierProps) {
             {salesVolume != null && (
               <tr>
                 <td style={{ border: "1px solid #000", padding: "0.5rem" }}>Sales Volume</td>
-                <td style={{ border: "1px solid #000", padding: "0.5rem" }}>{Number(salesVolume).toLocaleString()}</td>
+                <td style={{ border: "1px solid #000", padding: "0.5rem" }}>{Math.max(0, Number(salesVolume) - 10).toLocaleString()}+</td>
               </tr>
             )}
             {savingsSecured != null && (
@@ -435,6 +445,7 @@ export default function AgentProfileDossier(props: AgentProfileDossierProps) {
               fontSize: "12px",
               lineHeight: 1.6,
             }}
+            className="[&>p]:mb-4 [&>p:last-child]:mb-0"
             dangerouslySetInnerHTML={{ __html: synthesizedBio }}
           />
         </section>
@@ -482,6 +493,12 @@ export default function AgentProfileDossier(props: AgentProfileDossierProps) {
           </div>
         </section>
       )}
+
+      {/* Sources we use */}
+      <AgentSourcesBlock
+        className="sources-block"
+        style={{ marginTop: "1.5rem", paddingTop: "1rem", borderTop: "1px solid #ccc", fontSize: "11px", color: "#555" }}
+      />
 
       {/* Footer */}
       <footer style={{ marginTop: "2rem", paddingTop: "1rem", borderTop: "1px solid #000", fontSize: "10px", color: "#666" }}>

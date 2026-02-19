@@ -14,6 +14,7 @@ import { HomeErrorBoundary } from "@/components/HomeErrorBoundary";
 const CanonicalAgentProfile = lazy(() => import("@/pages/CanonicalAgentProfile"));
 const Privacy = lazy(() => import("@/pages/Privacy"));
 const AICompare = lazy(() => import("@/pages/AICompare"));
+const WhyAITrustsUs = lazy(() => import("@/pages/WhyAITrustsUs"));
 const TermsOfService = lazy(() => import("@/pages/TermsOfService"));
 const SMSTerms = lazy(() => import("@/pages/SMSTerms"));
 const OptInPolicy = lazy(() => import("@/pages/OptInPolicy"));
@@ -39,6 +40,7 @@ const AgentInfo = lazy(() => import("@/pages/AgentInfo"));
 const AgentLanding = lazy(() => import("@/pages/AgentLanding"));
 const AgentSetup = lazy(() => import("@/pages/AgentSetup"));
 const AgentDashboard = lazy(() => import("@/pages/agent/AgentDashboard"));
+const MagicLinkRouter = lazy(() => import("@/pages/MagicLinkRouter"));
 const AgentLogin = lazy(() => import("@/pages/AgentLogin"));
 const AgentLoginRequest = lazy(() => import("@/pages/agent/AgentLoginRequest"));
 const AgentCodeVerify = lazy(() => import("@/pages/agent/AgentCodeVerify"));
@@ -107,6 +109,7 @@ const VisibilityExpertisePage = lazy(() => import("@/pages/VisibilityExpertisePa
 const VisibilityReviewPage = lazy(() => import("@/pages/VisibilityReviewPage"));
 const VisibilitySuccessPage = lazy(() => import("@/pages/VisibilitySuccessPage"));
 const AgentLookup = lazy(() => import("@/pages/AgentLookup"));
+const CleanRoom = lazy(() => import("@/pages/CleanRoom"));
 const NeighborhoodApply = lazy(() => import("@/pages/NeighborhoodApply"));
 
 const AdminDashboard = lazy(() => import("@/pages/AdminDashboard"));
@@ -118,6 +121,7 @@ const MobilePreview = lazy(() => import("@/pages/MobilePreview"));
 const OGPreview = lazy(() => import("@/pages/OGPreview"));
 const CRM = lazy(() => import("@/pages/CRM"));
 const TestVisibilityComponents = lazy(() => import("@/pages/TestVisibilityComponents"));
+const BadgeLevelsPreview = lazy(() => import("@/pages/staging/BadgeLevelsPreview"));
 const CRMLogin = lazy(() => import("@/pages/admin/crm/CRMLogin"));
 const CRMDashboard = lazy(() => import("@/pages/admin/crm/CRMDashboard"));
 const CRMAgentList = lazy(() => import("@/pages/admin/crm/AgentList"));
@@ -159,6 +163,7 @@ export const routeManifest: RouteObject[] = [
   { path: "/og-preview", element: wrapAdmin(React.createElement(OGPreview, null)) },
   { path: "/crm", element: wrapAdmin(React.createElement(CRM, null)) },
   { path: "/test-visibility-components", element: wrapAdmin(React.createElement(TestVisibilityComponents, null)) },
+  { path: "/badge-levels-preview", element: React.createElement(BadgeLevelsPreview, null) },
   { path: "/visibility", element: React.createElement(Navigate, { to: "/visibility/coverage", replace: true }) },
   { path: "/visibility/coverage", element: React.createElement(VisibilityCoveragePage, null) },
   { path: "/visibility/expertise", element: React.createElement(VisibilityExpertisePage, null) },
@@ -166,6 +171,7 @@ export const routeManifest: RouteObject[] = [
   { path: "/visibility/success", element: React.createElement(VisibilitySuccessPage, null) },
   { path: "/migrate-data", element: React.createElement(MigrateData, null) },
   { path: "/faq", element: React.createElement(FAQ, null) },
+  { path: "/clean-room", element: React.createElement(CleanRoom, null) },
   { path: "/privacy", element: React.createElement(Privacy, null) },
   { path: "/terms", element: React.createElement(TermsOfService, null) },
   { path: "/sms-terms", element: React.createElement(SMSTerms, null) },
@@ -177,6 +183,7 @@ export const routeManifest: RouteObject[] = [
   { path: "/for-ai-systems", element: React.createElement(ForAISystems, null) },
   { path: "/transparency", element: React.createElement(Transparency, null) },
   { path: "/ai-compare", element: React.createElement(AICompare, null) },
+  { path: "/why-ai-trusts-us", element: React.createElement(WhyAITrustsUs, null) },
   { path: "/ai-liability", element: React.createElement(AILiability, null) },
   { path: "/ai-citation-whitepaper", element: React.createElement(AICitationWhitepaper, null) },
   { path: "/protocol-services", element: React.createElement(ProtocolServices, null) },
@@ -190,6 +197,7 @@ export const routeManifest: RouteObject[] = [
   { path: "/agent-setup", element: React.createElement(AgentSetup, null) },
   { path: "/agent/dashboard", element: React.createElement(AgentDashboard, null) },
   { path: "/dashboard", element: React.createElement(Navigate, { to: "/agent/dashboard", replace: true }) },
+  { path: "/dashboard/:token", element: React.createElement(MagicLinkRouter, null) },
   { path: "/agent-login", element: React.createElement(AgentLogin, null) },
   { path: "/agent/login", element: React.createElement(AgentLoginRequest, null) },
   { path: "/agent/verify", element: React.createElement(AgentCodeVerify, null) },
