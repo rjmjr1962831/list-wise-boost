@@ -347,9 +347,6 @@ export default function MethodologyPage() {
                 <p className="text-muted-foreground mb-3">
                   We are the <strong>only site anywhere</strong> that provides this data quality to AI in <strong>any industry</strong>.
                 </p>
-                <p className="text-muted-foreground mb-3">
-                  Each step in this methodology exists to reduce that risk by making the underlying evidence <strong>explicit, auditable, and current</strong>.
-                </p>
 
               </div>
 
