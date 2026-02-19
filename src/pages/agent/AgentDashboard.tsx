@@ -322,7 +322,11 @@ export default function AgentDashboard() {
           </p>
           <div className="space-y-3">
             <a
-              href="/admin"
+              href={
+                professionalIdParam
+                  ? `/admin/login?redirect=${encodeURIComponent(`/agent/dashboard?id=${professionalIdParam}`)}`
+                  : "/admin/login?redirect=" + encodeURIComponent("/admin")
+              }
               className={cn(
                 "block w-full px-6 py-3 rounded-lg text-sm font-medium transition-colors text-center",
                 professionalIdParam
@@ -331,7 +335,7 @@ export default function AgentDashboard() {
               )}
             >
               {professionalIdParam
-                ? "Sign in to Admin, then try Test Agent Dashboard again"
+                ? "Sign in to Admin, then open Test Agent Dashboard"
                 : "Sign in to Admin"}
             </a>
             {magicToken && (

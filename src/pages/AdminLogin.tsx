@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { SafeHead } from "@/components/SafeHead";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,8 @@ const AdminLogin = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [debug, setDebug] = useState<string | null>(null);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const redirectTo = searchParams.get("redirect") || "/admin";
   
   const handleAuth = async (e?: React.FormEvent) => {
     if (e) {
@@ -59,9 +61,10 @@ const AdminLogin = () => {
       }
       
       // Being in admin_users grants access (any role: admin, superadmin, owner, viewer)
-      
+      // Redirect to requested path (e.g. /agent/dashboard?id=... for test dashboard) or /admin
+      const target = redirectTo.startsWith("/") && !redirectTo.startsWith("//") ? redirectTo : "/admin";
       toast.success("Welcome back!");
-      navigate("/admin");
+      navigate(target);
     } catch (error: any) {
       toast.error(error.message || "Authentication failed");
     } finally {

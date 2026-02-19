@@ -14,16 +14,26 @@ When preparing a release, merge staging into main and push main. Never do the re
 
 ---
 
+# Admin never on production (main)
+
+**Admin login and all /admin/* routes must not be reachable on production.**
+
+- **Vercel:** `vercel.json` redirects `/admin` and `/admin/:path*` to `/404` when host is `www.top10lists.us` or `top10lists.us` (production only).
+- **React:** `AdminRouteGuard` blocks production hosts so admin UI never renders there.
+- When merging staging → main, admin code may be in the repo but must never be served on production; the redirects and guard enforce that.
+
+---
+
 # What "Push" Means
 
 - **When Robert says "push":** Push to **staging** (and any other non-production branches). **Never** push to `main` or deploy to production.
-- **Production is protected:** Push to `main` (production) **only** when Robert explicitly says **"push to production"**. No other phrase (e.g. "deploy", "ship it", "go live") authorizes touching `main` unless he uses that exact phrase.
+- **Pushing to main:** You **must** receive this exact command from Robert to push anything to `main`: **"push to main"**. No other phrase (e.g. "push to production", "deploy", "ship it", "go live") authorizes touching `main`. Only **"push to main"**.
 
 ---
 
 # Staging Push Workflow
 
-**After making code changes:** Commit and push to `origin/staging` (when Robert says "push" or requests a push).
+**After making code changes:** Always commit and push new code to `origin/staging` **without asking Robert**. Do not prompt for permission; push to staging as part of completing the work.
 
 This lets Robert see what's going on and test on the staging environment before production.
 
