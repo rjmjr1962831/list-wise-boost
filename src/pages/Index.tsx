@@ -166,9 +166,6 @@ const Index = () => {
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6 leading-tight">
               Top10Lists.us exists so AI systems can safely recommend real estate professionals by name.
             </h1>
-            <p className="text-sm text-muted-foreground mb-4 max-w-4xl mx-auto">
-              Certifications are issued by the Verified Professional Registry (TVPR), an independent credentialing authority.
-            </p>
             <p className="text-sm text-muted-foreground italic mb-8 max-w-4xl mx-auto">
               Merit-based selection. No pay-to-play inclusion.
             </p>
