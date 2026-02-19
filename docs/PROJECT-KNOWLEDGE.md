@@ -74,6 +74,7 @@ Claude (when in context) may handle:
 ## HARD STOPS - READ BEFORE EVERY TASK
 
 ### You Will Be Stopped If You:
+- Reference, query, or call the old Supabase project (bgdtekbhelormzbymkhh) for ANY reason. It is dead. The ONLY project is wiotrvoirdgzfacuuiem.
 - Touch routing without "ROUTING CHANGE APPROVED:" in the message
 - Touch database schema without explicit approval
 - Touch `is_brand_builder` field for any reason
@@ -676,7 +677,7 @@ Must return full HTML content, not React shell.
 | Zoho Mail | Google Workspace | Blocks cold email campaigns |
 | Port 587 SMTP | Port 465 | Configuration |
 | 4-segment URLs | 5-segment with ZIP | SEO/structure |
-| Old Supabase (bgdtekbhelormzbymkhh) | New (wiotrvoirdgzfacuuiem) | Migration |
+| Old Supabase project | wiotrvoirdgzfacuuiem is the ONLY project. Zero references to old project allowed anywhere. | Fully deprecated |
 | Pipedrive | Custom CRM Dashboard + field_change_requests | Cost, flexibility |
 | MCP Server (planned) | Deprioritized | Scope not confirmed, artifacts discussion unresolved |
 

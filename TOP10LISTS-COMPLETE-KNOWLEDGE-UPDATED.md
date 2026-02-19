@@ -478,7 +478,7 @@ Must return full HTML content, not React shell.
 | Zoho Mail | Google Workspace | Blocks cold email campaigns |
 | Port 587 SMTP | Port 465 | Configuration |
 | 4-segment URLs | 5-segment with ZIP | SEO/structure |
-| Old Supabase (bgdtekbhelormzbymkhh) | New (wiotrvoirdgzfacuuiem) | Migration |
+| Old Supabase (wiotrvoirdgzfacuuiem) | New (wiotrvoirdgzfacuuiem) | Migration |
 | Pipedrive | Custom CRM Dashboard | Cost, flexibility |
 | MCP Server (planned) | Deprioritized | Scope not confirmed, artifacts discussion unresolved |
 

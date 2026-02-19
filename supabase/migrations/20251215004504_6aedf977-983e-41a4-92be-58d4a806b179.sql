@@ -17,7 +17,7 @@ BEGIN
   PERFORM cron.schedule(
     'warm-cache-continuous',
     '*/10 * * * *',
-    E'SELECT net.http_post(url:=\'https://bgdtekbhelormzbymkhh.supabase.co/functions/v1/warm-cache\', headers:=\'{"Content-Type": "application/json", "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJnZHRla2JoZWxvcm16Ynlta2hoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1MjMxOTEsImV4cCI6MjA3ODA5OTE5MX0.pCRa4kAOE2tKzs7JNkoPtfT24sq-50KG7Eopz1-8oCk"}\'::jsonb, body:=\'{}\'::jsonb) AS request_id;'
+    E'SELECT net.http_post(url:=\'https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/warm-cache\', headers:=\'{"Content-Type": "application/json", "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indpb3Rydm9pcmRnemZhY3V1aWVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk4MTcwNzcsImV4cCI6MjA4NTM5MzA3N30.BZAli-r81llqnq9xStghKNqK8MnrSNQMOIqkkE09mwI"}\'::jsonb, body:=\'{}\'::jsonb) AS request_id;'
   );
 END;
 $function$

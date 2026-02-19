@@ -16,7 +16,7 @@ SELECT cron.schedule(
   '0 */6 * * *',  -- Every 6 hours
   $$
   SELECT net.http_post(
-    url := 'https://bgdtekbhelormzbymkhh.supabase.co/functions/v1/warm-top-markets',
+    url := 'https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/warm-top-markets',
     headers := jsonb_build_object(
       'Content-Type', 'application/json',
       'Authorization', 'Bearer ' || current_setting('app.service_role_key')

@@ -9,7 +9,7 @@ const corsHeaders = {
 
 const ADMIN_EMAIL = Deno.env.get("ADMIN_EMAIL") || "robert@top10lists.us";
 const BASE_URL = "https://www.top10lists.us";
-const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || "https://bgdtekbhelormzbymkhh.supabase.co";
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || "https://wiotrvoirdgzfacuuiem.supabase.co";
 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY") || "";
 
 // Test URLs for GEO monitoring

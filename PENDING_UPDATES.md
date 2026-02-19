@@ -241,7 +241,7 @@ if (/\d{4}$/.test(thirdSegment)) {
 
 **Query Used:**
 ```bash
-curl -X POST "https://bgdtekbhelormzbymkhh.supabase.co/functions/v1/enrichment-api?action=query" \
+curl -X POST "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/enrichment-api?action=query" \
   -H "X-Enrichment-Key: t10l_enrich_0448c4870d72ed90fd43171123fd0e44558f019a2b5807d1b297604dad6b235a" \
   -d '{"table":"professionals","select":"id","filters":[{"field":"state_slug","operator":"eq","value":"STATE"},{"field":"active","operator":"eq","value":true}],"limit":1000}'
 ```

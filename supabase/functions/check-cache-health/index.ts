@@ -369,7 +369,7 @@ async function sendHealthEmail(results: HealthCheckResult[], overallHealthy: boo
     `).join("")}
   ` : "";
 
-  const supabaseUrl = Deno.env.get('SUPABASE_URL') || 'https://bgdtekbhelormzbymkhh.supabase.co';
+  const supabaseUrl = Deno.env.get('SUPABASE_URL') || 'https://wiotrvoirdgzfacuuiem.supabase.co';
   
   await client.send({
     from: SMTP_FROM_EMAIL!,

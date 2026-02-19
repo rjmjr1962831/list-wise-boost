@@ -15,7 +15,7 @@ Automatically warms the cache for the **top 25% of neighborhoods** in Arizona an
 Test the function manually:
 
 ```bash
-curl -X POST https://bgdtekbhelormzbymkhh.supabase.co/functions/v1/warm-top-markets \
+curl -X POST https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/warm-top-markets \
   -H "Authorization: Bearer YOUR_SUPABASE_ANON_KEY" \
   -H "Content-Type: application/json" \
   -d '{

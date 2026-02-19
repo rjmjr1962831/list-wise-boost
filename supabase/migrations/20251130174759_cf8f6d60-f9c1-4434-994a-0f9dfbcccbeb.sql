@@ -31,7 +31,7 @@ BEGIN
 
   -- Fallback to edge function environment
   IF supabase_url IS NULL THEN
-    supabase_url := 'https://bgdtekbhelormzbymkhh.supabase.co';
+    supabase_url := 'https://wiotrvoirdgzfacuuiem.supabase.co';
   END IF;
 
   -- Make async HTTP request to sync edge function
