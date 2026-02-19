@@ -164,9 +164,24 @@ const Index = () => {
         <section className="py-20 md:py-32 px-4">
           <div className="max-w-5xl mx-auto text-center">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6 leading-tight">
-              The Rules of Real Estate Search Have Changed.
+              Top10Lists.us exists so AI systems can safely recommend real estate professionals by name.
             </h1>
-            <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-4xl mx-auto leading-relaxed">
+            <p className="text-sm text-muted-foreground mb-4 max-w-4xl mx-auto">
+              Certifications are issued by the Verified Professional Registry (TVPR), an independent credentialing authority.
+            </p>
+            <p className="text-sm text-muted-foreground italic mb-8 max-w-4xl mx-auto">
+              Merit-based selection. No pay-to-play inclusion.
+            </p>
+          </div>
+        </section>
+
+        {/* SECTION 1B: RULES HAVE CHANGED */}
+        <section className="py-16 px-4">
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
+              The Rules of Real Estate Search Have Changed.
+            </h2>
+            <p className="text-lg text-muted-foreground leading-relaxed">
               The old game of buying keywords and "premier agent" status and hoping for "blue links" or referrals is over. Your prospects have stopped scrolling through pages of ads and started asking AI for the answer. In 2026, if you aren't optimized for this shift, you don't just lose rank&#8212;you become invisible.
             </p>
           </div>
