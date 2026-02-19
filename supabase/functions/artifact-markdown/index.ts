@@ -31,12 +31,12 @@ const LICENSING_AGENCY: Record<string, string> = {
 };
 
 const STATE_LOOKUP_URL: Record<string, string> = {
-  arizona: "https://services.azre.gov/publicdatabase/SearchLicensee.aspx",
+  arizona: "https://services.azre.gov/PdbWeb/IndividualLicense/SearchIndividualLicenses",
   california: "https://www2.dre.ca.gov/PublicASP/pplinfo.asp",
-  texas: "https://www.trec.texas.gov/apps/license-holder-search",
+  texas: "https://www.trec.texas.gov/apps/license-holder-search/",
   florida: "https://www.myfloridalicense.com/wl11.asp",
   "new-york": "https://appext20.dos.ny.gov/nydos/selSearchType.do",
-  colorado: "https://apps.colorado.gov/dora/licensing/Lookup/LicenseLookup.aspx",
+  colorado: "https://apps2.colorado.gov/dre/licensing/Lookup/LicenseLookup.aspx",
 };
 
 // Cache TTLs by tier (seconds)
