@@ -78,17 +78,61 @@ export default function AgentDashboard() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [authStatus, setAuthStatus] = useState("Loading...");
 
+  const professionalIdParam = searchParams.get("id");
+
   useEffect(() => {
     window.scrollTo(0, 0);
 
     if (magicToken) {
       // Magic link flow: create session from dashboard_token
       handleMagicToken(magicToken);
+    } else if (professionalIdParam) {
+      // Admin: open test agent dashboard by professional id
+      handleAdminOpenDashboard(professionalIdParam);
     } else {
       // Normal flow: validate existing session
       validateSessionAndLoad();
     }
   }, []);
+
+  const handleAdminOpenDashboard = async (professionalId: string) => {
+    try {
+      setAuthStatus("Checking admin access...");
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setAuthStatus("Sign in to the admin panel first, then use the Test Agent Dashboard button.");
+        setLoading(false);
+        return;
+      }
+      const { data: roles } = await supabase
+        .from("admin_users")
+        .select("role")
+        .eq("id", user.id);
+      if (!roles?.some((r: { role: string }) => r.role === "admin" || r.role === "superadmin")) {
+        setAuthStatus("Admin access required to open a test agent dashboard.");
+        setLoading(false);
+        return;
+      }
+      setAuthStatus("Opening test agent dashboard...");
+      const { data: sessData, error: sessErr } =
+        await supabase.functions.invoke("create-session-from-token", {
+          body: { token: professionalId },
+        });
+      if (sessErr || !sessData?.success) {
+        setAuthStatus(sessData?.error || "Could not create session for this agent. Check that the agent is approved.");
+        setLoading(false);
+        return;
+      }
+      localStorage.setItem("agent_session_token", sessData.sessionToken);
+      setSessionToken(sessData.sessionToken);
+      setSearchParams({}, { replace: true });
+      await loadProfile(sessData.sessionToken);
+    } catch (err) {
+      console.error("[Dashboard] Admin open error:", err);
+      setAuthStatus("Something went wrong. Try again from the admin panel.");
+      setLoading(false);
+    }
+  };
 
   const handleMagicToken = async (dashboardToken: string) => {
     try {
@@ -277,6 +321,19 @@ export default function AgentDashboard() {
             {authStatus !== "Loading..." ? authStatus : "To access your dashboard, please use the link from your most recent Top10Lists email. Each link creates a secure session automatically."}
           </p>
           <div className="space-y-3">
+            <a
+              href="/admin"
+              className={cn(
+                "block w-full px-6 py-3 rounded-lg text-sm font-medium transition-colors text-center",
+                professionalIdParam
+                  ? "bg-primary text-white hover:bg-primary/90"
+                  : "border border-primary text-primary hover:bg-primary/10"
+              )}
+            >
+              {professionalIdParam
+                ? "Sign in to Admin, then try Test Agent Dashboard again"
+                : "Sign in to Admin"}
+            </a>
             {magicToken && (
               <button
                 onClick={() => handleMagicToken(magicToken)}
@@ -308,6 +365,7 @@ export default function AgentDashboard() {
       <SafeHead>
         <title>Agent Dashboard | Top10Lists.us</title>
         <meta name="robots" content="noindex, nofollow" />
+        <meta name="googlebot" content="noindex, nofollow" />
       </SafeHead>
 
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
