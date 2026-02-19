@@ -184,7 +184,7 @@ export default function Step1Intro() {
                   Once you do that, we will issue a <strong>credential</strong> to you that will help you build your <strong>"web of trust"</strong> (we'll get to that later), which is key to your chances of being recommended by an AI when asked.
                 </p>
                 <p>
-                  While we do have paid products, your certification and trust artifact are <strong>free forever</strong> and there is <strong>no obligation</strong> to purchase anything from us.
+                  While we do have paid products, your certification and trust artifact are <strong>free for as long as you are active and meet our qualification standards</strong>, and there is <strong>no obligation</strong> to purchase anything from us.
                 </p>
                 <p>
                   This will take about 5 minutes.
