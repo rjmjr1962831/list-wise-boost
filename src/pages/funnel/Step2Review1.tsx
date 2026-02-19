@@ -21,6 +21,12 @@ interface Professional {
   license_number: string | null;
   years_experience: number | null;
   profile_link: string | null;
+  address: string | null;
+  business_address: { address?: string; name?: string; phone?: string } | null;
+  business_city: string | null;
+  business_state: string | null;
+  business_zip: string | null;
+  zip_code: string | null;
 }
 
 export default function Step2Review1() {
@@ -39,6 +45,10 @@ export default function Step2Review1() {
     phone_other: '',
     phone_other_publish: false,
     company: '',
+    street: '',
+    city: '',
+    state: '',
+    zip: '',
   });
 
   useEffect(() => {
@@ -54,7 +64,7 @@ export default function Step2Review1() {
     try {
       const { data, error } = await supabase
         .from('professionals')
-        .select('id, name, email, phone, phone_numbers, company, website, license_number, years_experience, profile_link')
+        .select('id, name, email, phone, phone_numbers, company, website, license_number, years_experience, profile_link, address, business_address, business_city, business_state, business_zip, zip_code')
         .eq('verification_token', token)
         .single();
 
@@ -88,6 +98,38 @@ export default function Step2Review1() {
         mobile = data.phone;
       }
 
+      // Parse address fields
+      let street = data.address || '';
+      let city = data.business_city || '';
+      let state = data.business_state || '';
+      let zip = data.business_zip || data.zip_code || '';
+
+      // If individual fields are empty, try to parse from business_address JSONB
+      const ba = data.business_address as any;
+      if (ba?.address && (!street || !city)) {
+        const parts = ba.address.split(',').map((s: string) => s.trim());
+        if (parts.length >= 3) {
+          // Format: "street, city, state zip" or "street, city, state, zip"
+          if (!street) street = parts[0];
+          if (!city) city = parts[1];
+          // The remaining parts contain state and zip
+          const remainder = parts.slice(2).join(',').trim();
+          // Try to extract state code and zip
+          const stateZipMatch = remainder.match(/^([A-Z]{2})\s*,?\s*(\d{5}(?:-\d{4})?)$/);
+          if (stateZipMatch) {
+            if (!state) state = stateZipMatch[1];
+            if (!zip) zip = stateZipMatch[2];
+          } else {
+            // Maybe "CA,90210" or "CA 90210" or just "CA"
+            const altMatch = remainder.match(/^([A-Z]{2})\s*,?\s*(\d{5})?/);
+            if (altMatch) {
+              if (!state) state = altMatch[1];
+              if (!zip && altMatch[2]) zip = altMatch[2];
+            }
+          }
+        }
+      }
+
       setFormData({
         email: data.email || '',
         phone_mobile: mobile,
@@ -97,6 +139,10 @@ export default function Step2Review1() {
         phone_other: other,
         phone_other_publish: otherPub,
         company: data.company || '',
+        street,
+        city,
+        state,
+        zip,
       });
     } catch (err) {
       navigate('/404');
@@ -124,6 +170,11 @@ export default function Step2Review1() {
           phone: primaryPhone,
           phone_numbers: phoneNumbers,
           company: formData.company,
+          address: formData.street || null,
+          business_city: formData.city || null,
+          business_state: formData.state || null,
+          business_zip: formData.zip || null,
+          zip_code: formData.zip || null,
         })
         .eq('id', professional.id);
 
@@ -290,6 +341,54 @@ export default function Step2Review1() {
                     onChange={(e) => setFormData({ ...formData, company: e.target.value })}
                     placeholder="Your company name"
                   />
+                </div>
+
+                {/* Business Address */}
+                <div className="space-y-3">
+                  <Label>Business Address</Label>
+                  <p className="text-xs text-muted-foreground">You can edit these fields directly.</p>
+
+                  <div>
+                    <Label htmlFor="street" className="text-xs text-muted-foreground">Street Address</Label>
+                    <Input
+                      id="street"
+                      value={formData.street}
+                      onChange={(e) => setFormData({ ...formData, street: e.target.value })}
+                      placeholder="123 Main St, Suite 100"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-5 gap-2">
+                    <div className="col-span-2">
+                      <Label htmlFor="city" className="text-xs text-muted-foreground">City</Label>
+                      <Input
+                        id="city"
+                        value={formData.city}
+                        onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                        placeholder="Phoenix"
+                      />
+                    </div>
+                    <div className="col-span-1">
+                      <Label htmlFor="state" className="text-xs text-muted-foreground">State</Label>
+                      <Input
+                        id="state"
+                        value={formData.state}
+                        onChange={(e) => setFormData({ ...formData, state: e.target.value.toUpperCase().slice(0, 2) })}
+                        placeholder="AZ"
+                        maxLength={2}
+                      />
+                    </div>
+                    <div className="col-span-2">
+                      <Label htmlFor="zip" className="text-xs text-muted-foreground">ZIP Code</Label>
+                      <Input
+                        id="zip"
+                        value={formData.zip}
+                        onChange={(e) => setFormData({ ...formData, zip: e.target.value })}
+                        placeholder="85001"
+                        maxLength={10}
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
 

@@ -22,6 +22,9 @@ interface Professional {
   title?: string | null;
   headline?: string | null;
   address?: string | null;
+  business_city?: string | null;
+  business_state?: string | null;
+  business_zip?: string | null;
   zip_code?: string | null;
   specialty?: string[] | null;
   zillow_profile_url?: string | null;
@@ -198,11 +201,14 @@ export default function Step4ReviewFinal() {
                   </div>
                   <div className="flex gap-2">
                     <dt className="font-medium w-32">Address:</dt>
-                    <dd>{professional.address || 'Not provided'}</dd>
-                  </div>
-                  <div className="flex gap-2">
-                    <dt className="font-medium w-32">ZIP Code:</dt>
-                    <dd>{professional.zip_code || 'Not provided'}</dd>
+                    <dd>
+                      {professional.address || professional.business_city
+                        ? [
+                            professional.address,
+                            [professional.business_city, professional.business_state, professional.business_zip || professional.zip_code].filter(Boolean).join(', ')
+                          ].filter(Boolean).join(', ')
+                        : 'Not provided'}
+                    </dd>
                   </div>
                   <div className="flex gap-2">
                     <dt className="font-medium w-32">Specialties:</dt>

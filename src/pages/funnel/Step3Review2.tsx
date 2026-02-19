@@ -42,8 +42,6 @@ interface Professional {
   license_number: string | null;
   years_experience: number | null;
   total_sales: number | null;
-  address: string | null;
-  zip_code: string | null;
   specialty: string[] | null;
   zillow_profile_url: string | null;
   sidebar_video_url: string | null;
@@ -75,8 +73,6 @@ export default function Step3Review2() {
   const [formData, setFormData] = useState({
     website: '',
     title: '',
-    address: '',
-    zip_code: '',
     zillow_profile_url: '',
     sidebar_video_url: '',
     social_facebook: '',
@@ -138,7 +134,7 @@ export default function Step3Review2() {
     try {
       const { data, error } = await supabase
         .from('professionals')
-        .select('id, name, email, title, headline, company, business_name, website, license_number, years_experience, total_sales, address, zip_code, specialty, zillow_profile_url, sidebar_video_url, review_stars_rating, num_total_reviews, social_facebook, social_instagram, social_linkedin, social_twitter, social_tiktok, image_url, agent_sales_stats, average_value_3yr')
+        .select('id, name, email, title, headline, company, business_name, website, license_number, years_experience, total_sales, specialty, zillow_profile_url, sidebar_video_url, review_stars_rating, num_total_reviews, social_facebook, social_instagram, social_linkedin, social_twitter, social_tiktok, image_url, agent_sales_stats, average_value_3yr')
         .eq('verification_token', token)
         .single();
 
@@ -152,8 +148,6 @@ export default function Step3Review2() {
       setFormData({
         website: data.website || '',
         title: data.title || '',
-        address: data.address || '',
-        zip_code: data.zip_code || '',
         zillow_profile_url: data.zillow_profile_url || '',
         sidebar_video_url: data.sidebar_video_url || '',
         social_facebook: data.social_facebook || '',
@@ -180,8 +174,6 @@ export default function Step3Review2() {
         .update({
           website: formData.website || null,
           title: formData.title || null,
-          address: formData.address || null,
-          zip_code: formData.zip_code || null,
           specialty: selectedSpecialties.length ? selectedSpecialties : null,
           zillow_profile_url: formData.zillow_profile_url || null,
           sidebar_video_url: formData.sidebar_video_url || null,
@@ -458,28 +450,6 @@ export default function Step3Review2() {
                     value={formData.title}
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                     placeholder="Your professional title"
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="address">Address</Label>
-                  <p className="text-xs text-muted-foreground mb-1">You can edit this field directly.</p>
-                  <Input
-                    id="address"
-                    value={formData.address}
-                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                    placeholder="Business address"
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="zip_code">ZIP Code</Label>
-                  <p className="text-xs text-muted-foreground mb-1">You can edit this field directly.</p>
-                  <Input
-                    id="zip_code"
-                    value={formData.zip_code}
-                    onChange={(e) => setFormData({ ...formData, zip_code: e.target.value })}
-                    placeholder="ZIP"
                   />
                 </div>
 
