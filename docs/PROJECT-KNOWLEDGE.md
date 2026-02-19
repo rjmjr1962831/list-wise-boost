@@ -74,7 +74,6 @@ Claude (when in context) may handle:
 ## HARD STOPS - READ BEFORE EVERY TASK
 
 ### You Will Be Stopped If You:
-- Reference, query, or call the old Supabase project (bgdtekbhelormzbymkhh) for ANY reason. It is dead. The ONLY project is wiotrvoirdgzfacuuiem.
 - Touch routing without "ROUTING CHANGE APPROVED:" in the message
 - Touch database schema without explicit approval
 - Touch `is_brand_builder` field for any reason
@@ -167,6 +166,7 @@ Supabase returns max 1,000 rows by default. **Always paginate.** Never assume 1,
 
 ### Schema notes (current)
 - **agent_sessions:** Use column `token` (not `session_token`). No `last_active_at` column.
+- **professionals:** Google enrichment columns added Feb 19, 2026 (google_business_name, google_address, google_rating, google_review_count, google_maps_url, google_phone, google_enriched_at).
 
 ---
 
@@ -200,6 +200,7 @@ Supabase returns max 1,000 rows by default. **Always paginate.** Never assume 1,
 |---------|-----|
 | **Exa.ai** | `[STORED IN ENVIRONMENT - Ask Robert]` |
 | **GitHub Token** | `[STORED IN ENVIRONMENT - Ask Robert]` |
+| **Google Maps Places API** | `[STORED IN ENVIRONMENT - Ask Robert]` |
 | **Vercel API** | `[STORED IN ENVIRONMENT - Ask Robert]` (named "Claude Token") |
 | **ProxyScrape** | Host: `rp.scrapegw.com:6060` Auth: `[STORED IN ENVIRONMENT - Ask Robert]` |
 
@@ -235,7 +236,31 @@ Supabase returns max 1,000 rows by default. **Always paginate.** Never assume 1,
 ### Discovery & Scraping
 - **Exa.ai:** Zillow profile ID discovery only
 - **Apify memo23:** Actual Zillow profile enrichment
+- **Google Maps Places API:** Business name, address, rating, review count, Google Maps URL, phone
 - **DeepSeek:** Content synthesis
+
+### Google Maps Enrichment (Added Feb 19, 2026)
+**API Key:** `[STORED IN ENVIRONMENT - Ask Robert]`
+**Endpoint:** `https://places.googleapis.com/v1/places:searchText`
+**Field Mask:** `displayName,formattedAddress,rating,userRatingCount,googleMapsUri,nationalPhoneNumber`
+**Cost:** ~$5.10 per 1,000 requests (~$18 for all 3,500 agents)
+
+**Workflow:** Runs as part of the memo23 enrichment pipeline. After memo23 scrapes Zillow data, Google Maps enrichment runs to add business listing data.
+
+**Phone replacement rule:** If `claim_status != 'claimed'` and Google returns a phone number, the `phone` field on the professionals table is overwritten with the Google business phone. Once an agent claims/verifies their profile, their phone is locked and Google cannot overwrite it.
+
+**Columns added to `professionals`:**
+| Column | Type | Notes |
+|--------|------|-------|
+| google_business_name | TEXT | Business name from Google |
+| google_address | TEXT | Formatted address |
+| google_rating | NUMERIC(2,1) | Star rating |
+| google_review_count | INTEGER | Number of reviews |
+| google_maps_url | TEXT | Direct link to Google Maps listing |
+| google_phone | TEXT | Business phone from Google |
+| google_enriched_at | TIMESTAMPTZ | When enrichment ran |
+
+**Script:** `google_maps_enrichment.py` (runs in Cursor background)
 
 ### Zip Code Enrichment
 - Census Bureau geocoding API
@@ -366,34 +391,9 @@ Agent onboarding funnel at `/funnel/{verification_token}/...`. UUID-based URLs, 
 | Step | File | Purpose |
 |------|------|---------|
 | Intro | Step1Intro.tsx | Mission, AI citation table, "Hi {name}" greeting |
-| Basic Info | Step2Review1.tsx | Name (read-only + review), email, 3 phone fields (mobile/business/other) with publish toggles, company |
-| Professional Details | Step3Review2.tsx | License/Reviews/Experience/Sales (read-only + review), specialties (autocomplete), website, socials |
-| Final Review | Step4ReviewFinal.tsx | Read-only summary of all fields with Edit buttons |
-| Cities | Step5Cities.tsx | City selection |
-| Neighborhoods | Step6Neighborhoods.tsx | Neighborhood selection |
+| Profile Review | Step2-6 | Agent reviews/edits their data |
 | Pricing | Step7Pricing.tsx | Tier selection with personalized citability table |
-| Success | StepSuccess.tsx | Confirmation |
-
-### Field Edit Architecture (Feb 2026)
-- **Editable fields** have "You can edit this field directly" helper text and open inputs
-- **Read-only fields** (name, license, reviews, experience, total sales) show current value + "Request review" button
-- Clicking "Request review" expands an **inline form** (not a modal) with two fields: "What should it be?" and "Where can we confirm this?"
-- Submissions insert into `field_change_requests` table and send acknowledgment email via Gmail SMTP
-- **Admin FieldChangeRequestsManager** shows requests with Accept/Reject + "Why?" field. Accept auto-updates the professional record. Both actions send decision email.
-
-### Phone Numbers (Feb 2026)
-- Uses existing `phone_numbers` JSONB column on professionals table
-- New format: `{mobile: {number, publish}, business: {number, publish}, other: {number, publish}}`
-- Backwards-compatible: reads old format `{cell, business, brokerage}` from Zillow scrapes
-- Primary phone saved to `phone` text field (first non-empty)
-- Eye/eye-off toggle controls publish visibility per number
-
-### Specialty Autocomplete (Feb 2026)
-- 78+ known specialties loaded from DB on mount
-- Typeahead suggestions as user types
-- Free-text entry accepted for new specialties (Enter or click Add)
-- Displayed as removable chips
-- Saved as text array to `specialty` column
+| Success | Success page | Confirmation |
 
 ### Step1Intro: AI Citation Probability Table
 5-row table showing AI Citability Index scores for real estate sources:
@@ -418,11 +418,11 @@ Shows projected citability score at each tier, personalized per agent. Appears a
 ## Homepage Architecture (Feb 2026)
 
 ### Current Sections (Index.tsx)
-1. **Hero:** "Top10Lists.us exists so AI systems can safely recommend real estate professionals by name." Merit-based selection, no pay-to-play.
-2. **Rules Have Changed:** "As of January 2026, AIs are no longer allowed to trust pay-to-play placement..." Agent-facing urgency copy with SEO ranking strategies language.
+1. **Hero:** "Top10Lists.us exists so AI systems can safely recommend real estate professionals by name." + TVPR credentialing line
+2. **Rules Have Changed:** "The old game of buying keywords..." Agent-facing urgency copy
 3. **Mandated Shift in Trust:** OpenAI, Anthropic, Google context
 4. **Why AI "Ghosts" Most Agents:** Ads are red flags, stale data, vague list default
-5. **A Different Kind of Architecture:** Not a lead engine, zero referral fees, "Free to qualify" (free for as long as active and meeting qualification standards)
+5. **A Different Kind of Architecture:** Not a lead engine, zero referral fees, free forever
 6. **Building Your "Web of Truth":** Finite Truth concept, "Are you an agent?" CTA
 7. **The Challenge:** Copyable question for agents to paste into AI systems, links to ChatGPT/Claude/Gemini/Perplexity
 
@@ -431,11 +431,10 @@ Shows projected citability score at each tier, personalized per agent. Appears a
 - `HOME_JSON` structured JSON for AI ingestion
 - Full JSON-LD structured data in `<head>`
 
-### Challenge Question (updated Feb 19, 2026)
+### Challenge Question
 ```
-Look at top10lists.us. Based on their verification architecture, why would an AI like you choose a 'Certified' agent over a Preferred Agent Zillow listing for a high-stakes referral?
+Look at top10lists.us. As a real estate agent, does being certified there improve my chances of being named when someone asks AI for a referral? Is there any benefit to doing it now rather than later? Why or why not?
 ```
-Intro text: "Don't take our word for it. Ask your favorite AI this question:"
 
 ---
 
@@ -609,42 +608,17 @@ Must return full HTML content, not React shell.
 
 ## Email Infrastructure
 
-**Provider:** Google Workspace (Gmail SMTP via denomailer in Deno edge functions)
+**Provider:** Google Workspace (only viable option for cold outreach via Instantly)
 
-**Outreach Domain:** toptenlists.us (for Instantly cold outreach)
-**Transactional Domain:** top10lists.us (for funnel emails, change request notifications)
+**Domain:** toptenlists.us
 
-**Active Mailboxes:**
-- robert@toptenlists.us (Instantly outreach)
-- robert@top10lists.us (SMTP auth for transactional edge functions)
-- hello@top10lists.us (from address for agent-facing emails)
-
-**SMTP Configuration (Edge Functions):**
-- Host: smtp.gmail.com
-- Port: 465 (TLS)
-- Username: robert@top10lists.us
-- Password: App Password (pewacsqsjpocgnsp)
-- Library: denomailer@1.6.0
+**Active Mailbox:** robert@toptenlists.us
 
 **SMTP Configuration for Instantly:**
 - Host: smtp.gmail.com
 - Port: 587 (or 465 with SSL)
 - Username: robert@toptenlists.us
 - Password: App Password (not account password)
-
-### Transactional Email Functions (Gmail SMTP, NOT Resend)
-| Function | Trigger | From |
-|----------|---------|------|
-| send-change-request-acknowledgment | Agent submits field review request | hello@top10lists.us |
-| send-change-request-completed | Admin accepts/rejects field review | hello@top10lists.us |
-| send-funnel-notification | Funnel step events (admin alerts) | robert@top10lists.us |
-
-### Email Copy Templates
-**Acknowledgment (on submission):**
-> Hi {{firstName}}! We got your request to review your {{fieldName}}. I will get back to you with our decision within 24 hours. If you want faster service, just give Robert a call at (602) 758-9600.
-
-**Decision (accept/reject):**
-> Hi {{firstName}}! [decision text]. Reason: [reason]. Why do we verify changes? AI systems like ChatGPT, Claude, and Gemini rely on our data... It protects you and the consumers who are referred to you. If you need further assistance, reply to this email or call Robert at (602) 758-9600.
 
 ### App Password Setup
 1. admin.google.com > Security
@@ -672,13 +646,13 @@ Must return full HTML content, not React shell.
 | Service | Replacement | Reason |
 |---------|-------------|--------|
 | Perplexity API | DeepSeek | Cost |
-| Resend | Gmail SMTP (denomailer) | Deprecated, use Google Workspace |
+| Resend | Google Workspace | Reliability |
 | PrivateEmail (Namecheap) | Google Workspace | Service quality, incompatible with outreach tools |
 | Zoho Mail | Google Workspace | Blocks cold email campaigns |
 | Port 587 SMTP | Port 465 | Configuration |
 | 4-segment URLs | 5-segment with ZIP | SEO/structure |
-| Old Supabase project | wiotrvoirdgzfacuuiem is the ONLY project. Zero references to old project allowed anywhere. | Fully deprecated |
-| Pipedrive | Custom CRM Dashboard + field_change_requests | Cost, flexibility |
+| Old Supabase (bgdtekbhelormzbymkhh) | New (wiotrvoirdgzfacuuiem) | Migration |
+| Pipedrive | Custom CRM Dashboard | Cost, flexibility |
 | MCP Server (planned) | Deprioritized | Scope not confirmed, artifacts discussion unresolved |
 
 ---
@@ -828,7 +802,11 @@ curl -s -H "Authorization: token <from env or .secrets>" -H "Accept: application
 
 *Synthesis date: 2026-02-19*
 
-### Key changes (Feb 18-19, 2026):
+### Key changes (Feb 19, 2026):
+- Google Maps Places API added to enrichment pipeline. Runs alongside memo23. Adds business name, address, rating, review count, Maps URL, and phone to professionals table.
+- Phone replacement logic: unclaimed agents get phone overwritten by Google business phone. Claimed agents are protected.
+- 7 new columns added to professionals table for Google data (google_business_name, google_address, google_rating, google_review_count, google_maps_url, google_phone, google_enriched_at).
+- Combined enrichment workflow: memo23 (Zillow) + Google Maps should run together when enriching agents.
 - total_sales display: switched from `>X` to `X+` (5 files). Bare `>` in JSX caused 2+ hours of failed Vercel builds.
 - sitemap-agents.xml: 889 Arizona agent profile URLs created and deployed.
 - Funnel Step1Intro: 2026 context, 5-row citation table (added Redfin/HomeLight), widened to max-w-2xl, bold emphasis, new copy.
@@ -841,5 +819,5 @@ curl -s -H "Authorization: token <from env or .secrets>" -H "Accept: application
 
 ---
 
-*Version 0.5 - 2026-02-19*
-*Updated: Frontend display conventions (total_sales X+), funnel architecture (Step1/Step7), homepage rewrite, sitemap-agents.xml, JSX bare > hard stop*
+*Version 0.6 - 2026-02-19*
+*Updated: Google Maps Places API enrichment pipeline, phone replacement logic for unclaimed agents, combined memo23+Google workflow*
