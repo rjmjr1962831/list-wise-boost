@@ -189,7 +189,7 @@ export default function Step3Review2() {
               </div>
               <CardTitle>Review your profile fields</CardTitle>
               <p className="text-sm text-muted-foreground">
-                Update anything that's incorrect. Your changes save when you continue.
+                Update anything that's incorrect. Fields you can edit are open inputs. Your changes save when you continue.
               </p>
             </CardHeader>
             <CardContent className="space-y-6">
