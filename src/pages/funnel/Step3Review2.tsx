@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loader2, ArrowRight, ArrowLeft, HelpCircle, X, Plus } from 'lucide-react';
 import { toast } from 'sonner';
+import InlineReviewForm from '@/components/funnel/InlineReviewForm';
 
 // Known specialties for autocomplete - kept in sync with DB
 const KNOWN_SPECIALTIES = [
@@ -66,6 +67,7 @@ export default function Step3Review2() {
   const [allSpecialties, setAllSpecialties] = useState<string[]>(KNOWN_SPECIALTIES);
   const [specialtyInput, setSpecialtyInput] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [reviewField, setReviewField] = useState<string | null>(null);
   const [selectedSpecialties, setSelectedSpecialties] = useState<string[]>([]);
   const suggestionsRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -202,9 +204,7 @@ export default function Step3Review2() {
     }
   };
 
-  const handleRequestReview = (field: string) => {
-    toast.info(`Review request for ${field} will be sent to our team. Call (602) 758-9600 to discuss.`);
-  };
+  // Review requests handled by InlineReviewForm component
 
   const getVolume = () => {
     if (!professional) return null;
@@ -287,18 +287,28 @@ export default function Step3Review2() {
                     <div className="flex-1 rounded-md border bg-muted/50 px-3 py-2 text-sm font-mono">
                       {professional?.license_number || 'Not provided'}
                     </div>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleRequestReview('license number')}
-                      className="shrink-0"
-                    >
-                      <HelpCircle className="h-4 w-4 mr-1" />
-                      Request review
-                    </Button>
+                    {reviewField !== 'license_number' && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setReviewField('license_number')}
+                        className="shrink-0"
+                      >
+                        <HelpCircle className="h-4 w-4 mr-1" />
+                        Request review
+                      </Button>
+                    )}
                   </div>
                   <p className="text-xs text-muted-foreground">To change your license number, request a review.</p>
+                  {reviewField === 'license_number' && professional && (
+                    <InlineReviewForm
+                      fieldName="License Number"
+                      currentValue={professional.license_number || ''}
+                      professionalId={professional.id}
+                      onClose={() => setReviewField(null)}
+                    />
+                  )}
                 </div>
 
                 {/* Reviews: read-only with request review */}
@@ -308,18 +318,28 @@ export default function Step3Review2() {
                     <div className="flex-1 rounded-md border bg-muted/50 px-3 py-2 text-sm">
                       {professional?.review_stars_rating ?? '—'} stars · {professional?.num_total_reviews?.toLocaleString() ?? 0} reviews
                     </div>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleRequestReview('reviews')}
-                      className="shrink-0"
-                    >
-                      <HelpCircle className="h-4 w-4 mr-1" />
-                      Request review
-                    </Button>
+                    {reviewField !== 'reviews' && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setReviewField('reviews')}
+                        className="shrink-0"
+                      >
+                        <HelpCircle className="h-4 w-4 mr-1" />
+                        Request review
+                      </Button>
+                    )}
                   </div>
                   <p className="text-xs text-muted-foreground">To change your review data, request a review.</p>
+                  {reviewField === 'reviews' && professional && (
+                    <InlineReviewForm
+                      fieldName="Reviews"
+                      currentValue={`${professional.review_stars_rating ?? '—'} stars, ${professional.num_total_reviews?.toLocaleString() ?? 0} reviews`}
+                      professionalId={professional.id}
+                      onClose={() => setReviewField(null)}
+                    />
+                  )}
                 </div>
 
                 <div className="flex flex-col gap-2">
@@ -328,18 +348,28 @@ export default function Step3Review2() {
                     <div className="flex-1 rounded-md border bg-muted/50 px-3 py-2 text-sm">
                       {professional?.years_experience != null ? `${professional.years_experience} years` : 'Not provided'}
                     </div>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleRequestReview('years of experience')}
-                      className="shrink-0"
-                    >
-                      <HelpCircle className="h-4 w-4 mr-1" />
-                      Request review
-                    </Button>
+                    {reviewField !== 'years_experience' && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setReviewField('years_experience')}
+                        className="shrink-0"
+                      >
+                        <HelpCircle className="h-4 w-4 mr-1" />
+                        Request review
+                      </Button>
+                    )}
                   </div>
                   <p className="text-xs text-muted-foreground">To change your years of experience, request a review.</p>
+                  {reviewField === 'years_experience' && professional && (
+                    <InlineReviewForm
+                      fieldName="Years of Experience"
+                      currentValue={professional.years_experience != null ? `${professional.years_experience}` : ''}
+                      professionalId={professional.id}
+                      onClose={() => setReviewField(null)}
+                    />
+                  )}
                 </div>
 
                 <div className="flex flex-col gap-2">
@@ -348,18 +378,28 @@ export default function Step3Review2() {
                     <div className="flex-1 rounded-md border bg-muted/50 px-3 py-2 text-sm">
                       {totalSalesDisplay != null ? `${totalSalesDisplay.toLocaleString()}+` : 'Not provided'}
                     </div>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleRequestReview('total sales')}
-                      className="shrink-0"
-                    >
-                      <HelpCircle className="h-4 w-4 mr-1" />
-                      Request review
-                    </Button>
+                    {reviewField !== 'total_sales' && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setReviewField('total_sales')}
+                        className="shrink-0"
+                      >
+                        <HelpCircle className="h-4 w-4 mr-1" />
+                        Request review
+                      </Button>
+                    )}
                   </div>
                   <p className="text-xs text-muted-foreground">To change your total sales count, request a review.</p>
+                  {reviewField === 'total_sales' && professional && (
+                    <InlineReviewForm
+                      fieldName="Total Sales"
+                      currentValue={totalSalesDisplay != null ? `${totalSalesDisplay}` : ''}
+                      professionalId={professional.id}
+                      onClose={() => setReviewField(null)}
+                    />
+                  )}
                 </div>
 
                 {/* Volume (read-only, display only) */}
