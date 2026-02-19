@@ -115,6 +115,22 @@ export function FieldChangeRequestsManager() {
 
       if (statusError) throw statusError;
 
+      // Send decision email (fire and forget)
+      if (request.professional?.email) {
+        const firstName = (request.professional.name || '').split(' ')[0] || 'there';
+        supabase.functions.invoke('send-change-request-completed', {
+          body: {
+            email: request.professional.email,
+            firstName,
+            fieldName: request.field_name,
+            decision: action,
+            reason: reason.trim(),
+            currentValue: request.current_value,
+            newValue: action === 'approved' ? request.proposed_value : null,
+          },
+        }).catch((err) => console.error('Decision email failed (non-fatal):', err));
+      }
+
       toast({
         title: action === 'approved' ? 'Approved' : 'Rejected',
         description: `${request.field_name} for ${request.professional?.name} has been ${action}.`,
