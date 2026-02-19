@@ -94,12 +94,12 @@ const AdminDashboard = () => {
           <h2 className="text-lg font-semibold mb-2">Quick Actions</h2>
           <div className="flex flex-wrap gap-4">
             <Button
-              onClick={() => navigate('/dashboard?id=20e0b7f2-5652-424a-9d46-ba74a19cd9a8')}
+              onClick={() => navigate('/agent/dashboard?id=20e0b7f2-5652-424a-9d46-ba74a19cd9a8')}
               variant="outline"
               className="h-auto py-3 border-primary text-primary hover:bg-primary/10"
             >
               <LayoutDashboard className="mr-2 h-4 w-4" />
-              Test Dashboard (Robert)
+              Test Agent Dashboard
             </Button>
             <Button
               onClick={() => navigate('/claim?token=e1e71db2-6469-46ec-b777-e009e02133b6')}
