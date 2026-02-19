@@ -179,7 +179,7 @@ const Index = () => {
               The Rules of Real Estate Search Have Changed.
             </h2>
             <p className="text-lg text-muted-foreground leading-relaxed">
-              The old game of SEO ranking strategies and "premier agent" status and hoping for "blue links" or referrals is over. Your prospects have stopped scrolling through pages of ads and started asking AI for the answer. In 2026, if you aren't optimized for this shift, you don't just lose rank&#8212;you become invisible.
+              The old game of SEO ranking strategies and "premier agent" status hoping for "blue links" or referrals is over. Your prospects have stopped scrolling through pages of ads and started asking AI for the answer. In 2026, if you aren't optimized for this shift, you don't just lose rank&#8212;you become invisible.
             </p>
           </div>
         </section>
