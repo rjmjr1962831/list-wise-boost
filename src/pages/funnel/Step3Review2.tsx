@@ -72,7 +72,6 @@ export default function Step3Review2() {
   const [formData, setFormData] = useState({
     website: '',
     title: '',
-    headline: '',
     address: '',
     zip_code: '',
     zillow_profile_url: '',
@@ -150,7 +149,6 @@ export default function Step3Review2() {
       setFormData({
         website: data.website || '',
         title: data.title || '',
-        headline: data.headline || '',
         address: data.address || '',
         zip_code: data.zip_code || '',
         zillow_profile_url: data.zillow_profile_url || '',
@@ -179,7 +177,6 @@ export default function Step3Review2() {
         .update({
           website: formData.website || null,
           title: formData.title || null,
-          headline: formData.headline || null,
           address: formData.address || null,
           zip_code: formData.zip_code || null,
           specialty: selectedSpecialties.length ? selectedSpecialties : null,
@@ -392,16 +389,6 @@ export default function Step3Review2() {
                     value={formData.title}
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                     placeholder="Your professional title"
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="headline">Headline</Label>
-                  <Input
-                    id="headline"
-                    value={formData.headline}
-                    onChange={(e) => setFormData({ ...formData, headline: e.target.value })}
-                    placeholder="Short professional headline"
                   />
                 </div>
 
