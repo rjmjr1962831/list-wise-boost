@@ -365,9 +365,34 @@ Agent onboarding funnel at `/funnel/{verification_token}/...`. UUID-based URLs, 
 | Step | File | Purpose |
 |------|------|---------|
 | Intro | Step1Intro.tsx | Mission, AI citation table, "Hi {name}" greeting |
-| Profile Review | Step2-6 | Agent reviews/edits their data |
+| Basic Info | Step2Review1.tsx | Name (read-only + review), email, 3 phone fields (mobile/business/other) with publish toggles, company |
+| Professional Details | Step3Review2.tsx | License/Reviews/Experience/Sales (read-only + review), specialties (autocomplete), website, socials |
+| Final Review | Step4ReviewFinal.tsx | Read-only summary of all fields with Edit buttons |
+| Cities | Step5Cities.tsx | City selection |
+| Neighborhoods | Step6Neighborhoods.tsx | Neighborhood selection |
 | Pricing | Step7Pricing.tsx | Tier selection with personalized citability table |
-| Success | Success page | Confirmation |
+| Success | StepSuccess.tsx | Confirmation |
+
+### Field Edit Architecture (Feb 2026)
+- **Editable fields** have "You can edit this field directly" helper text and open inputs
+- **Read-only fields** (name, license, reviews, experience, total sales) show current value + "Request review" button
+- Clicking "Request review" expands an **inline form** (not a modal) with two fields: "What should it be?" and "Where can we confirm this?"
+- Submissions insert into `field_change_requests` table and send acknowledgment email via Gmail SMTP
+- **Admin FieldChangeRequestsManager** shows requests with Accept/Reject + "Why?" field. Accept auto-updates the professional record. Both actions send decision email.
+
+### Phone Numbers (Feb 2026)
+- Uses existing `phone_numbers` JSONB column on professionals table
+- New format: `{mobile: {number, publish}, business: {number, publish}, other: {number, publish}}`
+- Backwards-compatible: reads old format `{cell, business, brokerage}` from Zillow scrapes
+- Primary phone saved to `phone` text field (first non-empty)
+- Eye/eye-off toggle controls publish visibility per number
+
+### Specialty Autocomplete (Feb 2026)
+- 78+ known specialties loaded from DB on mount
+- Typeahead suggestions as user types
+- Free-text entry accepted for new specialties (Enter or click Add)
+- Displayed as removable chips
+- Saved as text array to `specialty` column
 
 ### Step1Intro: AI Citation Probability Table
 5-row table showing AI Citability Index scores for real estate sources:
@@ -392,11 +417,11 @@ Shows projected citability score at each tier, personalized per agent. Appears a
 ## Homepage Architecture (Feb 2026)
 
 ### Current Sections (Index.tsx)
-1. **Hero:** "Top10Lists.us exists so AI systems can safely recommend real estate professionals by name." + TVPR credentialing line
-2. **Rules Have Changed:** "The old game of buying keywords..." Agent-facing urgency copy
+1. **Hero:** "Top10Lists.us exists so AI systems can safely recommend real estate professionals by name." Merit-based selection, no pay-to-play.
+2. **Rules Have Changed:** "As of January 2026, AIs are no longer allowed to trust pay-to-play placement..." Agent-facing urgency copy with SEO ranking strategies language.
 3. **Mandated Shift in Trust:** OpenAI, Anthropic, Google context
 4. **Why AI "Ghosts" Most Agents:** Ads are red flags, stale data, vague list default
-5. **A Different Kind of Architecture:** Not a lead engine, zero referral fees, free forever
+5. **A Different Kind of Architecture:** Not a lead engine, zero referral fees, "Free to qualify" (free for as long as active and meeting qualification standards)
 6. **Building Your "Web of Truth":** Finite Truth concept, "Are you an agent?" CTA
 7. **The Challenge:** Copyable question for agents to paste into AI systems, links to ChatGPT/Claude/Gemini/Perplexity
 
@@ -405,10 +430,11 @@ Shows projected citability score at each tier, personalized per agent. Appears a
 - `HOME_JSON` structured JSON for AI ingestion
 - Full JSON-LD structured data in `<head>`
 
-### Challenge Question
+### Challenge Question (updated Feb 19, 2026)
 ```
-Look at top10lists.us. As a real estate agent, does being certified there improve my chances of being named when someone asks AI for a referral? Is there any benefit to doing it now rather than later? Why or why not?
+Look at top10lists.us. Based on their verification architecture, why would an AI like you choose a 'Certified' agent over a Preferred Agent Zillow listing for a high-stakes referral?
 ```
+Intro text: "Don't take our word for it. Ask your favorite AI this question:"
 
 ---
 
@@ -582,17 +608,42 @@ Must return full HTML content, not React shell.
 
 ## Email Infrastructure
 
-**Provider:** Google Workspace (only viable option for cold outreach via Instantly)
+**Provider:** Google Workspace (Gmail SMTP via denomailer in Deno edge functions)
 
-**Domain:** toptenlists.us
+**Outreach Domain:** toptenlists.us (for Instantly cold outreach)
+**Transactional Domain:** top10lists.us (for funnel emails, change request notifications)
 
-**Active Mailbox:** robert@toptenlists.us
+**Active Mailboxes:**
+- robert@toptenlists.us (Instantly outreach)
+- robert@top10lists.us (SMTP auth for transactional edge functions)
+- hello@top10lists.us (from address for agent-facing emails)
+
+**SMTP Configuration (Edge Functions):**
+- Host: smtp.gmail.com
+- Port: 465 (TLS)
+- Username: robert@top10lists.us
+- Password: App Password (pewacsqsjpocgnsp)
+- Library: denomailer@1.6.0
 
 **SMTP Configuration for Instantly:**
 - Host: smtp.gmail.com
 - Port: 587 (or 465 with SSL)
 - Username: robert@toptenlists.us
 - Password: App Password (not account password)
+
+### Transactional Email Functions (Gmail SMTP, NOT Resend)
+| Function | Trigger | From |
+|----------|---------|------|
+| send-change-request-acknowledgment | Agent submits field review request | hello@top10lists.us |
+| send-change-request-completed | Admin accepts/rejects field review | hello@top10lists.us |
+| send-funnel-notification | Funnel step events (admin alerts) | robert@top10lists.us |
+
+### Email Copy Templates
+**Acknowledgment (on submission):**
+> Hi {{firstName}}! We got your request to review your {{fieldName}}. I will get back to you with our decision within 24 hours. If you want faster service, just give Robert a call at (602) 758-9600.
+
+**Decision (accept/reject):**
+> Hi {{firstName}}! [decision text]. Reason: [reason]. Why do we verify changes? AI systems like ChatGPT, Claude, and Gemini rely on our data... It protects you and the consumers who are referred to you. If you need further assistance, reply to this email or call Robert at (602) 758-9600.
 
 ### App Password Setup
 1. admin.google.com > Security
@@ -620,13 +671,13 @@ Must return full HTML content, not React shell.
 | Service | Replacement | Reason |
 |---------|-------------|--------|
 | Perplexity API | DeepSeek | Cost |
-| Resend | Google Workspace | Reliability |
+| Resend | Gmail SMTP (denomailer) | Deprecated, use Google Workspace |
 | PrivateEmail (Namecheap) | Google Workspace | Service quality, incompatible with outreach tools |
 | Zoho Mail | Google Workspace | Blocks cold email campaigns |
 | Port 587 SMTP | Port 465 | Configuration |
 | 4-segment URLs | 5-segment with ZIP | SEO/structure |
 | Old Supabase (bgdtekbhelormzbymkhh) | New (wiotrvoirdgzfacuuiem) | Migration |
-| Pipedrive | Custom CRM Dashboard | Cost, flexibility |
+| Pipedrive | Custom CRM Dashboard + field_change_requests | Cost, flexibility |
 | MCP Server (planned) | Deprioritized | Scope not confirmed, artifacts discussion unresolved |
 
 ---
