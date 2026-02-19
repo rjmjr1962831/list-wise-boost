@@ -91,8 +91,28 @@ serve(async (req) => {
       );
     }
 
-    // Only create session for approved agents
-    if (professional.funnel_status !== 'approved') {
+    // Allow admins to bypass funnel_status check (for Test Agent Dashboard)
+    let adminBypass = false;
+    const authHeader = req.headers.get("authorization");
+    if (authHeader?.startsWith("Bearer ")) {
+      const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+      const userClient = createClient(supabaseUrl, supabaseAnonKey, {
+        global: { headers: { Authorization: authHeader } },
+      });
+      const { data: { user } } = await userClient.auth.getUser();
+      if (user) {
+        const { data: adminRoles } = await supabase
+          .from("admin_users")
+          .select("role")
+          .eq("id", user.id);
+        adminBypass = adminRoles?.some((r: { role: string }) =>
+          r.role === "admin" || r.role === "superadmin"
+        ) ?? false;
+      }
+    }
+
+    // Only create session for approved agents (unless admin bypass)
+    if (!adminBypass && professional.funnel_status !== 'approved') {
       console.log(`[create-session-from-token] Funnel status is '${professional.funnel_status}', not 'approved'`);
       return new Response(
         JSON.stringify({ success: false, error: "Profile not approved", funnel_status: professional.funnel_status }),

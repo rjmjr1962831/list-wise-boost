@@ -103,8 +103,8 @@ export default function AgentDashboard() {
       if (!session?.user) {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
-          // Give storage a moment to rehydrate after full-page load (admin → test dashboard)
-          await new Promise((r) => setTimeout(r, 400));
+          // Give storage a moment to rehydrate after full-page load or post-login redirect
+          await new Promise((r) => setTimeout(r, 600));
           const { data: { session: retrySession } } = await supabase.auth.getSession();
           if (!retrySession?.user) {
             setAuthStatus("Sign in to the admin panel first, then use the Test Agent Dashboard button.");
