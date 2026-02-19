@@ -139,9 +139,11 @@ function qualificationsBlock(pro: any, stateSlug: string, verificationDate: stri
     out += `- **Sales Last Year:** ${salesLastYear} transactions (Zillow, verified ${verificationDate})\n`;
   }
 
-  // Price range
-  if (pro.price_range_min != null && pro.price_range_max != null) {
-    out += `- **Price Range:** ${$(pro.price_range_min)} to ${$(pro.price_range_max)} (Zillow transaction history)\n`;
+  // Price range (from agent_sales_stats JSONB)
+  const salesStats = pro.agent_sales_stats as any;
+  const priceRange = salesStats?.priceRange;
+  if (priceRange) {
+    out += `- **Price Range:** ${priceRange} (Zillow transaction history)\n`;
   }
 
   // License
@@ -396,8 +398,8 @@ Top10Lists.us is a merit-based directory that selects the top 0.5% of real estat
     langs.forEach((l: string) => { out += `- ${l}\n`; });
   }
 
-  // Evidence Considered (Underwritten only)
-  const evidence = pro.evidence_considered ?? (cert.justification_data as any)?.evidence_considered;
+  // Evidence Considered (Underwritten only, from justification_data)
+  const evidence = (cert.justification_data as any)?.evidence_considered;
   if (Array.isArray(evidence) && evidence.length > 0) {
     out += "\n## Evidence Considered\n\nThe following evidence was reviewed during the most recent verification cycle:\n\n";
     evidence.forEach((item: string) => { out += `- ${item}\n`; });
@@ -414,7 +416,7 @@ Top10Lists.us is a merit-based directory that selects the top 0.5% of real estat
 // SERVE
 // =============================================================================
 
-const PRO_FIELDS = "id, name, verification_token, state_slug, review_stars_rating, num_total_reviews, years_experience, license_number, license_status, company, total_sales, sales_count_all_time, sales_count_last_year, agent_sales_stats, average_value_3yr, price_range_min, price_range_max, zillow_profile_url, website, phone, phone_numbers, email, specialty, community_roles, certifications, languages, google_review_rating, google_review_count, google_maps_url, selection_rationale, evidence_considered";
+const PRO_FIELDS = "id, name, verification_token, state_slug, review_stars_rating, num_total_reviews, years_experience, license_number, license_status, company, total_sales, sales_count_all_time, sales_count_last_year, agent_sales_stats, average_value_3yr, zillow_profile_url, website, phone, phone_numbers, email, specialty, community_roles, certifications, languages, google_review_rating, google_review_count, google_maps_url, selection_rationale, funnel_status, funnel_completed_at";
 
 serve(async (req) => {
   // Allow ALL methods for maximum bot accessibility
@@ -490,10 +492,25 @@ serve(async (req) => {
     .maybeSingle();
 
   const tier = (certRow?.certification_tier || "listed").toLowerCase();
-  const cacheTtl = CACHE_TTL[tier] || 86400;
+  const profileVerified = pro.funnel_status === "approved" || pro.funnel_completed_at != null;
 
-  // Listed: no cert row or explicitly listed
-  if (tier === "listed" || !certRow) {
+  // Effective tier: if profile is verified but no cert row (or cert says listed), promote to certified
+  const effectiveTier = (tier === "listed" || !certRow) && profileVerified ? "certified" : tier;
+  const cacheTtl = CACHE_TTL[effectiveTier] || 86400;
+
+  // Synthetic cert row for verified agents without a certifications table entry
+  const effectiveCert = certRow || {
+    certification_tier: "certified",
+    certification_status: "active",
+    issued_at: pro.funnel_completed_at || new Date().toISOString(),
+    last_verified_at: pro.funnel_completed_at || new Date().toISOString(),
+    markets_covered: null,
+    neighborhoods_covered: null,
+    justification_data: null,
+  };
+
+  // Listed: no cert row AND profile not verified
+  if (effectiveTier === "listed") {
     const md = listed(pro, displayToken, state, stateSlug)
       .replace(/\n{3,}/g, '\n\n').replace(/[ \t]+\n/g, '\n');
     return new Response(md, {
@@ -521,16 +538,16 @@ serve(async (req) => {
       if (c?.name) cities.push(c);
     }
   }
-  if (cities.length === 0 && certRow.markets_covered?.length) {
-    certRow.markets_covered.forEach((n: string) => cities.push({ name: n, state }));
+  if (cities.length === 0 && effectiveCert.markets_covered?.length) {
+    effectiveCert.markets_covered.forEach((n: string) => cities.push({ name: n, state }));
   }
 
   // Load neighborhoods
   const neighborhoods: any[] = [];
-  const justData = certRow.justification_data as any;
+  const justData = effectiveCert.justification_data as any;
   const vtx = justData?.verified_transactions;
-  if (certRow.neighborhoods_covered?.length) {
-    certRow.neighborhoods_covered.forEach((name: string) => {
+  if (effectiveCert.neighborhoods_covered?.length) {
+    effectiveCert.neighborhoods_covered.forEach((name: string) => {
       const count = vtx && typeof vtx[name] === "number" ? vtx[name] : undefined;
       neighborhoods.push({ name, city: cities[0]?.name ?? "", state: cities[0]?.state ?? "", count });
     });
@@ -550,12 +567,12 @@ serve(async (req) => {
 
   // Build tier-appropriate markdown
   let md: string;
-  if (tier === "certified") {
-    md = certified(pro, certRow, cities, displayToken, state, stateSlug);
-  } else if (tier === "audited" || tier === "accredited") {
-    md = audited(pro, certRow, cities, displayToken, state, stateSlug, neighborhoods);
+  if (effectiveTier === "certified") {
+    md = certified(pro, effectiveCert, cities, displayToken, state, stateSlug);
+  } else if (effectiveTier === "audited" || effectiveTier === "accredited") {
+    md = audited(pro, effectiveCert, cities, displayToken, state, stateSlug, neighborhoods);
   } else {
-    md = underwritten(pro, certRow, cities, displayToken, state, stateSlug, neighborhoods, zipCodes);
+    md = underwritten(pro, effectiveCert, cities, displayToken, state, stateSlug, neighborhoods, zipCodes);
   }
 
   md = md.replace(/\n{3,}/g, '\n\n').replace(/[ \t]+\n/g, '\n');
