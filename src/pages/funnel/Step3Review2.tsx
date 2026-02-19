@@ -33,6 +33,7 @@ const KNOWN_SPECIALTIES = [
 interface Professional {
   id: string;
   name: string;
+  email: string | null;
   title: string | null;
   headline: string | null;
   company: string | null;
@@ -137,7 +138,7 @@ export default function Step3Review2() {
     try {
       const { data, error } = await supabase
         .from('professionals')
-        .select('id, name, title, headline, company, business_name, website, license_number, years_experience, total_sales, address, zip_code, specialty, zillow_profile_url, sidebar_video_url, review_stars_rating, num_total_reviews, social_facebook, social_instagram, social_linkedin, social_twitter, social_tiktok, image_url, agent_sales_stats, average_value_3yr')
+        .select('id, name, email, title, headline, company, business_name, website, license_number, years_experience, total_sales, address, zip_code, specialty, zillow_profile_url, sidebar_video_url, review_stars_rating, num_total_reviews, social_facebook, social_instagram, social_linkedin, social_twitter, social_tiktok, image_url, agent_sales_stats, average_value_3yr')
         .eq('verification_token', token)
         .single();
 
@@ -306,6 +307,8 @@ export default function Step3Review2() {
                       fieldName="License Number"
                       currentValue={professional.license_number || ''}
                       professionalId={professional.id}
+                      professionalName={professional.name}
+                      professionalEmail={professional.email || undefined}
                       onClose={() => setReviewField(null)}
                     />
                   )}
@@ -337,6 +340,8 @@ export default function Step3Review2() {
                       fieldName="Reviews"
                       currentValue={`${professional.review_stars_rating ?? '—'} stars, ${professional.num_total_reviews?.toLocaleString() ?? 0} reviews`}
                       professionalId={professional.id}
+                      professionalName={professional.name}
+                      professionalEmail={professional.email || undefined}
                       onClose={() => setReviewField(null)}
                     />
                   )}
@@ -367,6 +372,8 @@ export default function Step3Review2() {
                       fieldName="Years of Experience"
                       currentValue={professional.years_experience != null ? `${professional.years_experience}` : ''}
                       professionalId={professional.id}
+                      professionalName={professional.name}
+                      professionalEmail={professional.email || undefined}
                       onClose={() => setReviewField(null)}
                     />
                   )}
@@ -397,6 +404,8 @@ export default function Step3Review2() {
                       fieldName="Total Sales"
                       currentValue={totalSalesDisplay != null ? `${totalSalesDisplay}` : ''}
                       professionalId={professional.id}
+                      professionalName={professional.name}
+                      professionalEmail={professional.email || undefined}
                       onClose={() => setReviewField(null)}
                     />
                   )}
