@@ -65,7 +65,7 @@ const AdminLogin = () => {
       const target = redirectTo.startsWith("/") && !redirectTo.startsWith("//") ? redirectTo : "/admin";
       toast.success("Welcome back!");
       // Brief delay so session is persisted before navigation (helps Test Agent Dashboard)
-      await new Promise((r) => setTimeout(r, 150));
+      await new Promise((r) => setTimeout(r, 300));
       navigate(target);
     } catch (error: any) {
       toast.error(error.message || "Authentication failed");

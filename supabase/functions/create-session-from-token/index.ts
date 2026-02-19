@@ -95,19 +95,29 @@ serve(async (req) => {
     let adminBypass = false;
     const authHeader = req.headers.get("authorization");
     if (authHeader?.startsWith("Bearer ")) {
-      const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
-      const userClient = createClient(supabaseUrl, supabaseAnonKey, {
-        global: { headers: { Authorization: authHeader } },
-      });
-      const { data: { user } } = await userClient.auth.getUser();
-      if (user) {
-        const { data: adminRoles } = await supabase
-          .from("admin_users")
-          .select("role")
-          .eq("id", user.id);
-        adminBypass = adminRoles?.some((r: { role: string }) =>
-          r.role === "admin" || r.role === "superadmin"
-        ) ?? false;
+      try {
+        const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
+        const authRes = await fetch(`${supabaseUrl}/auth/v1/user`, {
+          headers: {
+            Authorization: authHeader,
+            ...(anonKey && { apikey: anonKey }),
+          },
+        });
+        if (authRes.ok) {
+          const userData = await authRes.json();
+          const userId = userData?.id;
+          if (userId) {
+            const { data: adminRoles } = await supabase
+              .from("admin_users")
+              .select("role")
+              .eq("id", userId);
+            adminBypass = adminRoles?.some((r: { role: string }) =>
+              r.role === "admin" || r.role === "superadmin"
+            ) ?? false;
+          }
+        }
+      } catch (e) {
+        console.warn("[create-session-from-token] Admin auth check failed:", e);
       }
     }
 
