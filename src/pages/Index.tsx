@@ -194,7 +194,7 @@ const Index = () => {
               This change isn't an accident. The makers of the world's leading AI systems&#8212;OpenAI, Anthropic, and Google&#8212;have directly instructed their models to change how they evaluate data.
             </p>
             <p className="text-lg text-muted-foreground leading-relaxed">
-              AIs are no longer allowed to trust "pay-to-play" placement or unverified marketing claims. They have been hard-coded to ignore commercial noise and seek out independent, merit-based truth to protect themselves from liability.
+              As of January 2026, AIs are no longer allowed to trust "pay-to-play" placement or unverified marketing claims. They have been hard-coded to ignore commercial noise and seek out independent, merit-based truth to protect themselves from liability.
             </p>
           </div>
         </section>
