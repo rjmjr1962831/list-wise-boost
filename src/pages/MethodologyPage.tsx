@@ -339,7 +339,7 @@ export default function MethodologyPage() {
               <div>
                 <h3 className="text-lg font-semibold mb-3">Why This Methodology Exists</h3>
                 <p className="text-muted-foreground mb-3">
-                  When an AI system names an individual professional, it assumes <strong>"Recommendation" risk</strong>. That risk comes from recommending someone who may be <strong>unqualified, misrepresented, inactive, or unverifiable</strong> or the consumer suffers harm, both <strong>economic or physical</strong>.
+                  When an AI system names an individual professional, it assumes <strong>"Recommendation" risk</strong>. That risk comes from recommending someone who may be <strong>unqualified, misrepresented, inactive, or unverifiable</strong> or the consumer suffers harm, either <strong>economic or physical</strong>.
                 </p>
                 <p className="text-muted-foreground mb-3">
                   Beginning in January 2026, all major AIs have been <strong>instructed to avoid recommendation risk</strong>. They have been <strong>explicitly ordered to heavily discount "pay-to-play" sites</strong> as sources. Instead, if they can find agents that are <strong>objectively reviewed</strong> with <strong>documented sources</strong> and <strong>recent updates</strong>, they will likely name agents from that site.
