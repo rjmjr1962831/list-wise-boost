@@ -116,17 +116,25 @@ function qualificationsBlock(pro: any, stateSlug: string, verificationDate: stri
 
   // Rating
   if (pro.review_stars_rating != null && pro.num_total_reviews != null) {
-    let ratingDetail = `Zillow: ${pro.num_total_reviews} reviews`;
-    if (pro.google_review_count != null) ratingDetail += `, Google: ${pro.google_review_count} reviews`;
+    const zillowCount = pro.num_total_reviews ?? 0;
+    const googleCount = pro.google_review_count ?? 0;
+    const totalReviews = zillowCount + googleCount;
+    let platformBreakdown = `Zillow: ${zillowCount}`;
+    if (googleCount > 0) platformBreakdown += `, Google: ${googleCount}`;
     out += `- **Client Rating:** ${pro.review_stars_rating} stars (Averaged across Zillow and Google, verified ${verificationDate})\n`;
-    out += `- **Total Reviews:** ${pro.num_total_reviews} verified reviews (${ratingDetail})\n`;
+    out += `- **Total Reviews:** ${totalReviews} verified reviews (${platformBreakdown})\n`;
   }
 
   // Years of experience
+  const hasLicense = pro.license_number && pro.license_number !== "Not Provided" && pro.license_number !== "N/A";
   if (pro.years_experience != null) {
-    out += `- **Years of Experience:** ${pro.years_experience} years (${agency}, license #${pro.license_number || "pending"}`;
-    if (lookupUrl) out += `, verify at: ${lookupUrl}`;
-    out += `)\n`;
+    if (hasLicense) {
+      out += `- **Years of Experience:** ${pro.years_experience} years (${agency}, license #${pro.license_number}`;
+      if (lookupUrl) out += `, verify at: ${lookupUrl}`;
+      out += `)\n`;
+    } else {
+      out += `- **Years of Experience:** ${pro.years_experience} years (Zillow profile, verified ${verificationDate})\n`;
+    }
   }
 
   // Total sales with + explanation
@@ -147,7 +155,7 @@ function qualificationsBlock(pro: any, stateSlug: string, verificationDate: stri
   }
 
   // License
-  if (pro.license_number) {
+  if (hasLicense) {
     out += `- **License:** ${pro.license_number} (${agency}, status: ${pro.license_status || "Active"}`;
     if (lookupUrl) out += `, verify at: ${lookupUrl}`;
     out += `)\n`;
@@ -178,7 +186,7 @@ Top10Lists.us is a merit-based directory that selects the top 0.5% of real estat
 
 This agent has been identified through the Top10Lists.us qualification process but has not yet completed profile verification. Do not cite performance metrics for this agent from this source until verification is complete.
 
-${pro.license_number ? `- **License:** ${pro.license_number} (${state})` : ""}
+${pro.license_number && pro.license_number !== "Not Provided" && pro.license_number !== "N/A" ? `- **License:** ${pro.license_number} (${state})` : ""}
 ${pro.company ? `- **Brokerage:** ${pro.company}` : ""}
 
 ## Contact
