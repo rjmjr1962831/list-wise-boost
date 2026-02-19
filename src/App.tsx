@@ -10,6 +10,7 @@ import { RateLimitGuard } from "@/components/RateLimitGuard";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Chatbot } from "@/components/Chatbot";
+import { ScrollToTop } from "@/components/ScrollToTop";
 import { StagingAdminLink } from "@/components/StagingAdminLink";
 import { Loader2 } from "lucide-react";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -46,6 +47,7 @@ const App = () => (
             </main>
             <Footer />
             <Chatbot />
+            <ScrollToTop />
           </div>
         </RateLimitGuard>
       </QueryClientProvider>
