@@ -279,7 +279,7 @@ const Index = () => {
               </CardHeader>
               <CardContent className="space-y-6">
                 <p className="text-lg text-center text-muted-foreground">
-                  Don't take our word for it.
+                  Don't take our word for it. Ask your favorite AI this question:
                 </p>
 
                 <div className="bg-muted/50 border-2 rounded-lg p-6 relative">
@@ -297,9 +297,6 @@ const Index = () => {
                   </Button>
                 </div>
 
-                <p className="text-base text-center text-muted-foreground">
-                  Type it yourself.  Read the answer.
-                </p>
 
                 <div className="flex flex-wrap justify-center gap-3 pt-2">
                   <Button variant="outline" size="sm" asChild>
