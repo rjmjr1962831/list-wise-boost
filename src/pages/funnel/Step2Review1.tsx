@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, ArrowRight, ArrowLeft, HelpCircle } from 'lucide-react';
+import { Loader2, ArrowRight, ArrowLeft, HelpCircle, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Professional {
@@ -28,7 +28,12 @@ export default function Step2Review1() {
   const [professional, setProfessional] = useState<Professional | null>(null);
   const [formData, setFormData] = useState({
     email: '',
-    phone: '',
+    phone_mobile: '',
+    phone_mobile_publish: true,
+    phone_business: '',
+    phone_business_publish: true,
+    phone_other: '',
+    phone_other_publish: false,
     company: '',
   });
 
@@ -55,9 +60,15 @@ export default function Step2Review1() {
       }
 
       setProfessional(data);
+      // Parse existing phone into mobile field by default
       setFormData({
         email: data.email || '',
-        phone: data.phone || '',
+        phone_mobile: data.phone || '',
+        phone_mobile_publish: true,
+        phone_business: '',
+        phone_business_publish: true,
+        phone_other: '',
+        phone_other_publish: false,
         company: data.company || '',
       });
     } catch (err) {
@@ -72,11 +83,13 @@ export default function Step2Review1() {
 
     setSaving(true);
     try {
+      // Save the first non-empty phone as the primary phone
+      const primaryPhone = formData.phone_mobile || formData.phone_business || formData.phone_other || '';
       const { error } = await supabase
         .from('professionals')
         .update({
           email: formData.email,
-          phone: formData.phone,
+          phone: primaryPhone,
           company: formData.company,
         })
         .eq('id', professional.id);
@@ -147,6 +160,7 @@ export default function Step2Review1() {
 
                 <div>
                   <Label htmlFor="email">Email Address *</Label>
+                  <p className="text-xs text-muted-foreground mb-1">You can edit this field directly.</p>
                   <Input
                     id="email"
                     type="email"
@@ -156,19 +170,78 @@ export default function Step2Review1() {
                   />
                 </div>
 
-                <div>
-                  <Label htmlFor="phone">Phone Number *</Label>
-                  <Input
-                    id="phone"
-                    type="tel"
-                    value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    placeholder="(555) 123-4567"
-                  />
+                {/* Phone Numbers */}
+                <div className="space-y-3">
+                  <Label>Phone Numbers</Label>
+                  <p className="text-xs text-muted-foreground">You can edit these fields directly. Use the eye icon to control whether each number is published on your profile.</p>
+
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1">
+                      <Label htmlFor="phone_mobile" className="text-xs text-muted-foreground">Mobile</Label>
+                      <Input
+                        id="phone_mobile"
+                        type="tel"
+                        value={formData.phone_mobile}
+                        onChange={(e) => setFormData({ ...formData, phone_mobile: e.target.value })}
+                        placeholder="(555) 123-4567"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, phone_mobile_publish: !formData.phone_mobile_publish })}
+                      className={"mt-5 p-2 rounded-md border " + (formData.phone_mobile_publish ? "text-primary border-primary/30 bg-primary/5" : "text-muted-foreground border-muted")}
+                      title={formData.phone_mobile_publish ? "Published on profile" : "Hidden from profile"}
+                    >
+                      {formData.phone_mobile_publish ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                    </button>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1">
+                      <Label htmlFor="phone_business" className="text-xs text-muted-foreground">Business</Label>
+                      <Input
+                        id="phone_business"
+                        type="tel"
+                        value={formData.phone_business}
+                        onChange={(e) => setFormData({ ...formData, phone_business: e.target.value })}
+                        placeholder="(555) 987-6543"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, phone_business_publish: !formData.phone_business_publish })}
+                      className={"mt-5 p-2 rounded-md border " + (formData.phone_business_publish ? "text-primary border-primary/30 bg-primary/5" : "text-muted-foreground border-muted")}
+                      title={formData.phone_business_publish ? "Published on profile" : "Hidden from profile"}
+                    >
+                      {formData.phone_business_publish ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                    </button>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1">
+                      <Label htmlFor="phone_other" className="text-xs text-muted-foreground">Other</Label>
+                      <Input
+                        id="phone_other"
+                        type="tel"
+                        value={formData.phone_other}
+                        onChange={(e) => setFormData({ ...formData, phone_other: e.target.value })}
+                        placeholder="(555) 000-0000"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, phone_other_publish: !formData.phone_other_publish })}
+                      className={"mt-5 p-2 rounded-md border " + (formData.phone_other_publish ? "text-primary border-primary/30 bg-primary/5" : "text-muted-foreground border-muted")}
+                      title={formData.phone_other_publish ? "Published on profile" : "Hidden from profile"}
+                    >
+                      {formData.phone_other_publish ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                    </button>
+                  </div>
                 </div>
 
                 <div>
                   <Label htmlFor="company">Company/Brokerage *</Label>
+                  <p className="text-xs text-muted-foreground mb-1">You can edit this field directly.</p>
                   <Input
                     id="company"
                     value={formData.company}
