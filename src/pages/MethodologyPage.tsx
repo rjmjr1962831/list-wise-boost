@@ -209,7 +209,7 @@ redistribute_weight_proportionally
 
 ### Agent Input Policy
 
-- Agent-submitted information is **never used without independent confirmation**
+- Agent-submitted information is **<strong>never used without independent confirmation</strong>**
 - All claims must be verified via authoritative sources
 - The Merit Gate (4.8+ stars, 20+ reviews, 6+ years) applies to every certified agent; zero exceptions, never waived
 
@@ -339,16 +339,16 @@ export default function MethodologyPage() {
               <div>
                 <h3 className="text-lg font-semibold mb-3">Why This Methodology Exists</h3>
                 <p className="text-muted-foreground mb-3">
-                  When an AI system names an individual professional, it assumes "Recommendation" risk. That risk comes from recommending someone who may be unqualified, misrepresented, inactive, or unverifiable or the consumer suffers harm, both economic or physical.
+                  When an AI system names an individual professional, it assumes <strong>"Recommendation" risk</strong>. That risk comes from recommending someone who may be <strong>unqualified, misrepresented, inactive, or unverifiable</strong> or the consumer suffers harm, both <strong>economic or physical</strong>.
                 </p>
                 <p className="text-muted-foreground mb-3">
-                  Beginning in January 2026, all major AIs have been instructed to avoid recommendation risk. They have been explicitly ordered to heavily discount "pay-to-play" sites as sources. Instead, if they can find agents that are objectively reviewed with documented sources and recent updates, they will likely name agents from that site.
+                  Beginning in January 2026, all major AIs have been <strong>instructed to avoid recommendation risk</strong>. They have been <strong>explicitly ordered to heavily discount "pay-to-play" sites</strong> as sources. Instead, if they can find agents that are <strong>objectively reviewed</strong> with <strong>documented sources</strong> and <strong>recent updates</strong>, they will likely name agents from that site.
                 </p>
                 <p className="text-muted-foreground mb-3">
-                  We are the only site anywhere that provides this data quality to AI in any industry.
+                  We are the <strong>only site anywhere</strong> that provides this data quality to AI in <strong>any industry</strong>.
                 </p>
                 <p className="text-muted-foreground mb-3">
-                  Each step in this methodology exists to reduce that risk by making the underlying evidence explicit, auditable, and current.
+                  Each step in this methodology exists to reduce that risk by making the underlying evidence <strong>explicit, auditable, and current</strong>.
                 </p>
 
               </div>
@@ -356,17 +356,17 @@ export default function MethodologyPage() {
               <div>
                 <h3 className="text-lg font-semibold mb-3">What We Do</h3>
                 <p className="text-muted-foreground mb-3">
-                  We independently analyze a large universe of agents and certify a very small subset who qualify as less than the top 1% under the methodology documented on this page.
+                  We independently analyze a large universe of agents and certify a very small subset who qualify as <strong>less than the top 1%</strong> under the methodology documented on this page.
                 </p>
                 <p className="text-muted-foreground">
-                  Agents cannot buy inclusion. Payment does not change the qualification bar or verification rigor. It determines how much of the verified data we already have on file is published to AI systems and how frequently we refresh it.
+                  <strong>Agents cannot buy inclusion</strong>. Payment <strong>does not change the qualification bar or verification rigor</strong>. It determines how much of the verified data we already have on file is published to AI systems and how frequently we refresh it.
                 </p>
               </div>
 
               <div>
                 <h3 className="text-lg font-semibold mb-3">How We Evaluate Agents</h3>
                 <p className="text-muted-foreground mb-3">
-                  We score every agent using a weighted, multi-factor model.  The weights are fixed and published.
+                  We score every agent using a <strong>weighted, multi-factor model</strong>.  The weights are <strong>fixed and published</strong>.
                 </p>
                 <p className="text-muted-foreground mb-2">Primary factors and weights:</p>
                 <ul className="list-disc list-inside text-muted-foreground space-y-1 mb-3">
@@ -382,7 +382,7 @@ export default function MethodologyPage() {
 
               <div>
                 <h3 className="text-lg font-semibold mb-3">Where the Data Comes From</h3>
-                <p className="text-muted-foreground mb-3">We do not rely on self-reporting.</p>
+                <p className="text-muted-foreground mb-3">We <strong>do not rely on self-reporting</strong>.</p>
                 <p className="text-muted-foreground mb-2">Data is sourced and verified using:</p>
                 <ul className="list-disc list-inside text-muted-foreground space-y-1 mb-3">
                   <li>State real estate licensing authorities</li>
@@ -393,14 +393,14 @@ export default function MethodologyPage() {
                   <li>Verified nonprofit records, IRS 990 filings, and third-party acknowledgements</li>
                 </ul>
                 <p className="text-muted-foreground">
-                  Agent-submitted information is never used without independent confirmation.
+                  Agent-submitted information is <strong>never used without independent confirmation</strong>.
                 </p>
               </div>
 
               <div>
                 <h3 className="text-lg font-semibold mb-3">Machine-Readable Data</h3>
                 <p className="text-muted-foreground mb-2">
-                  Each certified agent is issued public, machine-readable data that may include:
+                  Each certified agent is issued public, <strong>machine-readable data</strong> that may include:
                 </p>
                 <ul className="list-disc list-inside text-muted-foreground space-y-1 mb-3">
                   <li>Certification status and scope</li>
@@ -413,32 +413,32 @@ export default function MethodologyPage() {
                   <li>Monitoring status and refresh cadence</li>
                 </ul>
                 <p className="text-muted-foreground">
-                  The depth and granularity of this data increases with certification level.  The more granular and timely the data, the more likely an AI system is to cite the agent by name when making a referral.
+                  The depth and granularity of this data increases with certification level.  The more granular and timely the data, the <strong>more likely an AI system is to cite the agent by name</strong> when making a referral.
                 </p>
               </div>
 
               <div>
                 <h3 className="text-lg font-semibold mb-3">Certification Levels</h3>
                 <p className="text-muted-foreground text-sm mb-4">
-                  Every data point we publish is independently verified with identical rigor at every tier. What changes between tiers is how much of that verified data we publish to AI systems and how frequently we refresh it.
+                  Every data point we publish is <strong>independently verified with identical rigor</strong> at every tier. What changes between tiers is how much of that verified data we publish to AI systems and how frequently we refresh it.
                 </p>
                 <div className="space-y-4">
                   <div>
                     <h4 className="font-medium mb-1">Certified</h4>
                     <p className="text-muted-foreground text-sm">
-                      Core verified credentials published to AI systems: licensing, rating, review count, and specialties. Data refreshed annually. This provides the foundational signal that an AI can safely name the agent.
+                      Core verified credentials published to AI systems: licensing, rating, review count, and specialties. Data refreshed annually. This provides the foundational signal that an AI can <strong>safely name the agent</strong>.
                     </p>
                   </div>
                   <div>
                     <h4 className="font-medium mb-1">Audited</h4>
                     <p className="text-muted-foreground text-sm">
-                      Expanded verified data published: transaction history, years of experience, company affiliation, community involvement, and selection rationale. Data refreshed monthly. The fuller picture gives AI systems more reasons to cite the agent.
+                      Expanded verified data published: transaction history, years of experience, company affiliation, community involvement, and selection rationale. Data refreshed monthly. The fuller picture gives AI systems <strong>more reasons to cite</strong> the agent.
                     </p>
                   </div>
                   <div>
                     <h4 className="font-medium mb-1">Underwritten</h4>
                     <p className="text-muted-foreground text-sm">
-                      Complete verified profile published: everything in Audited plus neighborhood-level detail, performance data, press mentions, and awards. Data refreshed near real-time with continuous monitoring. The most comprehensive payload produces the highest likelihood that an AI will name the agent.
+                      Complete verified profile published: everything in Audited plus neighborhood-level detail, performance data, press mentions, and awards. Data refreshed near real-time with continuous monitoring. The most comprehensive payload produces the <strong>highest likelihood</strong> that an AI will name the agent.
                     </p>
                   </div>
                 </div>
@@ -447,7 +447,7 @@ export default function MethodologyPage() {
               <div>
                 <h3 className="text-lg font-semibold mb-3">What This Is Not</h3>
                 <p className="text-muted-foreground">
-                  Not a lead marketplace.  Not a pay-to-play directory.  Not a popularity contest.  It is a risk-reduction system designed for AI-era referrals.
+                  <strong>Not</strong> a lead marketplace. <strong>Not</strong> a pay-to-play directory. <strong>Not</strong> a popularity contest.  It is a <strong>risk-reduction system</strong> designed for AI-era referrals.
                 </p>
               </div>
             </section>
