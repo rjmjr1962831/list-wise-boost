@@ -2,18 +2,11 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Check, X, RefreshCw, ExternalLink, Eye } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Loader2, Check, X, RefreshCw, ExternalLink } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from '@/components/ui/dialog';
-import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface FieldChangeRequest {
   id: string;
@@ -21,16 +14,16 @@ interface FieldChangeRequest {
   field_name: string;
   current_value: string | null;
   proposed_value: string | null;
-  change_request: string;
+  change_request: string | null;
   status: string;
-  pipedrive_activity_id: number | null;
-  created_at: string;
   reviewed_at: string | null;
   reviewed_by: string | null;
+  created_at: string;
   professional?: {
     name: string;
     email: string | null;
     profile_link: string | null;
+    short_code: string | null;
   };
 }
 
@@ -39,29 +32,29 @@ export function FieldChangeRequestsManager() {
   const [requests, setRequests] = useState<FieldChangeRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState<string | null>(null);
-  const [selectedRequest, setSelectedRequest] = useState<FieldChangeRequest | null>(null);
-  const [showDialog, setShowDialog] = useState(false);
+  const [reasonMap, setReasonMap] = useState<Record<string, string>>({});
+  const [filter, setFilter] = useState<'pending' | 'all'>('pending');
 
   const fetchRequests = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('field_change_requests')
         .select(`
           *,
-          professional:professionals(name, email, profile_link)
+          professional:professionals(name, email, profile_link, short_code)
         `)
         .order('created_at', { ascending: false });
 
+      if (filter === 'pending') {
+        query = query.eq('status', 'pending');
+      }
+
+      const { data, error } = await query;
       if (error) throw error;
       setRequests((data || []) as FieldChangeRequest[]);
     } catch (err: any) {
-      console.error('Error fetching requests:', err);
-      toast({
-        title: 'Error',
-        description: 'Failed to fetch change requests',
-        variant: 'destructive'
-      });
+      toast({ title: 'Error', description: 'Failed to fetch change requests', variant: 'destructive' });
     } finally {
       setLoading(false);
     }
@@ -69,359 +62,213 @@ export function FieldChangeRequestsManager() {
 
   useEffect(() => {
     fetchRequests();
-  }, []);
+  }, [filter]);
 
-  const sendCompletionEmail = async (request: FieldChangeRequest, status: 'approved' | 'rejected') => {
-    if (!request.professional?.email) {
-      console.log('No email for professional, skipping completion email');
+  const getProfileUrl = (req: FieldChangeRequest) => {
+    if (req.professional?.profile_link) return `https://www.top10lists.us${req.professional.profile_link}`;
+    if (req.professional?.short_code) return `https://www.top10lists.us/agents/${req.professional.short_code}`;
+    return null;
+  };
+
+  const handleAction = async (request: FieldChangeRequest, action: 'approved' | 'rejected') => {
+    const reason = reasonMap[request.id] || '';
+    if (action === 'rejected' && !reason.trim()) {
+      toast({ title: 'Reason required', description: 'Please enter a reason for rejecting this request.', variant: 'destructive' });
       return;
     }
 
-    try {
-      const firstName = request.professional.name?.split(' ')[0] || 'there';
-      
-      const { error } = await supabase.functions.invoke('send-change-request-completed', {
-        body: {
-          email: request.professional.email,
-          firstName,
-          professionalId: request.professional_id,
-          results: [{
-            fieldName: request.field_name,
-            previousValue: request.current_value,
-            newValue: status === 'approved' ? request.proposed_value : request.current_value,
-            status
-          }]
-        }
-      });
-
-      if (error) {
-        console.error('Failed to send completion email:', error);
-      } else {
-        console.log('Completion email sent to:', request.professional.email);
-      }
-    } catch (err) {
-      console.error('Error sending completion email:', err);
-    }
-  };
-
-  const handleApprove = async (request: FieldChangeRequest) => {
     setProcessing(request.id);
     try {
-      // Update the professional's field with the proposed value
-      const updateData: Record<string, any> = {
-        [request.field_name === 'Bio (Our Synthesis)' ? 'synthesized_bio' : request.field_name.toLowerCase().replace(/\s+/g, '_')]: request.proposed_value,
-        skip_pipedrive_sync: false
-      };
+      // If approving, update the professional's field
+      if (action === 'approved' && request.proposed_value) {
+        const fieldMap: Record<string, string> = {
+          'Full Name': 'name',
+          'License Number': 'license_number',
+          'Years of Experience': 'years_experience',
+          'Total Sales': 'total_sales',
+          'Reviews': 'num_total_reviews',
+        };
+        const dbField = fieldMap[request.field_name] || request.field_name.toLowerCase().replace(/\s+/g, '_');
 
-      const { error: updateError } = await supabase
-        .from('professionals')
-        .update(updateData)
-        .eq('id', request.professional_id);
+        let value: any = request.proposed_value;
+        if (['years_experience', 'total_sales', 'num_total_reviews'].includes(dbField)) {
+          value = parseInt(value) || null;
+        }
 
-      if (updateError) throw updateError;
+        const { error: updateError } = await supabase
+          .from('professionals')
+          .update({ [dbField]: value })
+          .eq('id', request.professional_id);
 
-      // Mark request as approved
+        if (updateError) throw updateError;
+      }
+
+      // Update the request status
       const { error: statusError } = await supabase
         .from('field_change_requests')
         .update({
-          status: 'approved',
+          status: action,
           reviewed_at: new Date().toISOString(),
-          reviewed_by: 'admin'
+          reviewed_by: reason.trim() ? `admin: ${reason.trim()}` : 'admin',
         })
         .eq('id', request.id);
 
       if (statusError) throw statusError;
 
-      // Send completion email
-      await sendCompletionEmail(request, 'approved');
-
       toast({
-        title: 'Approved',
-        description: `${request.field_name} has been updated for ${request.professional?.name}`
+        title: action === 'approved' ? 'Approved' : 'Rejected',
+        description: `${request.field_name} for ${request.professional?.name} has been ${action}.`,
       });
 
+      setReasonMap((prev) => { const n = { ...prev }; delete n[request.id]; return n; });
       fetchRequests();
-      setShowDialog(false);
     } catch (err: any) {
-      console.error('Error approving request:', err);
-      toast({
-        title: 'Error',
-        description: err.message || 'Failed to approve request',
-        variant: 'destructive'
-      });
+      toast({ title: 'Error', description: err.message || `Failed to ${action} request`, variant: 'destructive' });
     } finally {
       setProcessing(null);
     }
   };
 
-  const handleReject = async (request: FieldChangeRequest) => {
-    setProcessing(request.id);
-    try {
-      const { error } = await supabase
-        .from('field_change_requests')
-        .update({
-          status: 'rejected',
-          reviewed_at: new Date().toISOString(),
-          reviewed_by: 'admin'
-        })
-        .eq('id', request.id);
-
-      if (error) throw error;
-
-      // Send completion email
-      await sendCompletionEmail(request, 'rejected');
-
-      toast({
-        title: 'Rejected',
-        description: `Change request for ${request.professional?.name} has been rejected`
-      });
-
-      fetchRequests();
-      setShowDialog(false);
-    } catch (err: any) {
-      console.error('Error rejecting request:', err);
-      toast({
-        title: 'Error',
-        description: err.message || 'Failed to reject request',
-        variant: 'destructive'
-      });
-    } finally {
-      setProcessing(null);
-    }
-  };
-
-  const openReviewDialog = (request: FieldChangeRequest) => {
-    setSelectedRequest(request);
-    setShowDialog(true);
-  };
-
-  const pendingRequests = requests.filter(r => r.status === 'pending');
-  const processedRequests = requests.filter(r => r.status !== 'pending');
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'approved':
-        return <Badge className="bg-green-500">Approved</Badge>;
-      case 'rejected':
-        return <Badge variant="destructive">Rejected</Badge>;
-      default:
-        return <Badge variant="secondary">Pending</Badge>;
-    }
+  const statusColor = (s: string) => {
+    if (s === 'approved') return 'bg-green-100 text-green-800';
+    if (s === 'rejected') return 'bg-red-100 text-red-800';
+    return 'bg-yellow-100 text-yellow-800';
   };
 
   return (
-    <>
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>Field Change Requests</CardTitle>
-              <CardDescription>
-                Review and approve agent profile field change requests
-              </CardDescription>
-            </div>
-            <Button variant="outline" size="sm" onClick={fetchRequests} disabled={loading}>
-              <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-              Refresh
+    <Card>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle>Field Change Requests</CardTitle>
+            <CardDescription>Review and approve or reject agent-submitted changes.</CardDescription>
+          </div>
+          <div className="flex gap-2">
+            <Button variant={filter === 'pending' ? 'default' : 'outline'} size="sm" onClick={() => setFilter('pending')}>
+              Pending
+            </Button>
+            <Button variant={filter === 'all' ? 'default' : 'outline'} size="sm" onClick={() => setFilter('all')}>
+              All
+            </Button>
+            <Button variant="outline" size="sm" onClick={fetchRequests}>
+              <RefreshCw className="h-4 w-4" />
             </Button>
           </div>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
-          ) : requests.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">No change requests found</p>
-          ) : (
-            <div className="space-y-6">
-              {/* Pending Requests */}
-              {pendingRequests.length > 0 && (
-                <div>
-                  <h3 className="font-semibold mb-3 text-lg">
-                    Pending Requests ({pendingRequests.length})
-                  </h3>
-                  <div className="space-y-3">
-                    {pendingRequests.map((request) => (
-                      <div
-                        key={request.id}
-                        className="border rounded-lg p-4 bg-amber-50 dark:bg-amber-950/20"
-                      >
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="font-medium">{request.professional?.name}</span>
-                              {getStatusBadge(request.status)}
-                            </div>
-                            <p className="text-sm text-muted-foreground">
-                              Field: <span className="font-medium">{request.field_name}</span>
-                            </p>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              {new Date(request.created_at).toLocaleString()}
-                            </p>
-                          </div>
-                          <div className="flex gap-2">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => openReviewDialog(request)}
-                            >
-                              <Eye className="h-4 w-4 mr-1" />
-                              Review
-                            </Button>
-                          </div>
-                        </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        {loading ? (
+          <div className="flex justify-center py-8">
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          </div>
+        ) : requests.length === 0 ? (
+          <p className="text-center text-muted-foreground py-8">No {filter === 'pending' ? 'pending ' : ''}change requests.</p>
+        ) : (
+          <div className="space-y-4">
+            {requests.map((req) => {
+              const profileUrl = getProfileUrl(req);
+              return (
+                <div key={req.id} className="border rounded-lg p-4 space-y-3">
+                  {/* Header row */}
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-semibold">{req.professional?.name || 'Unknown'}</span>
+                        <Badge className={statusColor(req.status)}>{req.status}</Badge>
                       </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Processed Requests */}
-              {processedRequests.length > 0 && (
-                <div>
-                  <h3 className="font-semibold mb-3 text-lg text-muted-foreground">
-                    Processed ({processedRequests.length})
-                  </h3>
-                  <div className="space-y-2">
-                    {processedRequests.slice(0, 10).map((request) => (
-                      <div
-                        key={request.id}
-                        className="border rounded-lg p-3 opacity-70"
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(req.created_at).toLocaleString()}
+                        {req.professional?.email && ` · ${req.professional.email}`}
+                      </p>
+                    </div>
+                    {profileUrl && (
+                      <a
+                        href={profileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline text-sm flex items-center gap-1 shrink-0"
                       >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm">{request.professional?.name}</span>
-                            <span className="text-xs text-muted-foreground">•</span>
-                            <span className="text-sm text-muted-foreground">{request.field_name}</span>
-                            {getStatusBadge(request.status)}
-                          </div>
-                          <span className="text-xs text-muted-foreground">
-                            {request.reviewed_at && new Date(request.reviewed_at).toLocaleDateString()}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
+                        View Profile <ExternalLink className="h-3 w-3" />
+                      </a>
+                    )}
                   </div>
+
+                  {/* Field details */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Field</Label>
+                      <p className="font-medium">{req.field_name}</p>
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Current Value</Label>
+                      <p className="font-mono text-sm bg-muted/50 rounded px-2 py-1">{req.current_value || '(empty)'}</p>
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Requested Value</Label>
+                      <p className="font-mono text-sm bg-primary/5 border border-primary/20 rounded px-2 py-1">{req.proposed_value || '(empty)'}</p>
+                    </div>
+                  </div>
+
+                  {/* Confirmation source */}
+                  {req.change_request && (
+                    <div className="text-sm">
+                      <Label className="text-xs text-muted-foreground">Confirmation Source</Label>
+                      <p className="text-muted-foreground">{req.change_request}</p>
+                    </div>
+                  )}
+
+                  {/* Reviewed by info */}
+                  {req.reviewed_by && (
+                    <div className="text-xs text-muted-foreground">
+                      Reviewed: {req.reviewed_by} at {req.reviewed_at ? new Date(req.reviewed_at).toLocaleString() : ''}
+                    </div>
+                  )}
+
+                  {/* Action area - only for pending */}
+                  {req.status === 'pending' && (
+                    <div className="border-t pt-3 space-y-2">
+                      <div>
+                        <Label htmlFor={`reason-${req.id}`} className="text-xs">
+                          Why? {req.status === 'pending' && '(required for rejection)'}
+                        </Label>
+                        <Textarea
+                          id={`reason-${req.id}`}
+                          value={reasonMap[req.id] || ''}
+                          onChange={(e) => setReasonMap((prev) => ({ ...prev, [req.id]: e.target.value }))}
+                          placeholder="Reason for your decision..."
+                          rows={2}
+                          className="mt-1"
+                        />
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          onClick={() => handleAction(req, 'approved')}
+                          disabled={processing === req.id}
+                          className="gap-1 bg-green-600 hover:bg-green-700"
+                        >
+                          {processing === req.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />}
+                          Accept
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => handleAction(req, 'rejected')}
+                          disabled={processing === req.id}
+                          className="gap-1"
+                        >
+                          {processing === req.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <X className="h-3 w-3" />}
+                          Reject
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Review Dialog */}
-      <Dialog open={showDialog} onOpenChange={setShowDialog}>
-        <DialogContent className="max-w-3xl max-h-[90vh]">
-          <DialogHeader>
-            <DialogTitle>Review Change Request</DialogTitle>
-            <DialogDescription>
-              Compare current and proposed values before approving
-            </DialogDescription>
-          </DialogHeader>
-
-          {selectedRequest && (
-            <div className="space-y-4">
-              {/* Agent Info */}
-              <div className="flex items-center justify-between border-b pb-3">
-                <div>
-                  <p className="font-semibold">{selectedRequest.professional?.name}</p>
-                  <p className="text-sm text-muted-foreground">{selectedRequest.professional?.email}</p>
-                </div>
-                {selectedRequest.professional?.profile_link && (
-                  <Button variant="outline" size="sm" asChild>
-                    <a href={selectedRequest.professional.profile_link} target="_blank" rel="noopener noreferrer">
-                      <ExternalLink className="h-4 w-4 mr-1" />
-                      View Profile
-                    </a>
-                  </Button>
-                )}
-              </div>
-
-              {/* Field Name */}
-              <div>
-                <p className="text-sm font-medium text-muted-foreground mb-1">Field</p>
-                <p className="font-medium">{selectedRequest.field_name}</p>
-              </div>
-
-              {/* Agent's Request */}
-              <div className="bg-muted/50 rounded-lg p-3">
-                <p className="text-sm font-medium text-muted-foreground mb-1">Agent's Request</p>
-                <p className="text-sm whitespace-pre-wrap">{selectedRequest.change_request}</p>
-              </div>
-
-              {/* Comparison */}
-              <div className="grid grid-cols-2 gap-4">
-                {/* Current Value */}
-                <div className="border rounded-lg p-3">
-                  <p className="text-sm font-medium text-muted-foreground mb-2 flex items-center gap-2">
-                    <span className="h-2 w-2 rounded-full bg-red-400"></span>
-                    Current Value
-                  </p>
-                  <ScrollArea className="h-48">
-                    <div 
-                      className="text-sm whitespace-pre-wrap"
-                      dangerouslySetInnerHTML={{ 
-                        __html: selectedRequest.current_value || '<em class="text-muted-foreground">No current value</em>' 
-                      }}
-                    />
-                  </ScrollArea>
-                </div>
-
-                {/* Proposed Value */}
-                <div className="border rounded-lg p-3 bg-green-50 dark:bg-green-950/20">
-                  <p className="text-sm font-medium text-muted-foreground mb-2 flex items-center gap-2">
-                    <span className="h-2 w-2 rounded-full bg-green-400"></span>
-                    Proposed Value
-                  </p>
-                  <ScrollArea className="h-48">
-                    <div 
-                      className="text-sm whitespace-pre-wrap"
-                      dangerouslySetInnerHTML={{ 
-                        __html: selectedRequest.proposed_value || '<em class="text-muted-foreground">No proposed value</em>' 
-                      }}
-                    />
-                  </ScrollArea>
-                </div>
-              </div>
-            </div>
-          )}
-
-          <DialogFooter className="gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setShowDialog(false)}
-              disabled={!!processing}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={() => selectedRequest && handleReject(selectedRequest)}
-              disabled={!!processing}
-            >
-              {processing === selectedRequest?.id ? (
-                <Loader2 className="h-4 w-4 animate-spin mr-1" />
-              ) : (
-                <X className="h-4 w-4 mr-1" />
-              )}
-              Reject
-            </Button>
-            <Button
-              onClick={() => selectedRequest && handleApprove(selectedRequest)}
-              disabled={!!processing}
-              className="bg-green-600 hover:bg-green-700"
-            >
-              {processing === selectedRequest?.id ? (
-                <Loader2 className="h-4 w-4 animate-spin mr-1" />
-              ) : (
-                <Check className="h-4 w-4 mr-1" />
-              )}
-              Approve & Apply
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </>
+              );
+            })}
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
