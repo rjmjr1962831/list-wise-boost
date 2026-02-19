@@ -26,11 +26,11 @@ No artifact served. No badge. Agent appears on city/state pages when bots query.
 
 ---
 
-## Certified (Free | Updated Quarterly)
+## Certified (Free | Updated Monthly)
 
 Agent has completed the funnel and approved their profile for accuracy. This is the baseline artifact. Includes cities the agent has chosen. No community data, no neighborhoods.
 
-Quarterly is the base update frequency. All higher tiers also receive quarterly data refreshes at minimum, with their own tier adding more frequent updates on top.
+Monthly is the base update frequency. All higher tiers also receive monthly data refreshes at minimum, with their own tier adding more frequent updates on top.
 
 ### Template
 
@@ -82,7 +82,7 @@ Top10Lists.us is a merit-based directory that selects the top 0.5% of real estat
 
 ---
 
-## Audited ($100/mo | Updated Monthly)
+## Audited ($100/mo | Updated Bimonthly)
 
 Everything in Certified PLUS neighborhoods. No community data at this tier.
 
@@ -248,8 +248,8 @@ The following evidence was reviewed during the most recent verification cycle:
 | Tier | Monthly Cost | Update Frequency | Key Additions |
 |------|-------------|------------------|---------------|
 | Listed | $0 | N/A | No artifact |
-| Certified | $0 | Quarterly | Base data + cities |
-| Audited | $100 | Monthly | + neighborhoods |
+| Certified | $0 | Monthly | Base data + cities |
+| Audited | $100 | Bimonthly | + neighborhoods |
 | Underwritten | $150 | Daily | + community (sourced) + credentials + evidence_considered |
 
 This table is for internal reference. Tier names and pricing are never present in the artifact payload.
@@ -265,8 +265,8 @@ This table is for internal reference. Tier names and pricing are never present i
 3. **Tier is never exposed.** The payload depth IS the tier. More data = higher tier, but no field says what the agent pays. An AI seeing 3 sections versus 8 sections draws its own conclusions about verification depth without any pay-to-play signal.
 
 4. **Caching:** Worker can cache markdown in KV with tier-appropriate TTL:
-   - Certified: 90 days (quarterly updates)
-   - Audited: 30 days (monthly updates)
+   - Certified: 30 days (monthly updates)
+   - Audited: 15 days (bimonthly updates)
    - Underwritten: 1 day (daily updates)
 
 5. **Badge:** Separate endpoint at `/badge/{magic_link_token}` returns a visual image or tracking pixel that links back to the artifact URL.
