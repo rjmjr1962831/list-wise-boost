@@ -373,6 +373,7 @@ export default function Step3Review2() {
                 {/* Editable fields */}
                 <div>
                   <Label htmlFor="website">Website URL</Label>
+                  <p className="text-xs text-muted-foreground mb-1">You can edit this field directly.</p>
                   <Input
                     id="website"
                     type="url"
@@ -384,6 +385,7 @@ export default function Step3Review2() {
 
                 <div>
                   <Label htmlFor="title">Title (e.g. DDS, DMD)</Label>
+                  <p className="text-xs text-muted-foreground mb-1">You can edit this field directly.</p>
                   <Input
                     id="title"
                     value={formData.title}
@@ -394,6 +396,7 @@ export default function Step3Review2() {
 
                 <div>
                   <Label htmlFor="address">Address</Label>
+                  <p className="text-xs text-muted-foreground mb-1">You can edit this field directly.</p>
                   <Input
                     id="address"
                     value={formData.address}
@@ -404,6 +407,7 @@ export default function Step3Review2() {
 
                 <div>
                   <Label htmlFor="zip_code">ZIP Code</Label>
+                  <p className="text-xs text-muted-foreground mb-1">You can edit this field directly.</p>
                   <Input
                     id="zip_code"
                     value={formData.zip_code}
@@ -489,6 +493,7 @@ export default function Step3Review2() {
 
                 <div>
                   <Label htmlFor="zillow">Zillow Profile URL</Label>
+                  <p className="text-xs text-muted-foreground mb-1">You can edit this field directly.</p>
                   <Input
                     id="zillow"
                     type="url"
@@ -500,6 +505,7 @@ export default function Step3Review2() {
 
                 <div>
                   <Label htmlFor="video">YouTube Video URL</Label>
+                  <p className="text-xs text-muted-foreground mb-1">You can edit this field directly.</p>
                   <Input
                     id="video"
                     type="url"
@@ -511,6 +517,7 @@ export default function Step3Review2() {
 
                 <div>
                   <Label htmlFor="business_name">Business Name</Label>
+                  <p className="text-xs text-muted-foreground mb-1">You can edit this field directly.</p>
                   <Input
                     id="business_name"
                     value={formData.business_name}
