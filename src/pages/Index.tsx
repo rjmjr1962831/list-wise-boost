@@ -245,7 +245,7 @@ const Index = () => {
               </li>
               <li className="flex gap-3">
                 <span className="text-primary font-bold mt-1">&#8226;</span>
-                <span><strong className="text-foreground">Free Forever:</strong> While we offer paid enhancements for those who want to maximize their edge, your listing and initial certification are free forever.</span>
+                <span><strong className="text-foreground">Free to qualify:</strong> While we offer paid enhancements for those who want to maximize their edge, your listing and initial certification are free for as long as you are active and meet our qualification standards.</span>
               </li>
             </ul>
           </div>
