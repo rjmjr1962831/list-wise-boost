@@ -12,6 +12,7 @@ interface Professional {
   name: string;
   email: string | null;
   phone: string | null;
+  phone_numbers: { mobile?: { number?: string; publish?: boolean }; business?: { number?: string; publish?: boolean }; other?: { number?: string; publish?: boolean }; [key: string]: any } | null;
   company: string | null;
   business_name?: string | null;
   website: string | null;
@@ -135,7 +136,19 @@ export default function Step4ReviewFinal() {
                   </div>
                   <div className="flex gap-2">
                     <dt className="font-medium w-24">Phone:</dt>
-                    <dd>{professional.phone || 'Not provided'}</dd>
+                    <dd>
+                      {(() => {
+                        const pn = professional.phone_numbers as any;
+                        if (pn?.mobile?.number || pn?.business?.number || pn?.other?.number) {
+                          const parts = [];
+                          if (pn.mobile?.number) parts.push(`Mobile: ${pn.mobile.number}${pn.mobile.publish ? '' : ' (hidden)'}`);
+                          if (pn.business?.number) parts.push(`Business: ${pn.business.number}${pn.business.publish ? '' : ' (hidden)'}`);
+                          if (pn.other?.number) parts.push(`Other: ${pn.other.number}${pn.other.publish ? '' : ' (hidden)'}`);
+                          return parts.join(' · ');
+                        }
+                        return professional.phone || 'Not provided';
+                      })()}
+                    </dd>
                   </div>
                   <div className="flex gap-2">
                     <dt className="font-medium w-24">Company:</dt>
