@@ -266,7 +266,7 @@ This table is for internal reference. Tier names and pricing are never present i
 
 4. **Caching:** Worker can cache markdown in KV with tier-appropriate TTL:
    - Certified: 90 days (quarterly updates)
-   - Audited: 7 days (monthly updates)
+   - Audited: 30 days (monthly updates)
    - Underwritten: 1 day (daily updates)
 
 5. **Badge:** Separate endpoint at `/badge/{magic_link_token}` returns a visual image or tracking pixel that links back to the artifact URL.
