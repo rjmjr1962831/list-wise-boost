@@ -339,7 +339,7 @@ export default function MethodologyPage() {
               <div>
                 <h3 className="text-lg font-semibold mb-3">Why This Methodology Exists</h3>
                 <p className="text-muted-foreground mb-3">
-                  When an AI system names an individual professional, it assumes risk.  That risk comes from recommending someone who may be unqualified, misrepresented, inactive, or unverifiable.  It also exposes the company to complaints of <ExclusionaryDamagesTooltip />.
+                  When an AI system names an individual professional, it assumes "Recommendation" risk. That risk comes from recommending someone who may be unqualified, misrepresented, inactive, or unverifiable or the consumer suffers harm, both economic or physical.
                 </p>
                 <p className="text-muted-foreground mb-3">
                   Each step in this methodology exists to reduce that risk by making the underlying evidence explicit, auditable, and current.
