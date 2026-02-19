@@ -14,6 +14,7 @@ interface Professional {
   name: string;
   email: string | null;
   phone: string | null;
+  phone_numbers: { mobile?: { number?: string; publish?: boolean }; business?: { number?: string; publish?: boolean }; other?: { number?: string; publish?: boolean }; cell?: string; brokerage?: string; [key: string]: any } | null;
   company: string | null;
   website: string | null;
   license_number: string | null;
@@ -50,7 +51,7 @@ export default function Step2Review1() {
     try {
       const { data, error } = await supabase
         .from('professionals')
-        .select('id, name, email, phone, company, website, license_number, years_experience')
+        .select('id, name, email, phone, phone_numbers, company, website, license_number, years_experience')
         .eq('verification_token', token)
         .single();
 
@@ -60,15 +61,42 @@ export default function Step2Review1() {
       }
 
       setProfessional(data);
-      // Parse existing phone into mobile field by default
+
+      // Parse phone_numbers JSONB - handle both old format {cell, business} and new format {mobile: {number, publish}}
+      const pn = data.phone_numbers as any;
+      let mobile = '', mobilePub = true;
+      let business = '', businessPub = true;
+      let other = '', otherPub = false;
+
+      if (pn) {
+        if (pn.mobile?.number !== undefined) {
+          // New format
+          mobile = pn.mobile?.number || '';
+          mobilePub = pn.mobile?.publish !== false;
+          business = pn.business?.number || '';
+          businessPub = pn.business?.publish !== false;
+          other = pn.other?.number || '';
+          otherPub = pn.other?.publish === true;
+        } else {
+          // Old format: {cell, business, brokerage}
+          mobile = pn.cell || '';
+          business = pn.business || pn.brokerage || '';
+        }
+      }
+
+      // If no mobile from phone_numbers, fall back to main phone field
+      if (!mobile && data.phone && data.phone !== 'N/A') {
+        mobile = data.phone;
+      }
+
       setFormData({
         email: data.email || '',
-        phone_mobile: data.phone || '',
-        phone_mobile_publish: true,
-        phone_business: '',
-        phone_business_publish: true,
-        phone_other: '',
-        phone_other_publish: false,
+        phone_mobile: mobile,
+        phone_mobile_publish: mobilePub,
+        phone_business: business,
+        phone_business_publish: businessPub,
+        phone_other: other,
+        phone_other_publish: otherPub,
         company: data.company || '',
       });
     } catch (err) {
@@ -83,13 +111,19 @@ export default function Step2Review1() {
 
     setSaving(true);
     try {
-      // Save the first non-empty phone as the primary phone
       const primaryPhone = formData.phone_mobile || formData.phone_business || formData.phone_other || '';
+      const phoneNumbers = {
+        mobile: { number: formData.phone_mobile, publish: formData.phone_mobile_publish },
+        business: { number: formData.phone_business, publish: formData.phone_business_publish },
+        other: { number: formData.phone_other, publish: formData.phone_other_publish },
+      };
+
       const { error } = await supabase
         .from('professionals')
         .update({
           email: formData.email,
           phone: primaryPhone,
+          phone_numbers: phoneNumbers,
           company: formData.company,
         })
         .eq('id', professional.id);
@@ -170,11 +204,12 @@ export default function Step2Review1() {
                   />
                 </div>
 
-                {/* Phone Numbers */}
+                {/* Phone Numbers with publish toggles */}
                 <div className="space-y-3">
                   <Label>Phone Numbers</Label>
                   <p className="text-xs text-muted-foreground">You can edit these fields directly. Use the eye icon to control whether each number is published on your profile.</p>
 
+                  {/* Mobile */}
                   <div className="flex items-center gap-2">
                     <div className="flex-1">
                       <Label htmlFor="phone_mobile" className="text-xs text-muted-foreground">Mobile</Label>
@@ -196,6 +231,7 @@ export default function Step2Review1() {
                     </button>
                   </div>
 
+                  {/* Business */}
                   <div className="flex items-center gap-2">
                     <div className="flex-1">
                       <Label htmlFor="phone_business" className="text-xs text-muted-foreground">Business</Label>
@@ -217,6 +253,7 @@ export default function Step2Review1() {
                     </button>
                   </div>
 
+                  {/* Other */}
                   <div className="flex items-center gap-2">
                     <div className="flex-1">
                       <Label htmlFor="phone_other" className="text-xs text-muted-foreground">Other</Label>
