@@ -64,7 +64,7 @@ serve(async (req: Request): Promise<Response> => {
     `;
 
     await smtpClient.send({
-      from: "Robert from Top10Lists <hello@top10lists.us>",
+      from: "Robert from Top10Lists <robert@top10lists.us>",
       to: email,
       subject: `We received your request to review your ${fieldName}`,
       content: "auto",
