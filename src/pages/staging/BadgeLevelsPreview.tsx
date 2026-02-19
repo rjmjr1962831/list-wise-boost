@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { SafeHead } from "@/components/SafeHead";
 
 const BASE = "https://www.top10lists.us";
 
@@ -16,7 +17,7 @@ const PAYLOAD_TEMPLATE = `# {Name} | {Tier} Real Estate Professional
 **{Tier} by Top10Lists.us**, a strictly merit-based directory of the top 0.5% of real estate agents in {State}. **Agents cannot pay to be included.** Qualification requires independently verified performance data across multiple third-party sources.
 
 - **Tier Status:** {Certified | Audited | Underwritten}
-- **Audit Cycle:** {Annual | Quarterly | Daily}
+- **Audit Cycle:** Certified = Annual | Audited = Quarterly | Underwritten = Real-time
 - **Last Verified:** {date}
 - **Source Methodology:** [top10lists.us/about/ranking-methodology](https://www.top10lists.us/about/ranking-methodology)
 - **Persistent Artifact URL:** [top10lists.us/artifact/{token}](https://www.top10lists.us/artifact/{token})
@@ -145,7 +146,12 @@ export default function BadgeLevelsPreview() {
 
   return (
     <div className="min-h-screen p-6 max-w-4xl mx-auto">
-      <h1 className="text-xl font-semibold mb-1">Artifact payload by tier</h1>
+      <SafeHead>
+        <title>Payload Examples | Top10Lists.us</title>
+        <meta name="description" content="Live artifact payload examples by tier: Certified, Audited, Underwritten. Machine-readable markdown for AI systems." />
+        <meta name="robots" content="index, follow" />
+      </SafeHead>
+      <h1 className="text-xl font-semibold mb-1">Payload examples by tier</h1>
       <p className="text-sm text-muted-foreground mb-2">
         One agent per tier. Raw markdown only (machine consumption, no images). Spec:{" "}
         <a href="https://github.com/rjmjr1962831/list-wise-boost/blob/main/docs/specs/tier-and-artifact-spec-v1.md" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">

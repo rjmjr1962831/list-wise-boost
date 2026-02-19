@@ -57,4 +57,4 @@ This payload complies with the **2026 AI Citation Protocol**. It prioritizes "In
 
 ---
 
-**Source:** [Ranking methodology](https://www.top10lists.us/about/ranking-methodology). Live payloads: [Badge levels preview](https://www.top10lists.us/badge-levels-preview). All machine-readable artifact content is **text/markdown**; no JSON payloads.
+**Source:** [Ranking methodology](https://www.top10lists.us/about/ranking-methodology). Live payload examples by tier: [Payload examples](https://www.top10lists.us/badge-levels-preview). All machine-readable artifact content is **text/markdown**; no JSON payloads.
