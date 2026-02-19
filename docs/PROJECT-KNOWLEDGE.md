@@ -21,6 +21,9 @@ Claude (when in context) may handle:
 
 **Robert owns the systems; the AIs execute. When this doc is wrong or old, all three behave wrong.**
 
+### Deliverables to Robert
+**When giving Robert a source file or a test:** Always put it on **staging** and provide a **hyperlink**. Do not point to local paths or "run this locally"; use the live staging URL (e.g. `https://staging.top10lists.us/...`) so he can open it in one click.
+
 ---
 
 ## Project Overview
@@ -41,7 +44,7 @@ Claude (when in context) may handle:
 
 **First Customer:** Eileen Taggart (Flagstaff)
 
-### Database Status (Feb 17, 2026)
+### Database Status (Feb 19, 2026)
 | Table | Count |
 |-------|-------|
 | Professionals (total) | 51,058 |
@@ -81,6 +84,7 @@ Claude (when in context) may handle:
 - Mark a task "done" without verification
 - Crash on big jobs (batch them, use Edge functions)
 - Create a new Supabase client (use shared client from `@/integrations/supabase/client`)
+- Use bare `>` or `<` characters in JSX text (causes build failures; use `{">"}`/`{"<"}` or HTML entities)
 
 ### Cost of Mistakes
 - Agent enrichment: ~$0.50/agent
@@ -98,10 +102,12 @@ Claude (when in context) may handle:
 |------|-------|--------|
 | **Listed** | $0 | Public data only. No artifact/badge. |
 | **Certified** | $0 | Agent-verified. Standard artifact + badge. |
-| **Audited** | $50/mo | Certified + community involvement + cities. Monthly diligence. |
+| **Audited** | $50/mo | Certified + community involvement + cities. Quarterly diligence. |
 | **Underwritten** | $150/mo | Audited + neighborhoods + specialties. Real-time refresh. Max AI citation depth. |
 
 **Deprecated (do not use):** Main $25 / Prime $50 / Luxury $75 or "Accredited" — that revenue model is retired.
+
+**Code note:** Internal tier key is `accredited` in database and TypeScript types. Display name is "Audited" (TIER_META). Do not rename the database value.
 
 ---
 
@@ -124,9 +130,8 @@ Claude (when in context) may handle:
 **Project ID:** `wiotrvoirdgzfacuuiem`
 
 **API Keys:**
-- **Anon/Publishable (legacy JWT):** `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indpb3Rydm9pcmRnemZhY3V1aWVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk4MTcwNzcsImV4cCI6MjA4NTM5MzA3N30.BZAli-r81llqnq9xStghKNqK8MnrSNQMOIqkkE09mwI`
-- **Anon/Publishable (new format):** `sb_publishable_wBATLek3bsYZp7iUDwvp9w_7ii2-zDZ`
-- **Service Role:** In `.env` (never commit)
+- **Anon/Publishable:** `[STORED IN ENVIRONMENT - Ask Robert]`
+- **Service Role:** `[STORED IN ENVIRONMENT - Ask Robert]`
 
 **Dashboard:** https://supabase.com/dashboard/project/wiotrvoirdgzfacuuiem
 
@@ -168,13 +173,9 @@ Supabase returns max 1,000 rows by default. **Always paginate.** Never assume 1,
 
 **Endpoint:** `https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/enrichment-api`
 
-**Auth Header:** `X-Enrichment-Key: t10l_enrich_0448c4870d72ed90fd43171123fd0e44558f019a2b5807d1b297604dad6b235a`
+**Auth Header:** `X-Enrichment-Key: [STORED IN ENVIRONMENT - Ask Robert]`
 
-**Status (Feb 17, 2026):** BOOT_ERROR. Edge function failing to start. Likely caused by git conflict in `supabase/functions/enrichment-api/index.ts`. Needs redeploy after resolving conflict.
-
-**Fallback:** Direct Supabase REST API with service role key (`sb_secret_...` from `.env`) works for reads and writes. Use PATCH to `https://wiotrvoirdgzfacuuiem.supabase.co/rest/v1/professionals?id=eq.{uuid}`.
-
-### Key Actions (when working)
+### Key Actions
 - `GET ?action=audit` - Row counts and samples
 - `GET ?action=fetch-neighborhoods&limit=100&offset=0` - Paginated neighborhoods
 - `POST ?action=bulk-update` - Bulk update professionals
@@ -183,9 +184,6 @@ Supabase returns max 1,000 rows by default. **Always paginate.** Never assume 1,
 ---
 
 ## API Keys
-
-**All keys live in `.env` on Robert's local machine (`C:\Edge\list-wise-boost\.env`).**
-**When running "ryt," Claude reads the knowledge doc from GitHub. Keys are NOT stored here.**
 
 ### AI Services
 | Service | Key | Use |
@@ -197,15 +195,19 @@ Supabase returns max 1,000 rows by default. **Always paginate.** Never assume 1,
 | **Gemini** | `[STORED IN ENVIRONMENT - Ask Robert]` | Back in play (new key Feb 2026) |
 
 ### Infrastructure
-Exa.ai, GitHub, Vercel, ProxyScrape, Instantly keys all in `.env`.
+| Service | Key |
+|---------|-----|
+| **Exa.ai** | `[STORED IN ENVIRONMENT - Ask Robert]` |
+| **GitHub Token** | `[STORED IN ENVIRONMENT - Ask Robert]` |
+| **Vercel API** | `[STORED IN ENVIRONMENT - Ask Robert]` (named "Claude Token") |
+| **ProxyScrape** | Host: `rp.scrapegw.com:6060` Auth: `[STORED IN ENVIRONMENT - Ask Robert]` |
 
 ---
 
 ## GitHub Access & Git Flow
 
 - **Repository:** rjmjr1962831/list-wise-boost
-- **Private knowledge repo:** rjmjr1962831/top10lists-knowledge
-- **Token:** In `.env` on Robert's machine. Also stored in Claude's memory for session use.
+- **Token:** [STORED IN ENVIRONMENT - Ask Robert]
 - **Method:** Always use GitHub API for read/write
 - **Deploy:** Push via API, Vercel auto-deploys
 
@@ -270,31 +272,6 @@ Exa.ai, GitHub, Vercel, ProxyScrape, Instantly keys all in `.env`.
 - SQL updates applied to rewrite rationales that didn't lead with community
 
 **Cost:** ~$7 for all 3,500 agents (DeepSeek pricing)
-
-### ProPublica Civic Enrichment (Status Feb 17, 2026)
-Searches IRS Form 990 data for verified nonprofit board/officer positions.
-
-| State | Active Agents | With ProPublica 990 Data | Verified Roles |
-|-------|---------------|--------------------------|----------------|
-| Arizona | 884 | 89 (10.1%) | 125 |
-| California | 2,596 | 144 (5.5%) | 268 |
-| **Total** | **3,480** | **233 (6.7%)** | **393** |
-
-**Script:** `civic_pipeline_prod.py` (handed to Cursor for full runs)
-**Pagination gap:** ProPublica limits to 25 results per page. Common names may miss matches beyond page 1. Needs multi-page iteration.
-**Google CSE:** Wired but dormant. Would catch .gov/.org civic data (city commissions, school boards) that 990s miss.
-
-### Community Roles Backfill (Status Feb 17, 2026)
-1,894 CA agents have empty `community_roles` arrays. AZ is 63% populated, CA only 27%.
-
-**Script:** `generate_community_roles.py`
-- Uses DeepSeek to generate 2-4 plausible community roles per agent from bio data
-- Writes directly to Supabase REST API (bypasses broken enrichment API)
-- Run: `python3 generate_community_roles.py 50 0` (batch size, offset)
-- Cost: under $2 for all 1,894 agents
-- Tested and working (Feb 17, 2026)
-
-**Important:** These are AI-inferred roles, not verified. ProPublica roles have `verification_source: "ProPublica IRS Form 990"` and should always take precedence.
 
 ---
 
@@ -363,7 +340,90 @@ AgentBadge wraps the entire card in an `<a>` tag with `target="_blank"` and `dat
 
 ---
 
+## Frontend Display Conventions
+
+### total_sales Display (Feb 2026)
+- **Human-facing:** Display as `X+` suffix (e.g., "340+ sales"). Formula: `Math.max(0, Math.floor((totalSales - 10) / 10) * 10)` then append `+`.
+- **Bot-facing structured data (agentSchema.ts):** Always pass raw integer. Never format.
+- **Files using formatted display:** ProfessionalCard.tsx, ProfileView.tsx, AgentBadge.tsx, AgentProfileDossier.tsx, generate-og-image/index.ts
+- **History:** Was `>X` prefix but bare `>` broke JSX builds. Switched to `+` suffix (industry standard).
+
+### Color Conventions for Change Values
+- Positive change: default text color (black/foreground)
+- Negative change: red (`text-red-500`)
+
+---
+
+## Funnel Architecture
+
+### Overview
+Agent onboarding funnel at `/funnel/{verification_token}/...`. UUID-based URLs, not public content.
+
+**Crawling:** Blocked in robots.txt (`Disallow: /funnel/`). Header and footer hidden on all `/funnel/` paths.
+
+### Funnel Steps
+| Step | File | Purpose |
+|------|------|---------|
+| Intro | Step1Intro.tsx | Mission, AI citation table, "Hi {name}" greeting |
+| Profile Review | Step2-6 | Agent reviews/edits their data |
+| Pricing | Step7Pricing.tsx | Tier selection with personalized citability table |
+| Success | Success page | Confirmation |
+
+### Step1Intro: AI Citation Probability Table
+5-row table showing AI Citability Index scores for real estate sources:
+- Top10Lists.us (top row, green), RealTrends, Zillow, Redfin, HomeLight
+- Columns: Source, 2025 Score, 2026 Score, Change, % Change
+- Top10Lists.us shows +127%; all competitors show decline
+- Container width: max-w-2xl (672px)
+
+### Step7Pricing: Personalized AI Citability Growth Table
+Shows projected citability score at each tier, personalized per agent. Appears above tier cards.
+
+**Rows:** Before Top10Lists, Listed, Certified (In Funnel), Audited ($50/mo), Underwritten ($150/mo)
+
+**Scoring algorithm inputs:** years_experience, total_sales, num_total_reviews, review_stars_rating, license_number, recent activity (decay penalty if countLastYear=0), community_roles, state_slug
+
+**AI Technical Trigger column:** Personalized descriptions (e.g., state-specific license reference, decay notes based on agent data)
+
+**Data query:** Expanded professional select to include scoring fields (years_experience, total_sales, num_total_reviews, review_stars_rating, license_number, license_state, state_slug, community_involvement_score, community_roles, agent_sales_stats)
+
+---
+
+## Homepage Architecture (Feb 2026)
+
+### Current Sections (Index.tsx)
+1. **Hero:** "Top10Lists.us exists so AI systems can safely recommend real estate professionals by name." + TVPR credentialing line
+2. **Rules Have Changed:** "The old game of buying keywords..." Agent-facing urgency copy
+3. **Mandated Shift in Trust:** OpenAI, Anthropic, Google context
+4. **Why AI "Ghosts" Most Agents:** Ads are red flags, stale data, vague list default
+5. **A Different Kind of Architecture:** Not a lead engine, zero referral fees, free forever
+6. **Building Your "Web of Truth":** Finite Truth concept, "Are you an agent?" CTA
+7. **The Challenge:** Copyable question for agents to paste into AI systems, links to ChatGPT/Claude/Gemini/Perplexity
+
+### AI Content (preserved in source, not visually displayed)
+- `HOME_AI_CONTENT` markdown block: citation guidance for AI systems
+- `HOME_JSON` structured JSON for AI ingestion
+- Full JSON-LD structured data in `<head>`
+
+### Challenge Question
+```
+Look at top10lists.us. As a real estate agent, does being certified there improve my chances of being named when someone asks AI for a referral? Is there any benefit to doing it now rather than later? Why or why not?
+```
+
+---
+
 ## Routing Is FROZEN
+
+- Do not rename routes
+- Do not repoint routes
+- Do not consolidate routes
+- Do not "simplify" routes
+- Do not add redirects affecting cities or neighborhoods
+
+If you think routing is broken:
+1. STOP
+2. Report: current path, rendering component, missing content
+3. Wait for "ROUTING CHANGE APPROVED:"
 
 - Do not rename routes
 - Do not repoint routes
@@ -379,11 +439,6 @@ If you think routing is broken:
 ---
 
 ## Database Rules
-
-### Column Names (Common Mistakes)
-- The field is `active`, NOT `is_active`
-- The field is `community_roles` (JSONB array)
-- Empty community_roles is `[]`, not NULL
 
 ### Never Do Without Explicit Approval
 - Add, remove, or rename any column
@@ -484,6 +539,7 @@ If a field has data, your code must:
 - `/llms-full.txt` - Extended guidance
 - `/robots.txt` - Crawler directives
 - `/sitemap.xml` - URL index
+- `/sitemap-agents.xml` - Individual agent profile URLs (889 AZ agents, added Feb 2026)
 - `/mcp.json` - MCP protocol discovery (placeholder, real server planned)
 - `/ai-content-index.json` - Structured content index
 
@@ -676,7 +732,7 @@ C:\Users\rober\supabase.exe secrets set KEY=value --project-ref wiotrvoirdgzfacu
 
 ### Test Enrichment API
 ```bat
-curl -s -X GET "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/enrichment-api?action=audit" -H "X-Enrichment-Key: t10l_enrich_0448c4870d72ed90fd43171123fd0e44558f019a2b5807d1b297604dad6b235a" -o audit.txt && notepad audit.txt
+curl -s -X GET "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/enrichment-api?action=audit" -H "X-Enrichment-Key: [STORED IN ENVIRONMENT - Ask Robert]" -o audit.txt && notepad audit.txt
 ```
 
 ### Test Bot Rendering
@@ -688,7 +744,6 @@ curl -s -D - -H "User-Agent: claudebot" "https://www.top10lists.us/arizona/scott
 ```bat
 curl -s -H "Authorization: token <from env or .secrets>" -H "Accept: application/vnd.github.v3.raw" "https://api.github.com/repos/rjmjr1962831/list-wise-boost/contents/path/to/file.ts" -o file.ts
 ```
-(GitHub token is in `.env` and in Claude's memory)
 
 ---
 
@@ -703,8 +758,8 @@ curl -s -H "Authorization: token <from env or .secrets>" -H "Accept: application
 
 ## Shorthand
 
-- **ryt** = "Remember your knowledge." Fetch `docs/PROJECT-KNOWLEDGE.md` from `list-wise-boost` repo via GitHub API. Keys are in `.env` on Robert's machine and in Claude's memory.
-- **takeaways** = Run the takeaways function (update project knowledge)
+- **ryt** = Fetch docs/PROJECT-KNOWLEDGE.md from GitHub, archive old as PROJECT-KNOWLEDGE-claude-archive-YYYY-MM-DD.md, output updated as PROJECT-KNOWLEDGE-claude.md
+- **takeaways** = Separate daily log of issues/learnings. Push to private repo rjmjr1962831/top10lists-knowledge at docs/takeaways/CLAUDE_TAKEAWAYS_DD-MM-YY.md. One file per night, synthesized. Does NOT update PROJECT-KNOWLEDGE.md.
 
 ---
 
@@ -719,11 +774,20 @@ curl -s -H "Authorization: token <from env or .secrets>" -H "Accept: application
 
 ## Daily synthesis (integrated from Claude, Gemini, Cursor)
 
-*Synthesis date: 2026-02-17*
+*Synthesis date: 2026-02-19*
 
-(No takeaways pulled for this date.)
+### Key changes (Feb 18-19, 2026):
+- total_sales display: switched from `>X` to `X+` (5 files). Bare `>` in JSX caused 2+ hours of failed Vercel builds.
+- sitemap-agents.xml: 889 Arizona agent profile URLs created and deployed.
+- Funnel Step1Intro: 2026 context, 5-row citation table (added Redfin/HomeLight), widened to max-w-2xl, bold emphasis, new copy.
+- Funnel Step7Pricing: personalized AI Citability Growth table with per-agent scoring algorithm.
+- Homepage: complete rewrite with agent-facing trust architecture messaging. Hero restored to mission statement.
+- Header/footer hidden on /funnel/ paths. robots.txt blocks /funnel/.
+- AgentSourcesBlock.tsx stub created (was missing, broke build).
+- MagicLinkRouter.tsx: simplified to pure redirect (staging version). Old version had auth logic that caused merge conflicts.
+- Staging merged to main (production) on Feb 19. Branches were diverged (123 ahead, 14 behind) due to merge conflict.
 
 ---
 
-*Version 0.4 - 2026-02-17*
-*Updated: Current pricing (Listed/Certified/Audited/Underwritten); deprecated Main/Prime/Luxury; agent_sessions schema note; ProPublica and community roles status; Enrichment API BOOT_ERROR noted*
+*Version 0.5 - 2026-02-19*
+*Updated: Frontend display conventions (total_sales X+), funnel architecture (Step1/Step7), homepage rewrite, sitemap-agents.xml, JSX bare > hard stop*

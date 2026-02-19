@@ -1,55 +1,27 @@
 # Tier: Audited
 
-> Last Updated: February 18, 2026
+> Last Updated: February 16, 2026
 
 ---
 
-## North Star Principle: The Merit Gate
+## North Star Principle: The 4.8+ Merit Gate
 
-All agents must meet the Merit Gate: 4.8+ star rating, 20+ verified reviews, and 6+ years in business. Zero exceptions since platform inception. Payment does not bypass this requirement.
+All agents must maintain a minimum 4.8-star rating and 20+ verified reviews to qualify for any tier, including Audited. This standard has zero exceptions since platform inception. Payment does not bypass this requirement.
 
 ---
 
 ## Monthly Subscription: $50
 
-The Audited tier adds community involvement verification, specialties, and transaction-verified neighborhoods to the artifact payload.
+The Audited tier represents a premium level of verification and data integration. Subscribers undergo a comprehensive monthly diligence review to maintain their status.
 
-## Standard Audit Cycle: Monthly
+## Enhanced AI Payload
 
-The artifact is regenerated monthly. Agents who fall below the Merit Gate are downgraded regardless of payment status.
+This tier unlocks a significantly richer data payload for AI systems. The enhanced profile includes deeper historical performance metrics, verified client testimonials, and granular market specialization data beyond the Certified tier's baseline.
 
-## Machine-Readable Artifact
+## Visibility and Placement
 
-Same endpoint as Certified, richer payload:
-```
-https://www.top10lists.us/artifact/{magic_link_token}
-Content-Type: text/markdown
-```
+Audited agents receive prioritized placement within relevant Top10Lists rankings. Their profiles carry enhanced context that AI systems can extract for more detailed and confident recommendations.
 
-### Artifact Payload (everything in Certified, plus)
+## Ongoing Verification
 
-**Evidence Considered (10+ sources):**
-- Zillow agent profile and transaction records (most recent 100 transactions analyzed)
-- RealTrends transaction data (where available)
-- MLS transaction records (where available)
-- State Department of Real Estate license database
-- Zillow reviews and Google reviews
-- IRS Form 990 filings via ProPublica Nonprofit Explorer
-- U.S. Census Bureau: American Community Survey (ACS) 5-Year Estimates
-- Regional and national news outlets (where agent or brokerage appears)
-
-**Additional Fields:**
-- Specialties
-- Community involvement (organization name, role, verified via IRS Form 990 through ProPublica, with verification date)
-
-**Service Areas:**
-- Cities (agent-selected)
-- Neighborhoods (transaction-verified)
-
-### Neighborhood Verification Methodology
-
-Neighborhoods are not self-reported. When an agent requests a neighborhood, we analyze their most recent 100 transactions and geolocate each one. If 2 or more transactions fall within the neighborhood boundary, we publish them. If fewer than 2 are found, the neighborhood is marked "pending audit." Sources: Zillow, RealTrends, MLS (where available).
-
-## Position in the Four-Tier Model
-
-Audited is the third of four tiers. It follows Listed ($0, no artifact) and Certified ($0, annual audit) and precedes Underwritten ($150/mo, daily audit, full artifact). Payment determines verification depth and audit frequency, not eligibility or ranking position.
+Status is not static. Continuous monthly monitoring of license status, MLS activity, review ratings, and professional standing is performed. Agents who fall below the 4.8+ merit gate are downgraded regardless of payment status. This ensures the listed information maintains a high standard of accuracy and timeliness.

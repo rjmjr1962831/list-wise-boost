@@ -19,7 +19,7 @@ Basic verification. No artifact, no badge. Merit Gate applies.
 ### Certified ($0, Standard Audit Cycle: Annual)
 Agent-verified profile. Machine-readable artifact (text/markdown). Badge issued. Evidence from 4 sources. Merit Gate applies.
 
-### Audited ($50/mo, Standard Audit Cycle: Monthly)
+### Audited ($50/mo, Standard Audit Cycle: Quarterly)
 Expanded artifact with 10+ evidence sources, specialties, community involvement (IRS Form 990), and transaction-verified neighborhoods. Merit Gate applies.
 
 ### Underwritten ($150/mo, Standard Audit Cycle: Daily)

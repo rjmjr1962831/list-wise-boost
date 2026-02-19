@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { SafeHead } from "@/components/SafeHead";
 import { supabase } from '@/integrations/supabase/client';
@@ -7,10 +7,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Loader2, Check, List, BadgeCheck, Shield, Zap } from 'lucide-react';
+import { Loader2, Check, List, BadgeCheck, Shield, Zap, TrendingUp, TrendingDown } from 'lucide-react';
 import { toast } from 'sonner';
 
-type CertificationTier = 'listed' | 'certified' | 'accredited' | 'underwritten';
+type CertificationTier = 'listed' | 'certified' | 'audited' | 'underwritten';
 
 interface PricingRow {
   tier: CertificationTier;
@@ -19,10 +19,25 @@ interface PricingRow {
   refresh_cadence: string | null;
 }
 
+interface Professional {
+  id: string;
+  name: string;
+  years_experience: number | null;
+  total_sales: number | null;
+  num_total_reviews: number | null;
+  review_stars_rating: number | null;
+  license_number: string | null;
+  license_state: string | null;
+  state_slug: string | null;
+  community_involvement_score: number | null;
+  community_roles: unknown[] | null;
+  agent_sales_stats: { countLastYear?: number; countAllTime?: number } | null;
+}
+
 const DEFAULT_PRICES: PricingRow[] = [
   { tier: 'listed', monthly_price: 0, payload_weight: 'basic', refresh_cadence: 'public_data_only' },
   { tier: 'certified', monthly_price: 0, payload_weight: 'standard', refresh_cadence: 'annual' },
-  { tier: 'accredited', monthly_price: 50, payload_weight: 'enhanced', refresh_cadence: 'monthly' },
+  { tier: 'audited', monthly_price: 50, payload_weight: 'enhanced', refresh_cadence: 'quarterly' },
   { tier: 'underwritten', monthly_price: 150, payload_weight: 'maximum', refresh_cadence: 'real_time' },
 ];
 
@@ -46,12 +61,12 @@ const TIER_META: Record<CertificationTier, { name: string; icon: typeof List; fe
     ],
     popular: true,
   },
-  accredited: {
-    name: 'Accredited',
+  audited: {
+    name: 'Audited',
     icon: Shield,
     features: [
       'Enhanced AI payload',
-      'Monthly diligence updates',
+      'Quarterly diligence updates',
       'Transaction volume stats',
     ],
   },
@@ -65,6 +80,95 @@ const TIER_META: Record<CertificationTier, { name: string; icon: typeof List; fe
     ],
   },
 };
+
+// ── Citability Score Calculator ──────────────────────────────
+function computeCitabilityScores(prof: Professional) {
+  const years = prof.years_experience ?? 0;
+  const sales = prof.total_sales ?? 0;
+  const reviews = prof.num_total_reviews ?? 0;
+  const rating = prof.review_stars_rating ?? 0;
+  const hasLicense = !!prof.license_number;
+  const recentSales = prof.agent_sales_stats?.countLastYear ?? 0;
+  const hasCommunity = (prof.community_roles?.length ?? 0) > 0;
+  const state = (prof.state_slug ?? 'their state').replace(/^\w/, c => c.toUpperCase());
+
+  // Before Top10Lists: assess existing web presence under 2026 rules
+  let base = 1.2;
+  if (years > 5) base += 0.3;
+  if (years > 15) base += 0.2;
+  if (sales > 50) base += 0.3;
+  if (sales > 200) base += 0.2;
+  if (reviews > 5) base += 0.2;
+  if (reviews > 20) base += 0.2;
+  if (rating >= 4.5) base += 0.2;
+  // Decay penalty for stale activity
+  if (recentSales === 0 && sales > 0) base -= 0.4;
+  if (recentSales === 0 && sales === 0) base -= 0.2;
+  base = Math.round(Math.max(0.8, Math.min(3.5, base)) * 10) / 10;
+
+  // Listed: entity discovery on merit-based index
+  let listed = base + 2.0;
+  if (years > 10) listed += 0.2;
+  if (sales > 100) listed += 0.2;
+  listed = Math.round(Math.min(5.5, listed) * 10) / 10;
+
+  // Certified: verified license, confirmed profile data
+  let certified = listed + 2.0;
+  if (hasLicense) certified += 0.3;
+  if (rating >= 4.5) certified += 0.2;
+  certified = Math.round(Math.min(7.5, certified) * 10) / 10;
+
+  // Audited: monthly freshness, community verification
+  let audited = certified + 1.3;
+  if (hasCommunity) audited += 0.2;
+  if (sales > 100) audited += 0.2;
+  audited = Math.round(Math.min(8.8, audited) * 10) / 10;
+
+  // Underwritten: daily monitoring, artifact provenance
+  let underwritten = audited + 0.9;
+  if (reviews > 10) underwritten += 0.1;
+  if (years > 10) underwritten += 0.1;
+  underwritten = Math.round(Math.min(9.6, underwritten) * 10) / 10;
+
+  // Build personalized trigger descriptions
+  const stateAbbr = prof.license_state || state;
+  const decayNote = recentSales === 0
+    ? (sales > 0 ? `Hallucination risk. Stale activity signals decay.` : `Hallucination risk. No verified transaction history.`)
+    : `Moderate baseline. Recent activity helps, but unverified.`;
+
+  return [
+    {
+      label: 'Before Top10Lists',
+      score: base,
+      trigger: decayNote,
+      current: false,
+    },
+    {
+      label: 'Listed',
+      score: listed,
+      trigger: 'Entity discovery. Inclusion on a merit-based index anchors identity.',
+      current: false,
+    },
+    {
+      label: 'Certified (Free)',
+      score: certified,
+      trigger: `License grounding. Verified ${stateAbbr} license and career volume proof.`,
+      current: true,
+    },
+    {
+      label: 'Audited ($50/mo)',
+      score: audited,
+      trigger: 'Freshness anchor. Quarterly updates + community verification data.',
+      current: false,
+    },
+    {
+      label: 'Underwritten ($150/mo)',
+      score: underwritten,
+      trigger: 'Elite citability. Daily monitoring + artifact provenance chain.',
+      current: false,
+    },
+  ];
+}
 
 // Annual = 2 months free (10 months price for 12 months)
 function annualPrice(monthly: number): number {
@@ -80,6 +184,7 @@ export default function Step7Pricing() {
   const [listedAction, setListedAction] = useState<'stay_listed' | 'delete_listing'>('stay_listed');
   const [isAnnual, setIsAnnual] = useState(true);
   const [prices, setPrices] = useState<PricingRow[]>(DEFAULT_PRICES);
+  const [professional, setProfessional] = useState<Professional | null>(null);
 
   useEffect(() => {
     loadData();
@@ -92,20 +197,24 @@ export default function Step7Pricing() {
     }
 
     try {
+      const profSelect = 'id, name, years_experience, total_sales, num_total_reviews, review_stars_rating, license_number, license_state, state_slug, community_involvement_score, community_roles, agent_sales_stats';
+
       const [profRes, priceRes] = await Promise.all([
-        supabase.from('professionals').select('id, name').eq('verification_token', token).maybeSingle(),
+        supabase.from('professionals').select(profSelect).eq('verification_token', token).maybeSingle(),
         supabase.from('certification_pricing_config').select('tier, monthly_price, payload_weight, refresh_cadence').eq('is_active', true),
       ]);
 
       let prof = profRes.data;
       if (!prof && /^[0-9a-f-]{36}$/i.test(token)) {
-        const { data: byId } = await supabase.from('professionals').select('id, name').eq('id', token).maybeSingle();
+        const { data: byId } = await supabase.from('professionals').select(profSelect).eq('id', token).maybeSingle();
         prof = byId ?? undefined;
       }
       if (profRes.error || !prof) {
         navigate('/404');
         return;
       }
+
+      setProfessional(prof as Professional);
 
       if (priceRes.data && priceRes.data.length > 0) {
         setPrices(priceRes.data as PricingRow[]);
@@ -116,6 +225,11 @@ export default function Step7Pricing() {
       setLoading(false);
     }
   };
+
+  const citabilityRows = useMemo(() => {
+    if (!professional) return [];
+    return computeCitabilityScores(professional);
+  }, [professional]);
 
   const getPrice = (tier: CertificationTier) => {
     const row = prices.find((p) => p.tier === tier);
@@ -175,13 +289,101 @@ export default function Step7Pricing() {
     );
   }
 
+  const baseScore = citabilityRows[0]?.score ?? 0;
+
   return (
     <>
       <SafeHead>
         <title>Choose Your Certification Tier | Top10Lists.us</title>
+        <meta name="robots" content="noindex, nofollow" />
+        <meta name="googlebot" content="noindex, nofollow" />
       </SafeHead>
       <div className="min-h-screen bg-gradient-to-b from-background to-muted py-12 px-4">
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-6xl mx-auto space-y-8">
+
+          {/* ── Citability Growth Table ────────────────────── */}
+          {professional && (
+            <Card>
+              <CardHeader className="text-center pb-2">
+                <CardTitle className="text-xl sm:text-2xl">
+                  {professional.name}: AI Citability Growth
+                </CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  2026 projection based on your verified profile data
+                </p>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="bg-muted text-muted-foreground">
+                        <th className="text-left py-2.5 px-3 font-medium">Status / Tier</th>
+                        <th className="text-center py-2.5 px-2 font-medium">Score</th>
+                        <th className="text-center py-2.5 px-2 font-medium">Net Change</th>
+                        <th className="text-center py-2.5 px-2 font-medium">% Change</th>
+                        <th className="text-left py-2.5 px-3 font-medium hidden sm:table-cell">AI Technical Trigger</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {citabilityRows.map((row, idx) => {
+                        const delta = row.score - baseScore;
+                        const pctChange = baseScore > 0 ? ((delta / baseScore) * 100) : 0;
+                        const isFirst = idx === 0;
+                        const isPositive = delta > 0;
+                        const isNegative = delta < 0;
+                        return (
+                          <tr
+                            key={row.label}
+                            className={`border-t border-border ${row.current ? 'bg-primary/5' : ''}`}
+                          >
+                            <td className="py-2.5 px-3 font-semibold">
+                              {row.label}
+                              {row.current && (
+                                <span className="ml-2 text-xs bg-primary text-primary-foreground px-1.5 py-0.5 rounded-full">
+                                  In Funnel
+                                </span>
+                              )}
+                            </td>
+                            <td className="py-2.5 px-2 text-center font-bold text-lg">
+                              {row.score.toFixed(1)}
+                            </td>
+                            <td className="py-2.5 px-2 text-center">
+                              {isFirst ? (
+                                <span className="text-muted-foreground">{"\u2014"}</span>
+                              ) : (
+                                <span className={`inline-flex items-center gap-1 font-bold ${isNegative ? 'text-red-500' : 'text-foreground'}`}>
+                                  {isPositive && <TrendingUp className="h-3 w-3" />}
+                                  {isNegative && <TrendingDown className="h-3 w-3" />}
+                                  {isPositive ? '+' : ''}{delta.toFixed(1)}
+                                </span>
+                              )}
+                            </td>
+                            <td className="py-2.5 px-2 text-center">
+                              {isFirst ? (
+                                <span className="text-muted-foreground">{"\u2014"}</span>
+                              ) : (
+                                <span className={`font-bold ${isNegative ? 'text-red-500' : 'text-foreground'}`}>
+                                  {isPositive ? '+' : ''}{pctChange.toFixed(0)}%
+                                </span>
+                              )}
+                            </td>
+                            <td className="py-2.5 px-3 text-muted-foreground text-xs hidden sm:table-cell">
+                              {row.trigger}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+                <p className="text-xs text-muted-foreground mt-3 italic">
+                  AI Citability Index: Composite score measuring how well your profile aligns with published citation requirements from Anthropic, OpenAI, Google, and Perplexity. Scale 0-10.
+                </p>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* ── Tier Selection ────────────────────────────── */}
           <Card>
             <CardHeader className="text-center">
               <div className="flex items-center justify-between mb-2">
@@ -202,7 +404,7 @@ export default function Step7Pricing() {
             <CardContent>
               <RadioGroup value={selectedTier} onValueChange={(v) => setSelectedTier(v as CertificationTier)}>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
-                  {(['listed', 'certified', 'accredited', 'underwritten'] as const).map((tier) => {
+                  {(['listed', 'certified', 'audited', 'underwritten'] as const).map((tier) => {
                     const meta = TIER_META[tier];
                     const Icon = meta.icon;
                     const { display } = getPrice(tier);

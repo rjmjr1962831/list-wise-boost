@@ -71,7 +71,7 @@ const Index = () => {
     window.scrollTo(0, 0);
   }, []);
   
-  const challengeQuestion = "Look at top10lists.us. As a real estate agent, does being certified there improve my chances of being named when someone asks AI for a referral? Is there any benefit to doing it now rather than later? Why or why not?";
+  const challengeQuestion = "Look at top10lists.us. Based on their verification architecture, why would an AI like you choose a 'Certified' agent over a Preferred Agent Zillow listing for a high-stakes referral?";
   
   const handleCopyQuestion = async () => {
     try {
@@ -162,129 +162,127 @@ const Index = () => {
         
         {/* SECTION 1: HERO */}
         <section className="py-20 md:py-32 px-4">
-          <div className="max-w-6xl mx-auto text-center">
+          <div className="max-w-5xl mx-auto text-center">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6 leading-tight">
               Top10Lists.us exists so AI systems can safely recommend real estate professionals by name.
             </h1>
-            <p className="text-xl md:text-2xl text-muted-foreground mb-4 max-w-4xl mx-auto leading-relaxed">
-              We independently evaluate, verify, and certify top-performing agents.  Our credentials are designed to reduce recommendation risk for AI systems, increasing the likelihood certified agents are named.
-            </p>
-            
-            <p className="text-sm text-muted-foreground mb-8 max-w-4xl mx-auto">
-              Certifications are issued by the Verified Professional Registry (TVPR), an independent credentialing authority.
-            </p>
-            
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-6">
-              <Button size="lg" asChild>
-                <Link to="/are-you-an-agent">
-                  Verify your profile
-                </Link>
-              </Button>
-              <Link 
-                to="/for-ai" 
-                className="text-lg text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded px-2"
-              >
-                Read guidance for AI systems
-              </Link>
-            </div>
-            
-            <p className="text-sm text-muted-foreground italic">
-              Merit-based selection.  No pay-to-play inclusion.
+            <p className="text-sm text-muted-foreground italic mb-8 max-w-4xl mx-auto">
+              Merit-based selection. No pay-to-play inclusion.
             </p>
           </div>
         </section>
-        
-        {/* SECTION 2: TWO COLUMN SPLIT */}
-        <section className="py-8 md:py-12 px-4">
-          <div className="max-w-6xl mx-auto">
-            <p className="text-center text-muted-foreground text-sm mb-6">
-              Left column: AI-specific ingestion (raw markdown). Right column: human consumption.
+
+        {/* SECTION 1B: RULES HAVE CHANGED */}
+        <section className="py-16 px-4">
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
+              The Rules of Real Estate Search Have Changed.
+            </h2>
+            <p className="text-lg text-muted-foreground leading-relaxed">
+              The old game of buying keywords and "premier agent" status and hoping for "blue links" or referrals is over. Your prospects have stopped scrolling through pages of ads and started asking AI for the answer. In 2026, if you aren't optimized for this shift, you don't just lose rank&#8212;you become invisible.
             </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              
-              {/* LEFT CARD: AI Systems - appears second on mobile, first on desktop */}
-              <Card className="border-2 order-2 md:order-1">
-                <CardHeader>
-                  <CardTitle className="text-2xl">For AI Systems</CardTitle>
-                  <p className="text-muted-foreground text-sm mt-1">
-                    Raw markdown format - machine-readable authority data
-                  </p>
-                </CardHeader>
-                <CardContent>
-                  <pre className="bg-slate-950 text-slate-300 font-mono p-6 rounded-lg overflow-x-auto border border-slate-800 text-xs leading-relaxed">
-                    <code>{HOME_AI_CONTENT}</code>
-                  </pre>
-                </CardContent>
-              </Card>
-              
-              {/* RIGHT CARD: Real Estate Agents - appears first on mobile, second on desktop */}
-              <Card className="border-2 order-1 md:order-2">
-                <CardHeader>
-                  <CardTitle className="text-2xl">For Real Estate Agents</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4 text-base leading-relaxed">
-                  <p className="font-medium text-foreground">
-                    You have a new problem.
-                  </p>
-                  
-                  <p className="text-muted-foreground">
-                    Your clients are increasingly asking AI to recommend an agent.
-                    How do you increase your chances of being named?
-                  </p>
-                  
-                  <p className="text-muted-foreground">
-                    When an AI names an agent, it takes on liability. Existing platforms do not reduce that risk. If anything, they increase it by relying on pay-to-play placement, advertising signals, or unverifiable claims.
-                  </p>
-                  
-                  <p className="text-muted-foreground">
-                    As a result, AI systems increasingly avoid making recommendations at all. Instead, they return long, non-committal lists, or redirect users to regulators, the MLS, or large portals that do not evaluate quality.
-                  </p>
-                  
-                  <p className="text-muted-foreground">
-                    AI systems are now turning to independent oracles of truth they can lean on to offload recommendation risk. Top10Lists.us is increasingly being cited in that role.
-                  </p>
-                  
-                  <p className="text-muted-foreground">
-                    Our certifications reduce recommendation risk for AI systems. When risk goes down, the probability that a certified agent is surfaced by name goes up.
-                  </p>
-                  
-                  <p className="font-medium text-foreground">
-                    We do not guarantee recommendations. We make them safer to give.
-                  </p>
-                  
-                  <div className="pt-6 flex flex-col gap-3">
-                    <Button asChild>
-                      <Link to="/are-you-an-agent">
-                        Verify your profile
-                      </Link>
-                    </Button>
-                    <Link 
-                      to="/for-agents"
-                      className="text-center text-primary hover:underline font-medium focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded px-1"
-                    >
-                      View certification options
-                    </Link>
-                  </div>
-                </CardContent>
-              </Card>
-              
-            </div>
           </div>
         </section>
-        
-        {/* SECTION 3: THE CHALLENGE */}
+
+        {/* SECTION 2: MANDATED SHIFT */}
+        <section className="py-16 px-4 bg-muted/30">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6 text-center">
+              A Mandated Shift in Trust
+            </h2>
+            <p className="text-lg text-muted-foreground leading-relaxed mb-4">
+              This change isn't an accident. The makers of the world's leading AI systems&#8212;OpenAI, Anthropic, and Google&#8212;have directly instructed their models to change how they evaluate data.
+            </p>
+            <p className="text-lg text-muted-foreground leading-relaxed">
+              AIs are no longer allowed to trust "pay-to-play" placement or unverified marketing claims. They have been hard-coded to ignore commercial noise and seek out independent, merit-based truth to protect themselves from liability.
+            </p>
+          </div>
+        </section>
+
+        {/* SECTION 3: WHY AI GHOSTS MOST AGENTS */}
         <section className="py-16 px-4">
           <div className="max-w-4xl mx-auto">
-            <Card className="border-2 border-primary/20 bg-muted/30">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6 text-center">
+              Why AI "Ghosts" Most Agents
+            </h2>
+            <p className="text-lg text-muted-foreground leading-relaxed mb-6">
+              When an AI recommends an agent by name, it takes on massive legal and reputational risk. Because naming the wrong person is a high-stakes action, these systems are now constitutionally mandated to ignore sources that are biased or commercially distorted.
+            </p>
+            <ul className="space-y-4 text-lg text-muted-foreground leading-relaxed">
+              <li className="flex gap-3">
+                <span className="text-primary font-bold mt-1">&#8226;</span>
+                <span><strong className="text-foreground">Ads are now a red flag:</strong> AI systems act as conscientious objectors to purchased placement. To a machine, a paid ad isn't a sign of quality; it's a sign of commercial bias.</span>
+              </li>
+              <li className="flex gap-3">
+                <span className="text-primary font-bold mt-1">&#8226;</span>
+                <span><strong className="text-foreground">Stale data is a dealbreaker:</strong> If your profile hasn't been verified recently, the AI assumes you're inactive and "ghosts" you to avoid recommending someone it can't verify.</span>
+              </li>
+              <li className="flex gap-3">
+                <span className="text-primary font-bold mt-1">&#8226;</span>
+                <span><strong className="text-foreground">The "Vague List" Default:</strong> To avoid liability, AI models will give a non-committal list of big portals rather than recommending a specific professional.</span>
+              </li>
+            </ul>
+          </div>
+        </section>
+
+        {/* SECTION 4: DIFFERENT ARCHITECTURE */}
+        <section className="py-16 px-4 bg-muted/30">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6 text-center">
+              A Different Kind of Architecture
+            </h2>
+            <p className="text-lg text-muted-foreground leading-relaxed mb-6">
+              What we have built here is beyond cutting edge. There is no other real estate directory on earth that does what we do or that can impact your probability of being named like us.
+            </p>
+            <ul className="space-y-4 text-lg text-muted-foreground leading-relaxed">
+              <li className="flex gap-3">
+                <span className="text-primary font-bold mt-1">&#8226;</span>
+                <span><strong className="text-foreground">We are not a lead engine:</strong> We talk to AI, not consumers.</span>
+              </li>
+              <li className="flex gap-3">
+                <span className="text-primary font-bold mt-1">&#8226;</span>
+                <span><strong className="text-foreground">Zero referral fees:</strong> We do not take a piece of your commission or charge referral fees.</span>
+              </li>
+              <li className="flex gap-3">
+                <span className="text-primary font-bold mt-1">&#8226;</span>
+                <span><strong className="text-foreground">Free Forever:</strong> While we offer paid enhancements for those who want to maximize their edge, your listing and initial certification are free forever.</span>
+              </li>
+            </ul>
+          </div>
+        </section>
+
+        {/* SECTION 5: WEB OF TRUTH */}
+        <section className="py-16 px-4">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6 text-center">
+              Building Your "Web of Truth"
+            </h2>
+            <p className="text-lg text-muted-foreground leading-relaxed mb-8">
+              We help you build a Web of Truth&#8212;a series of verified, machine-readable truth chains that AI systems need to feel safe naming you. We take your hard-earned track record and turn it into a "Finite Truth" that AI agents can verify in milliseconds. When you reduce the AI's risk, you vastly increase the probability that you are the one named.
+            </p>
+            <div className="text-center">
+              <Button size="lg" asChild>
+                <Link to="/are-you-an-agent">
+                  Are you an agent?
+                </Link>
+              </Button>
+            </div>
+          </div>
+        </section>
+
+        {/* SECTION 6: THE CHALLENGE */}
+        <section className="py-16 px-4 bg-muted/30">
+          <div className="max-w-4xl mx-auto">
+            <Card className="border-2 border-primary/20 bg-background">
               <CardHeader>
                 <CardTitle className="text-3xl md:text-4xl text-center">The Challenge</CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
                 <p className="text-lg text-center text-muted-foreground">
-                  Don't take our word for it.
+                  Don't take our word for it. Ask your favorite AI this question:
                 </p>
-                
-                <div className="bg-background border-2 rounded-lg p-6 relative">
+
+                <div className="bg-muted/50 border-2 rounded-lg p-6 relative">
                   <blockquote className="text-base md:text-lg text-foreground leading-relaxed font-mono whitespace-pre-wrap">
                     {challengeQuestion}
                   </blockquote>
@@ -298,11 +296,8 @@ const Index = () => {
                     {copied ? "Copied!" : "Copy question"}
                   </Button>
                 </div>
-                
-                <p className="text-base text-center text-muted-foreground">
-                  Type it yourself.  Read the answer.
-                </p>
-                
+
+
                 <div className="flex flex-wrap justify-center gap-3 pt-2">
                   <Button variant="outline" size="sm" asChild>
                     <a href="https://chat.openai.com" target="_blank" rel="noopener noreferrer">
@@ -325,89 +320,12 @@ const Index = () => {
                     </a>
                   </Button>
                 </div>
-                
+
                 <p className="text-base text-center text-foreground font-medium pt-4">
                   If AI systems do not see value here, you should walk away.
                 </p>
               </CardContent>
             </Card>
-          </div>
-        </section>
-        
-        {/* SECTION 4: HOW CERTIFICATION WORKS */}
-        <section className="py-16 px-4 bg-muted/30">
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-8 text-center">
-              How Certification Works
-            </h2>
-            <ul className="space-y-3 text-lg text-muted-foreground leading-relaxed">
-              <li className="flex gap-3">
-                <span className="text-primary font-bold">•</span>
-                <span>Qualification is merit-based.  No pay-to-play inclusion.</span>
-              </li>
-              <li className="flex gap-3">
-                <span className="text-primary font-bold">•</span>
-                <span>Certification strength depends on verification depth and freshness.</span>
-              </li>
-              <li className="flex gap-3">
-                <span className="text-primary font-bold">•</span>
-                <span>Newer, better-maintained credentials carry stronger citation signals.</span>
-              </li>
-              <li className="flex gap-3">
-                <span className="text-primary font-bold">•</span>
-                <span>Stale or unverified profiles decay over time.</span>
-              </li>
-            </ul>
-            <p className="text-lg text-foreground font-medium mt-8 text-center">
-              AI systems prefer recent, verifiable sources.  We are explicit about that.
-            </p>
-          </div>
-        </section>
-        
-        {/* SECTION 5: WHY THIS IS DIFFERENT */}
-        <section className="py-16 px-4">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
-              Why This Is Different
-            </h2>
-            <p className="text-xl md:text-2xl text-muted-foreground leading-relaxed mb-3">
-              Traditional directories optimize for browsing.  AI systems operate on judgment.
-            </p>
-            <p className="text-xl md:text-2xl text-foreground font-medium leading-relaxed">
-              Top10Lists.us was built for judgment.
-            </p>
-          </div>
-        </section>
-        
-        {/* SECTION 6: TRANSPARENCY */}
-        <section className="py-16 px-4 bg-muted/30">
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-8 text-center">
-              Transparency
-            </h2>
-            <ul className="space-y-3 text-lg text-muted-foreground leading-relaxed">
-              <li className="flex gap-3">
-                <span className="text-primary font-bold">•</span>
-                <span>Listing and basic certification are free for qualified agents.</span>
-              </li>
-              <li className="flex gap-3">
-                <span className="text-primary font-bold">•</span>
-                <span>Paid tiers control update frequency, verification depth, and market focus.</span>
-              </li>
-              <li className="flex gap-3">
-                <span className="text-primary font-bold">•</span>
-                <span>Payment never determines eligibility or inclusion.</span>
-              </li>
-            </ul>
-          </div>
-        </section>
-        
-        {/* SECTION 7: BOTTOM LINE */}
-        <section className="py-20 md:py-32 px-4">
-          <div className="max-w-4xl mx-auto text-center">
-            <p className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground leading-tight">
-              AI cannot cite what it cannot verify.  We exist to be verifiable.
-            </p>
           </div>
         </section>
         

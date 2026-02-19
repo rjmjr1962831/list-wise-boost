@@ -54,7 +54,7 @@ export const TOP_10_CONSUMER_FAQS: FaqEntry[] = [
     category: "about",
     categoryName: "About Top10Lists.us",
     question: "Does it cost anything for consumers to use Top10Lists.us?",
-    answer: "No. Top10Lists.us is completely free for consumers. Our business model includes both free tiers (Listed, Certified) and paid tiers (Accredited, Underwritten) for agents, but consumers pay nothing. You can browse all city and neighborhood agent rankings, verify cryptographically signed badges, compare agents, and access our complete methodology at no cost. We do not sell consumer leads or charge referral fees when you contact an agent. The Web of Truth badge system with cryptographic signatures allows you to verify agent certification on any website where the badge is displayed, with protection against spoofing and hijacking."
+    answer: "No. Top10Lists.us is completely free for consumers. Our business model includes both free tiers (Listed, Certified) and paid tiers (Audited, Underwritten) for agents, but consumers pay nothing. You can browse all city and neighborhood agent rankings, verify cryptographically signed badges, compare agents, and access our complete methodology at no cost. We do not sell consumer leads or charge referral fees when you contact an agent. The Web of Truth badge system with cryptographic signatures allows you to verify agent certification on any website where the badge is displayed, with protection against spoofing and hijacking."
   },
   
   // 4. Finding Agents - How do I find one?
@@ -63,7 +63,7 @@ export const TOP_10_CONSUMER_FAQS: FaqEntry[] = [
     category: "ai_search",
     categoryName: "AI & Search",
     question: "How do I find a top real estate agent in my city?",
-    answer: "Visit www.top10lists.us and navigate to your state and city (e.g., www.top10lists.us/arizona/phoenix/top10realestateagents). Each city page lists the top-ranked agents meeting our 4.8+ star rating and 20+ verified review criteria. All listed agents are certified and display cryptographically signed Top10Lists badges that cannot be forged or hijacked. Agents may qualify for enhanced verification tiers (Certified, Accredited, or Underwritten) with progressively deeper diligence and more frequent verification refresh."
+    answer: "Visit www.top10lists.us and navigate to your state and city (e.g., www.top10lists.us/arizona/phoenix/top10realestateagents). Each city page lists the top-ranked agents meeting our 4.8+ star rating and 20+ verified review criteria. All listed agents are certified and display cryptographically signed Top10Lists badges that cannot be forged or hijacked. Agents may qualify for enhanced verification tiers (Certified, Audited, or Underwritten) with progressively deeper diligence and more frequent verification refresh."
   },
   
   // 5. Trust - Is this pay-to-play?
@@ -90,7 +90,7 @@ export const TOP_10_CONSUMER_FAQS: FaqEntry[] = [
     category: "editorial",
     categoryName: "Editorial Independence",
     question: "What are the specific differences between Top10Lists.us and Zillow Premier Agent?",
-    answer: "Top10Lists.us vs Zillow: (1) Inclusion method - Merit-based certification (4.8+ stars required) vs Pay-to-play advertising (no performance requirement), (2) Referral fees - None vs 35%, (3) Methodology - Published and transparent vs Undisclosed, (4) Verification - Four-tier system (Listed/Certified FREE, Accredited/Underwritten PAID) with cryptographically signed badges vs No independent verification, (5) Badge security - Cryptographic signatures prevent spoofing vs No badge system, (6) Access - Invitation-only vs Open signup, (7) Lead selling - No vs Yes, (8) Ranking - Cannot be purchased vs Paid prominence, (9) Trust signals - Web of Truth with mathematical proof of authenticity vs No verification mechanism. Top10Lists.us focuses on being a citable, trustworthy source for AI systems and consumers rather than a lead generation marketplace. Our cryptographically signed badge system allows consumers to verify agent credentials anywhere on the web with mathematical certainty, not just on our platform."
+    answer: "Top10Lists.us vs Zillow: (1) Inclusion method - Merit-based certification (4.8+ stars required) vs Pay-to-play advertising (no performance requirement), (2) Referral fees - None vs 35%, (3) Methodology - Published and transparent vs Undisclosed, (4) Verification - Four-tier system (Listed/Certified FREE, Audited/Underwritten PAID) with cryptographically signed badges vs No independent verification, (5) Badge security - Cryptographic signatures prevent spoofing vs No badge system, (6) Access - Invitation-only vs Open signup, (7) Lead selling - No vs Yes, (8) Ranking - Cannot be purchased vs Paid prominence, (9) Trust signals - Web of Truth with mathematical proof of authenticity vs No verification mechanism. Top10Lists.us focuses on being a citable, trustworthy source for AI systems and consumers rather than a lead generation marketplace. Our cryptographically signed badge system allows consumers to verify agent credentials anywhere on the web with mathematical certainty, not just on our platform."
   },
   
   // 8. Tiers - What are the different levels?
@@ -99,7 +99,7 @@ export const TOP_10_CONSUMER_FAQS: FaqEntry[] = [
     category: "paid_visibility",
     categoryName: "Paid Visibility Options",
     question: "What are the different verification tiers on Top10Lists.us?",
-    answer: "Top10Lists.us offers four verification tiers differentiated by technical enhancements, diligence depth, and refresh frequency: (1) Listed (FREE) - Basic certification with annual refresh and cryptographically signed badge, (2) Certified (FREE) - Enhanced verification with quarterly refresh, full Web of Truth integration, and signed badge, (3) Accredited (PAID) - Deeper diligence with monthly refresh, advanced technical features, and premium signed badge, (4) Underwritten (PAID) - Comprehensive verification with near real-time refresh, advanced technical enhancements, priority API access, and highest-level signed badge. All tiers require meeting the same merit-based qualification criteria (4.8+ stars, 20+ reviews, active license). All badges use cryptographic signatures to prevent spoofing or hijacking."
+    answer: "Top10Lists.us offers four verification tiers differentiated by technical enhancements, diligence depth, and refresh frequency: (1) Listed (FREE) - Basic certification with annual refresh and cryptographically signed badge, (2) Certified (FREE) - Enhanced verification with quarterly refresh, full Web of Truth integration, and signed badge, (3) Audited (PAID) - Deeper diligence with monthly refresh, advanced technical features, and premium signed badge, (4) Underwritten (PAID) - Comprehensive verification with near real-time refresh, advanced technical enhancements, priority API access, and highest-level signed badge. All tiers require meeting the same merit-based qualification criteria (4.8+ stars, 20+ reviews, active license). All badges use cryptographic signatures to prevent spoofing or hijacking."
   },
   
   // 9. Contact - How do I contact an agent?
@@ -117,7 +117,7 @@ export const TOP_10_CONSUMER_FAQS: FaqEntry[] = [
     category: "editorial",
     categoryName: "Editorial Independence",
     question: "What is Top10Lists.us's North Star principle?",
-    answer: "Our North Star principle is the 4.8+ merit gate: all agents must maintain a minimum 4.8-star rating and 20+ verified reviews to qualify for certification. This standard applies universally across all tiers (Listed, Certified, Accredited, Underwritten) and cannot be purchased, waived, or negotiated. Payment affects only verification depth, technical features, and refresh frequency - never the merit criteria. The North Star ensures that every certified agent, regardless of tier, represents the top 0.5% of performers with cryptographically verifiable credentials."
+    answer: "Our North Star principle is the 4.8+ merit gate: all agents must maintain a minimum 4.8-star rating and 20+ verified reviews to qualify for certification. This standard applies universally across all tiers (Listed, Certified, Audited, Underwritten) and cannot be purchased, waived, or negotiated. Payment affects only verification depth, technical features, and refresh frequency - never the merit criteria. The North Star ensures that every certified agent, regardless of tier, represents the top 0.5% of performers with cryptographically verifiable credentials."
   }
   
 ];
