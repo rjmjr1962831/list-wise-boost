@@ -304,6 +304,27 @@ export default function Step3Review2() {
                   <p className="text-xs text-muted-foreground">To change your license number, request a review.</p>
                 </div>
 
+                {/* Reviews: read-only with request review */}
+                <div className="flex flex-col gap-2">
+                  <Label>Reviews</Label>
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 rounded-md border bg-muted/50 px-3 py-2 text-sm">
+                      {professional?.review_stars_rating ?? '—'} stars · {professional?.num_total_reviews?.toLocaleString() ?? 0} reviews
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleRequestReview('reviews')}
+                      className="shrink-0"
+                    >
+                      <HelpCircle className="h-4 w-4 mr-1" />
+                      Request review
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">To change your review data, request a review.</p>
+                </div>
+
                 <div className="flex flex-col gap-2">
                   <Label>Years of Experience</Label>
                   <div className="flex items-center gap-2">
@@ -511,6 +532,7 @@ export default function Step3Review2() {
                   />
                 </div>
 
+                <p className="text-sm text-muted-foreground">If you have any of these, put the link here. It is very helpful for your citation score.</p>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
                     <Label htmlFor="social_fb">Facebook</Label>
@@ -567,15 +589,7 @@ export default function Step3Review2() {
                   </div>
                 </div>
 
-                {/* Read-only display: Rating & Reviews */}
-                {(professional?.review_stars_rating ?? professional?.num_total_reviews) && (
-                  <div className="rounded-md border p-3 bg-muted/30">
-                    <Label className="text-muted-foreground">Reviews (from source)</Label>
-                    <p className="text-sm mt-1">
-                      {professional?.review_stars_rating ?? '—'} stars · {professional?.num_total_reviews?.toLocaleString() ?? 0} reviews
-                    </p>
-                  </div>
-                )}
+
               </div>
 
               <div className="flex gap-3 pt-4">
