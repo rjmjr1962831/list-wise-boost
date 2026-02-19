@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { SafeHead } from "@/components/SafeHead";
 import { supabase } from '@/integrations/supabase/client';
@@ -6,9 +6,28 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, ArrowRight, ArrowLeft } from 'lucide-react';
+import { Loader2, ArrowRight, ArrowLeft, HelpCircle, X, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
+// Known specialties for autocomplete - kept in sync with DB
+const KNOWN_SPECIALTIES = [
+  "Bilingual services", "Buyer's Agent", "Client satisfaction", "Commercial",
+  "Commercial Real Estate", "Complex transactions", "Distressed properties",
+  "First Time Homebuyers", "Foreclosure", "Foreclosure alternatives",
+  "Hispanic community", "Investment Properties", "Investment Sales",
+  "Land", "Land Sales", "Listing Agent", "Luxury Homes", "Manufactured Homes",
+  "Market guidance", "Military/Veterans", "Negotiation", "New Construction",
+  "Personalized service", "Property Management", "Ranch Properties", "Relocation",
+  "Rentals", "Residential", "Residential resale", "Rural Properties",
+  "Senior Communities", "Short sales", "Single Family Residence", "Staging",
+  "Buyer representation", "Cash transactions", "Client advocacy",
+  "Client communication", "Diverse property types", "First-time buyers",
+  "Integrity", "Investing", "Investors", "Market education", "Market expertise",
+  "Marketing", "Negotiation skills", "Professionalism", "Real estate investment",
+  "Relationship building", "Responsive service", "Sales and marketing",
+  "Seller representation", "Transparent communication",
+  "Wealth building through real estate",
+];
 
 interface Professional {
   id: string;
@@ -34,7 +53,7 @@ interface Professional {
   social_twitter: string | null;
   social_tiktok: string | null;
   image_url: string | null;
-  agent_sales_stats?: { volumeAllTime?: number } | null;
+  agent_sales_stats?: { volumeAllTime?: number; countAllTime?: number; countLastYear?: number } | null;
   average_value_3yr?: number | null;
 }
 
@@ -44,26 +63,69 @@ export default function Step3Review2() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [professional, setProfessional] = useState<Professional | null>(null);
+  const [allSpecialties, setAllSpecialties] = useState<string[]>(KNOWN_SPECIALTIES);
+  const [specialtyInput, setSpecialtyInput] = useState('');
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [selectedSpecialties, setSelectedSpecialties] = useState<string[]>([]);
+  const suggestionsRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
-    license_number: '',
-    years_experience: '',
-    total_sales: '',
     website: '',
     title: '',
     headline: '',
     address: '',
     zip_code: '',
-    specialty: '' as string,
     zillow_profile_url: '',
     sidebar_video_url: '',
     social_facebook: '',
     social_instagram: '',
     social_linkedin: '',
+    social_twitter: '',
+    social_tiktok: '',
+    business_name: '',
   });
 
   useEffect(() => {
     loadProfessional();
+    loadAllSpecialties();
   }, [token]);
+
+  // Close suggestions on outside click
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (suggestionsRef.current && !suggestionsRef.current.contains(e.target as Node) &&
+          inputRef.current && !inputRef.current.contains(e.target as Node)) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const loadAllSpecialties = async () => {
+    try {
+      // Fetch unique specialties from all professionals
+      const { data } = await supabase
+        .from('professionals')
+        .select('specialty')
+        .not('specialty', 'is', null)
+        .limit(500);
+
+      if (data) {
+        const uniqueSpecs = new Set<string>(KNOWN_SPECIALTIES);
+        for (const row of data) {
+          if (Array.isArray(row.specialty)) {
+            for (const s of row.specialty) {
+              if (s && typeof s === 'string') uniqueSpecs.add(s);
+            }
+          }
+        }
+        setAllSpecialties(Array.from(uniqueSpecs).sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase())));
+      }
+    } catch {
+      // Fall back to KNOWN_SPECIALTIES
+    }
+  };
 
   const loadProfessional = async () => {
     if (!token) {
@@ -84,18 +146,13 @@ export default function Step3Review2() {
       }
 
       setProfessional(data);
-      const stats = data.agent_sales_stats as { countAllTime?: number; countLastYear?: number } | undefined;
-      const totalSales = data.total_sales ?? stats?.countAllTime ?? stats?.countLastYear ?? null;
+      setSelectedSpecialties(Array.isArray(data.specialty) ? data.specialty : []);
       setFormData({
-        license_number: data.license_number || '',
-        years_experience: data.years_experience != null ? String(data.years_experience) : '',
-        total_sales: totalSales != null ? String(totalSales) : '',
         website: data.website || '',
         title: data.title || '',
         headline: data.headline || '',
         address: data.address || '',
         zip_code: data.zip_code || '',
-        specialty: Array.isArray(data.specialty) ? data.specialty.join(', ') : (data.specialty || ''),
         zillow_profile_url: data.zillow_profile_url || '',
         sidebar_video_url: data.sidebar_video_url || '',
         social_facebook: data.social_facebook || '',
@@ -117,22 +174,15 @@ export default function Step3Review2() {
 
     setSaving(true);
     try {
-      const specialtyArr = formData.specialty
-        ? formData.specialty.split(',').map((s) => s.trim()).filter(Boolean)
-        : [];
-
       const { error } = await supabase
         .from('professionals')
         .update({
-          license_number: formData.license_number || null,
-          years_experience: formData.years_experience ? parseInt(formData.years_experience) : null,
-          total_sales: formData.total_sales ? parseInt(formData.total_sales) : null,
           website: formData.website || null,
           title: formData.title || null,
           headline: formData.headline || null,
           address: formData.address || null,
           zip_code: formData.zip_code || null,
-          specialty: specialtyArr.length ? specialtyArr : null,
+          specialty: selectedSpecialties.length ? selectedSpecialties : null,
           zillow_profile_url: formData.zillow_profile_url || null,
           sidebar_video_url: formData.sidebar_video_url || null,
           social_facebook: formData.social_facebook || null,
@@ -155,6 +205,10 @@ export default function Step3Review2() {
     }
   };
 
+  const handleRequestReview = (field: string) => {
+    toast.info(`Review request for ${field} will be sent to our team. Call (602) 758-9600 to discuss.`);
+  };
+
   const getVolume = () => {
     if (!professional) return null;
     const stats = professional.agent_sales_stats as { volumeAllTime?: number } | undefined;
@@ -166,6 +220,38 @@ export default function Step3Review2() {
     return `$${v.toLocaleString()}`;
   };
 
+  const filteredSuggestions = specialtyInput.trim()
+    ? allSpecialties.filter(
+        (s) =>
+          s.toLowerCase().includes(specialtyInput.toLowerCase()) &&
+          !selectedSpecialties.some((sel) => sel.toLowerCase() === s.toLowerCase())
+      )
+    : [];
+
+  const addSpecialty = (value: string) => {
+    const trimmed = value.trim();
+    if (!trimmed) return;
+    if (selectedSpecialties.some((s) => s.toLowerCase() === trimmed.toLowerCase())) return;
+    setSelectedSpecialties([...selectedSpecialties, trimmed]);
+    setSpecialtyInput('');
+    setShowSuggestions(false);
+  };
+
+  const removeSpecialty = (index: number) => {
+    setSelectedSpecialties(selectedSpecialties.filter((_, i) => i !== index));
+  };
+
+  const handleSpecialtyKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (filteredSuggestions.length > 0) {
+        addSpecialty(filteredSuggestions[0]);
+      } else if (specialtyInput.trim()) {
+        addSpecialty(specialtyInput);
+      }
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -173,6 +259,9 @@ export default function Step3Review2() {
       </div>
     );
   }
+
+  const stats = professional?.agent_sales_stats as { countAllTime?: number; countLastYear?: number } | undefined;
+  const totalSalesDisplay = professional?.total_sales ?? stats?.countAllTime ?? stats?.countLastYear ?? null;
 
   return (
     <>
@@ -189,42 +278,70 @@ export default function Step3Review2() {
               </div>
               <CardTitle>Review your profile fields</CardTitle>
               <p className="text-sm text-muted-foreground">
-                Update anything that's incorrect. Fields you can edit are open inputs. Your changes save when you continue.
+                Fields you can edit are open inputs. Some fields require a review request to change. Your changes save when you continue.
               </p>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-4">
-                <div>
-                  <Label htmlFor="license_number">License Number</Label>
-                  <Input
-                    id="license_number"
-                    value={formData.license_number}
-                    onChange={(e) => setFormData({ ...formData, license_number: e.target.value })}
-                    placeholder="e.g. SA123456789"
-                    className="font-mono"
-                  />
+                {/* Read-only fields with Request Review */}
+                <div className="flex flex-col gap-2">
+                  <Label>License Number</Label>
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 rounded-md border bg-muted/50 px-3 py-2 text-sm font-mono">
+                      {professional?.license_number || 'Not provided'}
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleRequestReview('license number')}
+                      className="shrink-0"
+                    >
+                      <HelpCircle className="h-4 w-4 mr-1" />
+                      Request review
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">To change your license number, request a review.</p>
                 </div>
 
-                <div>
-                  <Label htmlFor="years_experience">Years of Experience</Label>
-                  <Input
-                    id="years_experience"
-                    type="number"
-                    value={formData.years_experience}
-                    onChange={(e) => setFormData({ ...formData, years_experience: e.target.value })}
-                    placeholder="e.g. 15"
-                  />
+                <div className="flex flex-col gap-2">
+                  <Label>Years of Experience</Label>
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 rounded-md border bg-muted/50 px-3 py-2 text-sm">
+                      {professional?.years_experience != null ? `${professional.years_experience} years` : 'Not provided'}
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleRequestReview('years of experience')}
+                      className="shrink-0"
+                    >
+                      <HelpCircle className="h-4 w-4 mr-1" />
+                      Request review
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">To change your years of experience, request a review.</p>
                 </div>
 
-                <div>
-                  <Label htmlFor="total_sales">Total Sales</Label>
-                  <Input
-                    id="total_sales"
-                    type="number"
-                    value={formData.total_sales}
-                    onChange={(e) => setFormData({ ...formData, total_sales: e.target.value })}
-                    placeholder="e.g. 500"
-                  />
+                <div className="flex flex-col gap-2">
+                  <Label>Total Sales</Label>
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 rounded-md border bg-muted/50 px-3 py-2 text-sm">
+                      {totalSalesDisplay != null ? `${totalSalesDisplay.toLocaleString()}+` : 'Not provided'}
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleRequestReview('total sales')}
+                      className="shrink-0"
+                    >
+                      <HelpCircle className="h-4 w-4 mr-1" />
+                      Request review
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">To change your total sales count, request a review.</p>
                 </div>
 
                 {/* Volume (read-only, display only) */}
@@ -287,14 +404,79 @@ export default function Step3Review2() {
                   />
                 </div>
 
+                {/* Specialty autocomplete */}
                 <div>
-                  <Label htmlFor="specialty">Specialties (comma-separated)</Label>
-                  <Input
-                    id="specialty"
-                    value={formData.specialty}
-                    onChange={(e) => setFormData({ ...formData, specialty: e.target.value })}
-                    placeholder="First-time buyers, Luxury, etc."
-                  />
+                  <Label>Specialties</Label>
+                  <p className="text-xs text-muted-foreground mb-2">Start typing to see suggestions, or enter your own. Press Enter or click to add.</p>
+
+                  {/* Selected specialties as chips */}
+                  {selectedSpecialties.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {selectedSpecialties.map((spec, i) => (
+                        <span
+                          key={i}
+                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-sm"
+                        >
+                          {spec}
+                          <button
+                            type="button"
+                            onClick={() => removeSpecialty(i)}
+                            className="hover:text-destructive"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Input with autocomplete */}
+                  <div className="relative">
+                    <div className="flex gap-2">
+                      <Input
+                        ref={inputRef}
+                        value={specialtyInput}
+                        onChange={(e) => {
+                          setSpecialtyInput(e.target.value);
+                          setShowSuggestions(true);
+                        }}
+                        onFocus={() => setShowSuggestions(true)}
+                        onKeyDown={handleSpecialtyKeyDown}
+                        placeholder="Type a specialty..."
+                      />
+                      {specialtyInput.trim() && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => addSpecialty(specialtyInput)}
+                          className="shrink-0"
+                        >
+                          <Plus className="h-4 w-4 mr-1" />
+                          Add
+                        </Button>
+                      )}
+                    </div>
+
+                    {/* Suggestions dropdown */}
+                    {showSuggestions && filteredSuggestions.length > 0 && (
+                      <div
+                        ref={suggestionsRef}
+                        className="absolute z-50 w-full mt-1 bg-background border rounded-md shadow-lg max-h-48 overflow-y-auto"
+                      >
+                        {filteredSuggestions.slice(0, 10).map((suggestion, i) => (
+                          <button
+                            key={i}
+                            type="button"
+                            className="w-full text-left px-3 py-2 text-sm hover:bg-muted/50 border-b last:border-b-0"
+                            onClick={() => addSpecialty(suggestion)}
+                          >
+                            {suggestion}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div>
