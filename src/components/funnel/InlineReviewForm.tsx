@@ -10,9 +10,6 @@ interface InlineReviewFormProps {
   fieldName: string;
   currentValue: string;
   professionalId: string;
-  professionalName: string;
-  professionalEmail?: string;
-  profileLink?: string;
   onClose: () => void;
   onSubmitted?: () => void;
 }
@@ -21,9 +18,6 @@ export default function InlineReviewForm({
   fieldName,
   currentValue,
   professionalId,
-  professionalName,
-  professionalEmail,
-  profileLink,
   onClose,
   onSubmitted,
 }: InlineReviewFormProps) {
@@ -40,28 +34,22 @@ export default function InlineReviewForm({
 
     setSubmitting(true);
     try {
-      const { data, error } = await supabase.functions.invoke('create-pipedrive-task', {
-        body: {
-          fieldName,
-          profileLink: profileLink || `https://www.top10lists.us/agents/${professionalId}`,
-          professionalName,
-          professionalId,
-          professionalEmail: professionalEmail || null,
-          changeRequest: confirmationSource.trim() ? `Confirmation source: ${confirmationSource.trim()}` : '',
-          currentValue,
-          proposedValue: proposedValue.trim(),
-        },
-      });
+      const { error } = await supabase
+        .from('field_change_requests')
+        .insert({
+          professional_id: professionalId,
+          field_name: fieldName,
+          current_value: currentValue || null,
+          proposed_value: proposedValue.trim(),
+          change_request: confirmationSource.trim() || null,
+          status: 'pending',
+        });
 
-      if (error || !data?.success) {
-        throw new Error(data?.error || 'Failed to submit request');
-      }
+      if (error) throw error;
 
       setSubmitted(true);
       toast.success('Review request submitted. We will get back to you soon.');
       onSubmitted?.();
-
-      // Auto-close after a moment
       setTimeout(() => onClose(), 2000);
     } catch (err: any) {
       console.error('Error submitting review request:', err);
@@ -112,13 +100,7 @@ export default function InlineReviewForm({
       </div>
 
       <div className="flex gap-2">
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={onClose}
-          disabled={submitting}
-        >
+        <Button type="button" variant="outline" size="sm" onClick={onClose} disabled={submitting}>
           Cancel
         </Button>
         <Button
