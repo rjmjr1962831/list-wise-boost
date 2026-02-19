@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loader2, ArrowRight, ArrowLeft, HelpCircle, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
+import InlineReviewForm from '@/components/funnel/InlineReviewForm';
 
 interface Professional {
   id: string;
@@ -19,6 +20,7 @@ interface Professional {
   website: string | null;
   license_number: string | null;
   years_experience: number | null;
+  profile_link: string | null;
 }
 
 export default function Step2Review1() {
@@ -27,6 +29,7 @@ export default function Step2Review1() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [professional, setProfessional] = useState<Professional | null>(null);
+  const [reviewField, setReviewField] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     email: '',
     phone_mobile: '',
@@ -51,7 +54,7 @@ export default function Step2Review1() {
     try {
       const { data, error } = await supabase
         .from('professionals')
-        .select('id, name, email, phone, phone_numbers, company, website, license_number, years_experience')
+        .select('id, name, email, phone, phone_numbers, company, website, license_number, years_experience, profile_link')
         .eq('verification_token', token)
         .single();
 
@@ -62,7 +65,6 @@ export default function Step2Review1() {
 
       setProfessional(data);
 
-      // Parse phone_numbers JSONB - handle both old format {cell, business} and new format {mobile: {number, publish}}
       const pn = data.phone_numbers as any;
       let mobile = '', mobilePub = true;
       let business = '', businessPub = true;
@@ -70,7 +72,6 @@ export default function Step2Review1() {
 
       if (pn) {
         if (pn.mobile?.number !== undefined) {
-          // New format
           mobile = pn.mobile?.number || '';
           mobilePub = pn.mobile?.publish !== false;
           business = pn.business?.number || '';
@@ -78,13 +79,11 @@ export default function Step2Review1() {
           other = pn.other?.number || '';
           otherPub = pn.other?.publish === true;
         } else {
-          // Old format: {cell, business, brokerage}
           mobile = pn.cell || '';
           business = pn.business || pn.brokerage || '';
         }
       }
 
-      // If no mobile from phone_numbers, fall back to main phone field
       if (!mobile && data.phone && data.phone !== 'N/A') {
         mobile = data.phone;
       }
@@ -139,10 +138,6 @@ export default function Step2Review1() {
     }
   };
 
-  const handleRequestReview = (field: string) => {
-    toast.info(`Review request for ${field} will be sent to our team. Call (602) 758-9600 to discuss.`);
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -178,18 +173,31 @@ export default function Step2Review1() {
                     <div className="flex-1 rounded-md border bg-muted/50 px-3 py-2 text-sm">
                       {professional?.name || 'Not provided'}
                     </div>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleRequestReview('name')}
-                      className="shrink-0"
-                    >
-                      <HelpCircle className="h-4 w-4 mr-1" />
-                      Request review
-                    </Button>
+                    {reviewField !== 'name' && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setReviewField('name')}
+                        className="shrink-0"
+                      >
+                        <HelpCircle className="h-4 w-4 mr-1" />
+                        Request review
+                      </Button>
+                    )}
                   </div>
                   <p className="text-xs text-muted-foreground">To change your name, request a review.</p>
+                  {reviewField === 'name' && professional && (
+                    <InlineReviewForm
+                      fieldName="Full Name"
+                      currentValue={professional.name || ''}
+                      professionalId={professional.id}
+                      professionalName={professional.name}
+                      professionalEmail={professional.email || undefined}
+                      profileLink={professional.profile_link || undefined}
+                      onClose={() => setReviewField(null)}
+                    />
+                  )}
                 </div>
 
                 <div>
@@ -209,7 +217,6 @@ export default function Step2Review1() {
                   <Label>Phone Numbers</Label>
                   <p className="text-xs text-muted-foreground">You can edit these fields directly. Use the eye icon to control whether each number is published on your profile.</p>
 
-                  {/* Mobile */}
                   <div className="flex items-center gap-2">
                     <div className="flex-1">
                       <Label htmlFor="phone_mobile" className="text-xs text-muted-foreground">Mobile</Label>
@@ -231,7 +238,6 @@ export default function Step2Review1() {
                     </button>
                   </div>
 
-                  {/* Business */}
                   <div className="flex items-center gap-2">
                     <div className="flex-1">
                       <Label htmlFor="phone_business" className="text-xs text-muted-foreground">Business</Label>
@@ -253,7 +259,6 @@ export default function Step2Review1() {
                     </button>
                   </div>
 
-                  {/* Other */}
                   <div className="flex items-center gap-2">
                     <div className="flex-1">
                       <Label htmlFor="phone_other" className="text-xs text-muted-foreground">Other</Label>
