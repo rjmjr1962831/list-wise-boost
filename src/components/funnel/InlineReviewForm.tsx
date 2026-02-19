@@ -10,6 +10,8 @@ interface InlineReviewFormProps {
   fieldName: string;
   currentValue: string;
   professionalId: string;
+  professionalName?: string;
+  professionalEmail?: string;
   onClose: () => void;
   onSubmitted?: () => void;
 }
@@ -18,6 +20,8 @@ export default function InlineReviewForm({
   fieldName,
   currentValue,
   professionalId,
+  professionalName,
+  professionalEmail,
   onClose,
   onSubmitted,
 }: InlineReviewFormProps) {
@@ -34,6 +38,7 @@ export default function InlineReviewForm({
 
     setSubmitting(true);
     try {
+      // 1. Insert into field_change_requests
       const { error } = await supabase
         .from('field_change_requests')
         .insert({
@@ -46,6 +51,18 @@ export default function InlineReviewForm({
         });
 
       if (error) throw error;
+
+      // 2. Send acknowledgment email (fire and forget)
+      if (professionalEmail) {
+        const firstName = (professionalName || '').split(' ')[0] || 'there';
+        supabase.functions.invoke('send-change-request-acknowledgment', {
+          body: {
+            email: professionalEmail,
+            firstName,
+            fieldName,
+          },
+        }).catch((err) => console.error('Email send failed (non-fatal):', err));
+      }
 
       setSubmitted(true);
       toast.success('Review request submitted. We will get back to you soon.');
@@ -62,7 +79,7 @@ export default function InlineReviewForm({
   if (submitted) {
     return (
       <div className="mt-2 rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-800">
-        Request submitted. We will review and get back to you.
+        Request submitted. We will review and get back to you. Check your email for confirmation.
       </div>
     );
   }
