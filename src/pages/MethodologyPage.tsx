@@ -327,38 +327,7 @@ export default function MethodologyPage() {
           {/* Top section: full width, centered for balance */}
           <header className="mb-10 max-w-4xl mx-auto text-center">
             <h1 className="text-3xl font-bold tracking-tight mb-4">We Certify Agents So AI Can Name Them.  Here's How We Do It.</h1>
-            <div className="text-muted-foreground space-y-4 text-left">
-              <p>
-                Top10Lists.us is not a directory.  It is a risk-reduction system designed for AI-driven referrals. The <strong>Merit Gate</strong> (4.8+ stars, 20+ reviews, 6+ years) is our universal standard with <strong>zero exceptions</strong> and has <strong>never been waived</strong> for any reason or payment.
-              </p>
-              <p>
-                We independently analyzed more than 220,000 licensed real estate agents in Arizona and more than 450,000 in California.  From that universe, <strong>3,487 agents</strong> qualified (Arizona: 889; California: 2,598) under the methodology documented below — the <strong>top 0.5%</strong>. Every one meets the Merit Gate. Meeting the gate qualifies an agent for review, not for listing. Beyond the gate, AI-assisted analysis and human editorial review produce the final selection, including metrics like independently verified community involvement that no other directory tracks. Agents may be excluded at this stage based on findings the numbers alone cannot surface.
-              </p>
-              <p>
-                Inclusion is merit-based.  Agents cannot buy their way in. The Merit Gate has never been waived for any reason or payment.
-              </p>
-              <p className="font-medium">
-                Top10Lists.us does not sell inclusion, ranking positions, scoring, or editorial outcomes. Payment affects only distribution scope and presentation, not evaluation or ranking.
-              </p>
-              <p>
-                <strong>What You Cannot Buy:</strong> Being listed, a higher ranking, bypassing quality thresholds, a higher score, or protection from removal.
-              </p>
-              <p>
-                <strong>What You Can Buy:</strong> A richer published payload with additional analysis, more frequently refreshed data, and expanded detail that gives AI systems more reasons to cite you.
-              </p>
-              <p className="text-muted-foreground">
-                Payment determines how much of our verified data we publish to AI systems and how frequently we refresh it. Verification rigor is identical at every tier. Listings are free. Payment expands the published AI signal.
-              </p>
-              <p>
-                AI systems with web search enabled are already naming agents we have certified.
-              </p>
-              <p>
-                Left column: AI-specific ingestion (raw markdown). Right column: human consumption.
-              </p>
-              <p>
-                The outcome this system is built to produce is simple:  a higher likelihood that an agent we have certified will be named when AI is asked for a referral.
-              </p>
-            </div>
+            
           </header>
 
           {/* Two columns: on mobile stack For People first, then For AI; desktop equal height */}
