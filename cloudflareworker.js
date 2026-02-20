@@ -20111,6 +20111,9 @@ const index_default = {
         if (isAcceptable) {
           var body = await res.text();
           var respContentType = contentType.indexOf("text/html") !== -1 ? "text/html; charset=utf-8" : contentType.indexOf("text/markdown") !== -1 ? "text/markdown; charset=utf-8" : "text/plain; charset=utf-8";
+          if (respContentType === "text/plain; charset=utf-8" && body.trimStart().startsWith("<!DOCTYPE html")) {
+            respContentType = "text/html; charset=utf-8";
+          }
           var response = new Response(body, {
             status: 200,
             headers: {
