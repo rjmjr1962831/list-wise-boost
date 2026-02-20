@@ -1,8 +1,15 @@
 import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { ChevronUp } from "lucide-react";
 
 export const ScrollToTop = () => {
   const [visible, setVisible] = useState(false);
+  const { pathname } = useLocation();
+
+  // Scroll to top on every page load / navigation
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
 
   useEffect(() => {
     const onScroll = () => setVisible(window.scrollY > 400);
