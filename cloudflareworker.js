@@ -20114,6 +20114,9 @@ const index_default = {
           if (respContentType === "text/plain; charset=utf-8" && body.trimStart().startsWith("<!DOCTYPE html")) {
             respContentType = "text/html; charset=utf-8";
           }
+          if (respContentType === "text/plain; charset=utf-8" && body.trimStart().startsWith("# ")) {
+            respContentType = "text/markdown; charset=utf-8";
+          }
           var response = new Response(body, {
             status: 200,
             headers: {
