@@ -7,12 +7,12 @@ import { getCurrentUser } from '@/lib/adminAuth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 
-/** Normalize tier: DB uses "accredited" for Audited; "listed" maps to Certified (dashboard = Certified at minimum) */
+/** Normalize tier for display. Dashboard = at least Certified; map listed/unknown to certified. */
 function normalizeTier(t: string | null): string {
-  const t0 = (t || 'certified').toLowerCase();
-  if (t0 === 'accredited') return 'audited';
-  if (t0 === 'listed') return 'certified';
-  return t0;
+  const t0 = (t || '').toLowerCase();
+  if (t0 === 'accredited' || t0 === 'audited') return 'audited';
+  if (t0 === 'underwritten') return 'underwritten';
+  return 'certified'; // listed, null, empty, or any other value = Certified (dashboard minimum)
 }
 
 /** Estimate AICS using tier lift model when no projection exists */
@@ -88,6 +88,7 @@ export default function VisibilityTiersPage() {
     id: string;
     name: string;
     current_tier: string | null;
+    badge_tier?: string | null;
     signal_score: number | null;
     certified_projected_signal: number | null;
     audited_projected_signal: number | null;
@@ -133,7 +134,7 @@ export default function VisibilityTiersPage() {
 
         const { data: prof, error } = await supabase
           .from('professionals')
-          .select('id, name, current_tier, signal_score, certified_projected_signal, audited_projected_signal, verification_token')
+          .select('id, name, current_tier, badge_tier, signal_score, certified_projected_signal, audited_projected_signal, verification_token')
           .eq('id', professionalId)
           .single();
 
@@ -150,7 +151,9 @@ export default function VisibilityTiersPage() {
     })();
   }, [navigate, isDashboard, searchParams]);
 
-  const currentTier = normalizeTier(professional?.current_tier ?? null);
+  // Dashboard = at least Certified; default to certified when null/listed/unknown
+  const rawTier = professional?.current_tier || professional?.badge_tier || null;
+  const currentTier = normalizeTier(rawTier);
   const baseScore = professional?.signal_score ?? professional?.certified_projected_signal ?? null;
 
   const getAICS = (tierId: string): number | null => {
