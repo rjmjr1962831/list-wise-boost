@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, Navigate } from "react-router-dom";
 import { SafeHead } from "@/components/SafeHead";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -138,7 +138,7 @@ export default function AgentDashboard() {
       }
       localStorage.setItem("agent_session_token", sessData.sessionToken);
       setSessionToken(sessData.sessionToken);
-      setSearchParams({}, { replace: true });
+      // Keep ?id= in URL so refresh re-runs admin flow instead of showing gate
       await loadProfile(sessData.sessionToken);
     } catch (err) {
       console.error("[Dashboard] Admin open error:", err);
@@ -323,58 +323,16 @@ export default function AgentDashboard() {
   }
 
   if (!professional) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center px-4">
-        <div className="text-center max-w-md mx-auto p-8 border rounded-xl bg-card shadow-sm">
-          <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-            <User className="h-6 w-6 text-primary" />
-          </div>
-          <h1 className="text-xl font-bold mb-3">Dashboard Access</h1>
-          <p className="text-muted-foreground mb-6 text-sm leading-relaxed">
-            {authStatus !== "Loading..." ? authStatus : "To access your dashboard, please use the link from your most recent Top10Lists email. Each link creates a secure session automatically."}
-          </p>
-          <div className="space-y-3">
-            <a
-              href={
-                professionalIdParam
-                  ? `/admin/login?redirect=${encodeURIComponent(`/agent/dashboard?id=${professionalIdParam}`)}`
-                  : "/admin/login?redirect=" + encodeURIComponent("/admin")
-              }
-              className={cn(
-                "block w-full px-6 py-3 rounded-lg text-sm font-medium transition-colors text-center",
-                professionalIdParam
-                  ? "bg-primary text-white hover:bg-primary/90"
-                  : "border border-primary text-primary hover:bg-primary/10"
-              )}
-            >
-              {professionalIdParam
-                ? "Sign in to Admin, then open Test Agent Dashboard"
-                : "Sign in to Admin"}
-            </a>
-            {magicToken && (
-              <button
-                onClick={() => handleMagicToken(magicToken)}
-                className="w-full px-6 py-3 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
-              >
-                Try Again
-              </button>
-            )}
-            <a
-              href="mailto:support@top10lists.us?subject=Dashboard Access Help"
-              className="block w-full px-6 py-3 border rounded-lg text-sm font-medium hover:bg-muted transition-colors"
-            >
-              Contact Support
-            </a>
-            <a
-              href="https://www.top10lists.us"
-              className="block w-full px-6 py-3 text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Go to Homepage
-            </a>
-          </div>
-        </div>
-      </div>
-    );
+    // Gate removed: redirect instead of showing blocking screen
+    if (professionalIdParam) {
+      return (
+        <Navigate
+          to={`/admin/login?redirect=${encodeURIComponent(`/agent/dashboard?id=${professionalIdParam}`)}`}
+          replace
+        />
+      );
+    }
+    return <Navigate to="/" replace />;
   }
 
   return (
@@ -497,6 +455,9 @@ export default function AgentDashboard() {
 
             {/* Main Content */}
             <main className="flex-1 min-w-0">
+              <p className="text-lg font-medium mb-6">
+                Hello {professional?.name?.split(" ")[0] ?? "there"},
+              </p>
               {activeSection === "overview" && (
                 <OverviewSection professional={professional} />
               )}

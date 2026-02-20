@@ -5,6 +5,18 @@ interface OverviewSectionProps {
   professional: any;
 }
 
+/** Convert third-person pronouns to second person for "Why We Selected You" context. */
+function toSecondPerson(text: string): string {
+  return text
+    .replace(/\bHis\b/g, "Your")
+    .replace(/\bhis\b/g, "your")
+    .replace(/\bHim\b/g, "You")
+    .replace(/\bhim\b/g, "you")
+    .replace(/\bhimself\b/gi, "yourself")
+    .replace(/\bHe\b/g, "You")
+    .replace(/\bhe\b/g, "you");
+}
+
 export function OverviewSection({ professional }: OverviewSectionProps) {
   const tierLabel = (professional.current_tier || "certified").replace(/^\w/, (c: string) => c.toUpperCase());
 
@@ -20,7 +32,7 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm leading-relaxed">{professional.selection_rationale}</p>
+            <p className="text-sm leading-relaxed">{toSecondPerson(professional.selection_rationale)}</p>
           </CardContent>
         </Card>
       )}
