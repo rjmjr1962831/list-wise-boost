@@ -18,7 +18,9 @@ function toSecondPerson(text: string): string {
 }
 
 export function OverviewSection({ professional }: OverviewSectionProps) {
-  const tierLabel = (professional.current_tier || "certified").replace(/^\w/, (c: string) => c.toUpperCase());
+  // Anyone on the dashboard is Certified at minimum
+  const rawTier = professional.current_tier || "certified";
+  const tierLabel = (rawTier.toLowerCase() === "listed" ? "certified" : rawTier).replace(/^\w/, (c: string) => c.toUpperCase());
 
   return (
     <div className="space-y-6">

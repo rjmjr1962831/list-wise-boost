@@ -6,10 +6,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 
-/** Normalize tier: DB uses "accredited" for Audited */
+/** Normalize tier: DB uses "accredited" for Audited; "listed" maps to Certified (dashboard = Certified at minimum) */
 function normalizeTier(t: string | null): string {
   const t0 = (t || 'certified').toLowerCase();
-  return t0 === 'accredited' ? 'audited' : t0;
+  if (t0 === 'accredited') return 'audited';
+  if (t0 === 'listed') return 'certified';
+  return t0;
 }
 
 /** Estimate AICS using tier lift model when no projection exists */

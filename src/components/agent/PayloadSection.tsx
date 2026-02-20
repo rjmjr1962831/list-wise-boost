@@ -282,7 +282,10 @@ function buildPayload(professional: any, tier: string) {
 }
 
 export function PayloadSection({ professional }: PayloadSectionProps) {
-  const currentTier = professional.current_tier || "certified";
+  // Anyone on the dashboard is Certified at minimum; treat "listed" as Certified for display
+  const currentTier = professional.current_tier && professional.current_tier.toLowerCase() !== "listed"
+    ? professional.current_tier
+    : "certified";
 
   // Signal scores: current from DB, projections from DB columns
   // certified_projected_signal, audited_projected_signal are set by Robert per agent
