@@ -278,7 +278,7 @@ export const AgentBadge = ({
       "aggregateRating": {
         "@type": "AggregateRating",
         "ratingValue": rating,
-        "reviewCount": reviews || 1,
+        "reviewCount": `${Math.max(0, Math.floor((reviews - 5) / 5) * 5)}+`,
         "bestRating": 5
       }
     }),
