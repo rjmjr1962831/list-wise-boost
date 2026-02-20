@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { SafeHead } from '@/components/SafeHead';
 import { Loader2, BadgeCheck, Shield, Zap, ArrowLeft } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { getCurrentUser } from '@/lib/adminAuth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 
@@ -100,18 +101,32 @@ export default function VisibilityTiersPage() {
     }
 
     const sessionToken = localStorage.getItem('agent_session_token');
-    if (!sessionToken) {
-      navigate('/agent/login');
-      return;
-    }
+    const professionalIdFromStorage = sessionStorage.getItem('visibility_professional_id');
+    const professionalIdFromUrl = searchParams.get('id');
 
     (async () => {
       setLoading(true);
       try {
-        const { data } = await supabase.functions.invoke('validate-agent-session', {
-          body: { sessionToken },
-        });
-        if (!data?.valid) {
+        let professionalId: string | null = null;
+
+        if (sessionToken) {
+          const { data } = await supabase.functions.invoke('validate-agent-session', {
+            body: { sessionToken },
+          });
+          if (data?.valid) {
+            professionalId = data.professionalId;
+          }
+        }
+
+        // If agent session failed or missing, check if admin is signed in – do not re-prompt for credentials
+        if (!professionalId) {
+          const adminUser = await getCurrentUser();
+          if (adminUser && (professionalIdFromStorage || professionalIdFromUrl)) {
+            professionalId = professionalIdFromStorage || professionalIdFromUrl;
+          }
+        }
+
+        if (!professionalId) {
           navigate('/agent/login');
           return;
         }
@@ -119,7 +134,7 @@ export default function VisibilityTiersPage() {
         const { data: prof, error } = await supabase
           .from('professionals')
           .select('id, name, current_tier, signal_score, certified_projected_signal, audited_projected_signal, verification_token')
-          .eq('id', data.professionalId)
+          .eq('id', professionalId)
           .single();
 
         if (error || !prof) {
@@ -133,7 +148,7 @@ export default function VisibilityTiersPage() {
         setLoading(false);
       }
     })();
-  }, [navigate, isDashboard]);
+  }, [navigate, isDashboard, searchParams]);
 
   const currentTier = normalizeTier(professional?.current_tier ?? null);
   const baseScore = professional?.signal_score ?? professional?.certified_projected_signal ?? null;

@@ -284,7 +284,12 @@ export default function AgentDashboard() {
 
   const handleNavClick = (section: NavSection) => {
     if (section === "upgrade") {
-      navigate("/visibility/tiers?returnTo=dashboard");
+      if (professional?.id) {
+        sessionStorage.setItem("visibility_professional_id", professional.id);
+        navigate(`/visibility/tiers?returnTo=dashboard&id=${professional.id}`);
+      } else {
+        navigate("/visibility/tiers?returnTo=dashboard");
+      }
       return;
     }
     setActiveSection(section);
