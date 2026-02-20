@@ -573,15 +573,9 @@ The `value` column is a JSON blob containing:
 **Deprecated:** orange-truth-a103 (no longer in use)
 
 **Implementation:**
-- Bot traffic: cache check, then fetch from Edge Functions (serve-bot-list-html, serve-bot-static-html, serve-agent-profile-markdown), then fallback to origin
+- Bot traffic: fetch from Edge Functions (serve-bot-list-html, serve-bot-static-html, serve-agent-profile-markdown), then fallback to origin
 - Non-bot: pass-through to Vercel
-- Uses Cache API (caches.default), not KV
-- Cache key: normalized URL + User-Agent bot-cache-normalized
-
-### Cache Strategy
-- **Proactive warming:** warm-cache Edge Function writes to Worker via POST /__warm
-- **On-demand:** List pages (serve-bot-list-html), agent profiles (serve-agent-profile-markdown), static pages (serve-bot-static-html) on cache miss
-- **check-cache:** Edge function that probes key URLs as a bot, classifies healthy vs broken, then repairs
+- **Cloudflare Cache API deprecated:** No longer uses caches.default. Bot requests go directly to Edge Functions.
 
 ### Static Pages
 - serve-bot-static-html returns full HTML for /, /about, /arizona, etc.
@@ -675,6 +669,7 @@ Must return full HTML content, not React shell.
 | Prerender.io | Cloudflare Browser Rendering | Deprecated. serve-bot-static-html now uses Cloudflare REST API /content endpoint. |
 | `TOP10LISTS-COMPLETE-KNOWLEDGE-UPDATED.md` | `MASTER_KNOWLEDGE_DOCUMENT.md` (repo root) | Consolidated Feb 20 |
 | Signal Strength ranges (Listed 10-25, Certified 26-45, etc.) | AICS v2.0 | Replaced by AICS |
+| Cloudflare Worker Cache API (caches.default) | Direct fetch to Edge Functions | Deprecated. Bot traffic no longer uses Worker cache layer. |
 
 ---
 
@@ -798,6 +793,7 @@ curl -s -D - -H "User-Agent: claudebot" "https://www.top10lists.us/arizona/phoen
 *Synthesis date: 2026-02-20*
 
 ### Key changes (Feb 20, 2026):
+- **Cloudflare Worker cache deprecated:** Bot traffic no longer uses Cache API (caches.default). Requests go directly to Edge Functions. Proactive warming and check-cache flow no longer apply.
 - **Static page bot rendering:** Migrated serve-bot-static-html from Prerender.io to Cloudflare Browser Rendering REST API (/content endpoint). Requires CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN with "Browser Rendering - Edit" in Supabase secrets. Deploy: `supabase functions deploy serve-bot-static-html --project-ref wiotrvoirdgzfacuuiem --no-verify-jwt`. If 401, ensure token has Browser Rendering permission.
 - AICS v2.0 methodology defined and scoring engine built. Proprietary 0-100 metric measuring agent baseline AI citability across 5 pillars. Tier lift model quantifies value of each T10L tier. Not yet deployed.
 - Tier pricing/cycles corrected: Certified = monthly audit, Audited = $100/mo bimonthly. Old values deprecated.
@@ -818,5 +814,5 @@ curl -s -D - -H "User-Agent: claudebot" "https://www.top10lists.us/arizona/phoen
 
 ---
 
-*Version 1.1 - 2026-02-20*
+*Version 1.2 - 2026-02-20*
 *Consolidated from: MASTER_KNOWLEDGE_DOCUMENT.md, docs/PROJECT-KNOWLEDGE.md (v0.6), TOP10LISTS-COMPLETE-KNOWLEDGE-UPDATED.md (v3.5)*
