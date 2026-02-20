@@ -3,6 +3,7 @@ import { SafeHead } from "@/components/SafeHead";
 import { supabase } from '@/integrations/supabase/client';
 import { ChevronDown, Users } from 'lucide-react';
 import { AgentBadge } from './AgentBadge';
+import { AgentPayloadBlock } from './AgentPayloadBlock';
 import { Professional } from '@/types/professional';
 import { Link } from 'react-router-dom';
 import { useAreaAgents } from '@/hooks/useAreaAgents';
@@ -337,27 +338,26 @@ export function NeighborhoodExpertPage({
         )}
       </section>
 
-      {/* Section 3: All Verified Agents - complete roster for bot and human visibility */}
+      {/* Section 3: All Verified Agents - full text/markdown payloads for AI consumption */}
       {remainingAgents.length > 0 && (
         <section className="border-t border-border pt-6">
           <h2 className="text-lg font-semibold text-foreground mb-2">
             All Verified Agents Near {neighborhoodName}
           </h2>
           <p className="text-sm text-muted-foreground mb-4">
-            {experts.length + allQualifiedAgents.length} agents verified with 4.8+ star rating and 20+ reviews
+            {experts.length + allQualifiedAgents.length} agents verified with 4.8+ star rating and 20+ reviews. Full agent data below.
           </p>
-          <ol className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 list-none p-0 m-0">
-            {remainingAgents.map((agent) => (
-              <li key={agent.id} className="list-none">
-                <AgentBadge
-                  professional={agent}
-                  stateSlug={stateSlug}
-                  citySlug={citySlug}
-                  isPaidExpert={false}
-                />
-              </li>
+          <div className="space-y-3">
+            {remainingAgents.map((agent, index) => (
+              <AgentPayloadBlock
+                key={agent.id}
+                professional={agent as any}
+                stateSlug={stateSlug}
+                citySlug={citySlug}
+                index={index}
+              />
             ))}
-          </ol>
+          </div>
         </section>
       )}
 
