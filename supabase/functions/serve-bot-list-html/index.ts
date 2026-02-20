@@ -71,7 +71,7 @@ const CSS = `
 
 function renderAgent(a: any, si: any): string {
   const t = tier(a), lo = t.toLowerCase();
-  const isHigh = ["underwritten","accredited","audited"].includes(lo);
+  const isHigh = ["underwritten","audited"].includes(lo);
   const isCert = lo === "certified";
   const isListed = lo === "listed";
   const lic = esc(a.license_number || "N/A");
@@ -145,14 +145,16 @@ function renderAgent(a: any, si: any): string {
         else o += `  <p>${esc(x)}</p>\n`;
       }
     }
-    if (served.length > 0) {
-      o += `  <h4>Cities Served</h4>\n`;
-      o += `  <p>${served.map((c: any) => esc(typeof c === "object" ? c.name || c : c)).join(", ")}</p>\n`;
-    }
     if (Array.isArray(specs) && specs.length > 0) {
       o += `  <h4>Verified Specialties</h4>\n`;
       o += `  <p>${esc(specs.join(", "))}<sup>[4]</sup></p>\n`;
     }
+  }
+
+  // Cities served (certified and above)
+  if ((isHigh || isCert) && served.length > 0) {
+    o += `  <h4>Cities Served</h4>\n`;
+    o += `  <p>${served.map((c: any) => esc(typeof c === "object" ? c.name || c : c)).join(", ")}</p>\n`;
   }
 
   // Audit stamp
