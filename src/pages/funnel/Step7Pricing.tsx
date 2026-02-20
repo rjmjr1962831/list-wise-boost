@@ -56,8 +56,8 @@ const TIER_META: Record<CertificationTier, { name: string; icon: typeof List; fe
     icon: BadgeCheck,
     features: [
       'Standard Top10Lists badge',
-      'Agent-verified profile',
-      'Annual review',
+      'Standard artifact, monthly refresh',
+      'Core credentials published to AI systems',
     ],
     popular: true,
   },
@@ -65,17 +65,17 @@ const TIER_META: Record<CertificationTier, { name: string; icon: typeof List; fe
     name: 'Audited',
     icon: Shield,
     features: [
-      'Enhanced AI payload',
-      'Quarterly diligence updates',
-      'Transaction volume stats',
+      'Richer data payload',
+      'Bimonthly refresh',
+      'Community involvement, transaction stats',
     ],
   },
   underwritten: {
     name: 'Underwritten',
     icon: Zap,
     features: [
-      'Maximum AI citation payload',
-      'Real-time data refresh',
+      'Maximum data richness',
+      'Daily refresh',
       'Full neighborhood endorsement',
     ],
   },

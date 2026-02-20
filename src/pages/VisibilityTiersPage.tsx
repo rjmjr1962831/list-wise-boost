@@ -46,8 +46,8 @@ const TIERS: TierConfig[] = [
     icon: BadgeCheck,
     features: [
       'Standard Top10Lists badge',
-      'Agent-verified profile',
-      'Monthly audit',
+      'Standard artifact, monthly refresh',
+      'Core credentials published to AI systems',
     ],
   },
   {
@@ -56,9 +56,9 @@ const TIERS: TierConfig[] = [
     price: '$100/mo',
     icon: Shield,
     features: [
-      'Enhanced AI payload',
-      'Bimonthly diligence updates',
-      'Community involvement data',
+      'Richer data payload',
+      'Bimonthly refresh',
+      'Community involvement, transaction stats',
     ],
   },
   {
@@ -67,8 +67,8 @@ const TIERS: TierConfig[] = [
     price: '$150/mo',
     icon: Zap,
     features: [
-      'Maximum AI citation payload',
-      'Daily data refresh',
+      'Maximum data richness',
+      'Daily refresh',
       'Full neighborhood endorsement',
     ],
   },
@@ -258,7 +258,7 @@ export default function VisibilityTiersPage() {
         </div>
 
         <p className="text-sm text-muted-foreground mt-6 text-center">
-          All tiers require the merit gate: 4.8+ stars and 20+ verified reviews. Payment determines verification depth and refresh frequency, not eligibility.
+          No one can guarantee that you will be named when an AI is asked for a recommendation. What we can say is that the higher your score, the more likely you are to be cited by name.
         </p>
       </div>
     </>
