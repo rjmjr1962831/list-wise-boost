@@ -8,7 +8,7 @@ alwaysApply: true
 
 **ALWAYS DO WHAT YOU CAN DO WITHOUT ASKING ROBERT.** Do not ask Robert to run commands, deploy, push, or call APIs you can do with available credentials and tools. Only ask when you lack access or explicit approval is required (e.g. push to production).
 
-**Document freshness:** Master doc is `docs/PROJECT-KNOWLEDGE.md`. It must be updated daily via `npm run update` (nightly synthesis from Claude + Gemini + Cursor). If it is stale, all three AIs behave from wrong assumptions. Robert is owner; Claude, Gemini, Cursor are senior engineers sharing the codebase.
+**Document freshness:** Master doc is `MASTER_KNOWLEDGE_DOCUMENT.md` (private repo `rjmjr1962831/top10lists-knowledge` or local). **never-internal:** Internal documents must NEVER be in the public repo (list-wise-boost). No exceptions. Read from private repo or local path. If stale, all three AIs behave from wrong assumptions. Robert is owner; Claude, Gemini, Cursor are senior engineers sharing the codebase.
 
 ## 🔑 CREDENTIALS AND AUTHORITY
 **Each AI has the credentials needed for every major system** (Supabase, GitHub, Vercel, enrichment API, warm/purge, etc.). They are in project `.env`, `.secrets/`, or Supabase/Vercel config. **Use them.** Do not ask the user to do things you are authorized to do—invoke functions, run scripts, deploy, purge/warm cache, call APIs, push to staging. Do those yourself.
@@ -39,10 +39,7 @@ alwaysApply: true
 
 ---
 
-**Before routing, database, or deployment work:** Fetch full project knowledge from:
-https://raw.githubusercontent.com/rjmjr1962831/list-wise-boost/main/docs/PROJECT-KNOWLEDGE.md
-
-Or read local: `docs/PROJECT-KNOWLEDGE.md`
+**Before routing, database, or deployment work:** Fetch full project knowledge from private repo (`rjmjr1962831/top10lists-knowledge`) or read local `MASTER_KNOWLEDGE_DOCUMENT.md` if present. Never commit internal docs to list-wise-boost.
 
 That document is the single source of truth. It contains:
 - **HARD STOPS** (routing frozen, no schema without approval, no `is_brand_builder` changes, no new Supabase client, no secrets in docs, etc.)
@@ -53,7 +50,7 @@ That document is the single source of truth. It contains:
 - Command format (exact copy/paste, no placeholders)
 - Verification: test before claiming done; 5-page test after changes
 
-**When Robert says "update":** Run `npm run update` or fetch from GitHub, merge session takeaways, write new version to docs/PROJECT-KNOWLEDGE.md.
+**When Robert says "update":** Run `npm run update` or fetch from private repo, merge session takeaways, write new version to private repo. Never to list-wise-boost.
 
 **When Robert says "takeaways":** Generate structured text for project memory. Output format:
 - Key Outcomes (what was done, not how)
@@ -63,6 +60,8 @@ That document is the single source of truth. It contains:
 
 No full chats, deployment nitty-gritty, or brainstorming. Only outcomes. Run `npm run takeaways` for template. Robert will have Claude compile daily reports and incorporate into this rule file.
 
-**Cron:** A job runs daily at 20:00 MST to create a report slot in `daily_takeaways` table. Sync to `docs/cursor-daily-updates.md` with `npm run takeaways:sync`. Claude compiles into project-knowledge.mdc and docs/PROJECT-KNOWLEDGE.md.
+**Cron:** A job runs daily at 20:00 MST to create a report slot in `daily_takeaways` table. Sync to `docs/cursor-daily-updates.md` with `npm run takeaways:sync`. Claude compiles into project-knowledge.mdc and private repo (never list-wise-boost).
 
-**When Robert says "ryt":** Update **only** the master knowledge document (`docs/PROJECT-KNOWLEDGE.md`). Read it, integrate session knowledge into it, write back to that file, then commit and push to staging. Do not use any other knowledge file. (Takeaways is separate: daily updates/learnings from each AI for the day.)
+**When Robert says "ryt":** Update **only** the master knowledge document (`MASTER_KNOWLEDGE_DOCUMENT.md`). Read from private repo or local, integrate session knowledge, write back to private repo. Never commit to list-wise-boost. (Takeaways is separate: daily updates/learnings from each AI for the day.)
+
+**When Robert says "never-internal":** Internal documents (MASTER_KNOWLEDGE_DOCUMENT.md, methodology drafts, operational docs) must NEVER be in the public repo (list-wise-boost). No exceptions. They live in `rjmjr1962831/top10lists-knowledge` or locally only.
