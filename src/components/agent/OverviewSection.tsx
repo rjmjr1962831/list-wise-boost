@@ -32,6 +32,7 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
             <Signal className="h-5 w-5 text-primary" />
             Your AI Visibility
           </CardTitle>
+          <p className="text-sm text-muted-foreground mt-1">If you're on this dashboard, you're at least Certified.</p>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
@@ -40,7 +41,7 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
               <p className="text-lg font-semibold">{tierLabel}</p>
             </div>
             <div className="p-4 rounded-lg bg-muted/50 border">
-              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">AI Confident Score (AICS)</p>
+              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">AI Confidence Score</p>
               <p className="text-lg font-semibold">
                 {professional.signal_score != null ? `${professional.signal_score}/100` : "Pending"}
               </p>

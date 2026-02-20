@@ -116,7 +116,7 @@ function TierPanel({ tier, currentTier, professional, price, signalScore, projec
   const isDowngrade = viewingRank < currentRank;
 
   const descriptions: Record<string, string> = {
-    certified: "Core verified credentials: license, rating, review count, and specialties.",
+    certified: "Core verified credentials: license, rating, review count, and specialties. Includes social links, Web of Trust integration, and monthly refresh.",
     audited: "Expanded profile: adds experience, transaction history, company, community roles, and selection rationale.",
     underwritten: "Complete verified profile: everything we know, including neighborhood detail, performance data, press mentions, and awards.",
   };
@@ -140,8 +140,8 @@ function TierPanel({ tier, currentTier, professional, price, signalScore, projec
         <p className="text-sm text-muted-foreground">{descriptions[tier]}</p>
       </div>
 
-      {/* Upgrade/downgrade prompt */}
-      {isUpgrade && (
+      {/* Upgrade/downgrade prompt — don't show for Certified (they're already at least certified) */}
+      {isUpgrade && tier !== "certified" && (
         <div className="flex items-center gap-2 text-sm text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2">
           <Lock className="h-4 w-4 shrink-0" />
           Upgrade to {tier.charAt(0).toUpperCase() + tier.slice(1)} ({price}) to publish this payload to AI systems

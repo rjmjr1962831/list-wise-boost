@@ -5,7 +5,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { 
   Save, 
   Loader2, 
@@ -46,7 +45,6 @@ interface ProfileSectionProps {
 // Self-service fields that agents can edit directly
 const SELF_SERVICE_FIELDS = [
   { key: "phone", label: "Phone Number", icon: Phone, type: "tel" },
-  { key: "image_url", label: "Photo URL", icon: User, type: "url" },
   { key: "website", label: "Website", icon: Globe, type: "url" },
   { key: "sidebar_video_url", label: "Video URL", icon: Video, type: "url" },
   { key: "social_facebook", label: "Facebook", icon: Globe, type: "url" },
@@ -63,7 +61,7 @@ const ARRAY_EDIT_FIELDS = [
 
 // Controlled fields (view only, can request changes)
 const CONTROLLED_FIELDS = [
-  { key: "email", label: "Email", icon: Mail, note: "Contact support to change email" },
+  { key: "email", label: "Email", icon: Mail },
   { key: "name", label: "Name", icon: User },
   { key: "license_number", label: "License Number", icon: Shield },
   { key: "license_status", label: "License Status", icon: Shield },
@@ -242,60 +240,9 @@ export function ProfileSection({
           </CardContent>
         </Card>
 
-        {/* Controlled Fields */}
+        {/* Cities Served, Neighborhood Expertise, Specialties — below social links */}
         <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Verified Information</CardTitle>
-            <CardDescription>
-              Request changes to these fields. Our team will review your request.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {CONTROLLED_FIELDS.map((field) => {
-              const isPending = hasPendingRequest(field.key);
-              const value = formatValue(professional[field.key]);
-
-              return (
-                <div key={field.key} className="space-y-1">
-                  <div className="flex items-center justify-between">
-                    <Label className="flex items-center gap-2 text-sm">
-                      <field.icon className="h-4 w-4 text-muted-foreground" />
-                      {field.label}
-                      {isPending && (
-                        <Badge variant="outline" className="text-xs">
-                          <Clock className="h-3 w-3 mr-1" />
-                          Pending
-                        </Badge>
-                      )}
-                    </Label>
-                    {!isPending && field.key !== "email" && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-7 text-xs"
-                        onClick={() => handleRequestChange(field.key, field.label, value)}
-                      >
-                        Request Change
-                      </Button>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <p className="text-sm py-2 px-3 bg-muted/50 rounded-md flex-1 min-h-[38px]">
-                      {value || <span className="text-muted-foreground italic">Not set</span>}
-                    </p>
-                  </div>
-                  {"note" in field && field.note && (
-                    <p className="text-xs text-muted-foreground flex items-center gap-1">
-                      <AlertCircle className="h-3 w-3" />
-                      {field.note}
-                    </p>
-                  )}
-                </div>
-              );
-            })}
-
-            {/* Cities Served */}
-            <Separator className="my-4" />
+          <CardContent className="pt-6 space-y-4">
             <div className="space-y-1">
               <div className="flex items-center justify-between">
                 <Label className="flex items-center gap-2 text-sm">
@@ -329,7 +276,6 @@ export function ProfileSection({
               </div>
             </div>
 
-            {/* Neighborhood Expertise */}
             <div className="space-y-1">
               <div className="flex items-center justify-between">
                 <Label className="flex items-center gap-2 text-sm">
@@ -361,7 +307,6 @@ export function ProfileSection({
               </div>
             </div>
 
-            {/* Specialties */}
             <div className="space-y-1">
               <div className="flex items-center justify-between">
                 <Label className="flex items-center gap-2 text-sm">
@@ -389,6 +334,60 @@ export function ProfileSection({
                 )}
               </div>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Controlled Fields */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Verified Information</CardTitle>
+            <CardDescription>
+              Request changes to these fields. Our team will review your request.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {CONTROLLED_FIELDS.map((field) => {
+              const isPending = hasPendingRequest(field.key);
+              const value = formatValue(professional[field.key]);
+
+              return (
+                <div key={field.key} className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <Label className="flex items-center gap-2 text-sm">
+                      <field.icon className="h-4 w-4 text-muted-foreground" />
+                      {field.label}
+                      {isPending && (
+                        <Badge variant="outline" className="text-xs">
+                          <Clock className="h-3 w-3 mr-1" />
+                          Pending
+                        </Badge>
+                      )}
+                    </Label>
+                    {!isPending && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 text-xs"
+                        onClick={() => handleRequestChange(field.key, field.label, value)}
+                      >
+                        Request Change
+                      </Button>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm py-2 px-3 bg-muted/50 rounded-md flex-1 min-h-[38px]">
+                      {value || <span className="text-muted-foreground italic">Not set</span>}
+                    </p>
+                  </div>
+                  {"note" in field && field.note && (
+                    <p className="text-xs text-muted-foreground flex items-center gap-1">
+                      <AlertCircle className="h-3 w-3" />
+                      {field.note}
+                    </p>
+                  )}
+                </div>
+              );
+            })}
           </CardContent>
         </Card>
       </div>
