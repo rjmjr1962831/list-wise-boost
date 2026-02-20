@@ -104,6 +104,15 @@ Claude (when in context) may handle:
 - Create a new Supabase client (use shared client from `@/integrations/supabase/client`)
 - Use bare `>` or `<` characters in JSX text (causes build failures; use `{">"}`/`{"<"}` or HTML entities)
 - Push internal documents, scripts, scoring engines, API keys, or internal tooling to this repo (staging or main)
+- Burn deploy budget with per-file pushes or iterative fix-and-push cycles (batch your commits)
+
+### Vercel Deploy Budget (HARD RULE)
+Vercel free tier allows **100 deployments per day**. Every git push to staging triggers a deploy. All three AIs (Claude, Gemini, Cursor) share this budget. Rules:
+- **Batch changes.** Commit multiple files in a single push. Never deploy per-file.
+- **Target: under 20 deploys per day total across all AIs.** That leaves headroom for manual deploys and emergencies.
+- **If you have 5+ file changes, combine them into one commit and one push.**
+- **Never run iterative fix cycles that push after each small change.** Test locally or in staging preview, then push once.
+- Burning through 100 deploys causes a 24-hour lockout with no way to deploy urgent fixes. This has happened (Feb 20, 2026). Do not let it happen again.
 
 ### Cost of Mistakes
 - Agent enrichment: ~$0.50/agent
