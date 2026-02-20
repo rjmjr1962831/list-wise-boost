@@ -1,7 +1,7 @@
--- Arcadia, Phoenix: Add comprehensive writeup and market stats (Main Street Arts District format)
--- Run in Supabase SQL Editor or: supabase db push
+-- Arcadia, Phoenix: Main Street Arts District layout
+-- Data source: neighborhood_catalog / arizonaNeighborhoodCatalog (median_home_value 748600, median_income 85335, zips 85018)
 
--- 1. Update neighborhood_catalog with writeup_html for Arcadia
+-- 1. Update neighborhood_catalog with writeup_html (layout: Overview, Lifestyle, Market, Amenities, Why Choose)
 UPDATE neighborhood_catalog
 SET writeup_html = '
 <h2>Neighborhood Overview</h2>
@@ -32,14 +32,13 @@ WHERE neighborhood_slug = 'arcadia'
   AND city_area_slug = 'phoenix'
   AND is_active = true;
 
--- 2. Upsert market_stats for useNeighborhoodMarketStats (page: neighborhood-arizona-arcadia)
--- Note: value is TEXT; store JSON string for parsing by useNeighborhoodMarketStats
+-- 2. Upsert market_stats (values from neighborhood_catalog)
 INSERT INTO marketing_content (page, section, key, value, type, created_at, updated_at)
 VALUES (
   'neighborhood-arizona-arcadia',
   'market_stats',
   'full_content',
-  '{"medianHomePrice":748600,"medianHouseholdIncome":85335,"medianRent":2100,"daysOnMarket":45,"pricePerSqFt":385,"yearOverYearChange":0.041,"inventoryLevel":"Low","marketType":"Seller''s Market","averageHomeSize":1950,"homeownershipRate":0.72,"rentToIncomeRatio":0.29,"rentalVacancyRate":0.05,"pctRenterOccupied":0.28,"metadata":{"generatedAt":"2026-02-20T00:00:00Z","neighborhoodName":"Arcadia","cityArea":"Phoenix","state":"Arizona","stateAbbrev":"AZ","primaryZip":"85018","version":"1.0"}}',
+  '{"medianHomePrice":748600,"medianHouseholdIncome":85335,"metadata":{"generatedAt":"2026-02-20T00:00:00Z","neighborhoodName":"Arcadia","cityArea":"Phoenix","state":"Arizona","stateAbbrev":"AZ","primaryZip":"85018","version":"1.0"}}',
   'text',
   now(),
   now()
