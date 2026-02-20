@@ -204,9 +204,15 @@ export function useAreaAgents({
               state_slug,
               agent_sales_stats,
               sales_count_all_time,
+              sales_count_last_year,
               average_value_3yr,
               price_range_3yr_min,
-              price_range_3yr_max
+              price_range_3yr_max,
+              selection_rationale,
+              community_roles,
+              notable_achievements,
+              current_tier,
+              zillow_profile_url
             `)
             .eq('active', true)
             .eq('state_slug', stateSlug) // CRITICAL: Filter by state to prevent cross-state agents
@@ -270,6 +276,11 @@ export function useAreaAgents({
             average_value_3yr: prof.average_value_3yr || null,
             price_range_3yr_min: prof.price_range_3yr_min || null,
             price_range_3yr_max: prof.price_range_3yr_max || null,
+            selection_rationale: prof.selection_rationale || null,
+            community_roles: prof.community_roles || null,
+            notable_achievements: prof.notable_achievements || null,
+            current_tier: prof.current_tier || 'listed',
+            zillow_profile_url: prof.zillow_profile_url || null,
             isPaidExpert: paidExpertIds.has(prof.id),
             neighborhoodTransactions: 0,
             transactionZips: [],
@@ -309,9 +320,15 @@ export function useAreaAgents({
             state_slug,
             agent_sales_stats,
             sales_count_all_time,
+            sales_count_last_year,
             average_value_3yr,
             price_range_3yr_min,
-            price_range_3yr_max
+            price_range_3yr_max,
+            selection_rationale,
+            community_roles,
+            notable_achievements,
+            current_tier,
+            zillow_profile_url
           `)
           .eq('active', true)
           .eq('state_slug', stateSlug) // CRITICAL: Filter by state to prevent cross-state agents
@@ -361,6 +378,11 @@ export function useAreaAgents({
             average_value_3yr: prof.average_value_3yr || null,
             price_range_3yr_min: prof.price_range_3yr_min || null,
             price_range_3yr_max: prof.price_range_3yr_max || null,
+            selection_rationale: prof.selection_rationale || null,
+            community_roles: prof.community_roles || null,
+            notable_achievements: prof.notable_achievements || null,
+            current_tier: prof.current_tier || 'listed',
+            zillow_profile_url: prof.zillow_profile_url || null,
             isPaidExpert: paidExpertIds.has(prof.id),
             neighborhoodTransactions: activity.totalTx,
             transactionZips: activity.zips,
