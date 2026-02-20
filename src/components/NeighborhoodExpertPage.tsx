@@ -51,6 +51,17 @@ export function NeighborhoodExpertPage({
     return rotated.slice(0, DISPLAY_AGENT_COUNT);
   }, [areaAgents]);
 
+  // ALL qualified agents (no round-robin limit) for "All Verified" section and complete schema
+  const allQualifiedAgents = useMemo(() => {
+    return areaAgents.filter(a => !a.isPaidExpert);
+  }, [areaAgents]);
+
+  // Remaining agents not shown in Top 10
+  const remainingAgents = useMemo(() => {
+    const topIds = new Set(qualifiedAgents.map(a => a.id));
+    return allQualifiedAgents.filter(a => !topIds.has(a.id));
+  }, [allQualifiedAgents, qualifiedAgents]);
+
   useEffect(() => {
     const fetchExperts = async () => {
       try {
@@ -133,7 +144,7 @@ export function NeighborhoodExpertPage({
 
   // Generate ItemList JSON-LD schema with full agent details for GEO optimization
   const agentItemListSchema = useMemo(() => {
-    const allAgents = [...experts, ...qualifiedAgents];
+    const allAgents = [...experts, ...allQualifiedAgents];
     if (allAgents.length === 0) return null;
 
     const stateAbbrev = stateSlug.toUpperCase().substring(0, 2);
@@ -169,7 +180,7 @@ export function NeighborhoodExpertPage({
             "aggregateRating": {
               "@type": "AggregateRating",
               "ratingValue": agent.rating.toString(),
-              "reviewCount": (agent.reviews || 0).toString(),
+              "reviewCount": `${Math.max(0, Math.floor(((agent.reviews || 0) - 5) / 5) * 5)}+`,
               "bestRating": "5",
               "worstRating": "1"
             }
@@ -192,7 +203,7 @@ export function NeighborhoodExpertPage({
         }
       }))
     };
-  }, [experts, qualifiedAgents, neighborhoodName, stateSlug, citySlug, neighborhoodSlug, primaryZip]);
+  }, [experts, allQualifiedAgents, neighborhoodName, stateSlug, citySlug, neighborhoodSlug, primaryZip]);
 
   if (loading) {
     return (
@@ -325,6 +336,30 @@ export function NeighborhoodExpertPage({
           </div>
         )}
       </section>
+
+      {/* Section 3: All Verified Agents - complete roster for bot and human visibility */}
+      {remainingAgents.length > 0 && (
+        <section className="border-t border-border pt-6">
+          <h2 className="text-lg font-semibold text-foreground mb-2">
+            All Verified Agents Near {neighborhoodName}
+          </h2>
+          <p className="text-sm text-muted-foreground mb-4">
+            {experts.length + allQualifiedAgents.length} agents verified with 4.8+ star rating and 20+ reviews
+          </p>
+          <ol className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 list-none p-0 m-0">
+            {remainingAgents.map((agent) => (
+              <li key={agent.id} className="list-none">
+                <AgentBadge
+                  professional={agent}
+                  stateSlug={stateSlug}
+                  citySlug={citySlug}
+                  isPaidExpert={false}
+                />
+              </li>
+            ))}
+          </ol>
+        </section>
+      )}
 
       {/* Neighborhood Expert Explanation */}
       <div className="pt-4 border-t border-border">
