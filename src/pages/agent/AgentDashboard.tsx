@@ -284,18 +284,7 @@ export default function AgentDashboard() {
 
   const handleNavClick = (section: NavSection) => {
     if (section === "upgrade") {
-      if (professional?.id) {
-        sessionStorage.setItem("visibility_professional_id", professional.id);
-      }
-      const verificationToken =
-        professional?.verification_token || professional?.id;
-      if (verificationToken) {
-        sessionStorage.setItem(
-          "visibility_professional_token",
-          verificationToken
-        );
-      }
-      navigate("/visibility/expertise");
+      navigate("/visibility/tiers?returnTo=dashboard");
       return;
     }
     setActiveSection(section);

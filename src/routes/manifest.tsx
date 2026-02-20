@@ -105,6 +105,7 @@ const PaymentsSecurity = lazy(() => import("@/pages/PaymentsSecurity"));
 const QualifiedAgentsPage = lazy(() => import("@/pages/QualifiedAgentsPage"));
 const AreaAgentsPage = lazy(() => import("@/pages/AreaAgentsPage"));
 const VisibilityCoveragePage = lazy(() => import("@/pages/VisibilityCoveragePage"));
+const VisibilityTiersPage = lazy(() => import("@/pages/VisibilityTiersPage"));
 const VisibilityExpertisePage = lazy(() => import("@/pages/VisibilityExpertisePage"));
 const VisibilityReviewPage = lazy(() => import("@/pages/VisibilityReviewPage"));
 const VisibilitySuccessPage = lazy(() => import("@/pages/VisibilitySuccessPage"));
@@ -165,6 +166,7 @@ export const routeManifest: RouteObject[] = [
   { path: "/test-visibility-components", element: wrapAdmin(React.createElement(TestVisibilityComponents, null)) },
   { path: "/badge-levels-preview", element: React.createElement(BadgeLevelsPreview, null) },
   { path: "/visibility", element: React.createElement(Navigate, { to: "/visibility/coverage", replace: true }) },
+  { path: "/visibility/tiers", element: React.createElement(VisibilityTiersPage, null) },
   { path: "/visibility/coverage", element: React.createElement(VisibilityCoveragePage, null) },
   { path: "/visibility/expertise", element: React.createElement(VisibilityExpertisePage, null) },
   { path: "/visibility/review", element: React.createElement(VisibilityReviewPage, null) },

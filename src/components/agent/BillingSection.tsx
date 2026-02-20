@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -40,6 +41,7 @@ export function BillingSection({
   subscriptions,
   hasStripeSubscription,
 }: BillingSectionProps) {
+  const navigate = useNavigate();
   const [loadingPortal, setLoadingPortal] = useState(false);
 
   const handleManagePayment = async () => {
@@ -98,7 +100,7 @@ export function BillingSection({
               <CreditCard className="h-5 w-5" />
               Billing & Subscriptions
             </CardTitle>
-            <CardDescription>Manage your city listings and payment methods</CardDescription>
+            <CardDescription>Manage your subscription and payment methods</CardDescription>
           </div>
           {hasStripeSubscription && (
             <Button variant="outline" onClick={handleManagePayment} disabled={loadingPortal}>
@@ -117,9 +119,12 @@ export function BillingSection({
           <div className="text-center py-8">
             <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <p className="text-muted-foreground mb-4">No active subscriptions</p>
-            <p className="text-sm text-muted-foreground">
-              Upgrade your profile to appear in more cities and get more leads.
+            <p className="text-sm text-muted-foreground mb-4">
+              Upgrade your profile to increase your AI Citability Score.
             </p>
+            <Button onClick={() => navigate("/visibility/tiers?returnTo=dashboard")}>
+              Upgrade
+            </Button>
           </div>
         ) : (
           <div className="space-y-4">
