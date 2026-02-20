@@ -1,0 +1,54 @@
+name: Regenerate Clean-Room Pages
+
+on:
+  repository_dispatch:
+    types: [tier-change]
+
+jobs:
+  regenerate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: staging
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Regenerate affected city
+        run: |
+          CITY_SLUG="${{ github.event.client_payload.city_slug }}"
+          STATE_SLUG="${{ github.event.client_payload.state_slug }}"
+          AGENT_NAME="${{ github.event.client_payload.agent_name }}"
+          OLD_TIER="${{ github.event.client_payload.old_tier }}"
+          NEW_TIER="${{ github.event.client_payload.new_tier }}"
+
+          echo "Tier change: $AGENT_NAME ($OLD_TIER -> $NEW_TIER)"
+          echo "Regenerating: $STATE_SLUG / $CITY_SLUG"
+
+          if [ -n "$CITY_SLUG" ] && [ -n "$STATE_SLUG" ]; then
+            python generate_clean_rooms.py --state "$STATE_SLUG" --city "$CITY_SLUG" --no-push
+          else
+            echo "Missing city_slug or state_slug, skipping"
+            exit 0
+          fi
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add public/clean-room/
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            CITY_SLUG="${{ github.event.client_payload.city_slug }}"
+            AGENT_NAME="${{ github.event.client_payload.agent_name }}"
+            NEW_TIER="${{ github.event.client_payload.new_tier }}"
+            git commit -m "auto: regen $CITY_SLUG clean-room ($AGENT_NAME -> $NEW_TIER)"
+            git push origin staging
+          fi
