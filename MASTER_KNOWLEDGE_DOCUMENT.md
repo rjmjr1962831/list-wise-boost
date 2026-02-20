@@ -494,6 +494,49 @@ These fields cost real money to generate:
 ### The Preserve Rule
 If a field has data, your code must preserve existing values. Never write NULL unless explicitly clearing.
 
+### Neighborhood Data Schema (SSoT)
+
+**All neighborhood data lives in two tables:**
+
+**1. `neighborhood_catalog`** (master record per neighborhood)
+
+| Column | What It Contains |
+|--------|------------------|
+| `id` | UUID primary key |
+| `neighborhood` | Display name (e.g., "Arcadia") |
+| `neighborhood_slug` | URL slug (e.g., "arcadia") |
+| `city_area` | Parent city (e.g., "Phoenix") |
+| `city_area_slug` | City slug (e.g., "phoenix") |
+| `state` | Full state name ("Arizona") |
+| `primary_zip` | Primary ZIP code |
+| `zips` | JSON array of all ZIPs |
+| `lat`, `lon` | Coordinates |
+| `median_home_value` | Census home value |
+| `median_income` | Census household income |
+| `income_pct`, `value_pct` | Percentile rankings |
+| `tier` | Pricing tier ("Main", "Prime", "Luxury") |
+| `score` | Computed ranking score |
+| `nearby_neighborhoods` | JSON array of nearby neighborhood objects |
+| `writeup_html` | Generated editorial writeup (HTML) |
+| `writeup_research` | Raw research used to generate writeup |
+| `writeup_generated_at` | Timestamp |
+| `is_active` | Boolean |
+| `is_verified` | Boolean |
+| `source` | Data source ("osm") |
+| `county` | County name (often null) |
+| `zillow_region_id` | Zillow region ID (often null) |
+
+**2. `marketing_content`** (market stats per neighborhood)
+
+Queried by: `page=eq.neighborhood-{slug}`, `section=eq.market_stats`, `key=eq.full_content`
+
+The `value` column is a JSON blob containing:
+`population`, `medianHomePrice`, `medianRent`, `medianHouseholdIncome`, `daysOnMarket`, `pricePerSqFt`, `yearOverYearChange`, `inventoryLevel`, `marketType`, `averageHomeSize`, `homeownershipRate`, `rentToIncomeRatio`, `rentalVacancyRate`, `pctRenterOccupied`, `metadata`
+
+**There is no `neighborhood_pricing`, `neighborhood_experts`, or `neighborhood_subscriptions` table.** Pricing tier is in `neighborhood_catalog.tier`. Agent-to-neighborhood mapping uses `professionals.served_cities` (city-level) and ZIP proximity via `neighborhood_catalog.zips` matched against agent ZIP codes.
+
+**Row counts:** Arizona ~2,967 active neighborhoods across 77 cities in `neighborhood_catalog`. Marketing content exists for most.
+
 ---
 
 ## 21. ADMIN CRM DASHBOARD
