@@ -20047,6 +20047,8 @@ const index_default = {
 
         const hitHdrs = new Headers(cachedResponse.headers);
         hitHdrs.set("X-Cache", "HIT");
+        hitHdrs.set("X-Bot-Rendered", "true");
+        hitHdrs.delete("Set-Cookie");
         return new Response(cachedResponse.body, { status: cachedResponse.status, headers: hitHdrs });
       }
     }
@@ -20105,22 +20107,40 @@ const index_default = {
         }
         var res = await fetch(markdownUrl, { headers: headers });
         var contentType = res.headers.get("Content-Type") || "";
-        var isAcceptable = res.ok && (contentType.indexOf("text/html") !== -1 || contentType.indexOf("text/markdown") !== -1);
+        var isAcceptable = res.ok && (contentType.indexOf("text/html") !== -1 || contentType.indexOf("text/markdown") !== -1 || contentType.indexOf("text/plain") !== -1);
         if (isAcceptable) {
           var body = await res.text();
-          var respContentType = contentType.indexOf("text/html") !== -1 ? "text/html; charset=utf-8" : "text/markdown; charset=utf-8";
+          var respContentType = contentType.indexOf("text/html") !== -1 ? "text/html; charset=utf-8" : contentType.indexOf("text/markdown") !== -1 ? "text/markdown; charset=utf-8" : "text/plain; charset=utf-8";
           var response = new Response(body, {
             status: 200,
             headers: {
               "Content-Type": respContentType,
               "X-Cache": "MISS",
-              "Cache-Control": "public, max-age=3600, stale-while-revalidate=86400"
+              "X-Bot-Rendered": "true",
+              "X-Bot-Type": botType || "unknown",
+              "Cache-Control": "public, max-age=86400, stale-while-revalidate=86400",
+              "Access-Control-Allow-Origin": "*"
             }
           });
-          await cache.put(cacheKey, response.clone());
+          ctx.waitUntil(cache.put(cacheKey, response.clone()));
           return response;
         }
-        if (res.ok) return res;
+        if (res.ok) {
+          var fallbackBody = await res.text();
+          var fallbackResponse = new Response(fallbackBody, {
+            status: 200,
+            headers: {
+              "Content-Type": "text/plain; charset=utf-8",
+              "X-Cache": "MISS",
+              "X-Bot-Rendered": "true",
+              "X-Bot-Type": botType || "unknown",
+              "Cache-Control": "public, max-age=86400, stale-while-revalidate=86400",
+              "Access-Control-Allow-Origin": "*"
+            }
+          });
+          ctx.waitUntil(cache.put(cacheKey, fallbackResponse.clone()));
+          return fallbackResponse;
+        }
       } catch (err) {
         console.error("Markdown fetch failed:", err.message);
       }
