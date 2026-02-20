@@ -15,6 +15,7 @@ import { ListSection, Professional } from '@/types/professional';
 import { RealEstateAgentQuizModal } from '@/components/RealEstateAgentQuizModal';
 import { ContactProfessionalModal } from '@/components/ContactProfessionalModal';
 import { AgentDetailModal } from '@/components/AgentDetailModal';
+import { AgentBadge } from '@/components/AgentBadge';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { getCanonicalRankings } from '@/services/canonicalAgentService';
@@ -230,6 +231,7 @@ export default function DynamicCategoryList({
   const [allProfessionals, setAllProfessionals] = useState<Professional[]>([]);
   const [showQuiz, setShowQuiz] = useState(false);
   const [filteredProfessionals, setFilteredProfessionals] = useState<Professional[]>([]);
+  const [allVerifiedAgents, setAllVerifiedAgents] = useState<DBProfessional[]>([]);
   const [quizCompleted, setQuizCompleted] = useState(false);
   const [selectedProfessional, setSelectedProfessional] = useState<Professional | null>(null);
   const [showContactModal, setShowContactModal] = useState(false);
@@ -338,6 +340,11 @@ export default function DynamicCategoryList({
 
         // Combine: Brand Builders first + rotated free picks
         professionalsData = [...brandBuilderProfs, ...rotatedPicks];
+        
+        // Store ALL qualified agents for "All Verified Agents" section (not just the top 10)
+        if (allProfs && allProfs.length > 0) {
+          setAllVerifiedAgents(allProfs);
+        }
         
         console.log(`✅ Final list: ${brandBuilderProfs.length} Brand Builders + ${rotatedPicks.length} rotated (offset ${hourlyOffset}) = ${professionalsData.length} total`);
         console.log(`📋 Agents selected:`, professionalsData.map((p: any) => p.name));
@@ -1094,6 +1101,13 @@ export default function DynamicCategoryList({
   // Take first 10 qualifying professionals
   const topTenProfessionals = filteredProfessionals.slice(0, 10);
 
+  // All verified agents NOT in the top 10 (for "All Verified Agents" section)
+  const topTenIds = new Set(topTenProfessionals.map(p => p.id));
+  const remainingVerifiedAgents = allVerifiedAgents
+    .filter(a => !topTenIds.has(a.id))
+    .map(convertToProfessional);
+  const totalVerifiedCount = topTenProfessionals.length + remainingVerifiedAgents.length;
+
   const sections: ListSection[] = [
     {
       title: "",
@@ -1170,6 +1184,46 @@ export default function DynamicCategoryList({
   const agentDataArray = topTenProfessionals.map(prof => 
     professionalToAgentData(prof, city.name, city.state, stateAbbrev, prof.id || '')
   );
+
+  // Convert ALL verified agents for complete ItemList schema (GEO: bots must see everyone)
+  const allAgentDataArray = [
+    ...topTenProfessionals,
+    ...remainingVerifiedAgents
+  ].map(prof =>
+    professionalToAgentData(prof, city.name, city.state, stateAbbrev, prof.id || '')
+  );
+
+  // Complete ItemList schema including ALL verified agents
+  const allVerifiedItemListSchema = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "name": `All Verified ${category.plural_name} in ${neighborhoodName ? `${neighborhoodName}, ` : ''}${city.name}, ${stateAbbrev}`,
+    "description": `${totalVerifiedCount} merit-verified ${category.plural_name.toLowerCase()} with 4.8+ star ratings and 20+ verified reviews`,
+    "numberOfItems": totalVerifiedCount,
+    "itemListElement": allAgentDataArray.map((agent, index) => ({
+      "@type": "ListItem",
+      "position": index + 1,
+      "item": {
+        "@type": "RealEstateAgent",
+        "name": agent.name,
+        "url": `https://www.top10lists.us/${city.state_slug}/agents/${agent.slug || ''}`,
+        ...(agent.ratingValue > 0 && {
+          "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": agent.ratingValue.toString(),
+            "reviewCount": `${Math.max(0, Math.floor((agent.reviewCount - 5) / 5) * 5)}+`,
+            "bestRating": "5"
+          }
+        }),
+        ...(agent.licenseNumber && {
+          "hasCredential": {
+            "@type": "EducationalOccupationalCredential",
+            "credentialId": agent.licenseNumber
+          }
+        })
+      }
+    }))
+  };
   
   // Generate all three schemas using new cityListingSchema utility
   const cityListingData: CityListingData = {
@@ -1305,6 +1359,12 @@ export default function DynamicCategoryList({
             {JSON.stringify(schema)}
           </script>
         ))}
+        {/* Complete verified agents ItemList - all agents, not just top 10 */}
+        {totalVerifiedCount > 10 && (
+          <script type="application/ld+json">
+            {JSON.stringify(allVerifiedItemListSchema)}
+          </script>
+        )}
       </SafeHead>
       
       {/* GEO Schema Enhancement - Dataset and Source Attribution (no agent names) */}
@@ -1313,7 +1373,7 @@ export default function DynamicCategoryList({
         stateName={city.state}
         stateAbbrev={stateAbbrev}
         totalAgentsAnalyzed={ARIZONA_TOTAL_LICENSED_AGENTS}
-        agentsSelected={topTenProfessionals.length}
+        agentsSelected={totalVerifiedCount}
         dateModified={lastUpdated}
       />
       <SourceAttributionSchema
@@ -1445,6 +1505,31 @@ export default function DynamicCategoryList({
             />
           ))}
         </ProfessionalListLayout>
+      )}
+
+      {/* All Verified Agents - complete roster below Top 10 for bot and human visibility */}
+      {!neighborhoodSlug && remainingVerifiedAgents.length > 0 && (
+        <div className="container mx-auto px-4 mt-8 mb-12">
+          <div className="border-t border-border pt-8">
+            <h2 className="text-xl font-semibold mb-2">
+              All Verified Agents in {city.name}, {stateAbbrev}
+            </h2>
+            <p className="text-sm text-muted-foreground mb-6">
+              {totalVerifiedCount} agents verified with 4.8+ star rating and 20+ reviews
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {remainingVerifiedAgents.map((agent) => (
+                <AgentBadge
+                  key={agent.id}
+                  professional={agent}
+                  stateSlug={city.state_slug}
+                  citySlug={city.slug}
+                  isPaidExpert={false}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
       )}
     </>
   );
