@@ -30,6 +30,7 @@ import { CitationAuthorityBlock } from '@/components/CitationAuthorityBlock';
 import { Info, Loader2 } from 'lucide-react';
 import { getValidImageUrl } from '@/utils/imageUrlValidator';
 import { DualSearchBox } from '@/components/DualSearchBox';
+import { MeritTransparencyBanner } from '@/components/MeritTransparencyBanner';
 import { useNeighborhoodWriteup } from '@/hooks/useNeighborhoodWriteup';
 
 interface City {
@@ -1396,6 +1397,15 @@ export default function DynamicCategoryList({
             <p className="text-sm text-muted-foreground">
               Merit-based selection · <Link to="/about/ranking-methodology" className="text-primary hover:underline">Methodology</Link>
             </p>
+          </div>
+          
+          {/* Merit Transparency Banner */}
+          <div className="mt-3">
+            <MeritTransparencyBanner
+              cityName={city.name}
+              cityId={city.id}
+              stateSlug={city.stateSlug || (city as any).state_slug || normalizedStateSlug}
+            />
           </div>
           
           {/* Search - Compact */}

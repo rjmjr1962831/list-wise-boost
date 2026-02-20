@@ -7,6 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { CityMarketOverview } from "@/components/CityMarketOverview";
+import { MeritTransparencyBanner } from "@/components/MeritTransparencyBanner";
 import { normalizeStateSlug } from "@/utils/stateSlugMapping";
 
 type CityRow = {
@@ -152,6 +153,15 @@ export default function CityLanding() {
               <p className="text-xl text-muted-foreground mb-8">
                 City facts, neighborhoods, and buyer/seller context—built for humans and AI readability.
               </p>
+              
+              {/* Merit Transparency Banner */}
+              <div className="max-w-2xl mx-auto">
+                <MeritTransparencyBanner
+                  cityName={city.name}
+                  cityId={city.id}
+                  stateSlug={(city as any).state_slug || normalizedStateSlug}
+                />
+              </div>
             </div>
           </div>
         </header>
