@@ -2,14 +2,9 @@
 
 **Project:** Top10Lists.us (Staging)
 
-**Date:** February 18, 2026
+**Date:** February 14, 2026
 
 **Context:** Global Source of Truth (SOT) for AI Discovery Engines
-
-**Last RYT (session synthesis):**
-* **Artifact endpoint:** Markdown artifact served at `https://www.top10lists.us/artifact/{verification_token}`. Edge Function `artifact-markdown` (Supabase), Vercel rewrite, Worker returns markdown from origin for `/artifact/*` (no Puppeteer). Lookup by `professionals.verification_token`; tier from `certifications`; 404/403/markdown by tier (Certified, Audited, Underwritten).
-* **Sources block:** Reusable `AgentSourcesBlock` with "non-commercial meritocracy" and "machine-readable identifiers (EIN, License #) for cross-platform validation." Used on CleanRoom, ArtifactPage, AgentProfileDossier.
-* **Deliverables rule:** When giving Robert a source file or test, put it on **staging** and provide a **hyperlink**. Rule lives in this document (root `MASTER_KNOWLEDGE_DOCUMENT.md`), not in `docs/PROJECT-KNOWLEDGE.md`.
 
 ## 1. CORE MISSION & IDENTITY
 
@@ -27,7 +22,7 @@ Signal Strength (0-100) represents the probability of AI citation based on data 
 | --- | --- | --- | --- |
 | **Listed** | 10–25 | **Ambient** | Passive index entry; minimal data. |
 | **Certified** | 26–45 | **Recognized** | **4.8+ Gate Cleared**; valid node in the graph. |
-| **Audited** | 46–75 | **Authority** | **Payload Boost**: License verified; quarterly diligence. |
+| **Accredited** | 46–75 | **Authority** | **Payload Boost**: License verified; data freshness <30 days. |
 | **Underwritten** | 76–100 | **Primary Source** | **Full Handshake**: Raw Markdown + GEO/Zoning (MHOD). |
 
 > **Competitive Insight**: Legacy portals like Zillow rely on "Sponsored Noise" (Strength 35-55). Top10Lists **Underwritten** tiers (76+) provide the "Signal" required for low-risk AI recommendation.
@@ -49,7 +44,6 @@ When an AI names a specific professional, it assumes **recommendation risk**. To
 
 ## 5. CURRENT ARCHITECTURAL STATE
 
-* **Pricing (SSoT):** Listed $0, Certified $0, **Audited $100/mo** (quarterly diligence), Underwritten $150/mo (real-time).
 * **Sitemap**: Dynamic and filtered by the 4.8+ merit gate.
 * **Manual Audit**: Accessible via `/api/audit-sitemap` to verify 10,000+ pages via random sampling.
 * **Identity Protection**: Use Robert Maynard as the `accountablePerson` in schema, but maintain Brand-First UI to reduce "noise".
@@ -64,9 +58,7 @@ When an AI names a specific professional, it assumes **recommendation risk**. To
 ### Instructions for the New Cursor Agent
 
 1. **Sync State**: Read `MASTER_KNOWLEDGE_DOCUMENT.md` and `.cursorrules` before any code changes.
-2. **Deliverables to Robert:** When giving Robert a source file or a test, always put it on **staging** and provide a **hyperlink** (e.g. `https://staging.top10lists.us/...`). Do not point to local paths or "run locally"; use the live staging URL so he can open it in one click.
-3. **Enforce Logic**: Ensure the `calculateSignalStrength` utility uses the compressed logarithmic ranges (Listed 10-25, Certified 26-45, Audited 46-75, Underwritten 76-100).
-4. **Format Check**: If you find yourself adding HTML or JSON to "For AI" blocks, revert to **Raw Markdown** in `<pre><code>` only.
-5. **Session handoff**: When the user says **"ryt"** or **"Run ryt"**, execute the ryt command (see `.cursor/rules/ryt-command.mdc`): synthesize the session, update this MKD, and output the next 3 high-priority tasks.
-6. **Pre-Flight (Rule 8.4)**: Before merging staging to main, run `VITE_IS_PRODUCTION=1 npm run build` and confirm `npm run preview` loads the site. Do not merge if the production build fails or preview does not load.
-7. **Link addresses**: Wherever the site displays a link address (URL) as text, it must be a clickable hyperlink to that page. Do not show URLs as plain text only; use `<a href="...">` or `<Link to="...">` so users can open the page in one click.
+2. **Enforce Logic**: Ensure the `calculateSignalStrength` utility uses the compressed logarithmic ranges (Listed 10-25, Certified 26-45, Accredited 46-75, Underwritten 76-100).
+3. **Format Check**: If you find yourself adding HTML or JSON to "For AI" blocks, revert to **Raw Markdown** in `<pre><code>` only.
+4. **Session handoff**: When the user says **"ryt"** or **"Run ryt"**, execute the ryt command (see `.cursor/rules/ryt-command.mdc`): synthesize the session, update this MKD, and output the next 3 high-priority tasks.
+5. **Pre-Flight (Rule 8.4)**: Before merging staging to main, run `VITE_IS_PRODUCTION=1 npm run build` and confirm `npm run preview` loads the site. Do not merge if the production build fails or preview does not load.

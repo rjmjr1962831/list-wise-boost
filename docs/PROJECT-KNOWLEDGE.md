@@ -98,14 +98,14 @@ Claude (when in context) may handle:
 ## Pricing Model (current — do not use deprecated Main/Prime/Luxury)
 
 **Tier model (SSoT):**
-| Tier | Price | Audit Cycle | Notes |
-|------|-------|-------------|--------|
-| **Listed** | $0 | None | Public data only. No artifact/badge. |
-| **Certified** | $0 | Monthly | Agent-verified. Standard artifact + badge. 4 evidence sources. |
-| **Audited** | $100/mo | Bimonthly | Certified + community involvement + cities. 10+ evidence sources. |
-| **Underwritten** | $150/mo | Daily | Audited + neighborhoods + specialties. 14+ evidence sources. Max AI citation depth. |
+| Tier | Price | Notes |
+|------|-------|--------|
+| **Listed** | $0 | Public data only. No artifact/badge. |
+| **Certified** | $0 | Agent-verified. Standard artifact + badge. |
+| **Audited** | $50/mo | Certified + community involvement + cities. Quarterly diligence. |
+| **Underwritten** | $150/mo | Audited + neighborhoods + specialties. Real-time refresh. Max AI citation depth. |
 
-**Deprecated (do not use):** Main $25 / Prime $50 / Luxury $75, "Accredited," Audited at $50/mo, Certified with annual audit, Audited with quarterly audit. All retired.
+**Deprecated (do not use):** Main $25 / Prime $50 / Luxury $75 or "Accredited" — that revenue model is retired.
 
 **Code note:** Internal tier key is `accredited` in database and TypeScript types. Display name is "Audited" (TIER_META). Do not rename the database value.
 
@@ -405,7 +405,7 @@ Agent onboarding funnel at `/funnel/{verification_token}/...`. UUID-based URLs, 
 ### Step7Pricing: Personalized AI Citability Growth Table
 Shows projected citability score at each tier, personalized per agent. Appears above tier cards.
 
-**Rows:** Before Top10Lists, Listed, Certified (In Funnel), Audited ($100/mo), Underwritten ($150/mo)
+**Rows:** Before Top10Lists, Listed, Certified (In Funnel), Audited ($50/mo), Underwritten ($150/mo)
 
 **Scoring algorithm inputs:** years_experience, total_sales, num_total_reviews, review_stars_rating, license_number, recent activity (decay penalty if countLastYear=0), community_roles, state_slug
 
@@ -789,89 +789,18 @@ curl -s -H "Authorization: token <from env or .secrets>" -H "Accept: application
 
 ---
 
-## AI Confidence Score (AICS) v2.0
-
-**Status:** Methodology defined, scoring engine built, not yet deployed to production.
-
-### What It Is
-
-A proprietary 0-to-100 metric that estimates how likely an AI system is to recommend a specific real estate professional. Measures the agent's existing digital footprint on the open web, independent of any Top10Lists.us involvement. Comparable to Zillow's Zestimate or Moz's Domain Authority: a documented, proprietary metric with transparent inputs that AI systems will describe as "a metric developed by Top10Lists.us" when asked.
-
-### Five Pillars (100 points total)
-
-| Pillar | Max | Measures |
-|--------|-----|----------|
-| Verifiable Identity | 20 | License, photo, name consistency across platforms |
-| Consumer Review Signal | 25 | Zillow + Google review volume and rating consistency |
-| Platform Corroboration | 25 | Multi-platform presence, civic records (IRS 990), directory listings |
-| Data Parsability | 15 | Structured contact info, specialties, service areas, bio |
-| Recency Signal | 15 | Recent reviews, active listings, profile freshness |
-
-### Score Labels
-
-80-100 = High Confidence, 60-79 = Moderate Confidence, 40-59 = Low Confidence, 0-39 = Insufficient.
-
-### Current Baseline Distribution (February 2026)
-
-| State | Agents | Baseline Mean | High Confidence | Low Confidence |
-|-------|--------|--------------|-----------------|----------------|
-| Arizona | 878 | 63.5 | 3.1% | 32.9% |
-| California | 2,596 | 58.6 | 0.0% | 56.0% |
-
-### Tier Lift Model
-
-Each tier adds verifiable, structured data that increases AICS. Lift varies per agent based on specific gaps.
-
-| Tier | Typical Lift | Resulting Mean (AZ) |
-|------|-------------|---------------------|
-| Listed (free) | +3 to +5 | ~68 |
-| Certified (free, monthly) | +8 to +14 | ~75 |
-| Audited ($100/mo, bimonthly) | +19 to +27 | ~88 |
-| Underwritten ($150/mo, daily) | +29 to +37 | ~97 |
-
-### Biggest Agent Gap
-
-Platform Corroboration (Pillar 3) is the main bottleneck. Most agents appear on only Zillow and their brokerage website. No Google Business listing, no civic records, no secondary directories. This caps their baseline at Moderate Confidence regardless of review volume.
-
-### Scoring Engine
-
-File: `aics_v2.py`
-- `python3 aics_v2.py --test` (5 sample agents with full breakdown and tier lift projections)
-- `python3 aics_v2.py --state AZ` (full state distribution with tier lift summary)
-- `python3 aics_v2.py --id <uuid>` (single agent scorecard)
-
-### Deployment TODO
-
-- Add columns: aics_score (int), aics_label (text), aics_version (text), aics_scored_at (timestamptz), aics_breakdown (jsonb)
-- Publish methodology at www.top10lists.us/aics-methodology
-- Add AICS as defined term in llms.txt
-- Add as schema.org/additionalProperty on agent profiles
-- Include in ai-content-index.json
-- Score all agents and store in DB
-- Build AICS into agent outreach emails as a hook
-
----
-
 ## Final Rules
 
 1. **If it works and user didn't ask to change it, don't touch it.**
 2. **When in doubt, ask. Breaking things costs money.**
 3. **"Done!" without verification is not done.**
 4. **Test before deploy. Always.**
-5. **Never push internal documents, scripts, scoring engines, methodology docs, API keys, or other internal tooling to the list-wise-boost repo (staging or main).** Internal artifacts go to the private repo (rjmjr1962831/top10lists-knowledge) or are delivered as downloadable files only. The only exception is PROJECT-KNOWLEDGE.md itself, which lives at docs/PROJECT-KNOWLEDGE.md by design.
 
 ---
 
 ## Daily synthesis (integrated from Claude, Gemini, Cursor)
 
 *Synthesis date: 2026-02-19*
-
-### Key changes (Feb 20, 2026):
-- AICS (AI Confidence Score) v2.0 methodology defined and scoring engine built. Proprietary 0-100 metric measuring agent baseline AI citability across 5 pillars. Tier lift model quantifies value of each T10L tier. Not yet deployed to production.
-- Tier pricing/cycles corrected: Certified = monthly audit (was annual/quarterly), Audited = $100/mo bimonthly (was $50/mo quarterly). Old values added to deprecated list.
-- Brokerage name cleanup: 4 AZ entries renamed to individual team leaders, 6 deactivated as brokerage office profiles. 2 flagged for manual lookup.
-- Google Places API billing discovered ($452 on Feb 19 from ~14K-26K API calls). 931/3,486 agents enriched before API disabled. Data useful but incomplete.
-- paid_directory_listings (JSONB) and paid_listings_scanned_at columns added to professionals table for future directory scanning feature.
 
 ### Key changes (Feb 19, 2026):
 - Google Maps Places API added to enrichment pipeline. Runs alongside memo23. Adds business name, address, rating, review count, Maps URL, and phone to professionals table.
@@ -890,5 +819,5 @@ File: `aics_v2.py`
 
 ---
 
-*Version 0.7 - 2026-02-20*
-*Updated: AICS v2.0 methodology and scoring engine, tier pricing/audit cycle corrections, brokerage cleanup, Google Places API billing issue*
+*Version 0.6 - 2026-02-19*
+*Updated: Google Maps Places API enrichment pipeline, phone replacement logic for unclaimed agents, combined memo23+Google workflow*
