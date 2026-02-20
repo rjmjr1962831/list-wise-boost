@@ -1366,7 +1366,7 @@ export const ProfessionalCard = ({
                           ))}
                         </div>
                         <span className="font-bold text-lg" itemProp="ratingValue">{displayRating}</span>
-                        <span className="text-sm text-muted-foreground">(<meta itemProp="reviewCount" content={displayReviews.toString()} />{Math.max(0, Math.floor((displayReviews - 5) / 5) * 5).toLocaleString('en-US')}+ reviews)</span>
+                        <span className="text-sm text-muted-foreground">(<span itemProp="reviewCount">{Math.max(0, Math.floor((displayReviews - 5) / 5) * 5).toLocaleString('en-US')}+</span> reviews)</span>
                         <meta itemProp="bestRating" content="5" />
                       </div>
                     ) : (
