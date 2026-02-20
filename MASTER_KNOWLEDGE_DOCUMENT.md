@@ -159,7 +159,7 @@ A proprietary 0-to-100 metric measuring an agent's baseline AI citability as the
 - **Styling:** Tailwind CSS + shadcn/ui
 - **Routing:** react-router-dom (FROZEN - do not change)
 - **Database:** Supabase (PostgreSQL) - project wiotrvoirdgzfacuuiem
-- **Bot Rendering:** Cloudflare Worker (orange-truth-a103)
+- **Bot Rendering:** Cloudflare Worker (top10-renderer)
 - **CRM:** Custom admin dashboard (replacing Pipedrive)
 - **Email Outreach:** Instantly via Google Workspace
 
@@ -239,13 +239,14 @@ Supabase returns max 1,000 rows by default. **Always paginate.** Never assume 1,
 | **Gemini** | `[STORED IN ENVIRONMENT - Ask Robert]` | Back in play (new key Feb 2026) |
 
 ### Infrastructure
-| Service | Key |
-|---------|-----|
-| **Exa.ai** | `[STORED IN ENVIRONMENT - Ask Robert]` |
-| **GitHub Token** | `[STORED IN ENVIRONMENT - Ask Robert]` |
-| **Google Maps Places API** | `[STORED IN ENVIRONMENT - Ask Robert]` |
-| **Vercel API** | `[STORED IN ENVIRONMENT - Ask Robert]` (named "Claude Token") |
-| **ProxyScrape** | Host: `rp.scrapegw.com:6060` Auth: `[STORED IN ENVIRONMENT - Ask Robert]` |
+| Service | Key | Notes |
+|---------|-----|-------|
+| **Exa.ai** | `[STORED IN ENVIRONMENT - Ask Robert]` | |
+| **GitHub Token** | `[STORED IN ENVIRONMENT - Ask Robert]` | |
+| **Google Maps Places API** | `[STORED IN ENVIRONMENT - Ask Robert]` | |
+| **Vercel API** | `[STORED IN ENVIRONMENT - Ask Robert]` | Named "Claude Token" |
+| **ProxyScrape** | Host: `rp.scrapegw.com:6060` Auth: `[STORED IN ENVIRONMENT - Ask Robert]` | |
+| **Cloudflare API** | `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN` | Workers, KV, Browser Rendering. Token needs "Browser Rendering - Edit" for serve-bot-static-html. |
 
 ---
 
@@ -511,20 +512,26 @@ If a field has data, your code must preserve existing values. Never write NULL u
 
 ## 22. CLOUDFLARE WORKER (BOT RENDERING)
 
-**Worker:** orange-truth-a103
-**KV Namespaces:** HTML_CACHE, NEIGHBORHOOD_ZIPS
-**Cache TTL:** 24 hours
-**Key format:** `html:/path/name`
+**Worker:** top10-renderer
+**Deploy:** `.\scripts\deploy-worker.ps1` (uploads cloudflareworker.js via Supabase update-cloudflare-worker)
+**Queue binding:** NOTIFICATION_QUEUE (agent-notifications-queue) - add in Cloudflare Dashboard
+
+**Deprecated:** orange-truth-a103 (no longer in use)
 
 **Implementation:**
-- Uses Browser Rendering REST API (not Puppeteer)
-- Validates HTML >5000 chars + has H1 tag
-- Must wait for full React hydration
+- Bot traffic: cache check, then fetch from Edge Functions (serve-bot-list-html, serve-bot-static-html, serve-agent-profile-markdown), then fallback to origin
+- Non-bot: pass-through to Vercel
+- Uses Cache API (caches.default), not KV
+- Cache key: normalized URL + User-Agent bot-cache-normalized
 
 ### Cache Strategy
-- **Proactive warming:** Static pages only (~30)
-- **On-demand:** Cities, neighborhoods, agents (cached on first bot request)
-- **check-cache:** Edge function that probes key URLs as a bot, classifies healthy vs broken, then repairs.
+- **Proactive warming:** warm-cache Edge Function writes to Worker via POST /__warm
+- **On-demand:** List pages (serve-bot-list-html), agent profiles (serve-agent-profile-markdown), static pages (serve-bot-static-html) on cache miss
+- **check-cache:** Edge function that probes key URLs as a bot, classifies healthy vs broken, then repairs
+
+### Static Pages
+- serve-bot-static-html returns full HTML for /, /about, /arizona, etc.
+- Uses Cloudflare Browser Rendering REST API (/content endpoint). Requires CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN (with Browser Rendering - Edit permission).
 
 ---
 
@@ -610,6 +617,8 @@ Must return full HTML content, not React shell.
 | Annual Certified audit | Monthly | Cycle update Feb 2026 |
 | Company name "Maynard Realty" | Top10Lists.us (org) | Invalid, do not use |
 | `docs/PROJECT-KNOWLEDGE.md` | `MASTER_KNOWLEDGE_DOCUMENT.md` (repo root) | Consolidated Feb 20 |
+| orange-truth-a103 (Worker) | top10-renderer | Replaced |
+| Prerender.io | Cloudflare Browser Rendering | Deprecated. serve-bot-static-html now uses Cloudflare REST API /content endpoint. |
 | `TOP10LISTS-COMPLETE-KNOWLEDGE-UPDATED.md` | `MASTER_KNOWLEDGE_DOCUMENT.md` (repo root) | Consolidated Feb 20 |
 | Signal Strength ranges (Listed 10-25, Certified 26-45, etc.) | AICS v2.0 | Replaced by AICS |
 
@@ -735,6 +744,7 @@ curl -s -D - -H "User-Agent: claudebot" "https://www.top10lists.us/arizona/phoen
 *Synthesis date: 2026-02-20*
 
 ### Key changes (Feb 20, 2026):
+- **Static page bot rendering:** Migrated serve-bot-static-html from Prerender.io to Cloudflare Browser Rendering REST API (/content endpoint). Requires CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN with "Browser Rendering - Edit" in Supabase secrets. Deploy: `supabase functions deploy serve-bot-static-html --project-ref wiotrvoirdgzfacuuiem --no-verify-jwt`. If 401, ensure token has Browser Rendering permission.
 - AICS v2.0 methodology defined and scoring engine built. Proprietary 0-100 metric measuring agent baseline AI citability across 5 pillars. Tier lift model quantifies value of each T10L tier. Not yet deployed.
 - Tier pricing/cycles corrected: Certified = monthly audit, Audited = $100/mo bimonthly. Old values deprecated.
 - Brokerage name cleanup: 4 AZ entries renamed to individual team leaders, 6 deactivated as brokerage office profiles.
@@ -754,5 +764,5 @@ curl -s -D - -H "User-Agent: claudebot" "https://www.top10lists.us/arizona/phoen
 
 ---
 
-*Version 1.0 - 2026-02-20*
+*Version 1.1 - 2026-02-20*
 *Consolidated from: MASTER_KNOWLEDGE_DOCUMENT.md, docs/PROJECT-KNOWLEDGE.md (v0.6), TOP10LISTS-COMPLETE-KNOWLEDGE-UPDATED.md (v3.5)*
