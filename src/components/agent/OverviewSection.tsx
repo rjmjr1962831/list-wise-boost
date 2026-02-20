@@ -40,7 +40,7 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
               <p className="text-lg font-semibold">{tierLabel}</p>
             </div>
             <div className="p-4 rounded-lg bg-muted/50 border">
-              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Internal Confidence Rating</p>
+              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">AI Confident Score (AICS)</p>
               <p className="text-lg font-semibold">
                 {professional.signal_score != null ? `${professional.signal_score}/100` : "Pending"}
               </p>
@@ -51,17 +51,17 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
           {(professional.current_tier === "certified" || professional.current_tier === "listed" || !professional.current_tier) && (
             <div className="pt-2">
               <p className="text-sm font-medium mb-3">
-                Increase your tier and see these increases in your Confidence Rating:
+                Increase your tier and see these increases in your AICS:
               </p>
               <div className="grid gap-3 sm:grid-cols-2">
                 {professional.current_tier !== "audited" && (
                   <div className="p-4 rounded-lg border border-amber-200 bg-amber-50/50">
                     <div className="flex items-center justify-between mb-1">
                       <span className="font-semibold text-sm">Audited</span>
-                      <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">$50/mo</span>
+                      <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">$100/mo</span>
                     </div>
                     <p className="text-lg font-bold text-amber-700">
-                      {professional.audited_projected_signal != null ? `${professional.audited_projected_signal}/100` : "Projected rating available soon"}
+                      {professional.audited_projected_signal != null ? `${professional.audited_projected_signal}/100` : "Projected AICS available soon"}
                     </p>
                   </div>
                 )}

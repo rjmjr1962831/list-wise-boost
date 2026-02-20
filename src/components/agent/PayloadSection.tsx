@@ -31,7 +31,7 @@ function SignalBadge({ currentScore, projectedScore, currentTier, viewingTier }:
       <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50 border">
         <Minus className="h-4 w-4 text-muted-foreground" />
         <div>
-          <p className="text-xs text-muted-foreground">Your Current Signal</p>
+          <p className="text-xs text-muted-foreground">Your current AICS</p>
           <p className="text-lg font-bold">{currentScore}/100</p>
         </div>
       </div>
@@ -42,8 +42,8 @@ function SignalBadge({ currentScore, projectedScore, currentTier, viewingTier }:
     return (
       <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50 border">
         <div>
-          <p className="text-xs text-muted-foreground">Projected Signal</p>
-          <p className="text-sm font-medium text-muted-foreground">Available once your current score is set</p>
+          <p className="text-xs text-muted-foreground">Projected AICS</p>
+          <p className="text-sm font-medium text-muted-foreground">Available once your current AICS is set</p>
         </div>
       </div>
     );
@@ -56,7 +56,7 @@ function SignalBadge({ currentScore, projectedScore, currentTier, viewingTier }:
       <div className="flex items-center gap-2 p-3 rounded-lg bg-red-50 border border-red-200">
         <TrendingDown className="h-5 w-5 text-red-600 shrink-0" />
         <div>
-          <p className="text-xs text-red-600 font-medium">Signal Impact if Downgraded</p>
+          <p className="text-xs text-red-600 font-medium">AICS impact if downgraded</p>
           <p className="text-lg font-bold text-red-700">
             {projectedScore != null ? `${projectedScore}/100` : "Decrease expected"}
             {delta != null && <span className="text-sm ml-1">({delta > 0 ? "+" : ""}{delta})</span>}
@@ -70,7 +70,7 @@ function SignalBadge({ currentScore, projectedScore, currentTier, viewingTier }:
     <div className="flex items-center gap-2 p-3 rounded-lg bg-emerald-50 border border-emerald-200">
       <TrendingUp className="h-5 w-5 text-emerald-600 shrink-0" />
       <div>
-        <p className="text-xs text-emerald-600 font-medium">Projected Signal if Upgraded</p>
+        <p className="text-xs text-emerald-600 font-medium">Projected AICS if upgraded</p>
         <p className="text-lg font-bold text-emerald-700">
           {projectedScore != null ? `${projectedScore}/100` : "Increase expected"}
           {delta != null && delta > 0 && <span className="text-sm ml-1">(+{delta})</span>}
@@ -150,7 +150,7 @@ function TierPanel({ tier, currentTier, professional, price, signalScore, projec
       {isDowngrade && (
         <div className="flex items-center gap-2 text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
           <TrendingDown className="h-4 w-4 shrink-0" />
-          Downgrading would reduce the data AI systems see and lower your signal
+          Downgrading would reduce the data AI systems see and lower your AICS
         </div>
       )}
 
@@ -364,7 +364,7 @@ export function PayloadSection({ professional }: PayloadSectionProps) {
                 tier="audited"
                 currentTier={currentTier}
                 professional={professional}
-                price="$50/mo"
+                price="$100/mo"
                 signalScore={professional.signal_score}
                 projectedScore={tierSignals.audited}
               />
