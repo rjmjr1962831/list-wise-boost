@@ -56,6 +56,8 @@ Claude (when in context) may handle:
 ### Deliverables to Robert
 **When giving Robert a source file or a test:** Always put it on **staging** and provide a **hyperlink**. Do not point to local paths or "run this locally"; use the live staging URL (e.g. `https://staging.top10lists.us/...`) so he can open it in one click.
 
+**URLs as hyperlinks:** Always give Robert URLs as clickable hyperlinks, never as plain text. Use `[text](url)` markdown format so links open in one click.
+
 ---
 
 ## 3. DATABASE STATUS
@@ -768,7 +770,7 @@ curl -s -D - -H "User-Agent: claudebot" "https://www.top10lists.us/arizona/phoen
 3. **Format Check**: "For AI" blocks use **Raw Markdown** in `<pre><code>` only.
 4. **Session handoff**: When the user says **"ryt"**, synthesize the session, update this document, output the next 3 high-priority tasks.
 5. **Pre-Flight:** Before merging staging to main, run `VITE_IS_PRODUCTION=1 npm run build` and confirm preview loads.
-6. **Link addresses**: URLs displayed as text must be clickable hyperlinks.
+6. **URLs as hyperlinks:** Always give Robert URLs as clickable hyperlinks (e.g. `[Preview](https://...)`), never plain text.
 
 ---
 
