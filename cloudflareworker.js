@@ -20019,7 +20019,7 @@ const index_default = {
     });
 
     let cachedResponse = null;
-    if (isBot && !forceRefresh) {
+    if (isBot && !forceRefresh && false /* CACHE DISABLED */) {
       cachedResponse = await cache.match(cacheKey);
       if (cachedResponse) {
         // Enqueue bot visit with Worker cache status (for analytics)
