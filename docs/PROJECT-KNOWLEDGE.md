@@ -858,6 +858,7 @@ File: `aics_v2.py`
 2. **When in doubt, ask. Breaking things costs money.**
 3. **"Done!" without verification is not done.**
 4. **Test before deploy. Always.**
+5. **Never push internal documents, scripts, scoring engines, methodology docs, API keys, or other internal tooling to the list-wise-boost repo (staging or main).** Internal artifacts go to the private repo (rjmjr1962831/top10lists-knowledge) or are delivered as downloadable files only. The only exception is PROJECT-KNOWLEDGE.md itself, which lives at docs/PROJECT-KNOWLEDGE.md by design.
 
 ---
 
