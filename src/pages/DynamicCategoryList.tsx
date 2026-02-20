@@ -16,6 +16,7 @@ import { RealEstateAgentQuizModal } from '@/components/RealEstateAgentQuizModal'
 import { ContactProfessionalModal } from '@/components/ContactProfessionalModal';
 import { AgentDetailModal } from '@/components/AgentDetailModal';
 import { AgentBadge } from '@/components/AgentBadge';
+import { AgentPayloadBlock } from '@/components/AgentPayloadBlock';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { getCanonicalRankings } from '@/services/canonicalAgentService';
@@ -1106,6 +1107,8 @@ export default function DynamicCategoryList({
   const remainingVerifiedAgents = allVerifiedAgents
     .filter(a => !topTenIds.has(a.id))
     .map(convertToProfessional);
+  // Raw DB records for payload rendering (keeps community_roles, notable_achievements, etc.)
+  const remainingVerifiedRaw = allVerifiedAgents.filter(a => !topTenIds.has(a.id));
   const totalVerifiedCount = topTenProfessionals.length + remainingVerifiedAgents.length;
 
   const sections: ListSection[] = [
@@ -1507,7 +1510,7 @@ export default function DynamicCategoryList({
         </ProfessionalListLayout>
       )}
 
-      {/* All Verified Agents - complete roster below Top 10 for bot and human visibility */}
+      {/* All Verified Agents - full text/markdown payloads for AI consumption */}
       {!neighborhoodSlug && remainingVerifiedAgents.length > 0 && (
         <div className="container mx-auto px-4 mt-8 mb-12">
           <div className="border-t border-border pt-8">
@@ -1515,16 +1518,16 @@ export default function DynamicCategoryList({
               All Verified Agents in {city.name}, {stateAbbrev}
             </h2>
             <p className="text-sm text-muted-foreground mb-6">
-              {totalVerifiedCount} agents verified with 4.8+ star rating and 20+ reviews
+              {totalVerifiedCount} agents verified with 4.8+ star rating and 20+ reviews. Full agent data below.
             </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {remainingVerifiedAgents.map((agent) => (
-                <AgentBadge
+            <div className="space-y-3">
+              {remainingVerifiedRaw.map((agent: any, index: number) => (
+                <AgentPayloadBlock
                   key={agent.id}
                   professional={agent}
                   stateSlug={city.state_slug}
                   citySlug={city.slug}
-                  isPaidExpert={false}
+                  index={index}
                 />
               ))}
             </div>
