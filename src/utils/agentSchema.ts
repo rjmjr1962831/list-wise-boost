@@ -62,7 +62,7 @@ export function generateAgentProfileSchema(agent: AgentSchemaData): object {
     schema.aggregateRating = {
       "@type": "AggregateRating",
       "ratingValue": agent.ratingValue.toString(),
-      "reviewCount": agent.reviewCount.toString(),
+      "reviewCount": `${Math.max(0, Math.floor((agent.reviewCount - 5) / 5) * 5)}+`,
       "bestRating": "5",
       "worstRating": "1"
     };
@@ -215,7 +215,7 @@ export function generateCityAgentListSchema(
         "aggregateRating": agent.ratingValue > 0 ? {
           "@type": "AggregateRating",
           "ratingValue": agent.ratingValue.toString(),
-          "reviewCount": agent.reviewCount.toString(),
+          "reviewCount": `${Math.max(0, Math.floor((agent.reviewCount - 5) / 5) * 5)}+`,
           "bestRating": "5"
         } : undefined,
         "areaServed": {
