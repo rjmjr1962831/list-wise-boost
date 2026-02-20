@@ -14,7 +14,7 @@ const CORS = {
 };
 
 const SI: Record<string, { display: string; abbr: string; total: string; auth: string; url: string }> = {
-  arizona:    { display: "Arizona",    abbr: "AZ", total: "90,000",  auth: "Arizona Department of Real Estate (AZDRE)", url: "https://services.azre.gov/PdbWeb/IndividualLicense/SearchIndividualLicenses" },
+  arizona:    { display: "Arizona",    abbr: "AZ", total: "220,000",  auth: "Arizona Department of Real Estate (AZDRE)", url: "https://services.azre.gov/PdbWeb/IndividualLicense/SearchIndividualLicenses" },
   california: { display: "California", abbr: "CA", total: "200,000", auth: "California Department of Real Estate (DRE)", url: "https://www.dre.ca.gov/Licensees/WelcomeLicensee.html" },
   texas:      { display: "Texas",      abbr: "TX", total: "150,000", auth: "Texas Real Estate Commission (TREC)", url: "https://www.trec.texas.gov/apps/license-holder-search" },
   florida:    { display: "Florida",    abbr: "FL", total: "200,000", auth: "Florida DBPR", url: "https://www.myfloridalicense.com/" },
