@@ -371,7 +371,7 @@ export const AgentBadge = ({
                       <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
                       <span className="text-xs font-medium">{rating.toFixed(1)}</span>
                       {reviews > 0 && (
-                        <span className="text-xs text-muted-foreground">({reviews})</span>
+                        <span className="text-xs text-muted-foreground">({Math.max(0, Math.floor((reviews - 5) / 5) * 5)}+)</span>
                       )}
                     </div>
                   )}
