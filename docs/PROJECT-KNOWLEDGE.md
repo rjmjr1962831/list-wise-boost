@@ -102,7 +102,7 @@ Claude (when in context) may handle:
 |------|-------|--------|
 | **Listed** | $0 | Public data only. No artifact/badge. |
 | **Certified** | $0 | Agent-verified. Standard artifact + badge. |
-| **Audited** | $50/mo | Certified + community involvement + cities. Quarterly diligence. |
+| **Audited** | $100/mo | Certified + community involvement + cities. Quarterly diligence. |
 | **Underwritten** | $150/mo | Audited + neighborhoods + specialties. Real-time refresh. Max AI citation depth. |
 
 **Deprecated (do not use):** Main $25 / Prime $50 / Luxury $75 or "Accredited" — that revenue model is retired.

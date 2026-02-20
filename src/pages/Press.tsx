@@ -442,13 +442,6 @@ const Press = () => {
                       Ranking Methodology
                     </Link>
                     <Link 
-                      to="/compare" 
-                      className="flex items-center gap-1 text-sm text-primary hover:underline"
-                    >
-                      <ExternalLink className="h-3 w-3" />
-                      Platform Comparison
-                    </Link>
-                    <Link 
                       to="/for-ai" 
                       className="flex items-center gap-1 text-sm text-primary hover:underline"
                     >

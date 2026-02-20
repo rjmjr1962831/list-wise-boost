@@ -98,6 +98,8 @@ export default function Step6Neighborhoods() {
     <>
       <SafeHead>
         <title>Select Neighborhoods | Top10Lists.us</title>
+        <meta name="robots" content="noindex, nofollow" />
+        <meta name="googlebot" content="noindex, nofollow" />
       </SafeHead>
       <div className="min-h-screen bg-gradient-to-b from-background to-muted py-12 px-4">
         <div className="max-w-4xl mx-auto">

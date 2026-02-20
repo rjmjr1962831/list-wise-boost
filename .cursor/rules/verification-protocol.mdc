@@ -10,9 +10,9 @@ alwaysApply: true
 ## Before Saying "Done"
 
 1. **Deploy the change** (commit, push, wait for build)
-2. **Load the actual live page** in browser (if applicable)
-3. **Verify the specific thing you changed** appears correctly
-4. **Take a screenshot** or describe exactly what you see
+2. **Run verification** (load the live page, or run E2E/test script). Do this yourself; do not skip.
+3. **Confirm the specific change** (see the element/behavior, or take a screenshot)
+4. **Only then** say done—or say "Cannot verify without [X]; please check [URL] for [element]."
 
 ## What "Done" Means
 

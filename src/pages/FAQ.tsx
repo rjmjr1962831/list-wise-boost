@@ -227,7 +227,7 @@ const FAQ = () => {
                       </tr>
                       <tr className="border-t border-border">
                         <td className="p-3 font-medium">Accredited</td>
-                        <td className="p-3">$50/mo</td>
+                        <td className="p-3">$100/mo</td>
                         <td className="p-3 text-muted-foreground">Monthly diligence. Enhanced AI payload.</td>
                       </tr>
                       <tr className="border-t border-border">

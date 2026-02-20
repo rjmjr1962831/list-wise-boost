@@ -224,7 +224,7 @@ All data is verified with identical rigor at every tier. Tiers determine how muc
 - Annual data refresh
 - Standard artifact
 
-**Audited ($50/mo):**
+**Audited ($100/mo):**
 - Expanded payload published (experience, transactions, community roles)
 - Monthly data refresh
 - Enhanced AI payload
@@ -368,12 +368,13 @@ export default function MethodologyPage() {
                 <p className="text-muted-foreground mb-2">Primary factors and weights:</p>
                 <ul className="list-disc list-inside text-muted-foreground space-y-1 mb-3">
                   <li>Licensing status: 20%</li>
-                  <li>Verified transaction performance over time (recency and consistency): 45%</li>
-                  <li>Verified reputation signals (review volume, ratings, and third-party standing): 15%</li>
+                  <li>Recent activity (recency and consistency of market activity): 20%</li>
+                  <li>Transaction history (volume and consistency over time): 25%</li>
+                  <li>Reviews and reputation (review volume, ratings, third-party standing): 15%</li>
                   <li>Community involvement: 20%</li>
                 </ul>
                 <p className="text-muted-foreground">
-                  Community involvement is computed using documented inputs and fixed weights published in the methodology.
+                  Community involvement is computed using documented inputs, including: ProPublica 990 forms, State Licensing Boards, MLS where available, Zillow, Google, and respected publications, and fixed weights published in the methodology.
                 </p>
               </div>
 
@@ -390,7 +391,7 @@ export default function MethodologyPage() {
                   <li>Verified nonprofit records, IRS 990 filings, and third-party acknowledgements</li>
                 </ul>
                 <p className="text-muted-foreground">
-                  Agent-submitted information is <strong>never used without independent confirmation</strong>.
+                  Agent-submitted information, other than contact data, is <strong>never used without independent confirmation</strong>.
                 </p>
               </div>
 

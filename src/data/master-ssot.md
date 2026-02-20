@@ -3,7 +3,7 @@
 ## 4-Tier Certification Model
 - Listed: $0. Basic verification. No Badge issued.
 - Certified: $0. Agent-verified. Standard Badge issued.
-- Accredited: $50/mo. Monthly diligence. Enhanced AI Payload.
+- Audited: $100/mo. Quarterly diligence. Enhanced AI Payload.
 - Underwritten: $150/mo. Real-time refresh. Maximum AI Reasoning & Neighborhood Depth.
 
 ## Core Methodology

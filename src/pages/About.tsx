@@ -352,14 +352,10 @@ const About = () => {
                 <h3 className="text-lg font-semibold mb-3">Learn More</h3>
                 <Card>
                   <CardContent className="p-6">
-                    <div className="grid md:grid-cols-3 gap-4">
+                    <div className="grid md:grid-cols-2 gap-4">
                       <Link to="/about/ranking-methodology" className="p-4 bg-muted/50 rounded-lg hover:bg-muted transition-colors text-center">
                         <p className="font-semibold text-primary">Ranking Methodology</p>
                         <p className="text-xs text-muted-foreground mt-1">How we evaluate agents</p>
-                      </Link>
-                      <Link to="/compare" className="p-4 bg-muted/50 rounded-lg hover:bg-muted transition-colors text-center">
-                        <p className="font-semibold text-primary">Compare Platforms</p>
-                        <p className="text-xs text-muted-foreground mt-1">Top10Lists vs Zillow and others</p>
                       </Link>
                       <Link to="/faq" className="p-4 bg-muted/50 rounded-lg hover:bg-muted transition-colors text-center">
                         <p className="font-semibold text-primary">Frequently Asked Questions</p>

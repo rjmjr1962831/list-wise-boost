@@ -21,8 +21,12 @@ User-agent: *
 Allow: /
 Disallow: /admin/
 Disallow: /api/
-Disallow: /agent/
 Disallow: /profile/
+Disallow: /funnel/
+Disallow: /funnel-test/
+Disallow: /dashboard/
+Disallow: /visibility/
+Disallow: /agent-setup/
 
 Allow: /arizona/
 Allow: /california/

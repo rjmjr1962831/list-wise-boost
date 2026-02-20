@@ -194,7 +194,7 @@
   "certificationTiers": {
     "listed": {"cost": "Free", "artifact": false, "auditCycle": "None"},
     "certified": {"cost": "Free", "artifact": true, "standardAuditCycle": "Annual", "evidenceSources": 4},
-    "audited": {"cost": "$50/month", "artifact": true, "standardAuditCycle": "Monthly", "evidenceSources": "10+"},
+    "audited": {"cost": "$100/month", "artifact": true, "standardAuditCycle": "Monthly", "evidenceSources": "10+"},
     "underwritten": {"cost": "$150/month", "artifact": true, "standardAuditCycle": "Daily", "evidenceSources": "14+"}
   },
   "citationPolicy": {

@@ -21,7 +21,7 @@ alwaysApply: true
 ## 💰 BUSINESS MODEL (SSoT)
 - **Listed:** $0 | Public data only | **NO Artifact/Badge issued.**
 - **Certified:** $0 | Agent-verified | Standard Artifact issued.
-- **Audited:** $50/mo | Monthly diligence | Enhanced AI Payload.
+- **Audited:** $100/mo | Quarterly diligence | Enhanced AI Payload.
 - **Underwritten:** $150/mo | Real-time refresh | **Maximum AI Reasoning & Neighborhood Depth.**
 
 ## 🛠️ TECHNICAL STANDARDS
@@ -30,6 +30,7 @@ alwaysApply: true
 - **Authority:** Legacy paths (e.g., `/for-ai`) must 301-redirect to `/ai-feed/` equivalents.
 
 ## 📤 GIT / DEPLOYMENT
+**Deliverables to Robert:** When giving Robert a source file or a test, always put it on **staging** and provide a **hyperlink** (e.g. `https://staging.top10lists.us/...`). Do not point to local paths or "run locally"; use the live staging URL.
 **Git flow:** Push to **staging** by default. Only push to **main** when Robert explicitly gives permission (e.g. "push to main" or "push to production"). Never push to main without his explicit instruction. Commit and push all changes to staging unless Robert specifically tells you not to push at all.
 **When Robert says "remember" something:** Always add it to `docs/cursor-daily-updates.md` (the evening update file).
 

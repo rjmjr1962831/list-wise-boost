@@ -79,6 +79,14 @@ export class ErrorBoundary extends React.Component<Props, State> {
 
   render() {
     if (this.state.hasError && this.state.error) {
+      // Chunk load errors: show neutral "Reloading…" only — never "Something went wrong" (avoids flash on staging/main)
+      if (this.isChunkLoadError(this.state.error)) {
+        return (
+          <div className="min-h-screen flex items-center justify-center bg-background p-4">
+            <p className="text-muted-foreground">Reloading…</p>
+          </div>
+        );
+      }
       let msg = "(no message)";
       try {
         msg = (this.state.error && typeof this.state.error === "object" && "message" in this.state.error)

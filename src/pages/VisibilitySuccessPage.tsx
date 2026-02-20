@@ -33,6 +33,8 @@ export default function VisibilitySuccessPage() {
       <SafeHead>
         <title>{isFreeOnly ? 'Coverage Confirmed' : 'Payment Successful'} | Top10Lists</title>
         <meta name="description" content={isFreeOnly ? "Your free city listing has been confirmed." : "Your neighborhood endorsement has been activated successfully."} />
+        <meta name="robots" content="noindex, nofollow" />
+        <meta name="googlebot" content="noindex, nofollow" />
       </SafeHead>
 
       <div className="container max-w-2xl mx-auto px-4 py-8">

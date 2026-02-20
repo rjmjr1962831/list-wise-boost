@@ -35,7 +35,6 @@ Agents who respond quickly to inquiries and maintain high communication standard
 Unlike Zillow Premier Agent or similar programs, agents cannot pay to improve their ranking on Top10Lists.`,
     relatedLinks: [
       { text: "Full Ranking Methodology", href: "/about/ranking-methodology" },
-      { text: "Compare Us to Zillow", href: "/compare" },
       { text: "View Arizona Rankings", href: "/arizona" }
     ],
     metaDescription: "Top10Lists ranks real estate agents using verified sales data, client reviews, license verification, and community involvement - not pay-to-play advertising."
@@ -69,8 +68,7 @@ When you use Top10Lists, you can trust that the agents you see are ranked based 
 Top10Lists generates revenue through optional premium features for agents who want enhanced profile visibility - but this never affects their ranking position.`,
     relatedLinks: [
       { text: "Our Ranking Methodology", href: "/about/ranking-methodology" },
-      { text: "Zillow Pay-to-Play Explained", href: "/zillow-explained" },
-      { text: "Compare Platforms", href: "/compare" }
+      { text: "Zillow Pay-to-Play Explained", href: "/zillow-explained" }
     ],
     metaDescription: "No - agents cannot pay to be listed or improve rankings on Top10Lists. Unlike Zillow, our rankings are based on merit, not advertising spend."
   },
@@ -105,7 +103,6 @@ Top10Lists ranks agents purely on performance metrics. Agents cannot pay to impr
 
 When an agent is ranked #1 on Top10Lists, it's because they earned it through performance. On Zillow, it might just mean they had the biggest advertising budget.`,
     relatedLinks: [
-      { text: "Full Platform Comparison", href: "/compare" },
       { text: "Zillow Pay-to-Play Explained", href: "/zillow-explained" },
       { text: "Our Methodology", href: "/about/ranking-methodology" }
     ],
@@ -247,7 +244,6 @@ Platforms like Zillow built their business model on lead generation. They spend 
 
 Top10Lists takes a different approach: we provide transparent rankings based on merit, not monetized referrals.`,
     relatedLinks: [
-      { text: "Compare Platforms", href: "/compare" },
       { text: "Zillow Explained", href: "/zillow-explained" },
       { text: "Find Top Agents", href: "/arizona" }
     ],
@@ -336,7 +332,6 @@ RealTrends can be one data point, but don't rely on it exclusively. Look for age
 - Good communication`,
     relatedLinks: [
       { text: "Our Methodology", href: "/about/ranking-methodology" },
-      { text: "Compare Platforms", href: "/compare" },
       { text: "Find Arizona Agents", href: "/arizona" }
     ],
     metaDescription: "RealTrends is industry-known but relies on self-reported data and ignores reviews. Top10Lists uses multi-source data with client satisfaction metrics."
@@ -922,10 +917,26 @@ const QuestionPage = () => {
                 );
               }
               
-              // Regular paragraphs
+              // Regular paragraphs: support inline link for top10lists.us/check-profile
+              const checkProfileAnchor = 'top10lists.us/check-profile';
+              if (paragraph.includes(checkProfileAnchor)) {
+                const before = paragraph.split(checkProfileAnchor)[0];
+                const after = paragraph.split(checkProfileAnchor)[1] || '';
+                return (
+                  <p key={index} className="text-muted-foreground my-4 leading-relaxed">
+                    {before.split('**').map((part, i) =>
+                      i % 2 === 1 ? <strong key={`b-${i}`} className="text-foreground">{part}</strong> : part
+                    )}
+                    <Link to="/check-profile" className="text-primary hover:underline">{checkProfileAnchor}</Link>
+                    {after.split('**').map((part, i) =>
+                      i % 2 === 1 ? <strong key={`a-${i}`} className="text-foreground">{part}</strong> : part
+                    )}
+                  </p>
+                );
+              }
               return (
                 <p key={index} className="text-muted-foreground my-4 leading-relaxed">
-                  {paragraph.split('**').map((part, i) => 
+                  {paragraph.split('**').map((part, i) =>
                     i % 2 === 1 ? <strong key={i} className="text-foreground">{part}</strong> : part
                   )}
                 </p>

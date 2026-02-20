@@ -257,6 +257,8 @@ export default function Step3Review2() {
     <>
       <SafeHead>
         <title>Professional Details | Top10Lists.us</title>
+        <meta name="robots" content="noindex, nofollow" />
+        <meta name="googlebot" content="noindex, nofollow" />
       </SafeHead>
       <div className="min-h-screen bg-gradient-to-b from-background to-muted py-12 px-4">
         <div className="max-w-2xl mx-auto">

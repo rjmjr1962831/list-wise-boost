@@ -19,7 +19,7 @@ SELECT cron.schedule(
     url := 'https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/warm-top-markets',
     headers := jsonb_build_object(
       'Content-Type', 'application/json',
-      'Authorization', 'Bearer ' || current_setting('app.service_role_key')
+      'Authorization', 'Bearer ' || coalesce(current_setting('app.settings.service_role_key', true), '')
     ),
     body := jsonb_build_object(
       'topPercentage', 0.25,

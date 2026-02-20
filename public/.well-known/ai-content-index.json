@@ -29,7 +29,7 @@
         "includes": ["Zillow rating", "Google rating", "license", "years experience", "brokerage", "sales count", "average sale price", "cities"]
       },
       "audited": {
-        "cost": "$50/month",
+        "cost": "$100/month",
         "artifact": true,
         "standardAuditCycle": "Monthly",
         "evidenceSources": "10+",

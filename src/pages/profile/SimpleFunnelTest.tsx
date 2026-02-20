@@ -98,6 +98,8 @@ export default function SimpleFunnelTest() {
       <>
         <SafeHead>
           <title>Invalid Link | Top10Lists.us</title>
+          <meta name="robots" content="noindex, nofollow" />
+          <meta name="googlebot" content="noindex, nofollow" />
         </SafeHead>
         <div className="min-h-screen flex items-center justify-center p-4">
           <Card className="max-w-md w-full">
@@ -140,6 +142,8 @@ export default function SimpleFunnelTest() {
     <>
       <SafeHead>
         <title>Welcome {professional.name} | Top10Lists.us</title>
+        <meta name="robots" content="noindex, nofollow" />
+        <meta name="googlebot" content="noindex, nofollow" />
       </SafeHead>
       <div className="min-h-screen bg-gradient-to-b from-background to-muted py-8 px-4">
         <div className="max-w-2xl mx-auto">

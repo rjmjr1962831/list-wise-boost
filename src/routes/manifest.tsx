@@ -6,6 +6,7 @@ import React, { lazy } from "react";
 import { Navigate } from "react-router-dom";
 import type { RouteObject } from "react-router-dom";
 import { AdminRouteGuard } from "@/components/AdminRouteGuard";
+import { DashboardRedirectWithSearch } from "@/components/DashboardRedirectWithSearch";
 
 import Index from "@/pages/Index";
 import NotFound from "@/pages/NotFound";
@@ -92,7 +93,6 @@ const QALandingPage = lazy(() => import("@/pages/QALandingPage"));
 const QuestionPage = lazy(() => import("@/pages/QuestionPage"));
 const FAQ = lazy(() => import("@/pages/FAQ"));
 const ZillowPayToPlayPage = lazy(() => import("@/pages/ZillowPayToPlayPage"));
-const Compare = lazy(() => import("@/pages/Compare"));
 const Press = lazy(() => import("@/pages/Press"));
 const ForAI = lazy(() => import("@/pages/ForAI"));
 const ForAISystems = lazy(() => import("@/pages/ForAISystems"));
@@ -177,7 +177,6 @@ export const routeManifest: RouteObject[] = [
   { path: "/sms-terms", element: React.createElement(SMSTerms, null) },
   { path: "/opt-in", element: React.createElement(OptInPolicy, null) },
   { path: "/zillow-explained", element: React.createElement(ZillowPayToPlayPage, null) },
-  { path: "/compare", element: React.createElement(Compare, null) },
   { path: "/press", element: React.createElement(Press, null) },
   { path: "/for-ai", element: React.createElement(ForAI, null) },
   { path: "/for-ai-systems", element: React.createElement(ForAISystems, null) },
@@ -196,7 +195,7 @@ export const routeManifest: RouteObject[] = [
   { path: "/join", element: React.createElement(AgentLanding, null) },
   { path: "/agent-setup", element: React.createElement(AgentSetup, null) },
   { path: "/agent/dashboard", element: React.createElement(AgentDashboard, null) },
-  { path: "/dashboard", element: React.createElement(Navigate, { to: "/agent/dashboard", replace: true }) },
+  { path: "/dashboard", element: React.createElement(DashboardRedirectWithSearch, null) },
   { path: "/dashboard/:token", element: React.createElement(MagicLinkRouter, null) },
   { path: "/agent-login", element: React.createElement(AgentLogin, null) },
   { path: "/agent/login", element: React.createElement(AgentLoginRequest, null) },

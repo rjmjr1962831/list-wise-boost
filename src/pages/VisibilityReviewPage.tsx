@@ -373,6 +373,8 @@ export default function VisibilityReviewPage() {
       <SafeHead>
         <title>Review Your Coverage | Top10Lists</title>
         <meta name="description" content="Review your selected coverage before confirming." />
+        <meta name="robots" content="noindex, nofollow" />
+        <meta name="googlebot" content="noindex, nofollow" />
       </SafeHead>
 
       <div className="container max-w-3xl mx-auto px-4 py-8">

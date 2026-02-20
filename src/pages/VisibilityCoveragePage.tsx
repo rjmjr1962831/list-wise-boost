@@ -337,6 +337,8 @@ export default function VisibilityCoveragePage() {
       <SafeHead>
         <title>Select Your Coverage Areas | Top10Lists</title>
         <meta name="description" content="Choose the cities where you actively serve clients. City listings are free for all qualified agents." />
+        <meta name="robots" content="noindex, nofollow" />
+        <meta name="googlebot" content="noindex, nofollow" />
       </SafeHead>
 
       <div className="container max-w-7xl mx-auto px-4 py-8">

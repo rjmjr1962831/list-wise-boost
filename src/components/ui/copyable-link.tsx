@@ -40,7 +40,13 @@ export function CopyableLink({
     return (
       <span className={cn('inline-flex items-center gap-2', className)}>
         <code className="text-xs bg-slate-100 px-2 py-1 rounded">
-          {label || url}
+          {label ? (
+            label
+          ) : (
+            <a href={url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+              {url}
+            </a>
+          )}
         </code>
         <button
           onClick={handleCopy}
@@ -66,7 +72,13 @@ export function CopyableLink({
     return (
       <div className={cn('flex items-center gap-2', className)}>
         <code className="text-xs bg-slate-100 px-2 py-1 rounded flex-1 truncate">
-          {label || url}
+          {label ? (
+            label
+          ) : (
+            <a href={url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline truncate block">
+              {url}
+            </a>
+          )}
         </code>
         <Button
           size="sm"
@@ -102,7 +114,9 @@ export function CopyableLink({
       )}
       <div className="flex items-center gap-2">
         <code className="text-xs bg-white px-3 py-2 rounded border flex-1 truncate">
-          {url}
+          <a href={url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline truncate block">
+            {url}
+          </a>
         </code>
         <Button
           size="sm"

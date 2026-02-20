@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Loader2, CheckCircle, ArrowRight, TrendingDown, TrendingUp } from 'lucide-react';
+import { CITATION_INDEX_DISPLAY } from '@/data/citationProbabilityIndex';
 
 interface Professional {
   id: string;
@@ -83,18 +84,14 @@ export default function Step1Intro() {
     );
   }
 
-  const scores = [
-    { name: "Top10Lists.us", before: 4.1, after: 9.3, color: "#10B981" },
-    { name: "RealTrends", before: 6.7, after: 5.2, color: "#8B6914" },
-    { name: "Zillow", before: 7.7, after: 4.4, color: "#006AFF" },
-    { name: "Redfin", before: 6.2, after: 3.8, color: "#A02021" },
-    { name: "HomeLight", before: 5.5, after: 3.1, color: "#FF6B35" },
-  ];
+  const scores = [...CITATION_INDEX_DISPLAY];
 
   return (
     <>
       <SafeHead>
         <title>Welcome {professional.name} | Top10Lists.us</title>
+        <meta name="robots" content="noindex, nofollow" />
+        <meta name="googlebot" content="noindex, nofollow" />
       </SafeHead>
       <div className="min-h-screen bg-gradient-to-b from-background to-muted py-8 sm:py-12 px-4">
         <div className="max-w-2xl mx-auto">

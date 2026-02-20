@@ -205,6 +205,8 @@ export default function AgentSetup() {
       <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-background to-muted/20 px-4">
         <SafeHead>
           <title>Finding Your Profile | Top10Lists</title>
+          <meta name="robots" content="noindex, nofollow" />
+          <meta name="googlebot" content="noindex, nofollow" />
         </SafeHead>
         <Card className="w-full max-w-lg text-center p-8">
           <Loader2 className="w-16 h-16 animate-spin text-primary mx-auto mb-6" />
@@ -229,6 +231,8 @@ export default function AgentSetup() {
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 py-16 px-4">
         <SafeHead>
           <title>Your Profile | Top10Lists</title>
+          <meta name="robots" content="noindex, nofollow" />
+          <meta name="googlebot" content="noindex, nofollow" />
         </SafeHead>
         <div className="container mx-auto max-w-4xl">
           <div className="text-center mb-8">
@@ -288,6 +292,8 @@ export default function AgentSetup() {
       <SafeHead>
         <title>Join Top10Lists | Premium Agent Setup</title>
         <meta name="description" content="Set up your premium agent listing on Top10Lists" />
+        <meta name="robots" content="noindex, nofollow" />
+        <meta name="googlebot" content="noindex, nofollow" />
       </SafeHead>
 
       <div className="container mx-auto max-w-lg">

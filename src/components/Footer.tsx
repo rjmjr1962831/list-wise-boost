@@ -79,12 +79,6 @@ export const Footer = () => {
                 Methodology
               </Link>
               <Link 
-                to="/compare" 
-                className="text-slate-300 hover:text-white transition-colors"
-              >
-                Compare Platforms
-              </Link>
-              <Link 
                 to="/faq" 
                 className="text-slate-300 hover:text-white transition-colors"
               >

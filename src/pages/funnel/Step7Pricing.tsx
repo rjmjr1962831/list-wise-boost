@@ -37,7 +37,7 @@ interface Professional {
 const DEFAULT_PRICES: PricingRow[] = [
   { tier: 'listed', monthly_price: 0, payload_weight: 'basic', refresh_cadence: 'public_data_only' },
   { tier: 'certified', monthly_price: 0, payload_weight: 'standard', refresh_cadence: 'annual' },
-  { tier: 'audited', monthly_price: 50, payload_weight: 'enhanced', refresh_cadence: 'quarterly' },
+  { tier: 'audited', monthly_price: 100, payload_weight: 'enhanced', refresh_cadence: 'quarterly' },
   { tier: 'underwritten', monthly_price: 150, payload_weight: 'maximum', refresh_cadence: 'real_time' },
 ];
 
@@ -156,7 +156,7 @@ function computeCitabilityScores(prof: Professional) {
       current: true,
     },
     {
-      label: 'Audited ($50/mo)',
+      label: 'Audited ($100/mo)',
       score: audited,
       trigger: 'Freshness anchor. Quarterly updates + community verification data.',
       current: false,

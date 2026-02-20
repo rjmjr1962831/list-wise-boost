@@ -76,7 +76,7 @@ Content-Type: text/markdown
 - Service areas (cities)
 - Standard Audit Cycle: Annual
 
-**Audited ($50/mo):** Everything in Certified, plus:
+**Audited ($100/mo):** Everything in Certified, plus:
 - Expanded evidence (Zillow/RealTrends/MLS transaction records, IRS Form 990 filings, U.S. Census ACS data)
 - Specialties
 - Community involvement (verified via ProPublica IRS Form 990 data)

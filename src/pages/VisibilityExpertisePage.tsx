@@ -296,6 +296,8 @@ export default function VisibilityExpertisePage() {
       <SafeHead>
         <title>Highlight Your Neighborhood Expertise | Top10Lists</title>
         <meta name="description" content="Optionally highlight specific neighborhoods where you have demonstrated experience." />
+        <meta name="robots" content="noindex, nofollow" />
+        <meta name="googlebot" content="noindex, nofollow" />
       </SafeHead>
 
       <div className="container max-w-7xl mx-auto px-4 py-8">

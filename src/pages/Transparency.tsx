@@ -528,13 +528,6 @@ export default function Transparency() {
                   <div className="font-medium mb-1">FAQ</div>
                   <p className="text-sm text-muted-foreground">84 questions about our methodology and process</p>
                 </Link>
-                <Link 
-                  to="/compare"
-                  className="p-4 bg-muted/50 rounded-lg hover:bg-muted transition-colors"
-                >
-                  <div className="font-medium mb-1">Compare Platforms</div>
-                  <p className="text-sm text-muted-foreground">How we differ from Zillow, Realtor.com, HomeLight</p>
-                </Link>
               </div>
             </CardContent>
           </Card>
