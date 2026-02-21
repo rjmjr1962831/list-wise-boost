@@ -42,6 +42,9 @@ verify_jwt = false
 [functions.import-agents-unified]
 verify_jwt = false
 
+[functions.fetch-outscraper-agents]
+verify_jwt = false
+
 # DEPRECATED: Uses getdataforme + memo23 Apify actors - replaced by Firecrawl pipeline
 # [functions.fetch-zillow-agents-twostep]
 # verify_jwt = false
