@@ -56,7 +56,7 @@ function iso(s:string|null|undefined):string{
 function floorSales(n:number|null|undefined):string|null{
   if(n==null||!Number.isFinite(Number(n)))return null;
   const floored=Math.floor((Number(n)-10)/10)*10;
-  return`>${Math.max(0,floored)}`;
+  return`${Math.max(0,floored)}+`;
 }
 function getPhones(pro:any):string[]{
   const out:string[]=[];const pn=pro.phone_numbers;
