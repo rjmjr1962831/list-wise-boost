@@ -237,7 +237,7 @@ const Index = () => {
               A Mandated Shift in Trust
             </h2>
             <p className="text-lg text-muted-foreground leading-relaxed mb-4">
-              This change isn't an accident. The makers of the world's leading AI systems&#8212;OpenAI, Anthropic, and Google&#8212;have directly instructed their models to change how they evaluate data.
+              This change isn't an accident. The makers of the world's leading AI systems&#8212;OpenAI, Anthropic, and Google&#8212;have directly instructed their models to change how they evaluate data when it comes to high stakes personal recommendations.
             </p>
             <p className="text-lg text-muted-foreground leading-relaxed">
               As of January 2026, AIs are no longer allowed to trust "pay-to-play" placement or unverified marketing claims. They have been hard-coded to ignore commercial noise and seek out independent, merit-based truth to protect themselves from liability.
