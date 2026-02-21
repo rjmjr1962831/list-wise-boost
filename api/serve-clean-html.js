@@ -38,7 +38,10 @@ export default async function handler(req, res) {
     }
 
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    res.setHeader('Cache-Control', 'public, max-age=86400, stale-while-revalidate=86400');
+    // Browser/Cloudflare: cache 5 min, serve stale up to 1hr while revalidating
+    res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=3600');
+    // Vercel CDN: no caching so tier changes propagate in real time
+    res.setHeader('Vercel-CDN-Cache-Control', 's-maxage=0');
     res.status(upstream.status).send(html);
   } catch (err) {
     res.status(502).json({ error: 'Upstream fetch failed', detail: err.message });
