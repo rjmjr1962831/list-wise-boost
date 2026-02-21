@@ -60,6 +60,12 @@
         '</a>';
     }
 
+    var extras = '';
+    if (a.specialties && a.specialties.length > 0) extras += '<div class="t10l-meta t10l-specialties">' + escapeHtml(a.specialties.slice(0, 3).join(', ')) + '</div>';
+    if (a.neighborhoods && a.neighborhoods.length > 0) {
+      var nhStr = a.neighborhoods.slice(0, 3).map(function(n){ return n.name + (n.transactionCount ? ' (' + n.transactionCount + ')' : ''); }).join(', ');
+      extras += '<div class="t10l-meta t10l-neighborhoods">' + escapeHtml(nhStr) + '</div>';
+    }
     return '<a href="' + escapeAttr(a.profileUrl) + '" target="_blank" rel="noopener" class="t10l-badge t10l-badge-card ' + styleClass + '">' +
       '<img src="' + escapeAttr(a.badgeImageUrl) + '" alt="' + escapeAttr(tierLabel) + '" />' +
       '<div class="t10l-name">' + escapeHtml(a.name) + '</div>' +
@@ -67,6 +73,7 @@
       (market ? '<div class="t10l-meta">' + escapeHtml(market) + '</div>' : '') +
       (stars ? '<div class="t10l-stars">' + stars + '</div>' : '') +
       (a.transactionCount > 0 ? '<div class="t10l-meta">' + a.transactionCount + ' verified transactions</div>' : '') +
+      extras +
       '<div class="t10l-verified">' + escapeHtml(verifiedStr) + '</div>' +
       '</a>';
   }
@@ -92,6 +99,7 @@
       name: a.name,
       jobTitle: 'Real Estate Agent',
       worksFor: a.brokerage ? { '@type': 'RealEstateAgent', name: a.brokerage } : undefined,
+      knowsAbout: (a.specialties && a.specialties.length > 0) ? a.specialties : undefined,
       hasCredential: {
         '@type': 'EducationalOccupationalCredential',
         credentialCategory: 'Professional Certification',
@@ -103,6 +111,7 @@
       aggregateRating: (a.rating != null && a.reviewCount > 0) ? { '@type': 'AggregateRating', ratingValue: a.rating, reviewCount: a.reviewCount, bestRating: 5 } : undefined
     };
     if (!ld.worksFor) delete ld.worksFor;
+    if (!ld.knowsAbout) delete ld.knowsAbout;
     if (!ld.aggregateRating) delete ld.aggregateRating;
     const script = document.createElement('script');
     script.type = 'application/ld+json';
@@ -117,9 +126,14 @@
     let licenseBroker = '';
     if (a.licenseNumber) licenseBroker = 'License: ' + escapeHtml(a.licenseNumber) + (a.licenseState ? ' (' + escapeHtml(a.licenseState) + ')' : '');
     if (a.brokerage) licenseBroker += (licenseBroker ? ' | ' : '') + 'Brokerage: ' + escapeHtml(a.brokerage);
+    var extras = '';
+    if (a.specialties && a.specialties.length > 0) extras += '<p>Specialties: ' + escapeHtml(a.specialties.join(', ')) + '</p>';
+    if (a.communityRoles && a.communityRoles.length > 0) extras += '<p>Community: ' + escapeHtml(a.communityRoles.map(function(r){ return (r.role ? r.role + ' at ' : '') + (r.organization || ''); }).filter(Boolean).join('; ')) + '</p>';
+    if (a.neighborhoods && a.neighborhoods.length > 0) extras += '<p>Neighborhoods (verified txns): ' + escapeHtml(a.neighborhoods.slice(0, 5).map(function(n){ return n.name + (n.transactionCount ? ' (' + n.transactionCount + ')' : ''); }).join(', ')) + '</p>';
     const html = '<noscript><div class="t10l-badge-fallback"><p><strong>' + escapeHtml(a.name) + '</strong> is a Top10Lists.us <strong>' + escapeHtml(tierLabel) + '</strong> real estate agent in ' + escapeHtml(market) + '.</p>' +
       '<p>Rating: ' + (a.rating != null ? a.rating + '/5' : 'N/A') + ' (' + (a.reviewCount || 0) + ' verified reviews) | ' + (a.transactionCount || 0) + ' verified transactions</p>' +
       (licenseBroker ? '<p>' + licenseBroker + '</p>' : '') +
+      extras +
       '<p>Verified: ' + escapeHtml(verifiedStr) + '</p>' +
       '<p><a href="' + escapeAttr(a.profileUrl) + '">View full verified credential on Top10Lists.us</a></p></div></noscript>';
     cont.insertAdjacentHTML('afterend', html);
