@@ -115,6 +115,14 @@
       "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/enrichment-api?action=markets"
     },
     {
+      "source": "/arizona/top10realestateagents",
+      "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/serve-bot-state-html?path=/arizona/top10realestateagents"
+    },
+    {
+      "source": "/california/top10realestateagents",
+      "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/serve-bot-state-html?path=/california/top10realestateagents"
+    },
+    {
       "source": "/:state/:city/top10realestateagents",
       "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/serve-bot-list-html?path=/:state/:city/top10realestateagents"
     },
