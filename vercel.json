@@ -135,11 +135,11 @@
       "destination": "/api/serve-clean-html?fn=serve-bot-agent-html&path=/:state/agents/:slug"
     },
     {
-      "source": "/((?!api|for-ai|methodology|ai-feed|llms|coverage\\.json|sitemap|mcp\\.json|ai-content-index\\.json|robots\\.txt|\\.well-known).*)",
+      "source": "/((?!api|for-ai|methodology|ai-feed|llms|coverage\\.json|sitemap|mcp\\.json|ai-content-index\\.json|robots\\.txt|\\.well-known|widget).*)",
       "destination": "/_spa.html"
     },
     {
-      "source": "/(.*)",
+      "source": "/((?!widget/|api/).*)",
       "destination": "/_spa.html"
     }
   ],
