@@ -1,5 +1,9 @@
 # Cursor Daily Updates
 
+## 2026-02-20
+
+**Rule (Staging push batching):** Push to staging only in batches of ten changes. Accumulate commits and push together; do not push after every single change.
+
 ## 2026-02-18
 
 **Rule (Robert):** Do everything you can yourself. Only ask Robert for help on things he has to do himself (e.g. set secrets, run production DB migrations if policy forbids the assistant, paste API keys).
