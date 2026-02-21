@@ -133,11 +133,11 @@ Supabase returns max 1,000 rows by default. **Always paginate.** Never assume 1,
 
 ---
 
-## Enrichment API
+## Supabase Edge Function: enrichment-api
 
 **Endpoint:** `https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/enrichment-api`
 
-**Auth Header:** `X-Enrichment-Key` — value in Supabase secrets (ENRICHMENT_API_KEY) or .env. Never commit.
+**Authentication:** Header `X-Enrichment-Key: t10l_enrich_0448c4870d72ed90fd43171123fd0e44558f019a2b5807d1b297604dad6b235a`
 
 ### Key Actions
 - `GET ?action=audit` - Row counts and samples
@@ -658,9 +658,8 @@ C:\Users\rober\supabase.exe secrets set KEY=value --project-ref wiotrvoirdgzfacu
 
 ### Test Enrichment API
 ```bat
-curl -s -X GET "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/enrichment-api?action=audit" -H "X-Enrichment-Key: %ENRICHMENT_API_KEY%" -o audit.txt && notepad audit.txt
+curl -s -X GET "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/enrichment-api?action=audit" -H "X-Enrichment-Key: t10l_enrich_0448c4870d72ed90fd43171123fd0e44558f019a2b5807d1b297604dad6b235a" -o audit.txt && notepad audit.txt
 ```
-(Set ENRICHMENT_API_KEY in env or use value from .env)
 
 ### Test Bot Rendering
 ```bat
