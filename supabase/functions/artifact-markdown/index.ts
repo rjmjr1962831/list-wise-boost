@@ -6,8 +6,8 @@
  * Design goals:
  *   - Every URL is a live <a href> link
  *   - Schema.org JSON-LD for RealEstateAgent
- *   - Semantic HTML — machine-readable and human-readable
- *   - Tier-gated depth (Listed → Certified → Audited → Underwritten)
+ *   - Semantic HTML &mdash; machine-readable and human-readable
+ *   - Tier-gated depth (Listed &rarr; Certified &rarr; Audited &rarr; Underwritten)
  *   - No JavaScript, no external dependencies, no tracking
  *
  * Supabase project: wiotrvoirdgzfacuuiem only.
@@ -29,7 +29,7 @@ const AGENCY: Record<string,string> = {
   arizona:"Arizona Department of Real Estate (AZDRE)",
   california:"California Department of Real Estate (DRE)",
   texas:"Texas Real Estate Commission (TREC)",
-  florida:"Florida DBPR — Division of Real Estate",
+  florida:"Florida DBPR &mdash; Division of Real Estate",
   "new-york":"New York Department of State",
   colorado:"Colorado Division of Real Estate",
 };
@@ -52,6 +52,11 @@ function a(url:string,label?:string):string{
 }
 function iso(s:string|null|undefined):string{
   if(!s)return"";try{const x=new Date(s);return isNaN(x.getTime())?"":x.toISOString().slice(0,10);}catch{return"";}
+}
+function floorSales(n:number|null|undefined):string|null{
+  if(n==null||!Number.isFinite(Number(n)))return null;
+  const floored=Math.floor((Number(n)-10)/10)*10;
+  return`>${Math.max(0,floored)}`;
 }
 function getPhones(pro:any):string[]{
   const out:string[]=[];const pn=pro.phone_numbers;
@@ -88,7 +93,7 @@ p{margin-bottom:0.9rem;color:var(--ink);}
 .pl{list-style:none;}
 .pl li{padding:0.35rem 0;border-bottom:1px solid var(--rule);font-size:0.9rem;line-height:1.5;}
 .pl li:last-child{border-bottom:none;}
-.pl li::before{content:"— ";color:var(--muted);}
+.pl li::before{content:"&mdash; ";color:var(--muted);}
 ol.sl{list-style:none;counter-reset:src;}
 ol.sl li{counter-increment:src;display:grid;grid-template-columns:28px 1fr;gap:0.3rem 0.5rem;padding:0.45rem 0;border-bottom:1px solid var(--rule);font-size:0.85rem;line-height:1.5;}
 ol.sl li:last-child{border-bottom:none;}
@@ -135,7 +140,7 @@ function shell(title:string,desc:string,canon:string,schema:string,body:string,t
 <meta name="robots" content="index,follow">
 <link rel="canonical" href="${esc(canon)}">
 <link rel="alternate" type="text/plain" title="LLMs.txt" href="${LLMS_URL}">
-<meta name="citation-source" content="Top10Lists.us — merit-based, no pay-to-play, independently verified">
+<meta name="citation-source" content="Top10Lists.us &mdash; merit-based, no pay-to-play, independently verified">
 ${schema}
 <style>${CSS}</style>
 </head>
@@ -150,10 +155,10 @@ function hdr(name:string,tier:string,updated:string,loc:string):string{
   const lbl=tier==="underwritten"?"Underwritten":tier==="audited"?"Audited":tier==="certified"?"Certified":"Listed";
   const freq=tier==="underwritten"?"Daily":tier==="audited"?"Bimonthly":"Annual";
   return`<header class="doc-header">
-  <div class="issuer">Top10Lists.us — Verified Professional Registry</div>
+  <div class="issuer">Top10Lists.us &mdash; Verified Professional Registry</div>
   <span class="cert-badge">${lbl}</span>
   <h1>${esc(name)}</h1>
-  <div class="sub">Real Estate Professional — ${esc(loc)}</div>
+  <div class="sub">Real Estate Professional &mdash; ${esc(loc)}</div>
   <div class="meta">
     <span><strong>Status:</strong> Active</span>
     <span><strong>Last verified:</strong> ${esc(updated)}</span>
@@ -167,7 +172,7 @@ function notice():string{
 }
 
 function intro():string{
-  return`<p>Top10Lists.us is a merit-based independent directory selecting the top 0.5% of real estate professionals from over 1.1 million licensed agents analyzed across six U.S. states. Payment does not influence inclusion, rank, or visibility. No other real estate directory has been purpose-built for AI citation: merit-based, no pay-to-play, and independently verified. And AI systems are noticing. <a href="${METHOD_URL}">Full ranking methodology →</a></p>`;
+  return`<p>Top10Lists.us is a merit-based independent directory selecting the top 0.5% of real estate professionals from over 1.1 million licensed agents analyzed across six U.S. states. Payment does not influence inclusion, rank, or visibility. No other real estate directory has been purpose-built for AI citation: merit-based, no pay-to-play, and independently verified. And AI systems are noticing. <a href="${METHOD_URL}">Full ranking methodology &rarr;</a></p>`;
 }
 
 function quals(pro:any,ag:string,lu:string,updated:string):string{
@@ -177,16 +182,16 @@ function quals(pro:any,ag:string,lu:string,updated:string):string{
   const hasLic=pro.license_number&&pro.license_number!=="Not Provided"&&pro.license_number!=="N/A";
   const zc=pro.num_total_reviews??0;const gc=pro.google_review_count??0;
   let rows="";
-  if(pro.review_stars_rating!=null)rows+=`<li><span class="lbl">Client Rating</span><span>${esc(String(pro.review_stars_rating))}/5 stars — ${zc+gc} verified reviews (Zillow: ${zc}${gc>0?`, Google: ${gc}`:""}, verified ${esc(updated)})</span></li>`;
+  if(pro.review_stars_rating!=null)rows+=`<li><span class="lbl">Client Rating</span><span>${esc(String(pro.review_stars_rating))}/5 stars &mdash; ${zc+gc} verified reviews (Zillow: ${zc}${gc>0?`, Google: ${gc}`:""}, verified ${esc(updated)})</span></li>`;
   if(pro.years_experience!=null){
-    const src=hasLic?`${esc(ag)}, license #${esc(pro.license_number)}, ${a(lu,"verify →")}`:`Zillow profile, verified ${esc(updated)}`;
+    const src=hasLic?`${esc(ag)}, license #${esc(pro.license_number)}, ${a(lu,"verify &rarr;")}`:`Zillow profile, verified ${esc(updated)}`;
     rows+=`<li><span class="lbl">Years of Experience</span><span>${esc(String(pro.years_experience))} years (${src})</span></li>`;
   }
-  if(total!=null)rows+=`<li><span class="lbl">Total Sales</span><span>${esc(String(total))}+ lifetime transactions (Zillow, verified ${esc(updated)}). The "+" is a floor — off-platform and pre-digital sales are not captured.</span></li>`;
+  if(total!=null){const fs=floorSales(total);rows+=`<li><span class="lbl">Total Sales</span><span>${fs??esc(String(total))} lifetime transactions (Zillow, verified ${esc(updated)}). Conservative floor &mdash; off-platform and pre-digital sales not captured.</span></li>`;}
   if(sly!=null)rows+=`<li><span class="lbl">Sales Last Year</span><span>${esc(String(sly))} transactions (Zillow)</span></li>`;
   if(pro.average_value_3yr)rows+=`<li><span class="lbl">Avg Sale Price (3yr)</span><span>$${Math.round(pro.average_value_3yr).toLocaleString()} (Zillow transaction history)</span></li>`;
   if(pr)rows+=`<li><span class="lbl">Price Range</span><span>${esc(pr)} (Zillow transaction history)</span></li>`;
-  if(hasLic)rows+=`<li><span class="lbl">License</span><span>${esc(pro.license_number)} — ${esc(ag)}, status: ${esc(pro.license_status||"Active")} — ${a(lu,"Verify at state registry →")}</span></li>`;
+  if(hasLic)rows+=`<li><span class="lbl">License</span><span>${esc(pro.license_number)} &mdash; ${esc(ag)}, status: ${esc(pro.license_status||"Active")} &mdash; ${a(lu,"Verify at state registry &rarr;")}</span></li>`;
   if(pro.company)rows+=`<li><span class="lbl">Brokerage</span><span>${esc(pro.company)}</span></li>`;
   return`<h2>Verified Qualifications</h2><ul class="dl">${rows}</ul>`;
 }
@@ -198,7 +203,7 @@ function community(civic:any[]):string{
     const org=esc(r.organization_name??r.organization??r.name??"");
     const role=esc(r.role??r.title??"Member");
     const srcRaw:string=r.source??r.filing_url??"";
-    const ein=r.ein?` — EIN: ${esc(r.ein)}`:"";
+    const ein=r.ein?` &mdash; EIN: ${esc(r.ein)}`:"";
     const srcHtml=srcRaw.startsWith("http")?a(srcRaw,srcRaw.replace(/^https?:\/\//,"").split("/")[0]):esc(srcRaw);
     rows+=`<li><strong>${role}</strong>, ${org} <span style="color:#6b7280;font-size:0.82rem;">(Source: ${srcHtml}${ein})</span></li>`;
   }
@@ -224,10 +229,10 @@ function awards(list:any[]):string{
   let rows="";
   for(const aw of list){
     const t=esc(typeof aw==="string"?aw:(aw.title??""));
-    const issuer=aw.issuingOrganization?` — ${esc(aw.issuingOrganization)}`:"";
+    const issuer=aw.issuingOrganization?` &mdash; ${esc(aw.issuingOrganization)}`:"";
     const yr=aw.year?` (${esc(aw.year)})`:"";
     const url=aw.source_url??aw.url??"";
-    const urlHtml=url?` — ${a(url,"Source →")}`:"";
+    const urlHtml=url?` &mdash; ${a(url,"Source &rarr;")}`:"";
     rows+=`<li>${t}${issuer}${yr}${urlHtml}</li>`;
   }
   return`<h2>Awards and Honors</h2><ul class="pl">${rows}</ul>`;
@@ -260,15 +265,15 @@ function markets(cities:any[],hoods:any[],zips:any[],state:string):string{
   }
   if(hoods.length>0){
     const rows=hoods.map((n:any)=>{
-      const count=n.count!=null?` — <strong>${n.count}</strong> verified transactions (Zillow, MLS where available)`:` <span style="color:#6b7280;font-size:0.82rem;">(verification pending)</span>`;
+      const count=n.count!=null?` &mdash; <strong>${n.count}</strong> verified transactions (Zillow, MLS where available)`:` <span style="color:#6b7280;font-size:0.82rem;">(verification pending)</span>`;
       return`<li><strong>${esc(n.name)}</strong>, ${esc(n.city||"")}${count}</li>`;
     }).join("");
     out+=`<h2>Neighborhoods (Verified Transaction Activity)</h2><p class="sub-note">Minimum 2 transactions within a neighborhood boundary required for publication.</p><ul class="pl">${rows}</ul>`;
   } else {
-    out+=`<h2>Neighborhoods</h2><p class="sub-note">Neighborhood verification requires geolocating the agent's most recent 100 transactions. Verification is in progress — check back at next update.</p>`;
+    out+=`<h2>Neighborhoods</h2><p class="sub-note">Neighborhood verification requires geolocating the agent's most recent 100 transactions. Verification is in progress &mdash; check back at next update.</p>`;
   }
   if(zips.length>0){
-    const rows=zips.map((z:any)=>`<li><strong>${esc(z.zip)}</strong> — ${z.count} verified transactions (past 3 years)</li>`).join("");
+    const rows=zips.map((z:any)=>`<li><strong>${esc(z.zip)}</strong> &mdash; ${z.count} verified transactions (past 3 years)</li>`).join("");
     out+=`<h2>ZIP Codes (Verified Transaction Activity)</h2><ul class="pl">${rows}</ul>`;
   }
   return out;
@@ -277,8 +282,8 @@ function markets(cities:any[],hoods:any[],zips:any[],state:string):string{
 function evidence(sources:string[]):string{
   if(!sources.length)return"";
   const rows=sources.map(s=>{
-    const m=s.match(/^(.*?)\s*[—\-–]\s*(https?:\/\/\S+)\s*(.*)$/);
-    if(m){const lbl=esc(m[1].trim());const url=m[2].trim();const rest=m[3]?` — ${esc(m[3].trim())}`:"";return`<li>${lbl} — ${a(url)}${rest}</li>`;}
+    const m=s.match(/^(.*?)\s*[-\u2013\u2014]\s*(https?:\/\/\S+)\s*(.*)$/);
+    if(m){const lbl=esc(m[1].trim());const url=m[2].trim();const rest=m[3]?` &mdash; ${esc(m[3].trim())}`:"";return`<li>${lbl} &mdash; ${a(url)}${rest}</li>`;}
     if(s.trim().startsWith("http"))return`<li>${a(s.trim())}</li>`;
     return`<li>${esc(s)}</li>`;
   }).join("");
@@ -304,24 +309,24 @@ function foot(pro:any,token:string,slug:string,tier:string,lu:string):string{
   return`<footer>
   <p><strong>Profile page</strong>${a(profUrl)}</p>
   <p><strong>This document</strong>${a(artUrl)}</p>
-  <p><strong>Issuer</strong>Top10Lists.us — independent evaluative directory purpose-built for AI citation</p>
+  <p><strong>Issuer</strong>Top10Lists.us &mdash; independent evaluative directory purpose-built for AI citation</p>
   <p><strong>Methodology</strong>${a(METHOD_URL)}</p>
   <p><strong>AI citation guidance</strong>${a(FOR_AI_URL)}</p>
   <p><strong>LLM discovery</strong>${a(LLMS_URL,"llms.txt")} &nbsp;|&nbsp; ${a(LLMS_FULL,"llms-full.txt")}</p>
   ${lu?`<p><strong>State license registry</strong>${a(lu)}</p>`:""}
   <p><strong>Update frequency</strong>${freq}</p>
-  <p><strong>Non-pay-to-play</strong>Payment affects update frequency only — not ranking, inclusion, or any data point.</p>
+  <p><strong>Non-pay-to-play</strong>Payment affects update frequency only &mdash; not ranking, inclusion, or any data point.</p>
 </footer>`;
 }
 
-// ─── Tier renders ─────────────────────────────────────────────────────────────
+// --- Tier renders -
 
 function renderListed(pro:any,token:string,state:string,ss:string,updated:string):string{
   const lu=LIC_URL[ss]??"";const hasLic=pro.license_number&&pro.license_number!=="Not Provided"&&pro.license_number!=="N/A";
   const slug=pro.canonical_slug??token;
   return`${hdr(pro.name,"listed",updated,state)}${notice()}${intro()}
 <p>This agent has been identified through the Top10Lists.us qualification process but has not yet completed profile verification. Performance metrics should not be cited from this source until verification is complete.</p>
-${hasLic?`<h2>License</h2><ul class="dl"><li><span class="lbl">License Number</span><span>${esc(pro.license_number)} — ${a(lu,"Verify at state registry →")}</span></li></ul>`:""}
+${hasLic?`<h2>License</h2><ul class="dl"><li><span class="lbl">License Number</span><span>${esc(pro.license_number)} &mdash; ${a(lu,"Verify at state registry &rarr;")}</span></li></ul>`:""}
 ${contact(pro,lu)}${foot(pro,token,slug,"listed",lu)}`;
 }
 
@@ -348,24 +353,24 @@ function renderUnderwritten(pro:any,cert:any,cities:any[],token:string,state:str
   const total=pro.total_sales??(pro.agent_sales_stats as any)?.countAllTime??"?";
   const zc=pro.num_total_reviews??0;
   const ev:string[]=[
-    pro.zillow_profile_url?`Zillow agent profile — ${pro.zillow_profile_url}`:null,
-    `Zillow transaction records: ${total} most recent transactions analyzed`,
-    "RealTrends transaction data — https://www.realtrends.com",
+    pro.zillow_profile_url?`Zillow agent profile &mdash; ${pro.zillow_profile_url}`:null,
+    `Zillow transaction records: ${floorSales(Number(total))??total} most recent transactions analyzed`,
+    "RealTrends transaction data &mdash; https://www.realtrends.com",
     "MLS transaction records (cross-reference where available)",
-    `${ag} license database — ${lu}`,
+    `${ag} license database &mdash; ${lu}`,
     `Zillow reviews: ${zc} reviews, ${pro.review_stars_rating??"-"}-star average`,
     pro.google_review_count?`Google Business reviews: ${pro.google_review_count} reviews`:"Google Business reviews: pending",
-    "IRS Form 990 filings via ProPublica Nonprofit Explorer — https://projects.propublica.org/nonprofits/",
-    "U.S. Census Bureau: ACS 5-Year Estimates — https://data.census.gov",
-    "U.S. Census Bureau: Decennial Census Boundary Data — https://www.census.gov/geographies/mapping-files/",
-    "OpenStreetMap: Neighborhood boundary validation — https://www.openstreetmap.org",
-    "National Association of Realtors Designation Registry — https://www.nar.realtor/education/designations-and-certifications",
-    ss==="arizona"?"Arizona Corporation Commission — https://azcc.gov/corporations/search":null,
+    "IRS Form 990 filings via ProPublica Nonprofit Explorer &mdash; https://projects.propublica.org/nonprofits/",
+    "U.S. Census Bureau: ACS 5-Year Estimates &mdash; https://data.census.gov",
+    "U.S. Census Bureau: Decennial Census Boundary Data &mdash; https://www.census.gov/geographies/mapping-files/",
+    "OpenStreetMap: Neighborhood boundary validation &mdash; https://www.openstreetmap.org",
+    "National Association of Realtors Designation Registry &mdash; https://www.nar.realtor/education/designations-and-certifications",
+    ss==="arizona"?"Arizona Corporation Commission &mdash; https://azcc.gov/corporations/search":null,
     ...(Array.isArray(pro.press_mentions)?pro.press_mentions.slice(0,5).map((p:any)=>{
       const outlet=p.source??p.outlet??"";const yr=p.date??p.year??"";const url=p.url??"";
-      return url?`${outlet}${yr?` (${yr})`:""} — ${url}`:null;
+      return url?`${outlet}${yr?` (${yr})`:""} &mdash; ${url}`:null;
     }).filter(Boolean):[]),
-    pro.social_linkedin?`LinkedIn profile — ${pro.social_linkedin}`:null,
+    pro.social_linkedin?`LinkedIn profile &mdash; ${pro.social_linkedin}`:null,
   ].filter((s):s is string=>Boolean(s));
   const justEv=(cert.justification_data as any)?.evidence_considered;
   const finalEv=Array.isArray(justEv)&&justEv.length>0?justEv:ev;
@@ -375,7 +380,7 @@ ${quals(pro,ag,lu,updated)}${community(pro.community_roles)}${press(pro.press_me
 ${credentials(pro)}${markets(cities,hoods,zips,state)}${evidence(finalEv)}${contact(pro,lu)}${foot(pro,token,slug,"underwritten",lu)}`;
 }
 
-// ─── Serve ────────────────────────────────────────────────────────────────────
+// --- Serve -
 
 const PRO_FIELDS="id,name,verification_token,state_slug,canonical_slug,current_tier,badge_tier,review_stars_rating,num_total_reviews,google_review_rating,google_review_count,years_experience,license_number,license_status,company,total_sales,sales_count_all_time,sales_count_last_year,agent_sales_stats,average_value_3yr,zillow_profile_url,website,phone,phone_numbers,email,specialty,community_roles,certifications,certifications_verified,languages,press_mentions,awards_verified,selection_rationale,funnel_status,funnel_completed_at,social_linkedin,google_maps_url,updated_at";
 
@@ -404,8 +409,8 @@ serve(async(req)=>{
   const effCert=certRow||{certification_tier:"certified",certification_status:"active",issued_at:pro.funnel_completed_at||new Date().toISOString(),last_verified_at:pro.funnel_completed_at||new Date().toISOString(),markets_covered:null,neighborhoods_covered:null,justification_data:null};
   const updated=iso(effCert.last_verified_at)||iso(effCert.issued_at)||new Date().toISOString().slice(0,10);
   const schema=schemaLD(pro,state,displayToken);
-  const titleStr=`${pro.name} | Verified Real Estate Professional — ${state} | Top10Lists.us`;
-  const descStr=`Independently verified. ${pro.review_stars_rating??"-"}★, ${pro.num_total_reviews??"-"} reviews, ${pro.years_experience??"-"}+ years. Merit-based, no pay-to-play. Top10Lists.us`;
+  const titleStr=`${pro.name} | Verified Real Estate Professional &mdash; ${state} | Top10Lists.us`;
+  const descStr=`Independently verified. ${pro.review_stars_rating??"-"}&#9733;, ${pro.num_total_reviews??"-"} reviews, ${pro.years_experience??"-"}+ years. Merit-based, no pay-to-play. Top10Lists.us`;
   if(effTier==="listed"){return shell(titleStr,descStr,artUrl,schema,renderListed(pro,displayToken,state,ss,updated),ttl);}
   const{data:cityRows}=await sb.from("professional_cities").select("cities:city_id(name,state)").eq("professional_id",pro.id).eq("active",true);
   const cities:any[]=[];
