@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Award, BadgeCheck, Shield, Zap, Signal, Sparkles, ChevronDown, ChevronUp } from "lucide-react";
+import { Award, BadgeCheck, Shield, Zap, Sparkles, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface OverviewSectionProps {
@@ -216,7 +216,6 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
   const navigate = useNavigate();
   const rawTier = professional.current_tier || professional.badge_tier || "certified";
   const currentTier = normalizeTier(rawTier);
-  const tierLabel = (rawTier?.toLowerCase() === "listed" ? "certified" : rawTier).replace(/^\w/, (c: string) => c.toUpperCase());
   const baseScore = professional.signal_score ?? professional.certified_projected_signal ?? null;
 
   const getAICS = (tierId: string): number | null => {
@@ -251,30 +250,6 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
           </CardContent>
         </Card>
       )}
-
-      {/* Tier & Signal */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Signal className="h-5 w-5 text-primary" />
-            Your AI Visibility
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="p-4 rounded-lg bg-muted/50 border">
-              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Current Tier</p>
-              <p className="text-lg font-semibold">{tierLabel}</p>
-            </div>
-            <div className="p-4 rounded-lg bg-muted/50 border">
-              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">AI Confidence Score</p>
-              <p className="text-lg font-semibold">
-                {professional.signal_score != null ? `${professional.signal_score}/100` : "Pending"}
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Upgrade Your Tier */}
       <Card>
