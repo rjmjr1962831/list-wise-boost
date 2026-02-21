@@ -1,12 +1,105 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Award, BadgeCheck, Shield, Zap, Signal, Sparkles, Info } from "lucide-react";
+import { Award, BadgeCheck, Shield, Zap, Signal, Sparkles, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
 
 interface OverviewSectionProps {
   professional: any;
+}
+
+/** Expander showing data fields and sources for a tier. Human-facing, not markdown. */
+function DataPayloadExpander({ tier, triggerText }: { tier: "certified" | "audited" | "underwritten"; triggerText: string }) {
+  const [open, setOpen] = useState(false);
+
+  const content: Record<string, { data: string[]; sources: string[] }> = {
+    certified: {
+      data: [
+        "Name and profile URL",
+        "License number (verified)",
+        "Star rating and review count",
+        "Specialties",
+        "Cities served",
+      ],
+      sources: [
+        "State Department of Real Estate (DRE)",
+        "Zillow",
+        "LinkedIn",
+      ],
+    },
+    audited: {
+      data: [
+        "Everything in Certified, plus:",
+        "Selection rationale (why you were chosen)",
+        "Years of experience",
+        "Total transactions",
+        "Company name",
+        "Community roles and organizations",
+        "Notable achievements",
+        "Civic involvement (IRS 990 verified)",
+        "Transaction history",
+      ],
+      sources: [
+        "State DRE",
+        "Zillow",
+        "IRS 990 filings",
+        "Verified transaction records",
+      ],
+    },
+    underwritten: {
+      data: [
+        "Everything in Audited, plus:",
+        "Certifications and designations",
+        "Neighborhood expertise",
+        "Press mentions",
+        "Awards",
+        "Performance data (sales count, last verified)",
+      ],
+      sources: [
+        "State DRE",
+        "Zillow",
+        "IRS 990 filings",
+        "Verified transaction records",
+        "Neighborhood transaction data",
+        "Press and awards verification",
+      ],
+    },
+  };
+
+  const { data, sources } = content[tier];
+
+  return (
+    <div className="mt-1">
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        className="text-xs text-primary hover:underline inline-flex items-center gap-1 font-medium"
+      >
+        {triggerText}
+        {open ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+      </button>
+      {open && (
+        <div className="mt-2 p-3 rounded-lg border bg-muted/30 text-sm space-y-2">
+          <div>
+            <p className="font-medium text-foreground mb-1">Data included</p>
+            <ul className="text-muted-foreground space-y-0.5 list-disc list-inside">
+              {data.map((item, i) => (
+                <li key={i}>{item}</li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <p className="font-medium text-foreground mb-1">Sources</p>
+            <ul className="text-muted-foreground space-y-0.5 list-disc list-inside">
+              {sources.map((src, i) => (
+                <li key={i}>{src}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
 
 /** Normalize tier for display. Listed/unknown = Certified. */
@@ -30,13 +123,6 @@ function estimateAICS(base: number | null, current: string, target: string): num
   return Math.min(100, Math.round(baseScore - (lift[current] ?? 11) + targetLift));
 }
 
-/** Fallback when score_explanation not yet in DB */
-const FALLBACK_SCORE_EXPLANATIONS: Record<string, string> = {
-  certified: "License grounding. Verified license and career volume proof anchor your identity for AI systems.",
-  audited: "Freshness anchor. Quarterly updates plus community verification data add signals AI systems weight heavily.",
-  underwritten: "Elite citability. Daily monitoring and full artifact provenance chain signal maximum trust to AI systems.",
-};
-
 const TIERS = [
   { id: "certified", name: "Certified", price: "Free", icon: BadgeCheck, features: ["Standard Top10Lists badge", "Standard artifact, monthly refresh", "Core credentials published to AI systems"] },
   { id: "audited", name: "Audited", price: "$100/mo", icon: Shield, features: ["Richer data payload", "Bimonthly refresh", "Community involvement, transaction stats"] },
@@ -57,24 +143,6 @@ function toSecondPerson(text: string): string {
 
 export function OverviewSection({ professional }: OverviewSectionProps) {
   const navigate = useNavigate();
-  const [scoreExplanations, setScoreExplanations] = useState<Record<string, string>>({});
-
-  useEffect(() => {
-    (async () => {
-      const { data } = await supabase
-        .from("certification_pricing_config")
-        .select("tier, score_explanation")
-        .not("score_explanation", "is", null);
-      if (data) {
-        const map: Record<string, string> = {};
-        for (const row of data) {
-          map[(row as { tier: string }).tier] = (row as { score_explanation: string }).score_explanation;
-        }
-        setScoreExplanations(map);
-      }
-    })();
-  }, []);
-
   const rawTier = professional.current_tier || professional.badge_tier || "certified";
   const currentTier = normalizeTier(rawTier);
   const tierLabel = (rawTier?.toLowerCase() === "listed" ? "certified" : rawTier).replace(/^\w/, (c: string) => c.toUpperCase());
@@ -147,8 +215,7 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-6 lg:grid-cols-[1fr_280px]">
-            <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-3">
             {TIERS.map((tier) => {
               const Icon = tier.icon;
               const isCurrent = currentTier === tier.id;
@@ -178,9 +245,20 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
                   </div>
                   <ul className="text-sm text-muted-foreground space-y-1 mb-4">
                     {tier.features.map((f, i) => (
-                      <li key={i} className="flex items-start gap-2">
-                        <span className="text-primary mt-0.5">•</span>
-                        {f}
+                      <li key={i} className="flex flex-col items-start gap-0">
+                        <span className="flex items-start gap-2">
+                          <span className="text-primary mt-0.5">•</span>
+                          {f}
+                        </span>
+                        {tier.id === "certified" && f === "Core credentials published to AI systems" && (
+                          <DataPayloadExpander tier="certified" triggerText="View data and sources" />
+                        )}
+                        {tier.id === "audited" && f === "Richer data payload" && (
+                          <DataPayloadExpander tier="audited" triggerText="View data and sources" />
+                        )}
+                        {tier.id === "underwritten" && f === "Maximum data richness" && (
+                          <DataPayloadExpander tier="underwritten" triggerText="View data and sources" />
+                        )}
                       </li>
                     ))}
                   </ul>
@@ -198,25 +276,6 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
                 </div>
               );
             })}
-            </div>
-            <div className="space-y-4 lg:border-l lg:pl-6 lg:sticky lg:top-24 lg:self-start">
-              <div className="flex items-center gap-2">
-                <Info className="h-4 w-4 text-primary" />
-                <h4 className="font-semibold text-sm">What the Score Means</h4>
-              </div>
-              {TIERS.map((tier) => {
-                const expl = scoreExplanations[tier.id] ?? FALLBACK_SCORE_EXPLANATIONS[tier.id];
-                const aics = getAICS(tier.id);
-                return (
-                  <div key={tier.id} className="text-sm">
-                    <p className="font-medium text-muted-foreground mb-1">
-                      {tier.name} {aics != null && <span className="font-semibold text-foreground">({aics}/100)</span>}
-                    </p>
-                    <p className="text-muted-foreground leading-relaxed">{expl || "—"}</p>
-                  </div>
-                );
-              })}
-            </div>
           </div>
           <p className="text-sm text-muted-foreground mt-6 text-center">
             No one can guarantee that you will be named when an AI is asked for a recommendation. What we can say is that the higher your score, the more likely you are to be cited by name.
