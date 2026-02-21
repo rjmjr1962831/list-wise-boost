@@ -69,6 +69,16 @@
       "source": "/api-terms",
       "destination": "/terms",
       "permanent": true
+    },
+    {
+      "source": "/MASTER_KNOWLEDGE_DOCUMENT.md",
+      "destination": "/404",
+      "permanent": false
+    },
+    {
+      "source": "/MASTER_KNOWLEDGE_DOCUMENT",
+      "destination": "/404",
+      "permanent": false
     }
   ],
   "rewrites": [
