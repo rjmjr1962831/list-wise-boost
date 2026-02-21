@@ -11,7 +11,6 @@ import {
   LayoutDashboard,
   User,
   Bot,
-  TrendingUp,
   CreditCard,
   RefreshCw,
   Menu,
@@ -24,7 +23,7 @@ import { BillingSection } from "@/components/agent/BillingSection";
 import { getValidImageUrl } from "@/utils/imageUrlValidator";
 import { cn } from "@/lib/utils";
 
-type NavSection = "overview" | "profile" | "payload" | "upgrade" | "billing";
+type NavSection = "overview" | "profile" | "payload" | "billing";
 
 interface NavItem {
   id: NavSection;
@@ -36,7 +35,6 @@ const NAV_ITEMS: NavItem[] = [
   { id: "overview", label: "Overview", icon: LayoutDashboard },
   { id: "profile", label: "Profile", icon: User },
   { id: "payload", label: "Payload", icon: Bot },
-  { id: "upgrade", label: "Upgrade", icon: TrendingUp },
   { id: "billing", label: "Billing", icon: CreditCard },
 ];
 
@@ -283,15 +281,6 @@ export default function AgentDashboard() {
   };
 
   const handleNavClick = (section: NavSection) => {
-    if (section === "upgrade") {
-      if (professional?.id) {
-        sessionStorage.setItem("visibility_professional_id", professional.id);
-        navigate(`/visibility/tiers?returnTo=dashboard&id=${professional.id}`);
-      } else {
-        navigate("/visibility/tiers?returnTo=dashboard");
-      }
-      return;
-    }
     setActiveSection(section);
     setMobileNavOpen(false);
     window.scrollTo(0, 0);
@@ -452,6 +441,9 @@ export default function AgentDashboard() {
               <p className="text-lg font-medium mb-6">
                 Hello {professional?.name?.split(" ")[0] ?? "there"},
               </p>
+              <p className="text-muted-foreground mb-6">
+                Congratulations on making our list. You've earned your way on through your career success and community involvement.
+              </p>
               {activeSection === "overview" && (
                 <OverviewSection professional={professional} />
               )}
@@ -474,6 +466,11 @@ export default function AgentDashboard() {
                   professional={professional}
                   subscriptions={subscriptions}
                   hasStripeSubscription={hasStripeSubscription}
+                  onUpgradeClick={() => {
+                    setActiveSection("overview");
+                    setMobileNavOpen(false);
+                    window.scrollTo(0, 0);
+                  }}
                 />
               )}
             </main>

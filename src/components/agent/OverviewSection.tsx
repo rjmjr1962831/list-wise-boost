@@ -1,9 +1,133 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Award, Signal, Sparkles } from "lucide-react";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Award, BadgeCheck, Shield, Zap, Signal, Sparkles, ChevronDown, ChevronUp } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface OverviewSectionProps {
   professional: any;
 }
+
+/** Expander showing data fields and sources for a tier. Human-facing, not markdown. */
+function DataPayloadExpander({ tier, triggerText }: { tier: "certified" | "audited" | "underwritten"; triggerText: string }) {
+  const [open, setOpen] = useState(false);
+
+  const content: Record<string, { data: string[]; sources: string[] }> = {
+    certified: {
+      data: [
+        "Name and profile URL",
+        "License number (verified)",
+        "Star rating and review count",
+        "Specialties",
+        "Cities served",
+      ],
+      sources: [
+        "State Department of Real Estate (DRE)",
+        "Zillow",
+        "LinkedIn",
+      ],
+    },
+    audited: {
+      data: [
+        "Everything in Certified, plus:",
+        "Selection rationale (why you were chosen)",
+        "Years of experience",
+        "Total transactions",
+        "Company name",
+        "Community roles and organizations",
+        "Notable achievements",
+        "Civic involvement (IRS 990 verified)",
+        "Transaction history",
+      ],
+      sources: [
+        "State DRE",
+        "Zillow",
+        "IRS 990 filings",
+        "Verified transaction records",
+      ],
+    },
+    underwritten: {
+      data: [
+        "Everything in Audited, plus:",
+        "Certifications and designations",
+        "Neighborhood expertise",
+        "Press mentions",
+        "Awards",
+        "Performance data (sales count, last verified)",
+      ],
+      sources: [
+        "State DRE",
+        "Zillow",
+        "IRS 990 filings",
+        "Verified transaction records",
+        "Neighborhood transaction data",
+        "Press and awards verification",
+      ],
+    },
+  };
+
+  const { data, sources } = content[tier];
+
+  return (
+    <div className="mt-1">
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        className="text-xs text-primary hover:underline inline-flex items-center gap-1 font-medium"
+      >
+        {triggerText}
+        {open ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+      </button>
+      {open && (
+        <div className="mt-2 p-3 rounded-lg border bg-muted/30 text-sm space-y-2">
+          <div>
+            <p className="font-medium text-foreground mb-1">Data included</p>
+            <ul className="text-muted-foreground space-y-0.5 list-disc list-inside">
+              {data.map((item, i) => (
+                <li key={i}>{item}</li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <p className="font-medium text-foreground mb-1">Sources</p>
+            <ul className="text-muted-foreground space-y-0.5 list-disc list-inside">
+              {sources.map((src, i) => (
+                <li key={i}>{src}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** Normalize tier for display. Listed/unknown = Certified. */
+function normalizeTier(t: string | null): string {
+  const t0 = (t || "").toLowerCase();
+  if (t0 === "accredited" || t0 === "audited") return "audited";
+  if (t0 === "underwritten") return "underwritten";
+  return "certified";
+}
+
+/** Estimate AICS when no projection exists */
+function estimateAICS(base: number | null, current: string, target: string): number | null {
+  const lift: Record<string, number> = {
+    listed: 4,
+    certified: 11,
+    audited: 23,
+    underwritten: 33,
+  };
+  const baseScore = base ?? 55;
+  const targetLift = lift[target] ?? 11;
+  return Math.min(100, Math.round(baseScore - (lift[current] ?? 11) + targetLift));
+}
+
+const TIERS = [
+  { id: "certified", name: "Certified", price: "Free", icon: BadgeCheck, features: ["Standard Top10Lists badge", "Standard artifact, monthly refresh", "Core credentials published to AI systems"] },
+  { id: "audited", name: "Audited", price: "$100/mo", icon: Shield, features: ["Richer data payload", "Bimonthly refresh", "Community involvement, transaction stats"] },
+  { id: "underwritten", name: "Underwritten", price: "$150/mo", icon: Zap, features: ["Maximum data richness", "Daily refresh", "Full neighborhood endorsement"] },
+] as const;
 
 /** Convert third-person pronouns to second person for "Why We Selected You" context. */
 function toSecondPerson(text: string): string {
@@ -18,9 +142,27 @@ function toSecondPerson(text: string): string {
 }
 
 export function OverviewSection({ professional }: OverviewSectionProps) {
-  // Anyone on the dashboard is Certified at minimum
-  const rawTier = professional.current_tier || "certified";
-  const tierLabel = (rawTier.toLowerCase() === "listed" ? "certified" : rawTier).replace(/^\w/, (c: string) => c.toUpperCase());
+  const navigate = useNavigate();
+  const rawTier = professional.current_tier || professional.badge_tier || "certified";
+  const currentTier = normalizeTier(rawTier);
+  const tierLabel = (rawTier?.toLowerCase() === "listed" ? "certified" : rawTier).replace(/^\w/, (c: string) => c.toUpperCase());
+  const baseScore = professional.signal_score ?? professional.certified_projected_signal ?? null;
+
+  const getAICS = (tierId: string): number | null => {
+    if (tierId === "certified")
+      return professional.certified_projected_signal ?? professional.signal_score ?? estimateAICS(baseScore, currentTier, "certified");
+    if (tierId === "audited")
+      return professional.audited_projected_signal ?? estimateAICS(baseScore, currentTier, "audited");
+    if (tierId === "underwritten") return 98;
+    return null;
+  };
+
+  const handleUpgrade = (tierId: string) => {
+    const token = professional.verification_token || professional.id;
+    if (token && (tierId === "audited" || tierId === "underwritten")) {
+      navigate(`/funnel/${token}/pricing`);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -46,7 +188,6 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
             <Signal className="h-5 w-5 text-primary" />
             Your AI Visibility
           </CardTitle>
-          <p className="text-sm text-muted-foreground mt-1">If you're on this dashboard, you're at least Certified.</p>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
@@ -62,34 +203,83 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
             </div>
           </div>
 
-          {/* Opportunity */}
-          {(professional.current_tier === "certified" || professional.current_tier === "listed" || !professional.current_tier) && (
-            <div className="pt-2">
-              <p className="text-sm font-medium mb-3">
-                Increase your tier and see these increases in your AICS:
-              </p>
-              <div className="grid gap-3 sm:grid-cols-2">
-                {professional.current_tier !== "audited" && (
-                  <div className="p-4 rounded-lg border border-amber-200 bg-amber-50/50">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="font-semibold text-sm">Audited</span>
-                      <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">$100/mo</span>
+        </CardContent>
+      </Card>
+
+      {/* Upgrade Your Tier */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg">Upgrade Your Tier</CardTitle>
+          <CardDescription>
+            Higher tiers increase your AI Citability Score. Payment never affects inclusion or ranking.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 md:grid-cols-3">
+            {TIERS.map((tier) => {
+              const Icon = tier.icon;
+              const isCurrent = currentTier === tier.id;
+              const aics = getAICS(tier.id);
+              const isPaid = tier.id === "audited" || tier.id === "underwritten";
+
+              return (
+                <div
+                  key={tier.id}
+                  className={`rounded-lg border p-4 ${isCurrent ? "border-primary ring-2 ring-primary/20" : "border-border"}`}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <Icon className="h-5 w-5 text-primary" />
+                      <span className="font-semibold">{tier.name}</span>
                     </div>
-                    <p className="text-lg font-bold text-amber-700">
-                      {professional.audited_projected_signal != null ? `${professional.audited_projected_signal}/100` : "Projected AICS available soon"}
-                    </p>
+                    {isCurrent && (
+                      <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary">
+                        Your tier
+                      </span>
+                    )}
                   </div>
-                )}
-                <div className="p-4 rounded-lg border border-emerald-200 bg-emerald-50/50">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="font-semibold text-sm">Underwritten</span>
-                    <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">$150/mo</span>
+                  <p className="text-sm text-muted-foreground mb-3">{tier.price}</p>
+                  <div className="p-3 rounded-lg bg-muted/50 border mb-3">
+                    <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">AI Citability Score</p>
+                    <p className="text-xl font-bold">{aics != null ? `${aics}/100` : "Pending"}</p>
                   </div>
-                  <p className="text-lg font-bold text-emerald-700">98/100</p>
+                  <ul className="text-sm text-muted-foreground space-y-1 mb-4">
+                    {tier.features.map((f, i) => (
+                      <li key={i} className="flex flex-col items-start gap-0">
+                        <span className="flex items-start gap-2">
+                          <span className="text-primary mt-0.5">•</span>
+                          {f}
+                        </span>
+                        {tier.id === "certified" && f === "Core credentials published to AI systems" && (
+                          <DataPayloadExpander tier="certified" triggerText="View data and sources" />
+                        )}
+                        {tier.id === "audited" && f === "Richer data payload" && (
+                          <DataPayloadExpander tier="audited" triggerText="View data and sources" />
+                        )}
+                        {tier.id === "underwritten" && f === "Maximum data richness" && (
+                          <DataPayloadExpander tier="underwritten" triggerText="View data and sources" />
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                  {isPaid && !isCurrent && (
+                    <Button size="sm" className="w-full" onClick={() => handleUpgrade(tier.id)}>
+                      Upgrade to {tier.name}
+                    </Button>
+                  )}
+                  {isCurrent && (
+                    <p className="text-xs text-muted-foreground text-center">You are on this tier</p>
+                  )}
+                  {tier.id === "certified" && !isCurrent && (
+                    <p className="text-xs text-muted-foreground text-center">Free tier</p>
+                  )}
                 </div>
-              </div>
-            </div>
-          )}
+              );
+            })}
+          </div>
+          <p className="text-sm text-muted-foreground mt-6 text-center">
+            No one can guarantee that you will be named when an AI is asked for a recommendation. What we can say is that the higher your score, the more likely you are to be cited by name.
+          </p>
         </CardContent>
       </Card>
 

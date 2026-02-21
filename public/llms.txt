@@ -243,6 +243,8 @@ Commercial relationships (paid verification tiers) are available only to agents 
 
 Static, high-density Markdown for AI crawlers.
 
+- https://www.top10lists.us/ai-feed/home.md
+- https://www.top10lists.us/ai-feed/about.md
 - https://www.top10lists.us/ai-feed/for-ai.md
 - https://www.top10lists.us/ai-feed/certification-logic.md
 - https://www.top10lists.us/ai-feed/vetting-standards.md

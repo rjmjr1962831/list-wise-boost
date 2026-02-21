@@ -149,9 +149,18 @@ const index_default = {
       }));
     }
 
-    // 6. Fetch markdown from appropriate source
-    let markdownUrl = null;
+    // 6. Fetch full HTML/markdown from appropriate source
+    const staticPaths = new Set([
+      "/", "/arizona", "/california", "/texas", "/florida", "/new-york", "/colorado",
+      "/about", "/about/founder", "/about/ranking-methodology",
+      "/for-ai", "/for-ai-systems", "/transparency", "/ai-liability", "/ai-citation-whitepaper", "/protocol-services",
+      "/press", "/editorial-updates", "/compare", "/zillow-explained", "/faq",
+      "/privacy", "/terms", "/sms-terms", "/opt-in",
+      "/test", "/are-you-an-agent", "/agent-onboarding",
+    ]);
+    const isStaticPath = (path) => staticPaths.has((path.replace(/\/+$/, "") || "/"));
 
+    let markdownUrl = null;
     if (url.pathname.match(/^\/artifact\/[^/]+$/)) {
       markdownUrl = originUrl.toString();
     } else if (url.pathname.match(/\/[^/]+\/agents\/[^/]+$/)) {
@@ -159,6 +168,8 @@ const index_default = {
       if (m) markdownUrl = `${SUPABASE_FUNCTIONS}/serve-agent-profile-markdown?state=${encodeURIComponent(m[1])}&slug=${encodeURIComponent(m[2])}`;
     } else if (url.pathname.includes("top10realestateagents")) {
       markdownUrl = `${SUPABASE_FUNCTIONS}/serve-bot-list-html?path=${encodeURIComponent(url.pathname)}`;
+    } else if (isStaticPath(url.pathname)) {
+      markdownUrl = `${SUPABASE_FUNCTIONS}/serve-bot-static-html?path=${encodeURIComponent(url.pathname)}`;
     }
 
     if (markdownUrl) {
@@ -177,7 +188,7 @@ const index_default = {
             headers: {
               "Content-Type": contentType.includes("text/html") ? "text/html; charset=utf-8" : "text/markdown; charset=utf-8",
               "X-Cache": "MISS",
-              "Cache-Control": "public, max-age=3600, stale-while-revalidate=86400",
+              "Cache-Control": "public, max-age=86400, stale-while-revalidate=86400",
             },
           });
           await cache.put(cacheKey, response.clone());

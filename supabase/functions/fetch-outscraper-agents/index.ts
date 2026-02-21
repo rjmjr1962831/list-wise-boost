@@ -82,14 +82,14 @@ serve(async (req) => {
 
     for (const agent of agents) {
       try {
-        const rating = agent.rating || 0;
-        const reviewCount = agent.reviews || 0;
+        const starRating = agent.rating ?? agent.reviews_stars ?? 0;
+        const reviewCount = agent.reviews ?? agent.reviews_count ?? 0;
         
         // Filter by rating (5.0) and reviews (minimum 10)
-        if (rating < 5.0 || reviewCount < 10) {
+        if (starRating < 5.0 || reviewCount < 10) {
           skipped.push({
             name: agent.name,
-            reason: `Rating ${rating} or reviews ${reviewCount} below threshold`,
+            reason: `Rating ${starRating} or reviews ${reviewCount} below threshold`,
           });
           continue;
         }
@@ -103,8 +103,11 @@ serve(async (req) => {
           .eq('category_id', categoryId)
           .maybeSingle();
 
-        // Extract contact info from Outscraper response
-        const phone = agent.phone || agent.phone_mobile || null;
+        // Extract requested fields: review count, star rating, agent name, business name, phone, street address
+        const agentName = agent.name || agent.title || agent.agent_name || null;
+        const businessName = agent.company_name || agent.company || agent.business_name || agent.name || agentName;
+        const phone = agent.phone || agent.phone_mobile || agent.phones?.[0] || null;
+        const streetAddress = agent.full_address || agent.street || agent.address || agent.street_address || null;
         const email = agent.emails?.[0] || agent.email || null;
         const website = agent.site || agent.website || null;
         
@@ -119,25 +122,25 @@ serve(async (req) => {
 
         // Map Outscraper data to our schema
         const professionalData: any = {
-          name: agent.name,
-          company: agent.name, // Outscraper uses same field for business name
+          name: agentName || businessName,
+          company: businessName,
           phone: phone,
           email: email,
           website: website,
           zillow_profile_url: zillowUrl,
           
-          // Address
-          address: agent.full_address || agent.street || null,
+          // Address (street address)
+          address: streetAddress,
           zip_code: agent.postal_code || agent.zip || null,
           
           // Stats
-          review_stars_rating: rating,
+          review_stars_rating: starRating,
           num_total_reviews: reviewCount,
           
           // JSON data - store full Outscraper response
           professional_information: [agent],
           ratings: {
-            average: rating,
+            average: starRating,
             count: reviewCount
           },
           

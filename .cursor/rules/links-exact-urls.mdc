@@ -1,0 +1,19 @@
+---
+description: Always give full URLs; never placeholders or "your environment"
+alwaysApply: true
+---
+
+# Links: Always Exact URLs
+
+**Never give a link without the actual address.**
+
+- **Do not** say "your staging environment", "your host", or "once you deploy" without providing the **exact full URL** the user can open or copy.
+- **Do** use the real base URL for this project: **https://www.top10lists.us**
+- **Do** give every link as a complete, copy-paste-ready URL (e.g. `https://www.top10lists.us/ai-feed/artifact-payloads-proposed.md`), not a path or a template the user must fill in.
+- **Minimize Robert's time testing:** when sharing a link to something that was added or changed, always include the full URL so he can click or paste immediately—no guessing, no inserting.
+
+**Examples:**
+- ✅ `https://www.top10lists.us/ai-feed/artifact-payloads-proposed.md`
+- ✅ `https://www.top10lists.us/methodology`
+- ❌ `https://<your-staging-host>/ai-feed/...`
+- ❌ `.../artifact-payloads-proposed.md` (without the full URL when sharing with Robert)

@@ -34,12 +34,15 @@ interface BillingSectionProps {
   professional: any;
   subscriptions: Subscription[];
   hasStripeSubscription: boolean;
+  /** When provided, Upgrade button switches to overview instead of navigating away */
+  onUpgradeClick?: () => void;
 }
 
 export function BillingSection({
   professional,
   subscriptions,
   hasStripeSubscription,
+  onUpgradeClick,
 }: BillingSectionProps) {
   const navigate = useNavigate();
   const [loadingPortal, setLoadingPortal] = useState(false);
@@ -122,7 +125,7 @@ export function BillingSection({
             <p className="text-sm text-muted-foreground mb-4">
               Upgrade your profile to increase your AI Citability Score.
             </p>
-            <Button onClick={() => navigate("/visibility/tiers?returnTo=dashboard")}>
+            <Button onClick={onUpgradeClick ?? (() => navigate("/visibility/tiers?returnTo=dashboard"))}>
               Upgrade
             </Button>
           </div>

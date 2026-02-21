@@ -35,6 +35,8 @@ When preparing a release, merge staging into main and push main. Never do the re
 
 **After making code changes:** Always commit and push new code to `origin/staging` **without asking Robert**. Do not prompt for permission; push to staging as part of completing the work.
 
+**Batching:** Push to staging only in batches of ten changes. Accumulate commits and push together; do not push after every single change.
+
 This lets Robert see what's going on and test on the staging environment before production.
 
 ### Steps

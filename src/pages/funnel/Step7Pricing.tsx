@@ -198,26 +198,38 @@ export default function Step7Pricing() {
 
     try {
       const profSelect = 'id, name, years_experience, total_sales, num_total_reviews, review_stars_rating, license_number, license_state, state_slug, community_involvement_score, community_roles, agent_sales_stats';
+      const isUuid = /^[0-9a-f-]{36}$/i.test(token);
 
-      const [profRes, priceRes] = await Promise.all([
-        supabase.from('professionals').select(profSelect).eq('verification_token', token).maybeSingle(),
-        supabase.from('certification_pricing_config').select('tier, monthly_price, payload_weight, refresh_cadence').eq('is_active', true),
-      ]);
-
-      let prof = profRes.data;
-      if (!prof && /^[0-9a-f-]{36}$/i.test(token)) {
-        const { data: byId } = await supabase.from('professionals').select(profSelect).eq('id', token).maybeSingle();
-        prof = byId ?? undefined;
+      // Try id first when token is UUID (common when coming from dashboard), else verification_token
+      let prof: Professional | null = null;
+      if (isUuid) {
+        const { data } = await supabase.from('professionals').select(profSelect).eq('id', token).maybeSingle();
+        prof = data;
       }
-      if (profRes.error || !prof) {
+      if (!prof) {
+        const { data } = await supabase.from('professionals').select(profSelect).eq('verification_token', token).maybeSingle();
+        prof = data;
+      }
+      if (!prof && isUuid) {
+        // Fallback: id lookup may have failed due to RLS/timing; retry verification_token for UUID (edge case)
+        const { data } = await supabase.from('professionals').select(profSelect).eq('verification_token', token).maybeSingle();
+        prof = data;
+      }
+
+      const { data: priceData } = await supabase
+        .from('certification_pricing_config')
+        .select('tier, monthly_price, payload_weight, refresh_cadence')
+        .eq('is_active', true);
+
+      if (!prof) {
         navigate('/404');
         return;
       }
 
       setProfessional(prof as Professional);
 
-      if (priceRes.data && priceRes.data.length > 0) {
-        setPrices(priceRes.data as PricingRow[]);
+      if (priceData && priceData.length > 0) {
+        setPrices(priceData as PricingRow[]);
       }
     } catch {
       navigate('/404');

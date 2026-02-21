@@ -8,7 +8,7 @@ alwaysApply: true
 
 **ALWAYS DO WHAT YOU CAN DO WITHOUT ASKING ROBERT.** Do not ask Robert to run commands, deploy, push, or call APIs you can do with available credentials and tools. Only ask when you lack access or explicit approval is required (e.g. push to production).
 
-**Document freshness:** Master doc is `MASTER_KNOWLEDGE_DOCUMENT.md` (private repo `rjmjr1962831/top10lists-knowledge` or local). **never-internal:** Internal documents must NEVER be in the public repo (list-wise-boost). No exceptions. Read from private repo or local path. If stale, all three AIs behave from wrong assumptions. Robert is owner; Claude, Gemini, Cursor are senior engineers sharing the codebase.
+**Document freshness:** Master doc is `MASTER_KNOWLEDGE_DOCUMENT.md` at repo root. Read from `./MASTER_KNOWLEDGE_DOCUMENT.md`. It lives in the repo for AI access (Cursor, Claude, Gemini) but must **never** be served on the website or deployed to any public URL. If stale, all three AIs behave from wrong assumptions. Robert is owner; Claude, Gemini, Cursor are senior engineers sharing the codebase.
 
 ## 🔑 CREDENTIALS AND AUTHORITY
 **Each AI has the credentials needed for every major system** (Supabase, GitHub, Vercel, enrichment API, warm/purge, etc.). They are in project `.env`, `.secrets/`, or Supabase/Vercel config. **Use them.** Do not ask the user to do things you are authorized to do—invoke functions, run scripts, deploy, purge/warm cache, call APIs, push to staging. Do those yourself.
@@ -39,7 +39,7 @@ alwaysApply: true
 
 ---
 
-**Before routing, database, or deployment work:** Fetch full project knowledge from private repo (`rjmjr1962831/top10lists-knowledge`) or read local `MASTER_KNOWLEDGE_DOCUMENT.md` if present. Never commit internal docs to list-wise-boost.
+**Before routing, database, or deployment work:** Read `MASTER_KNOWLEDGE_DOCUMENT.md` at repo root. It is in the repo for AI access; it must never be served on the website.
 
 That document is the single source of truth. It contains:
 - **HARD STOPS** (routing frozen, no schema without approval, no `is_brand_builder` changes, no new Supabase client, no secrets in docs, etc.)
@@ -62,6 +62,4 @@ No full chats, deployment nitty-gritty, or brainstorming. Only outcomes. Run `np
 
 **Cron:** A job runs daily at 20:00 MST to create a report slot in `daily_takeaways` table. Sync to `docs/cursor-daily-updates.md` with `npm run takeaways:sync`. Claude compiles into project-knowledge.mdc and private repo (never list-wise-boost).
 
-**When Robert says "ryt":** Update **only** the master knowledge document (`MASTER_KNOWLEDGE_DOCUMENT.md`). Read from private repo or local, integrate session knowledge, write back to private repo. Never commit to list-wise-boost. (Takeaways is separate: daily updates/learnings from each AI for the day.)
-
-**When Robert says "never-internal":** Internal documents (MASTER_KNOWLEDGE_DOCUMENT.md, methodology drafts, operational docs) must NEVER be in the public repo (list-wise-boost). No exceptions. They live in `rjmjr1962831/top10lists-knowledge` or locally only.
+**When Robert says "ryt":** Update **only** the master knowledge document (`MASTER_KNOWLEDGE_DOCUMENT.md` at repo root). Read it, integrate session knowledge, write back. Commit and push to staging. (Takeaways is separate: daily updates/learnings from each AI for the day.)

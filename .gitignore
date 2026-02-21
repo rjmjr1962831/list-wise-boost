@@ -31,5 +31,3 @@ dist-ssr
 # Mobile preview screenshots
 screenshots/
 
-# Internal documents (never-internal: must not be in public repo)
-MASTER_KNOWLEDGE_DOCUMENT.md
