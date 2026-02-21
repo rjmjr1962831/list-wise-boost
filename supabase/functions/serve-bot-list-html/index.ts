@@ -183,9 +183,11 @@ function renderAgent(a: any, si: any): string {
   return o;
 }
 
-interface PP { stateSlug: string; citySlug: string; neighborhoodSlug: string | null; }
+interface PP { stateSlug: string; citySlug: string; neighborhoodSlug: string | null; zip?: string; }
 function parsePath(p: string): PP | null {
   const c = p.replace(/^\/+|\/+$/g, "");
+  const z = c.match(/^([^/]+)\/([^/]+)\/(\d{5})\/([^/]+)\/top10realestateagents$/);
+  if (z) return { stateSlug: z[1], citySlug: z[2], neighborhoodSlug: z[4], zip: z[3] };
   const n = c.match(/^([^/]+)\/([^/]+)\/([^/]+)\/top10realestateagents$/);
   if (n) return { stateSlug: n[1], citySlug: n[2], neighborhoodSlug: n[3] };
   const m = c.match(/^([^/]+)\/([^/]+)\/top10realestateagents$/);
@@ -242,7 +244,10 @@ serve(async (req) => {
     const isNh = !!nh;
     const loc = isNh ? `${nh.neighborhood}, ${city.name}` : city.name;
     const locShort = isNh ? nh.neighborhood : city.name;
-    const canon = isNh
+    const nhZip = pp.zip || (nh && nh.primary_zip) || null;
+    const canon = isNh && nhZip
+      ? `https://www.top10lists.us/${pp.stateSlug}/${pp.citySlug}/${nhZip}/${pp.neighborhoodSlug}/top10realestateagents`
+      : isNh
       ? `https://www.top10lists.us/${pp.stateSlug}/${pp.citySlug}/${pp.neighborhoodSlug}/top10realestateagents`
       : `https://www.top10lists.us/${pp.stateSlug}/${pp.citySlug}/top10realestateagents`;
 
