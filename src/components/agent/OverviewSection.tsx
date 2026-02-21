@@ -1,7 +1,9 @@
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Award, BadgeCheck, Shield, Zap, Signal, Sparkles } from "lucide-react";
+import { Award, BadgeCheck, Shield, Zap, Signal, Sparkles, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
 
 interface OverviewSectionProps {
   professional: any;
@@ -28,6 +30,13 @@ function estimateAICS(base: number | null, current: string, target: string): num
   return Math.min(100, Math.round(baseScore - (lift[current] ?? 11) + targetLift));
 }
 
+/** Fallback when score_explanation not yet in DB */
+const FALLBACK_SCORE_EXPLANATIONS: Record<string, string> = {
+  certified: "License grounding. Verified license and career volume proof anchor your identity for AI systems.",
+  audited: "Freshness anchor. Quarterly updates plus community verification data add signals AI systems weight heavily.",
+  underwritten: "Elite citability. Daily monitoring and full artifact provenance chain signal maximum trust to AI systems.",
+};
+
 const TIERS = [
   { id: "certified", name: "Certified", price: "Free", icon: BadgeCheck, features: ["Standard Top10Lists badge", "Standard artifact, monthly refresh", "Core credentials published to AI systems"] },
   { id: "audited", name: "Audited", price: "$100/mo", icon: Shield, features: ["Richer data payload", "Bimonthly refresh", "Community involvement, transaction stats"] },
@@ -48,6 +57,24 @@ function toSecondPerson(text: string): string {
 
 export function OverviewSection({ professional }: OverviewSectionProps) {
   const navigate = useNavigate();
+  const [scoreExplanations, setScoreExplanations] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase
+        .from("certification_pricing_config")
+        .select("tier, score_explanation")
+        .not("score_explanation", "is", null);
+      if (data) {
+        const map: Record<string, string> = {};
+        for (const row of data) {
+          map[(row as { tier: string }).tier] = (row as { score_explanation: string }).score_explanation;
+        }
+        setScoreExplanations(map);
+      }
+    })();
+  }, []);
+
   const rawTier = professional.current_tier || professional.badge_tier || "certified";
   const currentTier = normalizeTier(rawTier);
   const tierLabel = (rawTier?.toLowerCase() === "listed" ? "certified" : rawTier).replace(/^\w/, (c: string) => c.toUpperCase());
@@ -120,7 +147,8 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-6 lg:grid-cols-[1fr_280px]">
+            <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
             {TIERS.map((tier) => {
               const Icon = tier.icon;
               const isCurrent = currentTier === tier.id;
@@ -170,6 +198,25 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
                 </div>
               );
             })}
+            </div>
+            <div className="space-y-4 lg:border-l lg:pl-6">
+              <div className="flex items-center gap-2">
+                <Info className="h-4 w-4 text-primary" />
+                <h4 className="font-semibold text-sm">What the Score Means</h4>
+              </div>
+              {TIERS.map((tier) => {
+                const expl = scoreExplanations[tier.id] ?? FALLBACK_SCORE_EXPLANATIONS[tier.id];
+                const aics = getAICS(tier.id);
+                return (
+                  <div key={tier.id} className="text-sm">
+                    <p className="font-medium text-muted-foreground mb-1">
+                      {tier.name} {aics != null && <span className="font-semibold text-foreground">({aics}/100)</span>}
+                    </p>
+                    <p className="text-muted-foreground leading-relaxed">{expl || "—"}</p>
+                  </div>
+                );
+              })}
+            </div>
           </div>
           <p className="text-sm text-muted-foreground mt-6 text-center">
             No one can guarantee that you will be named when an AI is asked for a recommendation. What we can say is that the higher your score, the more likely you are to be cited by name.
