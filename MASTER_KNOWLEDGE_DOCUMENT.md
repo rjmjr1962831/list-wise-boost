@@ -50,6 +50,7 @@ When an AI names a specific professional, it assumes **recommendation risk**. To
 * **Manual Audit**: Accessible via `/api/audit-sitemap` to verify 10,000+ pages via random sampling.
 * **Identity Protection**: Use Robert Maynard as the `accountablePerson` in schema, but maintain Brand-First UI to reduce "noise".
 * **Deployment**: Staging branch → production via `deploy-to-production.bat` (merge staging into main, push). Vercel auto-deploys from `main`. Production domain: **Always www** (e.g. `https://www.top10lists.us`). Admin routes are guarded on production (e.g. `AdminRouteGuard`); staging-only features must not affect production SEO or bot behavior.
+* **Cloudflare**: Deprecated from the architecture. Bot traffic and caching no longer use Cloudflare Worker; direct fetch to Edge Functions/Vercel. Do not add new Cloudflare-dependent flows.
 * **Staging push batching**: Push to staging only in batches of ten changes. Accumulate commits and push together; do not push after every single change.
 
 ## 8. PRODUCTION SAFETY (STAGING-TO-MAIN GATE)
