@@ -113,10 +113,6 @@
       "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/serve-bot-list-html?path=/:state/:city/:neighborhood/top10realestateagents"
     },
     {
-      "source": "/:state/:city/:zip/:neighborhood/top10realestateagents",
-      "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/serve-bot-list-html?path=/:state/:city/:zip/:neighborhood/top10realestateagents"
-    },
-    {
       "source": "/((?!api|for-ai|methodology|ai-feed|llms|coverage\\.json|sitemap|mcp\\.json|ai-content-index\\.json|robots\\.txt|\\.well-known).*)",
       "destination": "/_spa.html"
     },
