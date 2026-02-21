@@ -286,7 +286,7 @@ serve(async (req) => {
     // ---- Bio (certified and above) ----
     if (!isListed && bio) {
       o += `<section>\n  <h2>About ${nm}</h2>\n`;
-      o += `  <div class="bio-section">\n    <p>${esc(bio)}</p>\n  </div>\n`;
+      o += `  <div class="bio-section">\n    ${bio}\n  </div>\n`;
       o += `</section>\n\n`;
     }
 
