@@ -466,6 +466,11 @@ export default function AgentDashboard() {
                   professional={professional}
                   subscriptions={subscriptions}
                   hasStripeSubscription={hasStripeSubscription}
+                  onUpgradeClick={() => {
+                    setActiveSection("overview");
+                    setMobileNavOpen(false);
+                    window.scrollTo(0, 0);
+                  }}
                 />
               )}
             </main>
