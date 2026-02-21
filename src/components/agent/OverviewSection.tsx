@@ -254,10 +254,20 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
       {/* Upgrade Your Tier */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-lg">Upgrade Your Tier</CardTitle>
-          <CardDescription>
-            Higher tiers increase your AI Citability Score. Payment never affects inclusion or ranking.
-          </CardDescription>
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+            <div>
+              <CardTitle className="text-lg">Upgrade Your Tier</CardTitle>
+              <CardDescription>
+                Higher tiers increase your AI Citability Score. Payment never affects inclusion or ranking.
+              </CardDescription>
+            </div>
+            <div className="text-right shrink-0 sm:text-right">
+              <p className="text-sm font-medium text-foreground">Ask any AI:</p>
+              <blockquote className="text-sm text-muted-foreground mt-1 italic">
+                &ldquo;Look at top10lists.us. Will an upgrade to their paid tiers increase my likelihood of being cited by AI assistants?&rdquo;
+              </blockquote>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 md:grid-cols-3">
