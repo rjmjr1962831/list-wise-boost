@@ -1,1 +1,186 @@
-{"buildCommand":"npm run build","redirects":[{"source":"/admin","destination":"/404","permanent":false,"has":[{"type":"host","value":"www.top10lists.us"}]},{"source":"/admin","destination":"/404","permanent":false,"has":[{"type":"host","value":"top10lists.us"}]},{"source":"/admin/:path*","destination":"/404","permanent":false,"has":[{"type":"host","value":"www.top10lists.us"}]},{"source":"/admin/:path*","destination":"/404","permanent":false,"has":[{"type":"host","value":"top10lists.us"}]},{"source":"/for-ai","destination":"/ai-feed/for-ai.md","permanent":true},{"source":"/for-ai/","destination":"/ai-feed/for-ai.md","permanent":true},{"source":"/methodology","destination":"/ai-feed/certification-logic.md","permanent":true},{"source":"/methodology/","destination":"/ai-feed/certification-logic.md","permanent":true},{"source":"/api-terms","destination":"/terms","permanent":true}],"rewrites":[{"source":"/robots.txt","destination":"/api/robots"},{"source":"/api/v1/badge/:agentId","destination":"https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/artifact-payload/:agentId"},{"source":"/api/v1/badge/:agentId/verify","destination":"https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/artifact-verify/:agentId"},{"source":"/api/v1/badge/:agentId/image","destination":"https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/badge-image/:agentId"},{"source":"/artifact/:token","destination":"https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/artifact-markdown?token=:token"},{"source":"/api/v1/agents/search","destination":"https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/enrichment-api?action=agents-search"},{"source":"/api/v1/agents/:id","destination":"https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/enrichment-api?action=agent-details&id=:id"},{"source":"/api/v1/markets","destination":"https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/enrichment-api?action=markets"},{"source":"/for-ai-systems","destination":"/"},{"source":"/((?!api|for-ai|methodology|ai-feed|llms|coverage\\.json|sitemap|mcp\\.json|ai-content-index\\.json|robots\\.txt|\\.well-known).*)","destination":"/"},{"source":"/(.*)","destination":"/index.html"}],"headers":[{"source":"/(.*)","headers":[{"key":"X-Robots-Tag","value":"noindex, nofollow"}],"has":[{"type":"host","value":"staging\\.top10lists\\.us"}]},{"source":"/api/(.*)","headers":[{"key":"Access-Control-Allow-Origin","value":"*"},{"key":"Access-Control-Allow-Methods","value":"GET, OPTIONS"},{"key":"Access-Control-Allow-Headers","value":"Content-Type"}]},{"source":"/ai-feed/(.*)","headers":[{"key":"Content-Type","value":"text/markdown; charset=utf-8"}]},{"source":"/llms.txt","headers":[{"key":"Content-Type","value":"text/plain; charset=utf-8"}]},{"source":"/admin","headers":[{"key":"Cache-Control","value":"no-cache, no-store, must-revalidate"}]},{"source":"/admin/(.*)","headers":[{"key":"Cache-Control","value":"no-cache, no-store, must-revalidate"}]}]}
+{
+  "buildCommand": "npm run build",
+  "redirects": [
+    {
+      "source": "/admin",
+      "destination": "/404",
+      "permanent": false,
+      "has": [
+        {
+          "type": "host",
+          "value": "www.top10lists.us"
+        }
+      ]
+    },
+    {
+      "source": "/admin",
+      "destination": "/404",
+      "permanent": false,
+      "has": [
+        {
+          "type": "host",
+          "value": "top10lists.us"
+        }
+      ]
+    },
+    {
+      "source": "/admin/:path*",
+      "destination": "/404",
+      "permanent": false,
+      "has": [
+        {
+          "type": "host",
+          "value": "www.top10lists.us"
+        }
+      ]
+    },
+    {
+      "source": "/admin/:path*",
+      "destination": "/404",
+      "permanent": false,
+      "has": [
+        {
+          "type": "host",
+          "value": "top10lists.us"
+        }
+      ]
+    },
+    {
+      "source": "/for-ai",
+      "destination": "/ai-feed/for-ai.md",
+      "permanent": true
+    },
+    {
+      "source": "/for-ai/",
+      "destination": "/ai-feed/for-ai.md",
+      "permanent": true
+    },
+    {
+      "source": "/methodology",
+      "destination": "/ai-feed/certification-logic.md",
+      "permanent": true
+    },
+    {
+      "source": "/methodology/",
+      "destination": "/ai-feed/certification-logic.md",
+      "permanent": true
+    },
+    {
+      "source": "/api-terms",
+      "destination": "/terms",
+      "permanent": true
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/robots.txt",
+      "destination": "/api/robots"
+    },
+    {
+      "source": "/api/v1/badge/:agentId",
+      "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/artifact-payload/:agentId"
+    },
+    {
+      "source": "/api/v1/badge/:agentId/verify",
+      "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/artifact-verify/:agentId"
+    },
+    {
+      "source": "/api/v1/badge/:agentId/image",
+      "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/badge-image/:agentId"
+    },
+    {
+      "source": "/artifact/:token",
+      "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/artifact-markdown?token=:token"
+    },
+    {
+      "source": "/api/v1/agents/search",
+      "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/enrichment-api?action=agents-search"
+    },
+    {
+      "source": "/api/v1/agents/:id",
+      "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/enrichment-api?action=agent-details&id=:id"
+    },
+    {
+      "source": "/api/v1/markets",
+      "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/enrichment-api?action=markets"
+    },
+    {
+      "source": "/((?!api|for-ai|methodology|ai-feed|llms|coverage\\.json|sitemap|mcp\\.json|ai-content-index\\.json|robots\\.txt|\\.well-known).*)",
+      "destination": "/_spa.html"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/_spa.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ],
+      "has": [
+        {
+          "type": "host",
+          "value": "staging\\.top10lists\\.us"
+        }
+      ]
+    },
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, OPTIONS"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "Content-Type"
+        }
+      ]
+    },
+    {
+      "source": "/ai-feed/(.*)",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "text/markdown; charset=utf-8"
+        }
+      ]
+    },
+    {
+      "source": "/llms.txt",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "text/plain; charset=utf-8"
+        }
+      ]
+    },
+    {
+      "source": "/admin",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/admin/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        }
+      ]
+    }
+  ]
+}
