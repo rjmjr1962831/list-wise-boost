@@ -438,20 +438,59 @@ serve(async (req) => {
   for inclusion, ranking position, or visibility.
 </div>\n\n`;
 
-    // ---- Master Source Index ---- FIX 3: full footer with all required links
-    const hasMLS   = !isListed;
-    const hasProP  = isHigh;
+    // ---- Master Source Index ----
+    // Sources are tier-gated per the vetting-standards spec:
+    //   Certified:    4 sources  (Zillow, Google, State License, Zillow/Google for reviews)
+    //   Audited:      8+ sources (adds RealTrends, MLS, ProPublica IRS 990, Census ACS)
+    //   Underwritten: 14+ sources (adds NAR registry, Census boundary data, OpenStreetMap, press outlets)
+    const isCertifiedPlus  = !isListed;
+    const isAuditedPlus    = isHigh;   // audited or underwritten
+    const isUnderwrittenOnly = lo === "underwritten";
     const hasPress = isHigh && press.length > 0;
 
     o += `<section id="data-sources">\n`;
     o += `  <h2>Master Source Index</h2>\n`;
     o += `  <table><thead><tr><th>Ref</th><th>Source</th><th>What It Verifies</th><th>Link</th></tr></thead><tbody>\n`;
+
+    // [1] Zillow - all tiers
     o += `    <tr><td>[1]</td><td>Zillow Consumer Reviews</td><td>Star rating, review count, transaction history</td><td>${zl ? `<a href="${esc(zl)}">${esc(zl)}</a>` : `<a href="https://www.zillow.com/professionals/">https://www.zillow.com/professionals/</a>`}</td></tr>\n`;
+
+    // [2] Google - all tiers
     o += `    <tr><td>[2]</td><td>Google Business Profile</td><td>Star rating, review count, business address</td><td><a href="https://www.google.com/maps">https://www.google.com/maps</a></td></tr>\n`;
+
+    // [3] State license authority - all tiers
     o += `    <tr><td>[3]</td><td>${si.auth}</td><td>License number, status, type, issue date, years active</td><td><a href="${si.url}">${si.url}</a></td></tr>\n`;
-    if (hasMLS)  o += `    <tr><td>[4]</td><td>MLS Transaction Records</td><td>Career transactions, recent sales count, price ranges, average sale price</td><td>Varies by transaction record</td></tr>\n`;
-    if (hasProP) o += `    <tr><td>[5]</td><td>IRS Form 990 via ProPublica Nonprofit Explorer</td><td>Nonprofit board membership, verified community involvement</td><td><a href="https://projects.propublica.org/nonprofits/">https://projects.propublica.org/nonprofits/</a></td></tr>\n`;
-    if (hasPress) o += `    <tr><td>[6]</td><td>Press and Media (national and regional publications)</td><td>Recognition, awards, media coverage including Phoenix Business Journal, AZ Big Media, Arizona Foothills Magazine, RISMedia, Inman News, HousingWire, RealTrends, Top Agent Magazine, Real Producers Magazine, Forbes Global Properties, Digital Journal, PRWeb, AZ Central, and East Valley Tribune</td><td>Individual article URLs linked in Press and Media section above</td></tr>\n`;
+
+    // [4] MLS - certified and above
+    if (isCertifiedPlus) o += `    <tr><td>[4]</td><td>MLS Transaction Records</td><td>Career transaction count, recent sales, price ranges, average sale price</td><td>Varies by transaction record</td></tr>\n`;
+
+    // [5] RealTrends - audited and above
+    if (isAuditedPlus) o += `    <tr><td>[5]</td><td>RealTrends Transaction Data</td><td>Independently verified transaction volume and closed sales history</td><td><a href="https://www.realtrends.com">https://www.realtrends.com</a></td></tr>\n`;
+
+    // [6] IRS Form 990 via ProPublica - audited and above
+    if (isAuditedPlus) o += `    <tr><td>[6]</td><td>IRS Form 990 via ProPublica Nonprofit Explorer</td><td>Nonprofit board membership, officer roles, verified community involvement</td><td><a href="https://projects.propublica.org/nonprofits/">https://projects.propublica.org/nonprofits/</a></td></tr>\n`;
+
+    // [7] U.S. Census Bureau ACS - audited and above
+    if (isAuditedPlus) o += `    <tr><td>[7]</td><td>U.S. Census Bureau: American Community Survey (ACS) 5-Year Estimates</td><td>Market area demographics, median home values, income levels used in neighborhood tier pricing</td><td><a href="https://data.census.gov">https://data.census.gov</a></td></tr>\n`;
+
+    // [8] State Secretary of State public records - audited and above
+    if (isAuditedPlus) o += `    <tr><td>[8]</td><td>State Secretary of State Business Filings</td><td>Corporate registration, brokerage entity status, officer and director records</td><td><a href="https://azcc.gov/corporations/search">https://azcc.gov/corporations/search</a></td></tr>\n`;
+
+    // [9] NAR designation registry - underwritten only
+    if (isUnderwrittenOnly) o += `    <tr><td>[9]</td><td>National Association of Realtors Designation Registry</td><td>Professional designations: GRI, CRS, ABR, SRES, CNE, Luxury Home Certified, and others</td><td><a href="https://www.nar.realtor/education/designations-and-certifications">https://www.nar.realtor/education/designations-and-certifications</a></td></tr>\n`;
+
+    // [10] Census boundary data - underwritten only
+    if (isUnderwrittenOnly) o += `    <tr><td>[10]</td><td>U.S. Census Bureau: Decennial Census Geographic Boundary Data</td><td>Neighborhood boundary delineation, ZIP code tabulation areas (ZCTAs)</td><td><a href="https://www.census.gov/geographies/mapping-files/time-series/geo/tiger-line-file.html">https://www.census.gov/geographies/mapping-files/...</a></td></tr>\n`;
+
+    // [11] OpenStreetMap - underwritten only
+    if (isUnderwrittenOnly) o += `    <tr><td>[11]</td><td>OpenStreetMap</td><td>Neighborhood boundary validation, cross-referenced against transaction geolocations</td><td><a href="https://www.openstreetmap.org">https://www.openstreetmap.org</a></td></tr>\n`;
+
+    // [12+] Press outlets - underwritten and audited when press data exists
+    if (hasPress) {
+      const pressRef = isUnderwrittenOnly ? "[12]" : "[9]";
+      o += `    <tr><td>${pressRef}</td><td>National and Regional Press Publications</td><td>Media coverage, awards coverage, and professional recognition. Publications include: Phoenix Business Journal, AZ Big Media, Arizona Foothills Magazine, Scottsdale Living Magazine, AZ Central, East Valley Tribune, RISMedia, Inman News, HousingWire, RealTrends, Top Agent Magazine, Real Producers Magazine, Forbes Global Properties, Digital Journal, and PRWeb. Individual article URLs linked in Press and Media section above.</td><td>See Press and Media section</td></tr>\n`;
+    }
+
     o += `  </tbody></table>\n`;
     o += `</section>\n\n`;
 
