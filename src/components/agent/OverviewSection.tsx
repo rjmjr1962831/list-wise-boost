@@ -294,26 +294,30 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
                     )}
                   </div>
                   <p className="text-sm text-muted-foreground mb-3">{tier.price}</p>
-                  <div className="p-3 rounded-lg bg-muted/50 border mb-3">
+                  <div className="p-3 rounded-lg bg-muted/50 border mb-2">
                     <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">AI Citability Score</p>
                     <p className="text-xl font-bold">{aics != null ? `${aics}/100` : "Pending"}</p>
                   </div>
+                  {tier.id === "certified" && (
+                    <div className="mb-3">
+                      <DataPayloadExpander tier="certified" triggerText="View data and sources" professional={professional} />
+                    </div>
+                  )}
+                  {tier.id === "audited" && (
+                    <div className="mb-3">
+                      <DataPayloadExpander tier="audited" triggerText="View data and sources" />
+                    </div>
+                  )}
+                  {tier.id === "underwritten" && (
+                    <div className="mb-3">
+                      <DataPayloadExpander tier="underwritten" triggerText="View data and sources" />
+                    </div>
+                  )}
                   <ul className="text-sm text-muted-foreground space-y-1 mb-4">
                     {tier.features.map((f, i) => (
-                      <li key={i} className="flex flex-col items-start gap-0">
-                        <span className="flex items-start gap-2">
-                          <span className="text-primary mt-0.5">•</span>
-                          {f}
-                        </span>
-                        {tier.id === "certified" && f === "Core credentials published to AI systems" && (
-                          <DataPayloadExpander tier="certified" triggerText="View data and sources" professional={professional} />
-                        )}
-                        {tier.id === "audited" && f === "Richer data payload" && (
-                          <DataPayloadExpander tier="audited" triggerText="View data and sources" />
-                        )}
-                        {tier.id === "underwritten" && f === "Maximum data richness" && (
-                          <DataPayloadExpander tier="underwritten" triggerText="View data and sources" />
-                        )}
+                      <li key={i} className="flex items-start gap-2">
+                        <span className="text-primary mt-0.5">•</span>
+                        {f}
                       </li>
                     ))}
                   </ul>
