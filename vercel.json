@@ -100,7 +100,7 @@
         },
         {
             "source": "/artifact/:token",
-            "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/artifact-markdown?token=:token"
+            "destination": "/api/serve-clean-html?fn=artifact-markdown&path=/artifact/:token&token=:token"
         },
         {
             "source": "/api/v1/agents/search",
@@ -144,6 +144,19 @@
         }
     ],
     "headers": [
+        {
+            "source": "/artifact/(.*)",
+            "headers": [
+                {
+                    "key": "Content-Type",
+                    "value": "text/html; charset=utf-8"
+                },
+                {
+                    "key": "X-Robots-Tag",
+                    "value": "index, follow"
+                }
+            ]
+        },
         {
             "source": "/(.*)",
             "headers": [
