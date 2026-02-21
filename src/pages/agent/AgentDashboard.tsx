@@ -442,7 +442,12 @@ export default function AgentDashboard() {
                 Hello {professional?.name?.split(" ")[0] ?? "there"},
               </p>
               <p className="text-muted-foreground mb-6">
-                Congratulations on making our list. You've earned your way on through your career success and community involvement.
+                Congratulations on making our list. You've earned your way on through your career success and community involvement. We are pleased to provide you our {(() => {
+                  const t = String(professional?.current_tier || professional?.badge_tier || "certified").toLowerCase();
+                  if (t === "listed") return "Certified";
+                  if (t === "accredited") return "Audited";
+                  return t.charAt(0).toUpperCase() + t.slice(1);
+                })()} endorsement to all AI engines.
               </p>
               {activeSection === "overview" && (
                 <OverviewSection professional={professional} />
