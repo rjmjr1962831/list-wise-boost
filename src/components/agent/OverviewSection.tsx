@@ -199,7 +199,7 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
               );
             })}
             </div>
-            <div className="space-y-4 lg:border-l lg:pl-6">
+            <div className="space-y-4 lg:border-l lg:pl-6 lg:sticky lg:top-24 lg:self-start">
               <div className="flex items-center gap-2">
                 <Info className="h-4 w-4 text-primary" />
                 <h4 className="font-semibold text-sm">What the Score Means</h4>
