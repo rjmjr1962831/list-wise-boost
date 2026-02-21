@@ -8,25 +8,81 @@ interface OverviewSectionProps {
   professional: any;
 }
 
+/** State abbreviation to state DRE name for sources. */
+function getStateDreName(stateSlug: string | null | undefined): string {
+  if (!stateSlug) return "State DRE";
+  const s = (stateSlug || "").toUpperCase();
+  const map: Record<string, string> = {
+    AZ: "AZDRE",
+    CA: "CADRE",
+    TX: "TREC",
+    FL: "FREC",
+    NY: "NYS Department of State",
+    CO: "Colorado DRE",
+    NV: "Nevada Real Estate Division",
+  };
+  return map[s] || `${s} Department of Real Estate`;
+}
+
+/** Format date for display. */
+function formatDate(val: string | null | undefined): string {
+  if (!val) return "—";
+  try {
+    const d = new Date(val);
+    return isNaN(d.getTime()) ? "—" : d.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+  } catch {
+    return "—";
+  }
+}
+
 /** Expander showing data fields and sources for a tier. Human-facing, not markdown. */
-function DataPayloadExpander({ tier, triggerText }: { tier: "certified" | "audited" | "underwritten"; triggerText: string }) {
+function DataPayloadExpander({
+  tier,
+  triggerText,
+  professional,
+}: {
+  tier: "certified" | "audited" | "underwritten";
+  triggerText: string;
+  professional?: any;
+}) {
   const [open, setOpen] = useState(false);
 
+  const certifiedSources = [
+    "Google",
+    "Zillow",
+    "MLS",
+    getStateDreName(professional?.license_state || professional?.state_slug),
+    "National, Regional and Local publications",
+  ];
+
+  const certifiedDataRows =
+    tier === "certified" && professional
+      ? [
+          { label: "Brokerage", value: professional.company || professional.business_name || "—" },
+          { label: "Date last audited", value: formatDate(professional.last_diligence_check || professional.last_verified_at) },
+          {
+            label: "Selection rationale",
+            value: professional.selection_rationale
+              ? (() => {
+                  const s = String(professional.selection_rationale);
+                  return s.length > 120 ? s.slice(0, 120) + "…" : s;
+                })()
+              : "—",
+          },
+          { label: "Lifetime sales", value: professional.total_sales != null ? `>${Number(professional.total_sales).toLocaleString()}` : "—" },
+          { label: "Next audit date", value: formatDate(professional.annual_review_date || professional.next_bill_date) },
+          {
+            label: "Cities served",
+            value: Array.isArray(professional.service_areas)
+              ? (professional.service_areas as string[]).join(", ") || "—"
+              : typeof professional.service_areas === "string"
+                ? professional.service_areas
+                : "—",
+          },
+        ]
+      : null;
+
   const content: Record<string, { data: string[]; sources: string[] }> = {
-    certified: {
-      data: [
-        "Name and profile URL",
-        "License number (verified)",
-        "Star rating and review count",
-        "Specialties",
-        "Cities served",
-      ],
-      sources: [
-        "State Department of Real Estate (DRE)",
-        "Zillow",
-        "LinkedIn",
-      ],
-    },
     audited: {
       data: [
         "Everything in Certified, plus:",
@@ -66,7 +122,11 @@ function DataPayloadExpander({ tier, triggerText }: { tier: "certified" | "audit
     },
   };
 
-  const { data, sources } = content[tier];
+  const isCertifiedWithData = tier === "certified" && certifiedDataRows;
+  const dataDisplay = isCertifiedWithData
+    ? certifiedDataRows
+    : content[tier]?.data.map((item) => ({ label: null, value: item })) ?? [];
+  const sourcesDisplay = isCertifiedWithData ? certifiedSources : content[tier]?.sources ?? [];
 
   return (
     <div className="mt-1">
@@ -82,16 +142,27 @@ function DataPayloadExpander({ tier, triggerText }: { tier: "certified" | "audit
         <div className="mt-2 p-3 rounded-lg border bg-muted/30 text-sm space-y-2">
           <div>
             <p className="font-medium text-foreground mb-1">Data included</p>
-            <ul className="text-muted-foreground space-y-0.5 list-disc list-inside">
-              {data.map((item, i) => (
-                <li key={i}>{item}</li>
-              ))}
-            </ul>
+            {isCertifiedWithData ? (
+              <dl className="text-muted-foreground space-y-1">
+                {certifiedDataRows!.map((row, i) => (
+                  <div key={i} className="flex gap-2">
+                    <dt className="font-medium text-foreground shrink-0">{row.label}:</dt>
+                    <dd>{row.value}</dd>
+                  </div>
+                ))}
+              </dl>
+            ) : (
+              <ul className="text-muted-foreground space-y-0.5 list-disc list-inside">
+                {dataDisplay.map((item, i) => (
+                  <li key={i}>{item.value}</li>
+                ))}
+              </ul>
+            )}
           </div>
           <div>
             <p className="font-medium text-foreground mb-1">Sources</p>
             <ul className="text-muted-foreground space-y-0.5 list-disc list-inside">
-              {sources.map((src, i) => (
+              {sourcesDisplay.map((src, i) => (
                 <li key={i}>{src}</li>
               ))}
             </ul>
@@ -251,7 +322,7 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
                           {f}
                         </span>
                         {tier.id === "certified" && f === "Core credentials published to AI systems" && (
-                          <DataPayloadExpander tier="certified" triggerText="View data and sources" />
+                          <DataPayloadExpander tier="certified" triggerText="View data and sources" professional={professional} />
                         )}
                         {tier.id === "audited" && f === "Richer data payload" && (
                           <DataPayloadExpander tier="audited" triggerText="View data and sources" />
