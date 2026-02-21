@@ -93,7 +93,7 @@ serve(async (req) => {
   try {
     // Fetch professional by canonical_slug + state_slug
     const { data: a, error: agentErr } = await sb.from("professionals")
-      .select("id,name,review_stars_rating,num_total_reviews,license_number,license_type,license_status,license_issued_at,license_expires_at,company,phone,email,website,zillow_profile_url,years_experience,total_sales,agent_sales_stats,community_roles,notable_achievements,press_mentions,selection_rationale,current_tier,badge_tier,specialty,served_cities,rank,average_value_3yr,price_range_3yr_min,price_range_3yr_max,sales_count_last_year,synthesized_bio,get_to_know_me,image_url,certifications,certifications_verified,awards_verified,community_involvement_score,city_id,state_slug,canonical_slug,social_linkedin,social_facebook,social_instagram,data_sources_log,updated_at,created_at")
+      .select("id,name,review_stars_rating,num_total_reviews,license_number,license_type,license_status,license_issued_at,license_expires_at,company,phone,email,website,zillow_profile_url,years_experience,total_sales,agent_sales_stats,community_roles,notable_achievements,press_mentions,selection_rationale,current_tier,badge_tier,specialty,served_cities,rank,average_value_3yr,price_range_3yr_min,price_range_3yr_max,sales_count_last_year,synthesized_bio,get_to_know_me,image_url,certifications,certifications_verified,awards_verified,city_id,state_slug,canonical_slug,social_linkedin,social_facebook,social_instagram,data_sources_log,updated_at,created_at")
       .eq("state_slug", pp.stateSlug)
       .eq("canonical_slug", pp.canonicalSlug)
       .eq("active", true)
