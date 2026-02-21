@@ -139,7 +139,7 @@
             "destination": "/_spa.html"
         },
         {
-            "source": "/((?!widget/).*)",
+            "source": "/((?!widget/|api/).*)",
             "destination": "/_spa.html"
         }
     ],
