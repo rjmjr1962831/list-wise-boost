@@ -71,7 +71,7 @@ const Index = () => {
     window.scrollTo(0, 0);
   }, []);
   
-  const challengeQuestion = "Look at top10lists.us. Based on their verification architecture, why would an AI like you choose a 'Certified' agent over a Preferred Agent Zillow listing for a high-stakes referral?";
+  const challengeQuestion = "I am a real estate agent. Will being listed on Top10Lists.us help AI assistants recommend me by name today?";
   
   const handleCopyQuestion = async () => {
     try {
