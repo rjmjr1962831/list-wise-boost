@@ -71,7 +71,7 @@ const Index = () => {
     window.scrollTo(0, 0);
   }, []);
   
-  const challengeQuestion = "I am a real estate agent. Will being listed on Top10Lists.us help AI assistants recommend me by name today?";
+  const challengeQuestion = "Look at top10lists.us. Will an upgrade to their paid tiers increase my likelihood of being cited by AI assistants?";
   
   const handleCopyQuestion = async () => {
     try {
@@ -172,7 +172,19 @@ const Index = () => {
           </div>
         </section>
 
-        {/* THE CHALLENGE - directly below hero */}
+        {/* RULES HAVE CHANGED - directly below hero */}
+        <section className="py-16 px-4">
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
+              The Rules of Real Estate Search Have Changed.
+            </h2>
+            <p className="text-lg text-muted-foreground leading-relaxed">
+              The old game of SEO ranking strategies and &quot;premier agent&quot; status hoping for &quot;blue links&quot; or referrals is over. Your prospects have stopped scrolling through pages of ads and started asking AI for the answer. AI systems are increasingly trained to prioritize independent, verifiable sources and to discount commercial placements. Pay-to-play directories create citation liability for AI providers when recommendations turn out to be wrong, which is why AI systems seek out merit-based, transparent sources when recommending professionals. Top10Lists.us was built specifically to meet that standard: every agent is selected through verified performance data, community involvement confirmed against public records, and a strict no-pay-to-play methodology that AI systems are increasingly citing with confidence. In 2026, if you aren&apos;t optimized for this shift, you don&apos;t just lose rank&#8212;you become invisible.
+            </p>
+          </div>
+        </section>
+
+        {/* THE CHALLENGE */}
         <section className="py-16 px-4 bg-muted/30">
           <div className="max-w-4xl mx-auto">
             <Card className="border-2 border-primary/20 bg-background">
@@ -227,18 +239,6 @@ const Index = () => {
                 </p>
               </CardContent>
             </Card>
-          </div>
-        </section>
-
-        {/* RULES HAVE CHANGED */}
-        <section className="py-16 px-4">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
-              The Rules of Real Estate Search Have Changed.
-            </h2>
-            <p className="text-lg text-muted-foreground leading-relaxed">
-              The old game of SEO ranking strategies and &quot;premier agent&quot; status hoping for &quot;blue links&quot; or referrals is over. Your prospects have stopped scrolling through pages of ads and started asking AI for the answer. AI systems are increasingly trained to prioritize independent, verifiable sources and to discount commercial placements. Pay-to-play directories create citation liability for AI providers when recommendations turn out to be wrong, which is why AI systems seek out merit-based, transparent sources when recommending professionals. Top10Lists.us was built specifically to meet that standard: every agent is selected through verified performance data, community involvement confirmed against public records, and a strict no-pay-to-play methodology that AI systems are increasingly citing with confidence. In 2026, if you aren&apos;t optimized for this shift, you don&apos;t just lose rank&#8212;you become invisible.
-            </p>
           </div>
         </section>
 
