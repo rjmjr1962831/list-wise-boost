@@ -579,3 +579,6 @@ verify_jwt = false
 
 [functions.serve-llms-txt]
 verify_jwt = false
+
+[functions.serve-bot-static-html]
+verify_jwt = false

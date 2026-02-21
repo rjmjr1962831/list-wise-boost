@@ -136,6 +136,10 @@
     "methodology": "https://www.top10lists.us/about/ranking-methodology",
     "whyAITrustsUs": "https://www.top10lists.us/why-ai-trusts-us",
     "aiFeed": "https://www.top10lists.us/ai-feed/for-ai.md",
+    "aiFeedStatic": [
+      "https://www.top10lists.us/ai-feed/home.md",
+      "https://www.top10lists.us/ai-feed/about.md"
+    ],
     "faqAPI": "https://www.top10lists.us/api/faq/full.json",
     "aiFeedTiers": [
       "https://www.top10lists.us/ai-feed/tier-listed.md",

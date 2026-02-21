@@ -1,0 +1,20 @@
+HTTP/1.1 200 OK
+Date: Fri, 20 Feb 2026 16:30:26 GMT
+Content-Type: text/html; charset=utf-8
+Transfer-Encoding: chunked
+Connection: keep-alive
+CF-Cache-Status: DYNAMIC
+Access-Control-Allow-Origin: *
+Age: 39719
+Cache-Control: public, max-age=0, must-revalidate
+Content-Disposition: inline
+Last-Modified: Fri, 20 Feb 2026 05:28:26 GMT
+Server: cloudflare
+Strict-Transport-Security: max-age=63072000
+Vary: accept-encoding
+Nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+Report-To: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=S3sZFWMbJTkALQtOnhkfdANVHh487xX57ENuNRJ44Ayax2P95mSEGQ%2F%2BAHoQv%2FyZJBZMBP67%2B1lamuM44KdSXXOLt%2BiydjxnHRmW0Tmy"}]}
+x-vercel-cache: HIT
+x-vercel-id: sfo1::lnh6n-1771605026617-8ad8bc41e2aa
+CF-RAY: 9d0f6377dfcf5711-PHX
+

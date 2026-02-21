@@ -1,0 +1,7 @@
+ProPublica 990 Enrichment Summary
+Completed: 2026-02-16 16:50:52.279452
+
+arizona: 884 agents, 92 hits, 32 updated, 49 new roles, 0 errors
+california: 2596 agents, 144 hits, 144 updated, 268 new roles, 0 errors
+
+COMBINED: 176 updated, 317 new roles
