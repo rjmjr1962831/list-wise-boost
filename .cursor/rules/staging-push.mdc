@@ -12,6 +12,8 @@ alwaysApply: true
 
 When preparing a release, merge staging into main and push main. Never do the reverse.
 
+**Internal documents are excluded from main.** Run `npm run merge-to-main` (not a manual merge). This script merges staging into main, then removes all paths listed in `scripts/internal-documents.txt` from main. Those files remain on staging only and never appear on the public production branch.
+
 ---
 
 # Admin never on production (main)
@@ -27,7 +29,7 @@ When preparing a release, merge staging into main and push main. Never do the re
 # What "Push" Means
 
 - **When Robert says "push":** Push to **staging** (and any other non-production branches). **Never** push to `main` or deploy to production.
-- **Pushing to main:** You **must** receive this exact command from Robert to push anything to `main`: **"push to main"**. No other phrase (e.g. "push to production", "deploy", "ship it", "go live") authorizes touching `main`. Only **"push to main"**.
+- **Pushing to main:** You **must** receive this exact command from Robert: **"push to main"**. No other phrase authorizes touching `main`. Run `npm run merge-to-main` (which merges staging, excludes internal documents, and pushes). Do not manually merge and push.
 
 ---
 

@@ -20,7 +20,8 @@
     "preview:mobile": "node scripts/preview-mobile.js",
     "preview:staging": "node scripts/preview-mobile.js https://staging.top10lists.us",
     "preview:prod": "node scripts/preview-mobile.js https://www.top10lists.us",
-    "verify-production-build": "bash scripts/verify-production-build.sh"
+    "verify-production-build": "bash scripts/verify-production-build.sh",
+    "merge-to-main": "powershell -ExecutionPolicy Bypass -File scripts/merge-to-main.ps1"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
