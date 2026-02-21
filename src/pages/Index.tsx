@@ -213,32 +213,6 @@ const Index = () => {
           </div>
         </section>
 
-        {/* SECTION 4: DIFFERENT ARCHITECTURE */}
-        <section className="py-16 px-4 bg-muted/30">
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6 text-center">
-              A Different Kind of Architecture
-            </h2>
-            <p className="text-lg text-muted-foreground leading-relaxed mb-6">
-              What we have built here is beyond cutting edge. There is no other real estate directory on earth that does what we do or that can impact your probability of being named like us.
-            </p>
-            <ul className="space-y-4 text-lg text-muted-foreground leading-relaxed">
-              <li className="flex gap-3">
-                <span className="text-primary font-bold mt-1">&#8226;</span>
-                <span><strong className="text-foreground">We are not a lead engine:</strong> We talk to AI, not consumers.</span>
-              </li>
-              <li className="flex gap-3">
-                <span className="text-primary font-bold mt-1">&#8226;</span>
-                <span><strong className="text-foreground">Zero referral fees:</strong> We do not take a piece of your commission or charge referral fees.</span>
-              </li>
-              <li className="flex gap-3">
-                <span className="text-primary font-bold mt-1">&#8226;</span>
-                <span><strong className="text-foreground">Free to qualify:</strong> While we offer paid enhancements for those who want to maximize their edge, your listing and initial certification are free for as long as you are active and meet our qualification standards.</span>
-              </li>
-            </ul>
-          </div>
-        </section>
-
         {/* SECTION 5: WEB OF TRUTH */}
         <section className="py-16 px-4">
           <div className="max-w-4xl mx-auto">
