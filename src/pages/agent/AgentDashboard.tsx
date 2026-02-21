@@ -442,7 +442,7 @@ export default function AgentDashboard() {
                 Hello {professional?.name?.split(" ")[0] ?? "there"},
               </p>
               <p className="text-muted-foreground mb-6">
-                Congratulations on making our list. You've earned your way on through your career and community involvement.
+                Congratulations on making our list. You've earned your way on through your career success and community involvement.
               </p>
               {activeSection === "overview" && (
                 <OverviewSection professional={professional} />
