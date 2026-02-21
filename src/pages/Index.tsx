@@ -179,52 +179,23 @@ const Index = () => {
               <CardHeader>
                 <CardTitle className="text-3xl md:text-4xl text-center">The Challenge</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-5">
                 <p className="text-lg text-center text-muted-foreground">
                   Don&apos;t take our word for it. Ask your favorite AI this question:
                 </p>
-
-                <div className="bg-muted/50 border-2 rounded-lg p-6 relative">
-                  <blockquote className="text-base md:text-lg text-foreground leading-relaxed font-mono whitespace-pre-wrap">
+                <div className="rounded-lg border-2 border-primary/20 bg-muted/30 p-6 text-center">
+                  <blockquote className="text-base md:text-lg text-foreground leading-relaxed font-mono whitespace-pre-wrap mb-4">
                     {challengeQuestion}
                   </blockquote>
                   <Button
                     onClick={handleCopyQuestion}
                     variant="outline"
                     size="sm"
-                    className="mt-4"
                     aria-label="Copy question to clipboard"
                   >
                     {copied ? "Copied!" : "Copy question"}
                   </Button>
                 </div>
-
-                <div className="flex flex-wrap justify-center gap-3 pt-2">
-                  <Button variant="outline" size="sm" asChild>
-                    <a href="https://chat.openai.com" target="_blank" rel="noopener noreferrer">
-                      ChatGPT
-                    </a>
-                  </Button>
-                  <Button variant="outline" size="sm" asChild>
-                    <a href="https://claude.ai" target="_blank" rel="noopener noreferrer">
-                      Claude
-                    </a>
-                  </Button>
-                  <Button variant="outline" size="sm" asChild>
-                    <a href="https://gemini.google.com" target="_blank" rel="noopener noreferrer">
-                      Gemini
-                    </a>
-                  </Button>
-                  <Button variant="outline" size="sm" asChild>
-                    <a href="https://www.perplexity.ai" target="_blank" rel="noopener noreferrer">
-                      Perplexity
-                    </a>
-                  </Button>
-                </div>
-
-                <p className="text-base text-center text-foreground font-medium pt-4">
-                  If AI systems do not see value here, you should walk away.
-                </p>
               </CardContent>
             </Card>
           </div>
