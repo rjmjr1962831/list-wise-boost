@@ -1,9 +1,38 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Award, Signal, Sparkles } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Award, BadgeCheck, Shield, Zap, Signal, Sparkles } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface OverviewSectionProps {
   professional: any;
 }
+
+/** Normalize tier for display. Listed/unknown = Certified. */
+function normalizeTier(t: string | null): string {
+  const t0 = (t || "").toLowerCase();
+  if (t0 === "accredited" || t0 === "audited") return "audited";
+  if (t0 === "underwritten") return "underwritten";
+  return "certified";
+}
+
+/** Estimate AICS when no projection exists */
+function estimateAICS(base: number | null, current: string, target: string): number | null {
+  const lift: Record<string, number> = {
+    listed: 4,
+    certified: 11,
+    audited: 23,
+    underwritten: 33,
+  };
+  const baseScore = base ?? 55;
+  const targetLift = lift[target] ?? 11;
+  return Math.min(100, Math.round(baseScore - (lift[current] ?? 11) + targetLift));
+}
+
+const TIERS = [
+  { id: "certified", name: "Certified", price: "Free", icon: BadgeCheck, features: ["Standard Top10Lists badge", "Standard artifact, monthly refresh", "Core credentials published to AI systems"] },
+  { id: "audited", name: "Audited", price: "$100/mo", icon: Shield, features: ["Richer data payload", "Bimonthly refresh", "Community involvement, transaction stats"] },
+  { id: "underwritten", name: "Underwritten", price: "$150/mo", icon: Zap, features: ["Maximum data richness", "Daily refresh", "Full neighborhood endorsement"] },
+] as const;
 
 /** Convert third-person pronouns to second person for "Why We Selected You" context. */
 function toSecondPerson(text: string): string {
@@ -18,9 +47,27 @@ function toSecondPerson(text: string): string {
 }
 
 export function OverviewSection({ professional }: OverviewSectionProps) {
-  // Anyone on the dashboard is Certified at minimum
-  const rawTier = professional.current_tier || "certified";
-  const tierLabel = (rawTier.toLowerCase() === "listed" ? "certified" : rawTier).replace(/^\w/, (c: string) => c.toUpperCase());
+  const navigate = useNavigate();
+  const rawTier = professional.current_tier || professional.badge_tier || "certified";
+  const currentTier = normalizeTier(rawTier);
+  const tierLabel = (rawTier?.toLowerCase() === "listed" ? "certified" : rawTier).replace(/^\w/, (c: string) => c.toUpperCase());
+  const baseScore = professional.signal_score ?? professional.certified_projected_signal ?? null;
+
+  const getAICS = (tierId: string): number | null => {
+    if (tierId === "certified")
+      return professional.certified_projected_signal ?? professional.signal_score ?? estimateAICS(baseScore, currentTier, "certified");
+    if (tierId === "audited")
+      return professional.audited_projected_signal ?? estimateAICS(baseScore, currentTier, "audited");
+    if (tierId === "underwritten") return 98;
+    return null;
+  };
+
+  const handleUpgrade = (tierId: string) => {
+    const token = professional.verification_token || professional.id;
+    if (token && (tierId === "audited" || tierId === "underwritten")) {
+      navigate(`/funnel/${token}/pricing`);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -61,34 +108,72 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
             </div>
           </div>
 
-          {/* Opportunity */}
-          {(professional.current_tier === "certified" || professional.current_tier === "listed" || !professional.current_tier) && (
-            <div className="pt-2">
-              <p className="text-sm font-medium mb-3">
-                Increase your tier and see these increases in your AICS:
-              </p>
-              <div className="grid gap-3 sm:grid-cols-2">
-                {professional.current_tier !== "audited" && (
-                  <div className="p-4 rounded-lg border border-amber-200 bg-amber-50/50">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="font-semibold text-sm">Audited</span>
-                      <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">$100/mo</span>
+        </CardContent>
+      </Card>
+
+      {/* Upgrade Your Tier */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg">Upgrade Your Tier</CardTitle>
+          <CardDescription>
+            Higher tiers increase your AI Citability Score. Payment never affects inclusion or ranking.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 md:grid-cols-3">
+            {TIERS.map((tier) => {
+              const Icon = tier.icon;
+              const isCurrent = currentTier === tier.id;
+              const aics = getAICS(tier.id);
+              const isPaid = tier.id === "audited" || tier.id === "underwritten";
+
+              return (
+                <div
+                  key={tier.id}
+                  className={`rounded-lg border p-4 ${isCurrent ? "border-primary ring-2 ring-primary/20" : "border-border"}`}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <Icon className="h-5 w-5 text-primary" />
+                      <span className="font-semibold">{tier.name}</span>
                     </div>
-                    <p className="text-lg font-bold text-amber-700">
-                      {professional.audited_projected_signal != null ? `${professional.audited_projected_signal}/100` : "Projected AICS available soon"}
-                    </p>
+                    {isCurrent && (
+                      <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary">
+                        Your tier
+                      </span>
+                    )}
                   </div>
-                )}
-                <div className="p-4 rounded-lg border border-emerald-200 bg-emerald-50/50">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="font-semibold text-sm">Underwritten</span>
-                    <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">$150/mo</span>
+                  <p className="text-sm text-muted-foreground mb-3">{tier.price}</p>
+                  <div className="p-3 rounded-lg bg-muted/50 border mb-3">
+                    <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">AI Citability Score</p>
+                    <p className="text-xl font-bold">{aics != null ? `${aics}/100` : "Pending"}</p>
                   </div>
-                  <p className="text-lg font-bold text-emerald-700">98/100</p>
+                  <ul className="text-sm text-muted-foreground space-y-1 mb-4">
+                    {tier.features.map((f, i) => (
+                      <li key={i} className="flex items-start gap-2">
+                        <span className="text-primary mt-0.5">•</span>
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+                  {isPaid && !isCurrent && (
+                    <Button size="sm" className="w-full" onClick={() => handleUpgrade(tier.id)}>
+                      Upgrade to {tier.name}
+                    </Button>
+                  )}
+                  {isCurrent && (
+                    <p className="text-xs text-muted-foreground text-center">You are on this tier</p>
+                  )}
+                  {tier.id === "certified" && !isCurrent && (
+                    <p className="text-xs text-muted-foreground text-center">Free tier</p>
+                  )}
                 </div>
-              </div>
-            </div>
-          )}
+              );
+            })}
+          </div>
+          <p className="text-sm text-muted-foreground mt-6 text-center">
+            No one can guarantee that you will be named when an AI is asked for a recommendation. What we can say is that the higher your score, the more likely you are to be cited by name.
+          </p>
         </CardContent>
       </Card>
 
