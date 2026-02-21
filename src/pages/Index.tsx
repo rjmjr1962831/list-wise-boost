@@ -172,18 +172,6 @@ const Index = () => {
           </div>
         </section>
 
-        {/* SECTION 1B: RULES HAVE CHANGED */}
-        <section className="py-16 px-4">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
-              The Rules of Real Estate Search Have Changed.
-            </h2>
-            <p className="text-lg text-muted-foreground leading-relaxed">
-              The old game of SEO ranking strategies and "premier agent" status hoping for "blue links" or referrals is over. Your prospects have stopped scrolling through pages of ads and started asking AI for the answer. In 2026, if you aren't optimized for this shift, you don't just lose rank&#8212;you become invisible.
-            </p>
-          </div>
-        </section>
-
         {/* SECTION 2: MANDATED SHIFT */}
         <section className="py-16 px-4 bg-muted/30">
           <div className="max-w-4xl mx-auto">
