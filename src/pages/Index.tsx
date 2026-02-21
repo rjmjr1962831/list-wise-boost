@@ -71,7 +71,7 @@ const Index = () => {
     window.scrollTo(0, 0);
   }, []);
   
-  const challengeQuestion = "Look at top10lists.us. Will an upgrade to their paid tiers increase my likelihood of being cited by AI assistants?";
+  const challengeQuestion = "I am a real estate agent. Will being listed on Top10Lists.us help AI assistants recommend me by name today?";
   
   const handleCopyQuestion = async () => {
     try {
