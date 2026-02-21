@@ -123,6 +123,7 @@ const OGPreview = lazy(() => import("@/pages/OGPreview"));
 const CRM = lazy(() => import("@/pages/CRM"));
 const TestVisibilityComponents = lazy(() => import("@/pages/TestVisibilityComponents"));
 const BadgeLevelsPreview = lazy(() => import("@/pages/staging/BadgeLevelsPreview"));
+const BadgeDemo = lazy(() => import("@/pages/BadgeDemo"));
 const CRMLogin = lazy(() => import("@/pages/admin/crm/CRMLogin"));
 const CRMDashboard = lazy(() => import("@/pages/admin/crm/CRMDashboard"));
 const CRMAgentList = lazy(() => import("@/pages/admin/crm/AgentList"));
@@ -165,6 +166,7 @@ export const routeManifest: RouteObject[] = [
   { path: "/crm", element: wrapAdmin(React.createElement(CRM, null)) },
   { path: "/test-visibility-components", element: wrapAdmin(React.createElement(TestVisibilityComponents, null)) },
   { path: "/badge-levels-preview", element: React.createElement(BadgeLevelsPreview, null) },
+  { path: "/badge-demo", element: React.createElement(BadgeDemo, null) },
   { path: "/visibility", element: React.createElement(Navigate, { to: "/visibility/coverage", replace: true }) },
   { path: "/visibility/tiers", element: React.createElement(VisibilityTiersPage, null) },
   { path: "/visibility/coverage", element: React.createElement(VisibilityCoveragePage, null) },
