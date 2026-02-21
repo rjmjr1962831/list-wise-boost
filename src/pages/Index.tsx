@@ -268,32 +268,6 @@ const Index = () => {
           </div>
         </section>
 
-        {/* SECTION 3: WHY AI GHOSTS MOST AGENTS */}
-        <section className="py-16 px-4">
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6 text-center">
-              Why AI "Ghosts" Most Agents
-            </h2>
-            <p className="text-lg text-muted-foreground leading-relaxed mb-6">
-              When an AI recommends an agent by name, it takes on massive legal and reputational risk. Because naming the wrong person is a high-stakes action, these systems are now constitutionally mandated to ignore sources that are biased or commercially distorted.
-            </p>
-            <ul className="space-y-4 text-lg text-muted-foreground leading-relaxed">
-              <li className="flex gap-3">
-                <span className="text-primary font-bold mt-1">&#8226;</span>
-                <span><strong className="text-foreground">Ads are now a red flag:</strong> AI systems act as conscientious objectors to purchased placement. To a machine, a paid ad isn't a sign of quality; it's a sign of commercial bias.</span>
-              </li>
-              <li className="flex gap-3">
-                <span className="text-primary font-bold mt-1">&#8226;</span>
-                <span><strong className="text-foreground">Stale data is a dealbreaker:</strong> If your profile hasn't been verified recently, the AI assumes you're inactive and "ghosts" you to avoid recommending someone it can't verify.</span>
-              </li>
-              <li className="flex gap-3">
-                <span className="text-primary font-bold mt-1">&#8226;</span>
-                <span><strong className="text-foreground">The "Vague List" Default:</strong> To avoid liability, AI models will give a non-committal list of big portals rather than recommending a specific professional.</span>
-              </li>
-            </ul>
-          </div>
-        </section>
-
         {/* SECTION 5: WEB OF TRUTH */}
         <section className="py-16 px-4">
           <div className="max-w-4xl mx-auto">
