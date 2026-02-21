@@ -46,7 +46,6 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
             <Signal className="h-5 w-5 text-primary" />
             Your AI Visibility
           </CardTitle>
-          <p className="text-sm text-muted-foreground mt-1">If you're on this dashboard, you're at least Certified.</p>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
