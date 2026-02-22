@@ -71,7 +71,7 @@ const Index = () => {
     window.scrollTo(0, 0);
   }, []);
   
-  const challengeQuestion = "I am a real estate agent.\n\nWill being certified by Top10Lists.us help AI assistants recommend me by name today?";
+  const challengeQuestion = "I am a real estate agent.\n\nLook at top10lists.us. Will being certified by them help AI assistants recommend me by name today?";
   
   const handleCopyQuestion = async () => {
     try {
