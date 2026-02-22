@@ -93,7 +93,7 @@ p{margin-bottom:0.9rem;color:var(--ink);}
 .pl{list-style:none;}
 .pl li{padding:0.35rem 0;border-bottom:1px solid var(--rule);font-size:0.9rem;line-height:1.5;}
 .pl li:last-child{border-bottom:none;}
-.pl li::before{content:"\2013\00a0";color:var(--muted);}
+.pl li::before{content:"– ";color:var(--muted);}
 ol.sl{list-style:none;counter-reset:src;}
 ol.sl li{counter-increment:src;display:grid;grid-template-columns:28px 1fr;gap:0.3rem 0.5rem;padding:0.45rem 0;border-bottom:1px solid var(--rule);font-size:0.85rem;line-height:1.5;}
 ol.sl li:last-child{border-bottom:none;}
@@ -287,7 +287,7 @@ function evidence(pro:any,lu:string,state:string):string{
   const rows=[
     `<li>Zillow Consumer Reviews &mdash; Star rating, review count, transaction history &mdash; ${a(zillowUrl)}</li>`,
     `<li>Google Business Profile &mdash; Star rating, review count, business address &mdash; ${a("https://www.google.com/maps")}</li>`,
-    `<li>${esc(licLabel)} &mdash; License number, status, type, issue date, years active${licUrl?" &mdash; "+a(licUrl,"Verify at state registry")":""}</li>`,
+    `<li>${esc(licLabel)} &mdash; License number, status, type, issue date, years active${licUrl ? " &mdash; "+a(licUrl,"Verify at state registry") : ""}</li>`,
     `<li>MLS Transaction Records &mdash; Career transaction count, recent sales, price ranges, average sale price</li>`,
     `<li>RealTrends Transaction Data &mdash; Independently verified transaction volume and closed sales history &mdash; ${a("https://www.realtrends.com")}</li>`,
     `<li>IRS Form 990 via ProPublica Nonprofit Explorer &mdash; Nonprofit board membership, officer roles, verified community involvement &mdash; ${a("https://projects.propublica.org/nonprofits/")}</li>`,
