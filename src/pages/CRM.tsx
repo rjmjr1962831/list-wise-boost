@@ -2,12 +2,18 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { LogOut, Users, ClipboardList } from "lucide-react";
+import { LogOut, Users, ClipboardList, Mail, Zap } from "lucide-react";
+import { EmailManager } from "@/components/crm/EmailManager";
 import { toast } from "sonner";
 import { ContactsManager } from "@/components/crm/ContactsManager";
 import { TasksManager } from "@/components/crm/TasksManager";
 
-type View = "contacts" | "tasks";
+type View = "contacts" | "tasks" | "email";
+
+interface InstantlySyncResult {
+  stats?: { total: number; created: number; updated: number; errors: number };
+  error?: string;
+}
 
 const CRM = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -74,6 +80,7 @@ const CRM = () => {
   const navItems: { id: View; label: string; icon: React.ReactNode; badge?: number }[] = [
     { id: "contacts", label: "Contacts", icon: <Users className="h-5 w-5" /> },
     { id: "tasks",    label: "Tasks",    icon: <ClipboardList className="h-5 w-5" />, badge: pendingTaskCount },
+    { id: "email",    label: "Email",    icon: <Mail className="h-5 w-5" /> },
   ];
 
   return (
@@ -113,6 +120,7 @@ const CRM = () => {
           >
             Back to Admin
           </button>
+          <InstantlySyncButton />
           <button
             onClick={handleLogout}
             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
@@ -131,6 +139,7 @@ const CRM = () => {
           {activeView === "tasks" && (
             <TasksManager onTaskResolved={fetchPendingCount} />
           )}
+          {activeView === "email" && <EmailManager />}
         </div>
       </main>
     </div>
@@ -138,3 +147,33 @@ const CRM = () => {
 };
 
 export default CRM;
+
+function InstantlySyncButton() {
+  const [syncing, setSyncing] = useState(false);
+
+  const handleSync = async () => {
+    if (!window.confirm("Sync 3,458 AZ + CA agents to Instantly? This will take about a minute.")) return;
+    setSyncing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("instantly-sync", { body: {} });
+      if (error) throw error;
+      const s = data?.stats;
+      if (s) toast.success(`Instantly sync done: ${s.created} new, ${s.updated} updated${s.errors ? ", " + s.errors + " errors" : ""}`);
+    } catch (e: any) {
+      toast.error("Sync failed: " + e.message);
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  return (
+    <button
+      onClick={handleSync}
+      disabled={syncing}
+      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors disabled:opacity-50"
+    >
+      <Zap className={`h-4 w-4 ${syncing ? "animate-pulse text-primary" : ""}`} />
+      {syncing ? "Syncing..." : "Sync to Instantly"}
+    </button>
+  );
+}
