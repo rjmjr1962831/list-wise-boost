@@ -77,6 +77,7 @@ const StreamlinedOnboarding = lazy(() => import("@/pages/profile/StreamlinedOnbo
 const SimpleFunnelTest = lazy(() => import("@/pages/profile/SimpleFunnelTest"));
 const Step1Intro = lazy(() => import("@/pages/funnel/Step1Intro"));
 const Step2Review1 = lazy(() => import("@/pages/funnel/Step2Review1"));
+const Step2bCredentials = lazy(() => import("@/pages/funnel/Step2bCredentials"));
 const Step3Review2 = lazy(() => import("@/pages/funnel/Step3Review2"));
 const Step4ReviewFinal = lazy(() => import("@/pages/funnel/Step4ReviewFinal"));
 const Step5Cities = lazy(() => import("@/pages/funnel/Step5Cities"));
@@ -222,6 +223,7 @@ export const routeManifest: RouteObject[] = [
   { path: "/funnel-test/:token", element: React.createElement(SimpleFunnelTest, null) },
   { path: "/funnel/:token", element: React.createElement(Step1Intro, null) },
   { path: "/funnel/:token/review-1", element: React.createElement(Step2Review1, null) },
+  { path: "/funnel/:token/review-credentials", element: React.createElement(Step2bCredentials, null) },
   { path: "/funnel/:token/review-2", element: React.createElement(Step3Review2, null) },
   { path: "/funnel/:token/review-final", element: React.createElement(Step4ReviewFinal, null) },
   { path: "/funnel/:token/cities", element: React.createElement(Step5Cities, null) },
