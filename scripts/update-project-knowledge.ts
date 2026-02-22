@@ -3,9 +3,9 @@
  *
  * 1. Optionally runs npm run takeaways:sync to pull from daily_takeaways (--sync)
  * 2. Reads takeaways from docs/cursor-daily-updates.md if present
- * 3. Fetches latest PROJECT-KNOWLEDGE.md from GitHub
+ * 3. Fetches latest MASTER_KNOWLEDGE_DOCUMENT.md from GitHub
  * 4. Merges takeaways (from docs, --takeaways, or SESSION_TAKEAWAYS)
- * 5. Writes to docs/PROJECT-KNOWLEDGE.md
+ * 5. Writes to MASTER_KNOWLEDGE_DOCUMENT.md (repo root)
  *
  * Run: npm run update
  *      npm run update -- --takeaways "Pipedrive removed from admin"
@@ -15,8 +15,8 @@ import fs from 'fs';
 import path from 'path';
 
 const KNOWLEDGE_URL =
-  'https://raw.githubusercontent.com/rjmjr1962831/list-wise-boost/main/docs/PROJECT-KNOWLEDGE.md';
-const OUTPUT_PATH = 'docs/PROJECT-KNOWLEDGE.md';
+  'https://raw.githubusercontent.com/rjmjr1962831/list-wise-boost/main/MASTER_KNOWLEDGE_DOCUMENT.md';
+const OUTPUT_PATH = 'MASTER_KNOWLEDGE_DOCUMENT.md';
 const TAKEAWAYS_FILE = 'docs/cursor-daily-updates.md';
 
 // Edit this with session takeaways before running, or pass via --takeaways
@@ -110,7 +110,8 @@ async function main() {
   }
 
   const outPath = path.resolve(process.cwd(), OUTPUT_PATH);
-  fs.mkdirSync(path.dirname(outPath), { recursive: true });
+  const dir = path.dirname(outPath);
+  if (dir) fs.mkdirSync(dir, { recursive: true });
   fs.writeFileSync(outPath, doc, 'utf-8');
 
   console.log(`Written to ${OUTPUT_PATH}`);

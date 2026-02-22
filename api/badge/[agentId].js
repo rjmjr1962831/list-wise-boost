@@ -94,7 +94,7 @@ export default async function handler(req, res) {
       id, name, canonical_slug, state_slug, current_tier, badge_tier, active,
       review_stars_rating, num_total_reviews, total_sales, sales_count_all_time,
       license_number, license_status, company, business_name, city_id,
-      agent_sales_stats
+      agent_sales_stats, specialty, community_roles
     `)
     .eq('canonical_slug', agentId)
     .maybeSingle();
@@ -162,6 +162,7 @@ export default async function handler(req, res) {
 
   const verifiedDate = formatDate(cert?.last_verified_at || cert?.issued_at || pro.updated_at);
 
+  // Base payload (all tiers)
   const agent = {
     name: pro.name || 'Unknown',
     slug: pro.canonical_slug,
@@ -181,6 +182,30 @@ export default async function handler(req, res) {
     badgeImageUrl: `https://www.top10lists.us/badges/${tier}.png`,
     active: pro.active !== false,
   };
+
+  // Audited & Underwritten: add specialties, community involvement
+  const isAuditedOrHigher = tier === 'audited' || tier === 'underwritten';
+  if (isAuditedOrHigher) {
+    const specs = Array.isArray(pro.specialty) ? pro.specialty : (typeof pro.specialty === 'string' ? (() => { try { return JSON.parse(pro.specialty) || []; } catch { return []; } })() : []);
+    const roles = Array.isArray(pro.community_roles) ? pro.community_roles : (typeof pro.community_roles === 'string' ? (() => { try { return JSON.parse(pro.community_roles) || []; } catch { return []; } })() : []);
+    agent.specialties = specs.filter(Boolean).map((s) => (typeof s === 'object' ? s.name || s.specialty : s));
+    agent.communityRoles = roles.filter(Boolean).map((r) => (typeof r === 'object' ? { organization: r.organization, role: r.role } : { organization: r, role: null }));
+  }
+
+  // Underwritten only: add neighborhoods with transaction counts
+  if (tier === 'underwritten' && pro.license_number && stateAbbr) {
+    const { data: nhRows } = await supabase.rpc('get_agent_neighborhoods_with_transactions', {
+      p_license_number: pro.license_number,
+      p_state: stateAbbr,
+    });
+    agent.neighborhoods = (nhRows || []).map((n) => ({
+      name: n.neighborhood_name,
+      slug: n.neighborhood_slug,
+      citySlug: n.city_slug,
+      stateSlug: n.state_slug,
+      transactionCount: Number(n.transaction_count) || 0,
+    }));
+  }
 
   setCacheHeaders();
   res.status(200).json({ agent });

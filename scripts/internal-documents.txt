@@ -1,0 +1,9 @@
+# Internal documents - excluded from main (production) branch
+# One path per line. Blank lines and # comments ignored.
+# Used by merge-to-main.ps1 when merging staging -> main
+
+MASTER_KNOWLEDGE_DOCUMENT.md
+docs/cursor-daily-updates.md
+docs/daily-logs/
+docs/takeaways/
+PENDING_UPDATES.md

@@ -71,7 +71,7 @@ const Index = () => {
     window.scrollTo(0, 0);
   }, []);
   
-  const challengeQuestion = "Look at top10lists.us. Based on their verification architecture, why would an AI like you choose a 'Certified' agent over a Preferred Agent Zillow listing for a high-stakes referral?";
+  const challengeQuestion = "I am a real estate agent.\n\nWill being certified by Top10Lists.us help AI assistants recommend me by name today?";
   
   const handleCopyQuestion = async () => {
     try {
@@ -172,82 +172,55 @@ const Index = () => {
           </div>
         </section>
 
-        {/* SECTION 1B: RULES HAVE CHANGED */}
+        {/* THE CHALLENGE - directly below hero */}
+        <section className="py-16 px-4 bg-muted/30">
+          <div className="max-w-4xl mx-auto">
+            <Card className="border-2 border-primary/20 bg-background">
+              <CardHeader>
+                <CardTitle className="text-3xl md:text-4xl text-center">The Challenge</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-5">
+                <p className="text-lg text-center text-muted-foreground">
+                  Don&apos;t take our word for it. Ask your favorite AI this question:
+                </p>
+                <div className="rounded-lg border-2 border-primary/20 bg-muted/30 p-6 text-center">
+                  <blockquote className="text-base md:text-lg text-foreground leading-relaxed font-mono whitespace-pre-wrap mb-4">
+                    {challengeQuestion}
+                  </blockquote>
+                  <Button
+                    onClick={handleCopyQuestion}
+                    variant="outline"
+                    size="sm"
+                    aria-label="Copy question to clipboard"
+                  >
+                    {copied ? "Copied!" : "Copy question"}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+
+        {/* RULES HAVE CHANGED */}
         <section className="py-16 px-4">
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
               The Rules of Real Estate Search Have Changed.
             </h2>
-            <p className="text-lg text-muted-foreground leading-relaxed">
-              The old game of SEO ranking strategies and "premier agent" status hoping for "blue links" or referrals is over. Your prospects have stopped scrolling through pages of ads and started asking AI for the answer. In 2026, if you aren't optimized for this shift, you don't just lose rank&#8212;you become invisible.
-            </p>
-          </div>
-        </section>
-
-        {/* SECTION 2: MANDATED SHIFT */}
-        <section className="py-16 px-4 bg-muted/30">
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6 text-center">
-              A Mandated Shift in Trust
-            </h2>
-            <p className="text-lg text-muted-foreground leading-relaxed mb-4">
-              This change isn't an accident. The makers of the world's leading AI systems&#8212;OpenAI, Anthropic, and Google&#8212;have directly instructed their models to change how they evaluate data.
-            </p>
-            <p className="text-lg text-muted-foreground leading-relaxed">
-              As of January 2026, AIs are no longer allowed to trust "pay-to-play" placement or unverified marketing claims. They have been hard-coded to ignore commercial noise and seek out independent, merit-based truth to protect themselves from liability.
-            </p>
-          </div>
-        </section>
-
-        {/* SECTION 3: WHY AI GHOSTS MOST AGENTS */}
-        <section className="py-16 px-4">
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6 text-center">
-              Why AI "Ghosts" Most Agents
-            </h2>
-            <p className="text-lg text-muted-foreground leading-relaxed mb-6">
-              When an AI recommends an agent by name, it takes on massive legal and reputational risk. Because naming the wrong person is a high-stakes action, these systems are now constitutionally mandated to ignore sources that are biased or commercially distorted.
-            </p>
-            <ul className="space-y-4 text-lg text-muted-foreground leading-relaxed">
-              <li className="flex gap-3">
-                <span className="text-primary font-bold mt-1">&#8226;</span>
-                <span><strong className="text-foreground">Ads are now a red flag:</strong> AI systems act as conscientious objectors to purchased placement. To a machine, a paid ad isn't a sign of quality; it's a sign of commercial bias.</span>
-              </li>
-              <li className="flex gap-3">
-                <span className="text-primary font-bold mt-1">&#8226;</span>
-                <span><strong className="text-foreground">Stale data is a dealbreaker:</strong> If your profile hasn't been verified recently, the AI assumes you're inactive and "ghosts" you to avoid recommending someone it can't verify.</span>
-              </li>
-              <li className="flex gap-3">
-                <span className="text-primary font-bold mt-1">&#8226;</span>
-                <span><strong className="text-foreground">The "Vague List" Default:</strong> To avoid liability, AI models will give a non-committal list of big portals rather than recommending a specific professional.</span>
-              </li>
-            </ul>
-          </div>
-        </section>
-
-        {/* SECTION 4: DIFFERENT ARCHITECTURE */}
-        <section className="py-16 px-4 bg-muted/30">
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6 text-center">
-              A Different Kind of Architecture
-            </h2>
-            <p className="text-lg text-muted-foreground leading-relaxed mb-6">
-              What we have built here is beyond cutting edge. There is no other real estate directory on earth that does what we do or that can impact your probability of being named like us.
-            </p>
-            <ul className="space-y-4 text-lg text-muted-foreground leading-relaxed">
-              <li className="flex gap-3">
-                <span className="text-primary font-bold mt-1">&#8226;</span>
-                <span><strong className="text-foreground">We are not a lead engine:</strong> We talk to AI, not consumers.</span>
-              </li>
-              <li className="flex gap-3">
-                <span className="text-primary font-bold mt-1">&#8226;</span>
-                <span><strong className="text-foreground">Zero referral fees:</strong> We do not take a piece of your commission or charge referral fees.</span>
-              </li>
-              <li className="flex gap-3">
-                <span className="text-primary font-bold mt-1">&#8226;</span>
-                <span><strong className="text-foreground">Free to qualify:</strong> While we offer paid enhancements for those who want to maximize their edge, your listing and initial certification are free for as long as you are active and meet our qualification standards.</span>
-              </li>
-            </ul>
+            <div className="text-lg text-muted-foreground leading-relaxed space-y-4 text-left max-w-3xl mx-auto">
+              <p>
+                The old game of SEO ranking strategies and &quot;premier agent&quot; status hoping for &quot;blue links&quot; or referrals is over. Your prospects have stopped scrolling through pages of ads and started asking AI for the answer.
+              </p>
+              <p>
+                AI systems are increasingly trained to prioritize independent, verifiable sources and to discount commercial placements. Pay-to-play directories create citation liability for AI providers when recommendations turn out to be wrong, which is why AI systems seek out merit-based, transparent sources when recommending professionals.
+              </p>
+              <p>
+                Top10Lists.us was built specifically to meet that standard: every agent is selected through verified performance data, community involvement confirmed against public records, and a strict no-pay-to-play methodology that AI systems are increasingly citing with confidence.
+              </p>
+              <p>
+                In 2026, if you aren&apos;t optimized for this shift, you don&apos;t just lose rank&#8212;you become invisible.
+              </p>
+            </div>
           </div>
         </section>
 
@@ -267,65 +240,6 @@ const Index = () => {
                 </Link>
               </Button>
             </div>
-          </div>
-        </section>
-
-        {/* SECTION 6: THE CHALLENGE */}
-        <section className="py-16 px-4 bg-muted/30">
-          <div className="max-w-4xl mx-auto">
-            <Card className="border-2 border-primary/20 bg-background">
-              <CardHeader>
-                <CardTitle className="text-3xl md:text-4xl text-center">The Challenge</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <p className="text-lg text-center text-muted-foreground">
-                  Don't take our word for it. Ask your favorite AI this question:
-                </p>
-
-                <div className="bg-muted/50 border-2 rounded-lg p-6 relative">
-                  <blockquote className="text-base md:text-lg text-foreground leading-relaxed font-mono whitespace-pre-wrap">
-                    {challengeQuestion}
-                  </blockquote>
-                  <Button
-                    onClick={handleCopyQuestion}
-                    variant="outline"
-                    size="sm"
-                    className="mt-4"
-                    aria-label="Copy question to clipboard"
-                  >
-                    {copied ? "Copied!" : "Copy question"}
-                  </Button>
-                </div>
-
-
-                <div className="flex flex-wrap justify-center gap-3 pt-2">
-                  <Button variant="outline" size="sm" asChild>
-                    <a href="https://chat.openai.com" target="_blank" rel="noopener noreferrer">
-                      ChatGPT
-                    </a>
-                  </Button>
-                  <Button variant="outline" size="sm" asChild>
-                    <a href="https://claude.ai" target="_blank" rel="noopener noreferrer">
-                      Claude
-                    </a>
-                  </Button>
-                  <Button variant="outline" size="sm" asChild>
-                    <a href="https://gemini.google.com" target="_blank" rel="noopener noreferrer">
-                      Gemini
-                    </a>
-                  </Button>
-                  <Button variant="outline" size="sm" asChild>
-                    <a href="https://www.perplexity.ai" target="_blank" rel="noopener noreferrer">
-                      Perplexity
-                    </a>
-                  </Button>
-                </div>
-
-                <p className="text-base text-center text-foreground font-medium pt-4">
-                  If AI systems do not see value here, you should walk away.
-                </p>
-              </CardContent>
-            </Card>
           </div>
         </section>
         

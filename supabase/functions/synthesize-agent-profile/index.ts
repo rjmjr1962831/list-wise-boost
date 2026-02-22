@@ -159,9 +159,12 @@ Return the deduplicated results using the tool.`;
       console.log(`   Merge log: ${result.merge_log.slice(0, 3).join('; ')}...`);
     }
     
+    // SAFETY: if Gemini returns empty/null, preserve the originals rather than zeroing out
+    const deduplicatedAchievements = result.deduplicated_achievements;
+    const deduplicatedPress = result.deduplicated_press_mentions;
     return {
-      achievements: result.deduplicated_achievements || [],
-      pressMentions: result.deduplicated_press_mentions || [],
+      achievements: (Array.isArray(deduplicatedAchievements) && deduplicatedAchievements.length > 0) ? deduplicatedAchievements : achievements,
+      pressMentions: (Array.isArray(deduplicatedPress) && deduplicatedPress.length > 0) ? deduplicatedPress : pressMentions,
       mergeLog: result.merge_log || []
     };
   } catch (error) {
@@ -1057,7 +1060,10 @@ REMEMBER:
     );
     
     const finalAchievements = dedupResult.achievements;
-    const filteredPressMentions = dedupResult.pressMentions;
+    // SAFETY: never overwrite non-empty press_mentions with empty result
+    const filteredPressMentions = (dedupResult.pressMentions.length > 0)
+      ? dedupResult.pressMentions
+      : existingPressMentions;
     
     console.log(`   📊 Deduplication complete: ${finalAchievements.length} achievements, ${filteredPressMentions.length} press mentions`);
 
@@ -1121,3 +1127,4 @@ REMEMBER:
     );
   }
 });
+
