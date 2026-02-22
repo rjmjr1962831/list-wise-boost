@@ -86,7 +86,6 @@ function DataPayloadExpander({
     audited: {
       data: [
         "Everything in Certified, plus:",
-        "Selection rationale (why you were chosen)",
         "Years of experience",
         "Total transactions",
         "Company name",
