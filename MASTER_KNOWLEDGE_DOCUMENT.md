@@ -266,11 +266,7 @@ Every artifact includes: "This document contains independently verified data for
 
 ## 13. PRICING MODEL
 
-### Cities (Free Tier)
-No charge for city-level placement.
-
-### Neighborhoods
-Neighborhoods are free. There is no neighborhood pricing tier.
+**Business model is solely the tiered agent model.** No neighborhood pricing. City-level and neighborhood-level placement follow agent tier; no separate fees for cities or neighborhoods.
 
 ### Agent Tiers
 - Listed: $0
@@ -414,5 +410,4 @@ C:\Users\rober\supabase.exe functions deploy [name] --project-ref wiotrvoirdgzfa
 ---
 
 *Version 5.4 - February 22, 2026*
-*Changes from v5.3: Removed neighborhood pricing (Main/Prime/Luxury tiers deprecated). Neighborhoods are free.*
-*Changes from v5.2: Explicit `supabase functions deploy` = production action, treat like push to main; strengthened "done" definition — nothing done until end-to-end tested against live URL, fix and retest before reporting.*
+*Changes from v5.3: Business model solely tiered agent model; removed neighborhood pricing (Main/Prime/Luxury). City and neighborhood placement follow agent tier; no separate fees.*
