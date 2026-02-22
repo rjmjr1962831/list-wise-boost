@@ -228,7 +228,7 @@ const FAQ = () => {
                       <tr className="border-t border-border">
                         <td className="p-3 font-medium">Audited</td>
                         <td className="p-3">$100/mo</td>
-                        <td className="p-3 text-muted-foreground">Bimonthly refresh. Richer data payload.</td>
+                        <td className="p-3 text-muted-foreground">Every Two Weeks refresh. Richer data payload.</td>
                       </tr>
                       <tr className="border-t border-border">
                         <td className="p-3 font-medium">Underwritten</td>
