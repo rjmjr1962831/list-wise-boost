@@ -11,19 +11,19 @@ serve(async (req) => {
 
   const inserts = [
     `INSERT INTO professionals (id, name, email, company, verification_token, business_city, state_slug, num_total_reviews, review_stars_rating, years_experience, specialty, current_tier, badge_tier, active, profile_link)
-     VALUES ('6e3d668b-9e1e-4144-802b-25d170e0a820', 'Robert Maynard', 'robert@maynard.com', 'Top10Lists.us', '3a8c9f58-63f7-488c-9be4-616bde34d0a2', 'Scottsdale', 'arizona', 127, 5, 22, ARRAY['Buyer''s Agent','Listing Agent','Luxury Homes'], 'listed', 'certified', true, 'https://www.top10lists.us/funnel/3a8c9f58-63f7-488c-9be4-616bde34d0a2')
-     ON CONFLICT (id) DO UPDATE SET email='robert@maynard.com', verification_token='3a8c9f58-63f7-488c-9be4-616bde34d0a2'`,
+     VALUES ('0af6a21f-b020-44bc-b520-fc77dac61c4b', 'Robert Maynard', 'robert@maynard.com', 'Top10Lists.us', '42c32ea8-72d3-4142-b4c8-169e41ae68f5', 'Scottsdale', 'arizona', 127, 5, 22, '["Buyer''s Agent","Listing Agent","Luxury Homes"]'::jsonb, 'listed', 'certified', true, 'https://www.top10lists.us/funnel/42c32ea8-72d3-4142-b4c8-169e41ae68f5')
+     ON CONFLICT (email) DO UPDATE SET name='Robert Maynard', verification_token='42c32ea8-72d3-4142-b4c8-169e41ae68f5', business_city='Scottsdale', state_slug='arizona', num_total_reviews=127, review_stars_rating=5, years_experience=22, specialty='["Buyer''s Agent","Listing Agent","Luxury Homes"]'::jsonb, current_tier='listed', badge_tier='certified', active=true`,
     `INSERT INTO professionals (id, name, email, company, verification_token, business_city, state_slug, num_total_reviews, review_stars_rating, years_experience, specialty, current_tier, badge_tier, active, profile_link)
-     VALUES ('618204da-462f-43d2-ad03-06ce71ebf70c', 'Robert Aryah', 'robert@aryah.ai', 'Aryah Realty', '7437538c-9af8-4610-bb30-2e1a2bf4cae8', 'Phoenix', 'arizona', 84, 5, 15, ARRAY['Buyer''s Agent','Listing Agent','Investment Properties'], 'listed', 'certified', true, 'https://www.top10lists.us/funnel/7437538c-9af8-4610-bb30-2e1a2bf4cae8')
-     ON CONFLICT (id) DO UPDATE SET email='robert@aryah.ai', verification_token='7437538c-9af8-4610-bb30-2e1a2bf4cae8'`,
+     VALUES ('77ebdc17-1642-4986-a196-c4b785a6a148', 'Robert Aryah', 'robert@aryah.ai', 'Aryah Realty', 'ceefc652-aefd-4aba-b765-7eaeb0a36767', 'Phoenix', 'arizona', 84, 5, 15, '["Buyer''s Agent","Listing Agent","Investment Properties"]'::jsonb, 'listed', 'certified', true, 'https://www.top10lists.us/funnel/ceefc652-aefd-4aba-b765-7eaeb0a36767')
+     ON CONFLICT (email) DO UPDATE SET name='Robert Aryah', verification_token='ceefc652-aefd-4aba-b765-7eaeb0a36767', business_city='Phoenix', state_slug='arizona', num_total_reviews=84, review_stars_rating=5, years_experience=15, specialty='["Buyer''s Agent","Listing Agent","Investment Properties"]'::jsonb, current_tier='listed', badge_tier='certified', active=true`,
   ];
 
   for (const sql of inserts) {
     try {
       await conn.queryObject(sql);
-      results.push({ sql: sql.slice(0,60), ok: true });
+      results.push({ ok: true, contact: sql.includes('maynard') ? 'robert@maynard.com' : 'robert@aryah.ai' });
     } catch (e: any) {
-      results.push({ sql: sql.slice(0,60), error: e.message });
+      results.push({ error: e.message, contact: sql.includes('maynard') ? 'robert@maynard.com' : 'robert@aryah.ai' });
     }
   }
 
