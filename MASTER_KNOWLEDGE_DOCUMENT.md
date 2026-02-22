@@ -101,6 +101,10 @@ When an AI names a specific professional, it assumes **recommendation risk**. To
 
 ## 7. PRODUCTION SAFETY (STAGING-TO-MAIN GATE)
 
+### REMEMBER
+- **Two branches, one Supabase.** `staging` and `main` (Git). One Supabase project. Both deploy to it.
+- **Pushing to staging does NOT require Robert's approval.** Push by default. Approval needed only for `main` and `supabase functions deploy`.
+
 ### Branch Rules (Non-Negotiable)
 - **`staging`** = default. All pushes go here. No permission needed.
 - **`main`** = locked. Touch only when Robert says exactly **"push to main"**. Run `npm run merge-to-main` (do not manually merge).
@@ -409,5 +413,5 @@ C:\Users\rober\supabase.exe functions deploy [name] --project-ref wiotrvoirdgzfa
 
 ---
 
-*Version 5.4 - February 22, 2026*
-*Changes from v5.3: Business model solely tiered agent model; removed neighborhood pricing (Main/Prime/Luxury). City and neighborhood placement follow agent tier; no separate fees.*
+*Version 5.5 - February 22, 2026*
+*Changes from v5.4: REMEMBER block — two branches, one Supabase; pushing to staging does NOT require Robert's approval.*

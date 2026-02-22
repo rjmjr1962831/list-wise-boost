@@ -3,6 +3,13 @@ description: Staging/main branch flow and push workflow — never main to stagin
 alwaysApply: true
 ---
 
+# REMEMBER
+
+- **Two branches, one Supabase.** We have `staging` and `main` (Git). There is one Supabase project. Both deploy to the same Supabase.
+- **Pushing to staging does NOT require Robert's approval.** Push to staging by default when you complete work. Do not ask. Approval is required only for `main` and for `supabase functions deploy`.
+
+---
+
 # Branch Flow (Locked)
 
 **Deployment direction is one-way only:**

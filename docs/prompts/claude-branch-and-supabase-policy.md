@@ -4,6 +4,13 @@
 
 ---
 
+## REMEMBER
+
+- **Two branches, one Supabase.** We have `staging` and `main` (Git). There is one Supabase project. Both branches deploy to the same Supabase.
+- **Pushing to staging does NOT require Robert's approval.** Push to staging by default when you complete work. Do not ask. Robert's approval is required only for `main` and for `supabase functions deploy`.
+
+---
+
 ## 1. PUSHING TO STAGING DOES NOT PUSH TO MAIN
 
 **`staging` and `main` are separate branches.** Pushing to `staging` only updates `staging`. It does not touch `main`. Main is updated only when Robert explicitly authorizes a merge and push.
