@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { SafeHead } from "@/components/SafeHead";
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -16,10 +16,28 @@ interface Neighborhood {
   state: string;
 }
 
+interface ProfessionalForPricing {
+  id: string;
+  name: string;
+  years_experience: number | null;
+  total_sales: number | null;
+  num_total_reviews: number | null;
+  review_stars_rating: number | null;
+  license_number: string | null;
+  license_state: string | null;
+  state_slug: string | null;
+  community_involvement_score: number | null;
+  community_roles: unknown[] | null;
+  agent_sales_stats: { countLastYear?: number; countAllTime?: number } | null;
+}
+
 export default function Step6Neighborhoods() {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
+  const passedProfessional = (location.state as { professional?: ProfessionalForPricing } | null)?.professional;
   const [loading, setLoading] = useState(true);
+  const [professional, setProfessional] = useState<ProfessionalForPricing | null>(null);
   const [query, setQuery] = useState('');
   const [suggestions, setSuggestions] = useState<Neighborhood[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -31,8 +49,23 @@ export default function Step6Neighborhoods() {
       navigate('/404');
       return;
     }
-    setLoading(false);
-  }, [token, navigate]);
+    if (passedProfessional) {
+      setProfessional(passedProfessional);
+      setLoading(false);
+      return;
+    }
+    (async () => {
+      try {
+        const profSelect = 'id, name, years_experience, total_sales, num_total_reviews, review_stars_rating, license_number, license_state, state_slug, community_involvement_score, community_roles, agent_sales_stats';
+        const { data } = await supabase.from('professionals').select(profSelect).eq('verification_token', token).maybeSingle();
+        if (data) setProfessional(data as ProfessionalForPricing);
+      } catch {
+        // ignore
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [token, navigate, passedProfessional]);
 
   const searchNeighborhoods = useCallback(async (q: string) => {
     const trimmed = q.trim();
@@ -83,7 +116,7 @@ export default function Step6Neighborhoods() {
 
   const handleContinue = () => {
     toast.success(`${selectedList.length} neighborhood${selectedList.length !== 1 ? 's' : ''} selected!`);
-    navigate(`/funnel/${token}/pricing`);
+    navigate(`/funnel/${token}/pricing`, { state: professional ? { professional } : undefined });
   };
 
   if (loading) {

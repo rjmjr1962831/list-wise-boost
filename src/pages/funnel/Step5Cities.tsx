@@ -9,7 +9,7 @@ import { Loader2, ArrowRight, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { REGIONAL_PACKAGES } from '@/data/arizonaPackages';
 
-type LocationState = { professionalId?: string; state_slug?: string | null; license_state?: string | null } | null;
+type LocationState = { professionalId?: string; state_slug?: string | null; license_state?: string | null; professional?: Record<string, unknown> } | null;
 
 const FUNNEL_SELECTION_KEY = 'funnel_selection';
 
@@ -140,7 +140,7 @@ export default function Step5Cities() {
     }
 
     toast.success(`${selectedCityIds.size} cities selected!`);
-    navigate(`/funnel/${token}/neighborhoods`);
+    navigate(`/funnel/${token}/neighborhoods`, { state: passedState?.professional ? { professional: passedState.professional } : undefined });
   };
 
   const cityCount = selectedCityIds.size;

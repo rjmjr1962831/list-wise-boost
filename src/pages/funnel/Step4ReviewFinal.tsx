@@ -82,8 +82,22 @@ export default function Step4ReviewFinal() {
 
   const handleAccept = () => {
     toast.success('Profile confirmed!');
-    const prof = professional as { id: string; state_slug?: string | null; license_state?: string | null };
-    navigate(`/funnel/${token}/cities`, { state: { professionalId: prof.id, state_slug: prof.state_slug, license_state: prof.license_state } });
+    const prof = professional as Record<string, unknown>;
+    const forPricing = {
+      id: prof.id,
+      name: prof.name,
+      years_experience: prof.years_experience,
+      total_sales: prof.total_sales,
+      num_total_reviews: prof.num_total_reviews,
+      review_stars_rating: prof.review_stars_rating,
+      license_number: prof.license_number,
+      license_state: prof.license_state,
+      state_slug: prof.state_slug,
+      community_involvement_score: prof.community_involvement_score,
+      community_roles: prof.community_roles,
+      agent_sales_stats: prof.agent_sales_stats,
+    };
+    navigate(`/funnel/${token}/cities`, { state: { professionalId: prof.id, state_slug: prof.state_slug, license_state: prof.license_state, professional: forPricing } });
   };
 
   if (loading) {

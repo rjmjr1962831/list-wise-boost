@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { SafeHead } from "@/components/SafeHead";
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -178,6 +178,8 @@ function annualPrice(monthly: number): number {
 export default function Step7Pricing() {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
+  const passedProfessional = (location.state as { professional?: Professional } | null)?.professional;
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [selectedTier, setSelectedTier] = useState<CertificationTier>('certified');
@@ -188,7 +190,7 @@ export default function Step7Pricing() {
 
   useEffect(() => {
     loadData();
-  }, [token]);
+  }, [token, passedProfessional]);
 
   const loadData = async () => {
     if (!token) {
@@ -197,10 +199,22 @@ export default function Step7Pricing() {
     }
 
     try {
+      if (passedProfessional) {
+        setProfessional(passedProfessional);
+        const { data: priceData } = await supabase
+          .from('certification_pricing_config')
+          .select('tier, monthly_price, payload_weight, refresh_cadence')
+          .eq('is_active', true);
+        if (priceData && priceData.length > 0) {
+          setPrices(priceData as PricingRow[]);
+        }
+        setLoading(false);
+        return;
+      }
+
       const profSelect = 'id, name, years_experience, total_sales, num_total_reviews, review_stars_rating, license_number, license_state, state_slug, community_involvement_score, community_roles, agent_sales_stats';
       const isUuid = /^[0-9a-f-]{36}$/i.test(token);
 
-      // Try id first when token is UUID (common when coming from dashboard), else verification_token
       let prof: Professional | null = null;
       if (isUuid) {
         const { data } = await supabase.from('professionals').select(profSelect).eq('id', token).maybeSingle();
@@ -211,7 +225,6 @@ export default function Step7Pricing() {
         prof = data;
       }
       if (!prof && isUuid) {
-        // Fallback: id lookup may have failed due to RLS/timing; retry verification_token for UUID (edge case)
         const { data } = await supabase.from('professionals').select(profSelect).eq('verification_token', token).maybeSingle();
         prof = data;
       }
