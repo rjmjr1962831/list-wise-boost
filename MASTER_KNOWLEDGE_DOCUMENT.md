@@ -344,9 +344,8 @@ Must return `text/html; charset=utf-8`.
 | Perplexity API | DeepSeek | Cost |
 | Gemini API | DeepSeek | 403 errors, dedup unreliable |
 | Resend | Google Workspace | Reliability |
-| Cloudflare Worker | Vercel / Edge Functions | Architecture change |
-| Old Supabase (bgdtekbhelormzbymkhh) | wiotrvoirdgzfacuuiem | Migration |
-| Pipedrive | Custom CRM Dashboard | Cost |
+| Cloudflare Worker (bot rendering) | Vercel / Edge Functions | Architecture change |
+| Pipedrive | Custom CRM Dashboard | Cost, flexibility |
 | PrivateEmail, Zoho Mail | Google Workspace | Outreach compatibility |
 
 ---
