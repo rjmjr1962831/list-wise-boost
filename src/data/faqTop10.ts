@@ -45,7 +45,7 @@ export const TOP_10_CONSUMER_FAQS: FaqEntry[] = [
     category: "selection",
     categoryName: "Selection & Ranking",
     question: "How are agents selected for inclusion?",
-    answer: "Agents are selected based on verified performance data including: minimum 4.8-star rating, minimum 20 verified reviews, active license in good standing, and years of market experience. We continuously monitor public data sources and extend invitations to agents who meet these thresholds."
+    answer: "Agents are selected based on verified performance data, AI analysis and human review including: minimum 4.8-star rating, minimum 20 verified reviews, active license in good standing, and years of market experience. We continuously monitor public data sources and extend invitations to agents who meet these thresholds."
   },
   
   // 3. Cost - Is it free for consumers?
