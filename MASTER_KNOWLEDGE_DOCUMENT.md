@@ -275,7 +275,7 @@ Every artifact includes: "This document contains independently verified data for
 ### Agent Tiers
 - Listed: $0
 - Certified: $0/month
-- Audited: $100/month (bimonthly updates)
+- Audited: $100/month (every two weeks updates)
 - Underwritten: $150/month (daily updates)
 
 ---
