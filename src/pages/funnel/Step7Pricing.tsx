@@ -239,7 +239,21 @@ export default function Step7Pricing() {
         throw new Error('No checkout URL returned');
       }
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : 'Failed to start checkout');
+      let msg = 'Failed to start checkout';
+      if (err && typeof err === 'object') {
+        const e = err as { context?: { json?: () => Promise<{ error?: string; details?: string }> }; message?: string };
+        if (e.context?.json) {
+          try {
+            const body = await e.context.json();
+            msg = body?.error ?? body?.details ?? e.message ?? msg;
+          } catch {
+            msg = e.message ?? msg;
+          }
+        } else {
+          msg = e.message ?? msg;
+        }
+      }
+      toast.error(msg);
     } finally {
       setSaving(null);
     }
