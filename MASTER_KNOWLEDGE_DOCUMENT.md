@@ -57,6 +57,7 @@ When an AI names a specific professional, it assumes **recommendation risk**. To
 ## 5. HARD STOPS - READ BEFORE EVERY TASK
 
 ### You Will Be Stopped If You:
+- **Push to `main`** or deploy Edge Functions to production without Robert's explicit "push to main" (only that exact phrase authorizes it; "deploy," "ship it," etc. do not)
 - Touch routing without "ROUTING CHANGE APPROVED:" in the message
 - Touch database schema without explicit approval
 - Touch `is_brand_builder` field for any reason
@@ -100,6 +101,13 @@ When an AI names a specific professional, it assumes **recommendation risk**. To
 
 ## 7. PRODUCTION SAFETY (STAGING-TO-MAIN GATE)
 
+### Branch Rules (Non-Negotiable)
+- **`staging`** = default. All pushes go here. No permission needed.
+- **`main`** = locked. Touch only when Robert says exactly **"push to main"**. Run `npm run merge-to-main` (do not manually merge).
+- **Never** merge `main` into `staging`. One-way only: staging → main.
+- **Supabase:** Only one project exists (`wiotrvoirdgzfacuuiem`). No staging Supabase. Edge Function deploys hit production; require explicit approval before deploying.
+
+### Pre-Flight
 * **Pre-Flight:** Never merge `staging` to `main` without running `npm run build` locally with `VITE_IS_PRODUCTION=1`. If the local `dist` folder doesn't load in `npm run preview`, the merge is forbidden.
 
 ---
@@ -399,9 +407,10 @@ C:\Users\rober\supabase.exe functions deploy [name] --project-ref wiotrvoirdgzfa
 2. **Enforce Logic**: Signal Strength uses logarithmic ranges (Listed 10-25, Certified 26-45, Accredited 46-75, Underwritten 76-100).
 3. **Artifact Format**: Clean HTML with live links. Not markdown.
 4. **Pre-Flight**: Before merging staging to main, run `VITE_IS_PRODUCTION=1 npm run build` and confirm `npm run preview` loads.
-5. **Final Rules**: If it works and user didn't ask to change it, don't touch it. When in doubt, ask. "Done!" without verification is not done. Test before deploy. Always.
+5. **Main branch lock**: Never push to `main` or deploy Edge Functions unless Robert says exactly "push to main." Default: push to `staging` only.
+6. **Final Rules**: If it works and user didn't ask to change it, don't touch it. When in doubt, ask. "Done!" without verification is not done. Test before deploy. Always.
 
 ---
 
-*Version 5.0 - February 22, 2026*
-*Changes from v4.0: artifact-markdown rewritten to HTML, live links required, floor math rule, encoding rules, press overwrite protection, tier resolution fallback, enrichment-api BOOT_ERROR status, artifact system section added (Section 12).*
+*Version 5.2 - February 22, 2026*
+*Changes from v5.0: Added Branch Rules and main-branch lock (Section 7); push-to-main and Edge Function deploy added to HARD STOPS; clarified single Supabase project (no staging Supabase exists).*
