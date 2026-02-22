@@ -1,6 +1,6 @@
 # Tier: Listed
 
-> Last Updated: February 18, 2026
+> Last Updated: February 22, 2026
 
 ---
 
