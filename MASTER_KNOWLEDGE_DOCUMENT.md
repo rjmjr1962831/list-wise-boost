@@ -148,7 +148,7 @@ Not `top10lists.us`. Not `http://`. Always `www.`
 ```
 /arizona/top10realestateagents
 /arizona/scottsdale/top10realestateagents
-/arizona/scottsdale/85255/greyhawk/top10realestateagents
+/arizona/scottsdale/greyhawk/top10realestateagents
 /:stateSlug/agents/:canonicalSlug
 /artifact/:token
 ```
@@ -325,7 +325,7 @@ Neighborhoods are free. There is no neighborhood pricing tier.
 ### The 5-Page Test (After ANY Change)
 1. Homepage
 2. /arizona/scottsdale/top10realestateagents
-3. /arizona/scottsdale/85255/greyhawk/top10realestateagents
+3. /arizona/scottsdale/greyhawk/top10realestateagents
 4. A random agent profile
 5. /about
 
