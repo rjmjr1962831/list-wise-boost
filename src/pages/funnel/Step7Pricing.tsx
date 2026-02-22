@@ -1,17 +1,16 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { SafeHead } from "@/components/SafeHead";
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Loader2, Check, List, BadgeCheck, Shield, Zap } from 'lucide-react';
+import { Loader2, BadgeCheck, Shield, Zap } from 'lucide-react';
 import { DataPayloadExpander } from '@/components/agent/DataPayloadExpander';
 import { toast } from 'sonner';
 
-type CertificationTier = 'listed' | 'certified' | 'audited' | 'underwritten';
+type CertificationTier = 'certified' | 'audited' | 'underwritten';
 
 interface PricingRow {
   tier: CertificationTier;
@@ -42,7 +41,6 @@ interface Professional {
 }
 
 const DEFAULT_PRICES: PricingRow[] = [
-  { tier: 'listed', monthly_price: 0, payload_weight: 'basic', refresh_cadence: 'annual' },
   { tier: 'certified', monthly_price: 0, payload_weight: 'standard', refresh_cadence: 'monthly' },
   { tier: 'audited', monthly_price: 100, payload_weight: 'enhanced', refresh_cadence: 'every_two_weeks' },
   { tier: 'underwritten', monthly_price: 150, payload_weight: 'maximum', refresh_cadence: 'daily' },
@@ -52,28 +50,18 @@ function normalizeTier(t: string | null | undefined): string {
   const t0 = (t || '').toLowerCase();
   if (t0 === 'accredited' || t0 === 'audited') return 'audited';
   if (t0 === 'underwritten') return 'underwritten';
-  if (t0 === 'listed') return 'listed';
-  return 'certified';
+  return 'certified'; // listed or null = certified (minimum tier when on this page)
 }
 
 function estimateAICS(base: number | null, currentTier: string, targetTier: string): number {
-  const lift: Record<string, number> = { listed: 4, certified: 11, audited: 23, underwritten: 33 };
+  const lift: Record<string, number> = { certified: 11, audited: 23, underwritten: 33 };
   const baseScore = base ?? 55;
   const targetLift = lift[targetTier] ?? 11;
   const currentLift = lift[currentTier] ?? 11;
   return Math.min(100, Math.round(baseScore - currentLift + targetLift));
 }
 
-const TIER_META: Record<CertificationTier, { name: string; icon: typeof List; features: string[] }> = {
-  listed: {
-    name: 'Listed',
-    icon: List,
-    features: [
-      'Basic profile (name, city, rating)',
-      'No badge issued',
-      'Public data only',
-    ],
-  },
+const TIER_META: Record<CertificationTier, { name: string; icon: typeof BadgeCheck; features: string[] }> = {
   certified: {
     name: 'Certified',
     icon: BadgeCheck,
@@ -114,9 +102,7 @@ export default function Step7Pricing() {
   const location = useLocation();
   const passedProfessional = (location.state as { professional?: Professional } | null)?.professional;
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [selectedTier, setSelectedTier] = useState<CertificationTier>('certified');
-  const [listedAction, setListedAction] = useState<'stay_listed' | 'delete_listing'>('stay_listed');
+  const [saving, setSaving] = useState<string | null>(null);
   const [isAnnual, setIsAnnual] = useState(false);
   const [prices, setPrices] = useState<PricingRow[]>(DEFAULT_PRICES);
   const [professional, setProfessional] = useState<Professional | null>(null);
@@ -204,7 +190,6 @@ export default function Step7Pricing() {
 
   const getAICS = (tierId: string): number | null => {
     if (!professional) return null;
-    if (tierId === 'listed') return 45;
     if (tierId === 'certified')
       return professional.certified_projected_signal ?? professional.signal_score ?? estimateAICS(baseScore, currentTier, 'certified');
     if (tierId === 'audited')
@@ -225,48 +210,23 @@ export default function Step7Pricing() {
     };
   };
 
-  const handleSubmit = async () => {
-    if (!token) return;
-
-    setSaving(true);
+  const handleUpgrade = async (tier: 'audited' | 'underwritten') => {
+    if (!token || !professional) return;
+    const email = professional.email;
+    if (!email) {
+      toast.error('Email is required for checkout. Please contact support.');
+      return;
+    }
+    setSaving(tier);
     try {
-      const isFree = selectedTier === 'listed' || selectedTier === 'certified';
-
-      if (isFree) {
-        const { data, error } = await supabase.functions.invoke('funnel-select-tier', {
-          body: {
-            token,
-            tier: selectedTier,
-            ...(selectedTier === 'listed' && { listedAction }),
-          },
-        });
-
-        if (error) throw error;
-        if (data?.error) throw new Error(data.error);
-
-        if (selectedTier === 'listed' && listedAction === 'delete_listing') {
-          toast.success('Your listing removal request has been recorded.');
-        } else {
-          toast.success(selectedTier === 'certified' ? 'Certified! Badge issued.' : 'Saved.');
-        }
-        navigate(`/funnel/${token}/success`);
-        return;
-      }
-
-      // Paid tiers: create Stripe checkout
-      const email = professional?.email;
-      if (!email) {
-        toast.error('Email is required for checkout. Please contact support.');
-        return;
-      }
       const baseUrl = window.location.origin;
       const { data, error } = await supabase.functions.invoke('create-agent-checkout', {
         body: {
-          professionalId: professional!.id,
+          professionalId: professional.id,
           email,
-          badgeTier: selectedTier,
+          badgeTier: tier,
           badgeBillingPeriod: isAnnual ? 'annual' : 'monthly',
-          monthlyTotal: getPrice(selectedTier).monthly,
+          monthlyTotal: getPrice(tier).monthly,
           successUrl: `${baseUrl}/funnel/${token}/success`,
           cancelUrl: `${baseUrl}/funnel/${token}/pricing`,
         },
@@ -279,9 +239,9 @@ export default function Step7Pricing() {
         throw new Error('No checkout URL returned');
       }
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : 'Failed to save');
+      toast.error(err instanceof Error ? err.message : 'Failed to start checkout');
     } finally {
-      setSaving(false);
+      setSaving(null);
     }
   };
 
@@ -312,7 +272,7 @@ export default function Step7Pricing() {
               </div>
               <CardTitle className="text-2xl">Select your certification level</CardTitle>
               <p className="text-muted-foreground">
-                Listed and Certified are free. Annual plans save 2 months.
+                Certified is free. Annual plans save 2 months.
               </p>
 
               <div className="flex items-center justify-center gap-4 mt-4">
@@ -335,119 +295,72 @@ export default function Step7Pricing() {
                 </div>
               </div>
 
-              <RadioGroup value={selectedTier} onValueChange={(v) => setSelectedTier(v as CertificationTier)}>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
-                  {(['listed', 'certified', 'audited', 'underwritten'] as const).map((tier) => {
-                    const meta = TIER_META[tier];
-                    const Icon = meta.icon;
-                    const { display } = getPrice(tier);
-                    const aics = getAICS(tier);
-                    const isCurrent = currentTier === tier;
-                    const isPaid = tier === 'audited' || tier === 'underwritten';
-                    const hasExpander = tier === 'certified' || tier === 'audited' || tier === 'underwritten';
-                    return (
-                      <div
-                        key={tier}
-                        className={`relative rounded-lg border p-4 cursor-pointer transition-all ${
-                          isCurrent ? 'border-primary ring-2 ring-primary/20' : 'border-border hover:border-primary/50'
-                        } ${selectedTier === tier ? 'bg-primary/5' : ''}`}
-                        onClick={() => setSelectedTier(tier)}
-                      >
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center gap-2">
-                            <Icon className="h-5 w-5 text-primary" />
-                            <h3 className="font-semibold">{meta.name}</h3>
-                          </div>
-                          {isCurrent && (
-                            <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary">
-                              Your tier
-                            </span>
-                          )}
-                          <RadioGroupItem value={tier} id={tier} className="sr-only" />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                {(['certified', 'audited', 'underwritten'] as const).map((tier) => {
+                  const meta = TIER_META[tier];
+                  const Icon = meta.icon;
+                  const { display } = getPrice(tier);
+                  const aics = getAICS(tier);
+                  const isCurrent = currentTier === tier;
+                  const isPaid = tier === 'audited' || tier === 'underwritten';
+                  return (
+                    <div
+                      key={tier}
+                      className={`relative rounded-lg border p-4 ${
+                        isCurrent ? 'border-primary ring-2 ring-primary/20' : 'border-border'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <Icon className="h-5 w-5 text-primary" />
+                          <h3 className="font-semibold">{meta.name}</h3>
                         </div>
-                        <p className="text-sm text-muted-foreground mb-3">{display}</p>
-                        <div className="p-3 rounded-lg bg-muted/50 border mb-2">
-                          <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">AI Citability Score</p>
-                          <p className="text-xl font-bold">
-                            {aics != null ? `${aics}/100` : 'Pending'}
-                          </p>
-                        </div>
-                        {hasExpander && (
-                          <div className="mb-3" onClick={(e) => e.stopPropagation()}>
-                            <DataPayloadExpander tier={tier} triggerText="View data and sources" professional={professional} />
-                          </div>
-                        )}
-                        {tier === 'listed' && (
-                          <p className="text-xs text-muted-foreground mb-2">No badge issued.</p>
-                        )}
-                        <ul className="text-sm text-muted-foreground space-y-1 mb-4">
-                          {meta.features.map((f, i) => (
-                            <li key={i} className="flex items-start gap-2">
-                              <span className="text-primary mt-0.5">•</span>
-                              {f}
-                            </li>
-                          ))}
-                        </ul>
-                        {tier === 'listed' && selectedTier === 'listed' && (
-                          <div className="mt-2 flex gap-2" onClick={(e) => e.stopPropagation()}>
-                            <Button
-                              type="button"
-                              variant={listedAction === 'stay_listed' ? 'default' : 'outline'}
-                              size="sm"
-                              className="flex-1"
-                              onClick={(e) => { e.stopPropagation(); setListedAction('stay_listed'); }}
-                            >
-                              Stay Listed
-                            </Button>
-                            <Button
-                              type="button"
-                              variant={listedAction === 'delete_listing' ? 'destructive' : 'outline'}
-                              size="sm"
-                              className="flex-1"
-                              onClick={(e) => { e.stopPropagation(); setListedAction('delete_listing'); }}
-                            >
-                              Delete Listing
-                            </Button>
-                          </div>
-                        )}
-                        {isPaid && !isCurrent && (
-                          <Button
-                            size="sm"
-                            className="w-full"
-                            onClick={(e) => { e.stopPropagation(); setSelectedTier(tier); }}
-                          >
-                            Upgrade to {meta.name}
-                          </Button>
-                        )}
                         {isCurrent && (
-                          <p className="text-xs text-muted-foreground text-center">You are on this tier</p>
-                        )}
-                        {tier === 'certified' && !isCurrent && (
-                          <p className="text-xs text-muted-foreground text-center">Free tier</p>
+                          <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary">
+                            Your tier
+                          </span>
                         )}
                       </div>
-                    );
-                  })}
-                </div>
-              </RadioGroup>
-
-              <div className="mt-8 flex justify-center">
-                <Button onClick={handleSubmit} size="lg" className="gap-2" disabled={saving}>
-                  {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
-                  {selectedTier === 'listed' && listedAction === 'delete_listing'
-                    ? 'Remove Listing'
-                    : selectedTier === 'listed'
-                    ? 'Stay Listed'
-                    : selectedTier === 'certified'
-                    ? 'Claim Free Badge'
-                    : 'Proceed to Checkout'}
-                </Button>
+                      <p className="text-sm text-muted-foreground mb-3">{display}</p>
+                      <div className="p-3 rounded-lg bg-muted/50 border mb-2">
+                        <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">AI Citability Score</p>
+                        <p className="text-xl font-bold">
+                          {aics != null ? `${aics}/100` : 'Pending'}
+                        </p>
+                      </div>
+                      <div className="mb-3" onClick={(e) => e.stopPropagation()}>
+                        <DataPayloadExpander tier={tier} triggerText="View data and sources" professional={professional} />
+                      </div>
+                      <ul className="text-sm text-muted-foreground space-y-1 mb-4">
+                        {meta.features.map((f, i) => (
+                          <li key={i} className="flex items-start gap-2">
+                            <span className="text-primary mt-0.5">•</span>
+                            {f}
+                          </li>
+                        ))}
+                      </ul>
+                      {isPaid && !isCurrent && (
+                        <Button
+                          size="sm"
+                          className="w-full"
+                          disabled={!!saving}
+                          onClick={() => handleUpgrade(tier)}
+                        >
+                          {saving === tier ? <Loader2 className="h-4 w-4 animate-spin mx-auto" /> : `Upgrade to ${meta.name}`}
+                        </Button>
+                      )}
+                      {isCurrent && (
+                        <p className="text-xs text-muted-foreground text-center">You are on this tier</p>
+                      )}
+                      {tier === 'certified' && !isCurrent && (
+                        <p className="text-xs text-muted-foreground text-center">Free tier</p>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
 
-              <p className="text-sm text-muted-foreground mt-6 text-center">
-                No one can guarantee that you will be named when an AI is asked for a recommendation. What we can say is that the higher your score, the more likely you are to be cited by name.
-              </p>
-              <p className="text-center text-sm text-muted-foreground mt-4">
+              <p className="text-center text-sm text-muted-foreground mt-6">
                 Questions? <a href="tel:6027589600" className="underline">(602) 758-9600</a>
               </p>
             </CardContent>
