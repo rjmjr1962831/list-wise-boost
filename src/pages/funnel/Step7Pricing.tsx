@@ -35,10 +35,10 @@ interface Professional {
 }
 
 const DEFAULT_PRICES: PricingRow[] = [
-  { tier: 'listed', monthly_price: 0, payload_weight: 'basic', refresh_cadence: 'public_data_only' },
-  { tier: 'certified', monthly_price: 0, payload_weight: 'standard', refresh_cadence: 'annual' },
-  { tier: 'audited', monthly_price: 100, payload_weight: 'enhanced', refresh_cadence: 'quarterly' },
-  { tier: 'underwritten', monthly_price: 150, payload_weight: 'maximum', refresh_cadence: 'real_time' },
+  { tier: 'listed', monthly_price: 0, payload_weight: 'basic', refresh_cadence: 'annual' },
+  { tier: 'certified', monthly_price: 0, payload_weight: 'standard', refresh_cadence: 'monthly' },
+  { tier: 'audited', monthly_price: 100, payload_weight: 'enhanced', refresh_cadence: 'every_two_weeks' },
+  { tier: 'underwritten', monthly_price: 150, payload_weight: 'maximum', refresh_cadence: 'daily' },
 ];
 
 const TIER_META: Record<CertificationTier, { name: string; icon: typeof List; features: string[]; popular?: boolean }> = {
