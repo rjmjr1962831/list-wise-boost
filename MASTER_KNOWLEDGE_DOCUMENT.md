@@ -106,6 +106,7 @@ When an AI names a specific professional, it assumes **recommendation risk**. To
 - **`main`** = locked. Touch only when Robert says exactly **"push to main"**. Run `npm run merge-to-main` (do not manually merge).
 - **Never** merge `main` into `staging`. One-way only: staging → main.
 - **Supabase:** Only one project exists (`wiotrvoirdgzfacuuiem`). No staging Supabase. Edge Function deploys hit production; require explicit approval before deploying.
+- **`supabase functions deploy` = production action.** There is only one Supabase project (`wiotrvoirdgzfacuuiem`). All edge function deploys go live immediately to production. Never run `supabase functions deploy` without Robert's explicit instruction. Treat it identically to "push to main."
 
 ### Pre-Flight
 * **Pre-Flight:** Never merge `staging` to `main` without running `npm run build` locally with `VITE_IS_PRODUCTION=1`. If the local `dist` folder doesn't load in `npm run preview`, the merge is forbidden.
@@ -364,10 +365,13 @@ Must return `text/html; charset=utf-8`.
 All commands must be exact copy/paste ready. No placeholders in brackets.
 
 ### Testing Before Claiming Done
+**Nothing is done until end-to-end tested.** Run a full test against the live URL. Every check must pass. If anything fails, fix it and retest before reporting back to Robert.
+
 1. Deploy the change
-2. Test with curl/API/browser
+2. Test with curl/API/browser against the live URL
 3. Verify result is correct
-4. ONLY THEN report done
+4. If anything fails, fix it and retest
+5. ONLY THEN report done
 
 **Never say "done" without testing it yourself first.**
 
@@ -407,10 +411,10 @@ C:\Users\rober\supabase.exe functions deploy [name] --project-ref wiotrvoirdgzfa
 2. **Enforce Logic**: Signal Strength uses logarithmic ranges (Listed 10-25, Certified 26-45, Accredited 46-75, Underwritten 76-100).
 3. **Artifact Format**: Clean HTML with live links. Not markdown.
 4. **Pre-Flight**: Before merging staging to main, run `VITE_IS_PRODUCTION=1 npm run build` and confirm `npm run preview` loads.
-5. **Main branch lock**: Never push to `main` or deploy Edge Functions unless Robert says exactly "push to main." Default: push to `staging` only.
+5. **Main branch lock**: Never push to `main` or run `supabase functions deploy` unless Robert says exactly "push to main." Both hit production. Default: push to `staging` only.
 6. **Final Rules**: If it works and user didn't ask to change it, don't touch it. When in doubt, ask. "Done!" without verification is not done. Test before deploy. Always.
 
 ---
 
-*Version 5.2 - February 22, 2026*
-*Changes from v5.0: Added Branch Rules and main-branch lock (Section 7); push-to-main and Edge Function deploy added to HARD STOPS; clarified single Supabase project (no staging Supabase exists).*
+*Version 5.3 - February 22, 2026*
+*Changes from v5.2: Explicit `supabase functions deploy` = production action, treat like push to main; strengthened "done" definition — nothing done until end-to-end tested against live URL, fix and retest before reporting.*
