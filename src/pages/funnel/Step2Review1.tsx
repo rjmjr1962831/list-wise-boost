@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, ArrowRight, ArrowLeft, HelpCircle, Eye, EyeOff } from 'lucide-react';
+import { Loader2, ArrowRight, ArrowLeft, HelpCircle, Eye, EyeOff, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import InlineReviewForm from '@/components/funnel/InlineReviewForm';
 
@@ -36,6 +36,7 @@ export default function Step2Review1() {
   const [saving, setSaving] = useState(false);
   const [professional, setProfessional] = useState<Professional | null>(null);
   const [reviewField, setReviewField] = useState<string | null>(null);
+  const [submittedReviews, setSubmittedReviews] = useState<Set<string>>(new Set());
   const [formData, setFormData] = useState({
     email: '',
     phone_mobile: '',
@@ -181,7 +182,7 @@ export default function Step2Review1() {
       if (error) throw error;
 
       toast.success('Contact information saved!');
-      navigate(`/funnel/${token}/review-2`);
+      navigate(`/funnel/${token}/review-credentials`);
     } catch (err: any) {
       toast.error('Failed to save: ' + err.message);
     } finally {
@@ -226,7 +227,12 @@ export default function Step2Review1() {
                     <div className="flex-1 rounded-md border bg-muted/50 px-3 py-2 text-sm">
                       {professional?.name || 'Not provided'}
                     </div>
-                    {reviewField !== 'name' && (
+                    {submittedReviews.has('name') ? (
+                      <div className="flex items-center gap-1 text-xs text-green-700 font-medium px-3 py-2 bg-green-50 border border-green-200 rounded-md shrink-0">
+                        <CheckCircle className="h-3.5 w-3.5" />
+                        Review requested
+                      </div>
+                    ) : reviewField !== 'name' ? (
                       <Button
                         type="button"
                         variant="outline"
@@ -237,7 +243,7 @@ export default function Step2Review1() {
                         <HelpCircle className="h-4 w-4 mr-1" />
                         Request review
                       </Button>
-                    )}
+                    ) : null}
                   </div>
                   <p className="text-xs text-muted-foreground">To change your name, request a review.</p>
                   {reviewField === 'name' && professional && (
@@ -249,6 +255,7 @@ export default function Step2Review1() {
                       professionalEmail={professional.email || undefined}
                       profileLink={professional.profile_link || undefined}
                       onClose={() => setReviewField(null)}
+                      onSubmitted={() => { setSubmittedReviews(prev => new Set(prev).add('name')); setReviewField(null); }}
                     />
                   )}
                 </div>
