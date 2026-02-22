@@ -202,6 +202,7 @@ const TIERS = [
 /** Convert third-person pronouns to second person for "Why We Selected You" context. */
 function toSecondPerson(text: string): string {
   return text
+    .replace(/\bSelected for your\b/g, "You were selected for your")
     .replace(/\bHis\b/g, "Your")
     .replace(/\bhis\b/g, "your")
     .replace(/\bHim\b/g, "You")
@@ -250,13 +251,15 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
         </Card>
       )}
 
-      {/* Upgrade Your Tier */}
+      {/* Our Tiered Product Structure */}
       <Card>
         <CardHeader className="space-y-4">
           <div>
-            <CardTitle className="text-lg">Upgrade Your Tier</CardTitle>
+            <CardTitle className="text-lg">Our Tiered Product Structure</CardTitle>
             <CardDescription className="mt-1.5">
-              Higher tiers increase your AI Citability Score. Payment never affects inclusion or ranking.
+              AI agents are directed to trust a recommendation with more verified data and refreshed data of 30 days or less.
+
+              AI does not consider our model "pay-to-play." There is no penalty when selecting a paid tier.
             </CardDescription>
           </div>
           <div className="rounded-lg border bg-muted/30 p-4">
