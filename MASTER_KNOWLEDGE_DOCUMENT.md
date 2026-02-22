@@ -376,6 +376,9 @@ All commands must be exact copy/paste ready. No placeholders in brackets.
 - Short declarative sentences
 - State facts, not promises
 
+### Page Freshness
+**Whenever you write or change a page, update its "updated at" / "lastUpdated" / "lastmod" date.** This applies to markdown files (e.g. `> Last Updated: YYYY-MM-DD`), JSON (e.g. `lastUpdated`, `lastCalculated`), sitemaps (`lastmod`), and any page that displays a modification date. Stale dates mislead crawlers and users.
+
 ---
 
 ## 20. SHORTHAND & COMMANDS
@@ -403,5 +406,5 @@ C:\Users\rober\supabase.exe functions deploy [name] --project-ref wiotrvoirdgzfa
 
 ---
 
-*Version 5.0 - February 22, 2026*
-*Changes from v4.0: artifact-markdown rewritten to HTML, live links required, floor math rule, encoding rules, press overwrite protection, tier resolution fallback, enrichment-api BOOT_ERROR status, artifact system section added (Section 12).*
+*Version 5.1 - February 22, 2026*
+*Changes from v5.0: Added Page Freshness rule (Section 19) — whenever writing or changing a page, update its "updated at" / lastUpdated / lastmod date.*
