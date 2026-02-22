@@ -170,7 +170,7 @@ export default function Step6Neighborhoods() {
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-muted-foreground">Step 5 of 7</span>
+                <span className="text-sm text-muted-foreground">Step 7 of 8</span>
                 <span className="text-sm font-medium">Select Neighborhoods</span>
               </div>
               <CardTitle>Which neighborhoods are you an expert in?</CardTitle>
