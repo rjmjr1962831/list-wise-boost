@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { SafeHead } from "@/components/SafeHead";
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -15,9 +15,13 @@ interface CityArea {
   state: string;
 }
 
+type LocationState = { professionalId?: string; state_slug?: string | null; license_state?: string | null } | null;
+
 export default function Step5Cities() {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
+  const passedState = location.state as LocationState;
   const [loading, setLoading] = useState(true);
   const [cityAreas, setCityAreas] = useState<CityArea[]>([]);
   const [selectedSlugs, setSelectedSlugs] = useState<Set<string>>(new Set());
@@ -26,7 +30,7 @@ export default function Step5Cities() {
 
   useEffect(() => {
     loadData();
-  }, [token]);
+  }, [token, passedState?.professionalId]);
 
   const loadData = async () => {
     if (!token) {
@@ -34,23 +38,33 @@ export default function Step5Cities() {
       return;
     }
 
-    try {
-      // Get professional with state info
-      const { data: prof, error: profError } = await supabase
-        .from('professionals')
-        .select('id, state_slug, license_state')
-        .eq('verification_token', token)
-        .single();
+    let agentState = '';
 
-      if (profError || !prof) {
+    if (passedState?.professionalId) {
+      setProfessionalId(passedState.professionalId);
+      agentState = passedState.license_state || passedState.state_slug || '';
+    } else {
+      try {
+        const { data: prof, error: profError } = await supabase
+          .from('professionals')
+          .select('id, state_slug, license_state')
+          .eq('verification_token', token)
+          .single();
+
+        if (profError || !prof) {
+          navigate('/404');
+          return;
+        }
+
+        setProfessionalId(prof.id);
+        agentState = prof.license_state || prof.state_slug || '';
+      } catch {
         navigate('/404');
         return;
       }
+    }
 
-      setProfessionalId(prof.id);
-
-      // Determine the agent's state for filtering
-      const agentState = prof.license_state || prof.state_slug || '';
+    try {
 
       // Pull distinct city_area groups from neighborhood_catalog
       const allRows: { city_area: string; city_area_slug: string; state: string }[] = [];

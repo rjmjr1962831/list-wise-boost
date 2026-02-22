@@ -82,7 +82,8 @@ export default function Step4ReviewFinal() {
 
   const handleAccept = () => {
     toast.success('Profile confirmed!');
-    window.location.assign(`/funnel/${token}/cities`);
+    const prof = professional as { id: string; state_slug?: string | null; license_state?: string | null };
+    navigate(`/funnel/${token}/cities`, { state: { professionalId: prof.id, state_slug: prof.state_slug, license_state: prof.license_state } });
   };
 
   if (loading) {
