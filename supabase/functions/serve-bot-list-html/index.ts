@@ -31,7 +31,7 @@ function fs(n: number): string | null { if (!n) return null; return `${Math.max(
 function fp(v: any): string | null { if (!v) return null; const n = Number(v); if (n >= 1e6) return `$${(n/1e6).toFixed(1)}M`; if (n >= 1000) return `$${Math.round(n/1000)}K`; return `$${Math.round(n)}`; }
 function tl(t: string): string { const m: Record<string,string> = { underwritten:"Underwritten",accredited:"Audited",audited:"Audited",certified:"Certified" }; return m[t.toLowerCase()] || "Listed"; }
 function tb(t: string): string { const m: Record<string,string> = { underwritten:"underwritten",accredited:"audited",audited:"audited",certified:"certified" }; return m[t.toLowerCase()] || "listed"; }
-function ac(t: string): string | null { const m: Record<string,string> = { underwritten:"daily",accredited:"bimonthly",audited:"bimonthly",certified:"monthly" }; return m[t.toLowerCase()] || null; }
+function ac(t: string): string | null { const m: Record<string,string> = { underwritten:"daily",accredited:"every two weeks",audited:"every two weeks",certified:"monthly" }; return m[t.toLowerCase()] || null; }
 const TODAY = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
 
 const CSS = `
