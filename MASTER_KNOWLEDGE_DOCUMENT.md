@@ -362,15 +362,15 @@ Must return `text/html; charset=utf-8`.
 All commands must be exact copy/paste ready. No placeholders in brackets.
 
 ### Testing Before Claiming Done
-**Nothing is done until end-to-end tested.** Run a full test against the live URL. Every check must pass. If anything fails, fix it and retest before reporting back to Robert.
+**Nothing is done until end-to-end tested.** Code changes alone are not completion. Deployment + verification = completion.
 
-1. Deploy the change
-2. Test with curl/API/browser against the live URL
-3. Verify result is correct
+1. Deploy the change (commit, push, wait for build)
+2. **End-to-end test** against the live URL (curl/API/browser) - reproduce the user flow
+3. Verify the specific thing changed works correctly
 4. If anything fails, fix it and retest
 5. ONLY THEN report done
 
-**Never say "done" without testing it yourself first.**
+**Never say "done" without end-to-end testing it first.** If you cannot verify (e.g. no browser), say: "Changes deployed. Cannot verify without [browser/auth]. Please check [URL] for [specific element]."
 
 ### No Crashing on Big Jobs
 | Record Count | Approach |
@@ -413,5 +413,5 @@ C:\Users\rober\supabase.exe functions deploy [name] --project-ref wiotrvoirdgzfa
 
 ---
 
-*Version 5.5 - February 22, 2026*
-*Changes from v5.4: REMEMBER block — two branches, one Supabase; pushing to staging does NOT require Robert's approval.*
+*Version 5.6 - February 20, 2026*
+*Changes from v5.5: Testing Before Claiming Done — end-to-end test required; if cannot verify, say so explicitly.*
