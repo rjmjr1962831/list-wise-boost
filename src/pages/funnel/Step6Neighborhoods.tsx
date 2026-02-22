@@ -16,6 +16,18 @@ interface Neighborhood {
   state: string;
 }
 
+function stateSlugToFullState(slugOrAbbr: string | null | undefined): string {
+  if (!slugOrAbbr) return 'Arizona';
+  const s = slugOrAbbr.toLowerCase().trim();
+  if (s === 'az' || s === 'arizona') return 'Arizona';
+  if (s === 'ca' || s === 'california') return 'California';
+  if (s === 'tx' || s === 'texas') return 'Texas';
+  if (s === 'fl' || s === 'florida') return 'Florida';
+  if (s === 'co' || s === 'colorado') return 'Colorado';
+  if (s === 'ny' || s === 'new-york') return 'New York';
+  return slugOrAbbr.charAt(0).toUpperCase() + slugOrAbbr.slice(1).replace(/-/g, ' ');
+}
+
 interface ProfessionalForPricing {
   id: string;
   name: string;
@@ -67,9 +79,15 @@ export default function Step6Neighborhoods() {
     })();
   }, [token, navigate, passedProfessional]);
 
+  const agentState = professional ? stateSlugToFullState(professional.license_state || professional.state_slug) : null;
+
   const searchNeighborhoods = useCallback(async (q: string) => {
     const trimmed = q.trim();
     if (trimmed.length < 2) {
+      setSuggestions([]);
+      return;
+    }
+    if (!agentState) {
       setSuggestions([]);
       return;
     }
@@ -79,6 +97,7 @@ export default function Step6Neighborhoods() {
         .from('neighborhood_catalog')
         .select('id, neighborhood, city_area, state')
         .eq('is_active', true)
+        .eq('state', agentState)
         .or(`neighborhood.ilike.%${trimmed}%,city_area.ilike.%${trimmed}%`)
         .order('city_area')
         .order('neighborhood')
@@ -93,7 +112,7 @@ export default function Step6Neighborhoods() {
     } finally {
       setIsSearching(false);
     }
-  }, []);
+  }, [agentState]);
 
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -164,16 +183,19 @@ export default function Step6Neighborhoods() {
                     </div>
                   </div>
                   <div className="flex-1 overflow-y-auto p-3 max-h-[260px]">
-                    {query.length < 2 && (
-                      <p className="text-sm text-muted-foreground">Type at least 2 characters to search</p>
+                    {!agentState && (
+                      <p className="text-sm text-muted-foreground">Loading...</p>
                     )}
-                    {query.length >= 2 && isSearching && (
+                    {agentState && query.length < 2 && (
+                      <p className="text-sm text-muted-foreground">Type at least 2 characters to search {agentState} neighborhoods</p>
+                    )}
+                    {agentState && query.length >= 2 && isSearching && (
                       <p className="text-sm text-muted-foreground">Searching...</p>
                     )}
-                    {query.length >= 2 && !isSearching && suggestions.length === 0 && (
+                    {agentState && query.length >= 2 && !isSearching && suggestions.length === 0 && (
                       <p className="text-sm text-muted-foreground">No matches</p>
                     )}
-                    {query.length >= 2 && !isSearching && suggestions.length > 0 && (
+                    {agentState && query.length >= 2 && !isSearching && suggestions.length > 0 && (
                       <ul className="space-y-1">
                         {suggestions.map((n) => {
                           const alreadySelected = selectedList.some(s => s.id === n.id);
