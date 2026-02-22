@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { sanitizeBioHtml } from "../_shared/formatParagraphs.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
@@ -139,7 +140,7 @@ serve(async (req) => {
         };
 
         if (extracted.bio) {
-          updateData.synthesized_bio = extracted.bio;
+          updateData.synthesized_bio = sanitizeBioHtml(extracted.bio);
         }
         if (extracted.yearsExperience) {
           updateData.years_experience = extracted.yearsExperience;
