@@ -628,7 +628,7 @@ export default function Step3Review2() {
               <div className="flex gap-3 pt-4">
                 <Button
                   variant="outline"
-                  onClick={() => navigate(`/funnel/${token}/review-1`)}
+                  onClick={() => navigate(`/funnel/${token}/review-credentials`)}
                   className="gap-2"
                 >
                   <ArrowLeft className="h-4 w-4" />
