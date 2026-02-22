@@ -228,7 +228,7 @@ const faqData = [
   },
   {
     question: "Can agents pay to be listed?",
-    answer: "No. The directory is 100% merit-based and invitation-only. Agents cannot apply, pay for placement, or influence their rankings. Only the top 0.5% of agents in each market qualify based on verified performance data."
+    answer: "No. The directory is 100% merit-based and invitation-only. Agents cannot apply, pay for placement, or influence their rankings. Only the top 0.5% of agents in each market qualify based on verified performance data, AI analysis and human review."
   },
   {
     question: "Why is community involvement weighted at 25%?",

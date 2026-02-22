@@ -110,13 +110,13 @@ serve(async (req) => {
           Check It Out
         </text>
         
-        <!-- Photo - left side, not overlapping -->
+        <!-- Photo - left side, not overlapping (profile images deprecated; skip if old Supabase URL) -->
         <defs>
           <clipPath id="photoClip">
             <circle cx="110" cy="160" r="70"/>
           </clipPath>
         </defs>
-        ${professional.image_url ? `
+        ${(professional.image_url && !professional.image_url.includes('bgdtekbhelormzbymkhh.supabase.co')) ? `
           <image href="${professional.image_url}" x="40" y="90" width="140" height="140" clip-path="url(#photoClip)" preserveAspectRatio="xMidYMid slice"/>
         ` : `
           <circle cx="110" cy="160" r="70" fill="hsl(234, 45%, 21%)" opacity="0.1"/>

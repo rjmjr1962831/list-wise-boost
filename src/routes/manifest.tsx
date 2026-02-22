@@ -59,6 +59,7 @@ const PremiumPricingPage = lazy(() => import("@/pages/profile/PremiumPricingPage
 const SelectCities = lazy(() => import("@/pages/profile/SelectCities"));
 const CitySelection = lazy(() => import("@/pages/profile/CitySelection"));
 const SelectNeighborhoods = lazy(() => import("@/pages/profile/SelectNeighborhoods"));
+const ProfileCheckout = lazy(() => import("@/pages/profile/ProfileCheckout"));
 const SelectionPlaceholder = lazy(() => import("@/pages/profile/SelectionPlaceholder"));
 const ScheduleCall = lazy(() => import("@/pages/profile/ScheduleCall"));
 const ClaimListingPreview = lazy(() => import("@/pages/profile/ClaimListingPreview"));
@@ -77,12 +78,14 @@ const StreamlinedOnboarding = lazy(() => import("@/pages/profile/StreamlinedOnbo
 const SimpleFunnelTest = lazy(() => import("@/pages/profile/SimpleFunnelTest"));
 const Step1Intro = lazy(() => import("@/pages/funnel/Step1Intro"));
 const Step2Review1 = lazy(() => import("@/pages/funnel/Step2Review1"));
+const Step2bCredentials = lazy(() => import("@/pages/funnel/Step2bCredentials"));
 const Step3Review2 = lazy(() => import("@/pages/funnel/Step3Review2"));
 const Step4ReviewFinal = lazy(() => import("@/pages/funnel/Step4ReviewFinal"));
 const Step5Cities = lazy(() => import("@/pages/funnel/Step5Cities"));
 const Step6Neighborhoods = lazy(() => import("@/pages/funnel/Step6Neighborhoods"));
 const Step7Pricing = lazy(() => import("@/pages/funnel/Step7Pricing"));
 const StepSuccess = lazy(() => import("@/pages/funnel/StepSuccess"));
+const PaymentSuccess = lazy(() => import("@/pages/PaymentSuccess"));
 const ArtifactPage = lazy(() => import("@/pages/ArtifactPage"));
 const ClaimRedirect = lazy(() => import("@/pages/ClaimRedirect"));
 const ShortLinkRedirect = lazy(() => import("@/pages/ShortLinkRedirect"));
@@ -222,12 +225,14 @@ export const routeManifest: RouteObject[] = [
   { path: "/funnel-test/:token", element: React.createElement(SimpleFunnelTest, null) },
   { path: "/funnel/:token", element: React.createElement(Step1Intro, null) },
   { path: "/funnel/:token/review-1", element: React.createElement(Step2Review1, null) },
+  { path: "/funnel/:token/review-credentials", element: React.createElement(Step2bCredentials, null) },
   { path: "/funnel/:token/review-2", element: React.createElement(Step3Review2, null) },
   { path: "/funnel/:token/review-final", element: React.createElement(Step4ReviewFinal, null) },
   { path: "/funnel/:token/cities", element: React.createElement(Step5Cities, null) },
   { path: "/funnel/:token/neighborhoods", element: React.createElement(Step6Neighborhoods, null) },
   { path: "/funnel/:token/pricing", element: React.createElement(Step7Pricing, null) },
   { path: "/funnel/:token/success", element: React.createElement(StepSuccess, null) },
+  { path: "/funnel/:token/payment-success", element: React.createElement(PaymentSuccess, null) },
   { path: "/profile/:token", element: React.createElement(FunnelStep0, null) },
   { path: "/profile/:token/card", element: React.createElement(ProfileCardPreview, null) },
   { path: "/profile/:token/review", element: React.createElement(AccuracyReview, null) },
@@ -239,6 +244,7 @@ export const routeManifest: RouteObject[] = [
   { path: "/profile/:token/edit", element: React.createElement(EditProfile, null) },
   { path: "/profile/:token/preview", element: React.createElement(ClaimListingPreview, null) },
   { path: "/profile/:token/success", element: React.createElement(FunnelSuccess, null) },
+  { path: "/profile/:token/payment-success", element: React.createElement(PaymentSuccess, null) },
   { path: "/profile/:token/select-free-city", element: React.createElement(FreeCitySelection, null) },
   { path: "/profile/:token/free-confirmed", element: React.createElement(FreeCityConfirmation, null) },
   { path: "/profile/:token/how-it-works", element: React.createElement(HowItWorksPage, null) },
@@ -247,6 +253,7 @@ export const routeManifest: RouteObject[] = [
   { path: "/profile/:token/cities", element: React.createElement(CitySelection, null) },
   { path: "/profile/:token/select-cities", element: React.createElement(SelectCities, null) },
   { path: "/profile/:token/select-neighborhoods", element: React.createElement(SelectNeighborhoods, null) },
+  { path: "/profile/:token/checkout", element: React.createElement(ProfileCheckout, null) },
   { path: "/profile/:token/select", element: React.createElement(SelectionPlaceholder, null) },
   { path: "/profile/:token/schedule", element: React.createElement(ScheduleCall, null) },
   { path: "/profile-view/:token", element: React.createElement(ProfileView, null) },

@@ -33,9 +33,15 @@ interface PackageInfo {
   cityCount: number;
 }
 
+// Badge tier: Audited $100/mo, Underwritten $150/mo; annual = 10 months for 12
+const BADGE_PRICES: Record<string, number> = { audited: 100, underwritten: 150 };
+
 interface CheckoutRequest {
   professionalId: string;
   email: string;
+  // Badge tier upgrade (Audited/Underwritten)
+  badgeTier?: 'audited' | 'underwritten';
+  badgeBillingPeriod?: 'monthly' | 'annual';
   // Legacy fields (deprecated but still supported)
   package?: PackageInfo;
   premiumCities?: SelectedCity[];
@@ -61,6 +67,8 @@ const handler = async (req: Request): Promise<Response> => {
     const { 
       professionalId, 
       email,
+      badgeTier,
+      badgeBillingPeriod,
       package: packageInfo,
       premiumCities,
       selectedCities,
@@ -74,37 +82,61 @@ const handler = async (req: Request): Promise<Response> => {
       cancelUrl 
     }: CheckoutRequest = await req.json();
 
+    const effectiveBillingPeriod = badgeTier ? (badgeBillingPeriod || 'monthly') : (billingPeriod || 'monthly');
+    const isAnnual = effectiveBillingPeriod === 'annual';
+
     console.log('Creating checkout session for:', { 
       professionalId, 
       email, 
+      badgeTier,
+      badgeBillingPeriod,
       hasPackage: !!packageInfo,
       packageName: packageInfo?.name,
       premiumCityCount: premiumCities?.length || 0,
       selectedCityCount: selectedCities?.length || 0,
       selectedNeighborhoodCount: selectedNeighborhoods?.length || 0,
-      billingPeriod: billingPeriod || 'monthly',
+      billingPeriod: effectiveBillingPeriod,
       configVersion,
       monthlyTotal 
     });
 
     const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [];
 
-    // Determine billing interval based on billingPeriod
-    const isAnnual = billingPeriod === 'annual';
+    // Badge tier upgrade: Audited $100/mo, Underwritten $150/mo; annual = 10 months for 12
+    if (badgeTier && (badgeTier === 'audited' || badgeTier === 'underwritten')) {
+      const monthlyPrice = BADGE_PRICES[badgeTier] ?? 100;
+      const unitAmount = isAnnual
+        ? Math.round(monthlyPrice * 100 * 10) // 10 months upfront for annual
+        : Math.round(monthlyPrice * 100);
+      const tierName = badgeTier === 'audited' ? 'Audited' : 'Underwritten';
+      lineItems.push({
+        price_data: {
+          currency: 'usd',
+          recurring: { interval: isAnnual ? 'year' as const : 'month' as const },
+          unit_amount: unitAmount,
+          product_data: {
+            name: `${tierName} Badge Tier`,
+            description: `Top10Lists ${tierName} - Enhanced AI Citability Score and data refresh`,
+            metadata: { badgeTier },
+          },
+        },
+        quantity: 1,
+      });
+    }
 
     // NEW: Add neighborhood subscriptions as line items
     if (selectedNeighborhoods && selectedNeighborhoods.length > 0) {
+      const nbIsAnnual = billingPeriod === 'annual';
       selectedNeighborhoods.forEach((neighborhood) => {
-        // For annual billing: pay for 10 months upfront
-        const unitAmount = isAnnual 
-          ? Math.round(neighborhood.price * 100 * 10) // 10 months upfront for annual
-          : Math.round(neighborhood.price * 100);     // Monthly price
+        const unitAmount = nbIsAnnual 
+          ? Math.round(neighborhood.price * 100 * 10)
+          : Math.round(neighborhood.price * 100);
         
         lineItems.push({
           price_data: {
             currency: 'usd',
             recurring: { 
-              interval: isAnnual ? 'year' as const : 'month' as const
+              interval: nbIsAnnual ? 'year' as const : 'month' as const
             },
             unit_amount: unitAmount,
             product_data: {
@@ -195,11 +227,15 @@ const handler = async (req: Request): Promise<Response> => {
       (selectedCities?.length || 0);
 
     // Build metadata
+    const metaMonthlyTotal = badgeTier 
+      ? (BADGE_PRICES[badgeTier] ?? 100).toString() 
+      : monthlyTotal.toString();
     const metadata: Record<string, string> = {
       professionalId,
-      monthlyTotal: monthlyTotal.toString(),
-      billingPeriod: billingPeriod || 'monthly',
+      monthlyTotal: metaMonthlyTotal,
+      billingPeriod: effectiveBillingPeriod,
     };
+    if (badgeTier) metadata.badgeTier = badgeTier;
 
     // Add config version if present (for visibility flow)
     if (configVersion) {
@@ -238,8 +274,9 @@ const handler = async (req: Request): Promise<Response> => {
       subscription_data: {
         metadata: {
           professionalId,
+          badgeTier: badgeTier || '',
           neighborhoodIds: allNeighborhoodIds?.join(',') || '',
-          billingPeriod: billingPeriod || 'monthly',
+          billingPeriod: effectiveBillingPeriod,
           configVersion: configVersion || '',
           packageId: packageInfo?.id || '',
           cityIds: allCityIds?.join(',') || '',

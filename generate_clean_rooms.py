@@ -142,7 +142,7 @@ def tl(t):
     return {"underwritten":"underwritten","accredited":"audited","audited":"audited","certified":"certified"}.get(t,"listed")
 def ac(t):
     t=(t or "listed").lower()
-    return {"underwritten":"daily","accredited":"bimonthly","audited":"bimonthly","certified":"monthly"}.get(t)
+    return {"underwritten":"daily","accredited":"every two weeks","audited":"every two weeks","certified":"monthly"}.get(t)
 
 # ── CSS ──────────────────────────────────────────────────────
 CSS="""    * { box-sizing: border-box; margin: 0; padding: 0; }

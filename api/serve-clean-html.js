@@ -19,14 +19,16 @@ export default async function handler(req, res) {
   }
 
   // Only allow known function names
-  const allowed = ['serve-bot-state-html', 'serve-bot-list-html', 'serve-bot-agent-html'];
+  const allowed = ['serve-bot-state-html', 'serve-bot-list-html', 'serve-bot-agent-html', 'artifact-markdown'];
   if (!allowed.includes(fn)) {
     res.status(403).json({ error: 'Unknown function' });
     return;
   }
 
   try {
-    const url = `${SUPABASE_URL}/${fn}?path=${encodeURIComponent(path)}`;
+    const token = req.query.token || '';
+    const tokenParam = token ? `&token=${encodeURIComponent(token)}` : '';
+    const url = `${SUPABASE_URL}/${fn}?path=${encodeURIComponent(path)}${tokenParam}`;
     const upstream = await fetch(url);
     const html = await upstream.text();
 

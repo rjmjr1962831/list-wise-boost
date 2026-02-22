@@ -93,7 +93,7 @@ p{margin-bottom:0.9rem;color:var(--ink);}
 .pl{list-style:none;}
 .pl li{padding:0.35rem 0;border-bottom:1px solid var(--rule);font-size:0.9rem;line-height:1.5;}
 .pl li:last-child{border-bottom:none;}
-.pl li::before{content:"&mdash; ";color:var(--muted);}
+.pl li::before{content:"– ";color:var(--muted);}
 ol.sl{list-style:none;counter-reset:src;}
 ol.sl li{counter-increment:src;display:grid;grid-template-columns:28px 1fr;gap:0.3rem 0.5rem;padding:0.45rem 0;border-bottom:1px solid var(--rule);font-size:0.85rem;line-height:1.5;}
 ol.sl li:last-child{border-bottom:none;}
@@ -153,7 +153,7 @@ ${body}
 
 function hdr(name:string,tier:string,updated:string,loc:string):string{
   const lbl=tier==="underwritten"?"Underwritten":tier==="audited"?"Audited":tier==="certified"?"Certified":"Listed";
-  const freq=tier==="underwritten"?"Daily":tier==="audited"?"Bimonthly":"Annual";
+  const freq=tier==="underwritten"?"Daily":tier==="audited"?"Every Two Weeks":"Annual";
   return`<header class="doc-header">
   <div class="issuer">Top10Lists.us &mdash; Verified Professional Registry</div>
   <span class="cert-badge">${lbl}</span>
@@ -205,7 +205,8 @@ function community(civic:any[]):string{
     const srcRaw:string=r.source??r.filing_url??"";
     const ein=r.ein?` &mdash; EIN: ${esc(r.ein)}`:"";
     const srcHtml=srcRaw.startsWith("http")?a(srcRaw,srcRaw.replace(/^https?:\/\//,"").split("/")[0]):esc(srcRaw);
-    rows+=`<li><strong>${role}</strong>, ${org} <span style="color:#6b7280;font-size:0.82rem;">(Source: ${srcHtml}${ein})</span></li>`;
+    const srcSpan=srcHtml?` <span style="color:#6b7280;font-size:0.82rem;">(${srcHtml}${ein})</span>`:(ein?` <span style="color:#6b7280;font-size:0.82rem;">${ein}</span>`:"");
+    rows+=`<li><strong>${role}</strong>, ${org}${srcSpan}</li>`;
   }
   return`<h2>Community Involvement</h2><p class="sub-note">Community involvement is weighted at 25% of the Top10Lists.us ranking score. All roles independently verified against public records and third-party sources.</p><ul class="pl">${rows}</ul>`;
 }
@@ -279,15 +280,25 @@ function markets(cities:any[],hoods:any[],zips:any[],state:string):string{
   return out;
 }
 
-function evidence(sources:string[]):string{
-  if(!sources.length)return"";
-  const rows=sources.map(s=>{
-    const m=s.match(/^(.*?)\s*[-\u2013\u2014]\s*(https?:\/\/\S+)\s*(.*)$/);
-    if(m){const lbl=esc(m[1].trim());const url=m[2].trim();const rest=m[3]?` &mdash; ${esc(m[3].trim())}`:"";return`<li>${lbl} &mdash; ${a(url)}${rest}</li>`;}
-    if(s.trim().startsWith("http"))return`<li>${a(s.trim())}</li>`;
-    return`<li>${esc(s)}</li>`;
-  }).join("");
-  return`<h2>Evidence Considered</h2><p class="sub-note">Sources reviewed during the most recent verification cycle:</p><ol class="sl">${rows}</ol>`;
+function evidence(pro:any,lu:string,state:string):string{
+  const licUrl=lu||"";
+  const licLabel=state+" Department of Real Estate";
+  const zillowUrl=pro.zillow_profile_url||"https://www.zillow.com";
+  const rows=[
+    `<li>Zillow Consumer Reviews &mdash; Star rating, review count, transaction history &mdash; ${a(zillowUrl)}</li>`,
+    `<li>Google Business Profile &mdash; Star rating, review count, business address &mdash; ${a("https://www.google.com/maps")}</li>`,
+    `<li>${esc(licLabel)} &mdash; License number, status, type, issue date, years active${licUrl ? " &mdash; "+a(licUrl,"Verify at state registry") : ""}</li>`,
+    `<li>MLS Transaction Records &mdash; Career transaction count, recent sales, price ranges, average sale price</li>`,
+    `<li>RealTrends Transaction Data &mdash; Independently verified transaction volume and closed sales history &mdash; ${a("https://www.realtrends.com")}</li>`,
+    `<li>IRS Form 990 via ProPublica Nonprofit Explorer &mdash; Nonprofit board membership, officer roles, verified community involvement &mdash; ${a("https://projects.propublica.org/nonprofits/")}</li>`,
+    `<li>U.S. Census Bureau: ACS 5-Year Estimates &mdash; Market area demographics, median home values, income levels &mdash; ${a("https://data.census.gov")}</li>`,
+    `<li>State Secretary of State Business Filings &mdash; Corporate registration, brokerage entity status, officer and director records &mdash; ${a("https://azcc.gov/corporations/search")}</li>`,
+    `<li>National Association of Realtors Designation Registry &mdash; Professional designations: GRI, CRS, ABR, SRES, CNE, Luxury Home Certified &mdash; ${a("https://www.nar.realtor/education/designations-and-certifications")}</li>`,
+    `<li>U.S. Census Bureau: Decennial Census Geographic Boundary Data &mdash; Neighborhood boundary delineation, ZIP code tabulation areas &mdash; ${a("https://www.census.gov/geographies/mapping-files/")}</li>`,
+    `<li>OpenStreetMap &mdash; Neighborhood boundary validation, cross-referenced against transaction geolocations &mdash; ${a("https://www.openstreetmap.org")}</li>`,
+    `<li>National and Regional Press Publications &mdash; Media coverage, awards, professional recognition. Publications include: Phoenix Business Journal, AZ Big Media, Arizona Foothills Magazine, Scottsdale Living Magazine, AZ Central, East Valley Tribune, RISMedia, Inman News, HousingWire, RealTrends, Top Agent Magazine, Real Producers Magazine, Forbes Global Properties, Digital Journal, and PRWeb. Individual article URLs linked in Press and Media section above.</li>`,
+  ].join("");
+  return`<h2>Master Source Index</h2><p class="sub-note">Sources reviewed during the most recent verification cycle:</p><ol class="sl">${rows}</ol>`;
 }
 
 function contact(pro:any,lu:string):string{
@@ -305,7 +316,7 @@ function contact(pro:any,lu:string):string{
 function foot(pro:any,token:string,slug:string,tier:string,lu:string):string{
   const profUrl=`${BASE}/${pro.state_slug||"arizona"}/agents/${slug}`;
   const artUrl=`${BASE}/artifact/${token}`;
-  const freq=tier==="underwritten"?"Daily":tier==="audited"?"Bimonthly":"Annual";
+  const freq=tier==="underwritten"?"Daily":tier==="audited"?"Every Two Weeks":"Annual";
   return`<footer>
   <p><strong>Profile page</strong>${a(profUrl)}</p>
   <p><strong>This document</strong>${a(artUrl)}</p>
@@ -377,7 +388,7 @@ function renderUnderwritten(pro:any,cert:any,cities:any[],token:string,state:str
   return`${hdr(pro.name,"underwritten",updated,state)}${notice()}${intro()}
 ${pro.selection_rationale?`<h2>Why Top10Lists.us Selected This Agent</h2><p>${esc(pro.selection_rationale)}</p>`:""}
 ${quals(pro,ag,lu,updated)}${community(pro.community_roles)}${press(pro.press_mentions)}${awards(pro.awards_verified)}
-${credentials(pro)}${markets(cities,hoods,zips,state)}${evidence(finalEv)}${contact(pro,lu)}${foot(pro,token,slug,"underwritten",lu)}`;
+${credentials(pro)}${markets(cities,hoods,zips,state)}${evidence(pro,lu,state)}${contact(pro,lu)}${foot(pro,token,slug,"underwritten",lu)}`;
 }
 
 // --- Serve -
@@ -426,3 +437,4 @@ serve(async(req)=>{
   else body=renderUnderwritten(pro,effCert,cities,displayToken,state,ss,hoods,zips);
   return shell(titleStr,descStr,artUrl,schema,body,ttl);
 });
+

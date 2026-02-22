@@ -1,176 +1,14 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Award, BadgeCheck, Shield, Zap, Sparkles, ChevronDown, ChevronUp } from "lucide-react";
+import { Award, BadgeCheck, Shield, Zap, Sparkles, CheckCircle, XCircle, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { DataPayloadExpander } from "@/components/agent/DataPayloadExpander";
 
 interface OverviewSectionProps {
   professional: any;
-}
-
-/** State abbreviation to state DRE name for sources. */
-function getStateDreName(stateSlug: string | null | undefined): string {
-  if (!stateSlug) return "State DRE";
-  const s = (stateSlug || "").toUpperCase();
-  const map: Record<string, string> = {
-    AZ: "AZDRE",
-    CA: "CADRE",
-    TX: "TREC",
-    FL: "FREC",
-    NY: "NYS Department of State",
-    CO: "Colorado DRE",
-    NV: "Nevada Real Estate Division",
-  };
-  return map[s] || `${s} Department of Real Estate`;
-}
-
-/** Format date for display. */
-function formatDate(val: string | null | undefined): string {
-  if (!val) return "—";
-  try {
-    const d = new Date(val);
-    return isNaN(d.getTime()) ? "—" : d.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
-  } catch {
-    return "—";
-  }
-}
-
-/** Expander showing data fields and sources for a tier. Human-facing, not markdown. */
-function DataPayloadExpander({
-  tier,
-  triggerText,
-  professional,
-}: {
-  tier: "certified" | "audited" | "underwritten";
-  triggerText: string;
-  professional?: any;
-}) {
-  const [open, setOpen] = useState(false);
-
-  const certifiedSources = [
-    "Google",
-    "Zillow",
-    "MLS",
-    getStateDreName(professional?.license_state || professional?.state_slug),
-    "National, Regional and Local publications",
-  ];
-
-  const certifiedDataRows =
-    tier === "certified" && professional
-      ? [
-          { label: "Brokerage", value: professional.company || professional.business_name || "—" },
-          { label: "Date last audited", value: formatDate(professional.last_diligence_check || professional.last_verified_at) },
-          {
-            label: "Selection rationale",
-            value: professional.selection_rationale
-              ? (() => {
-                  const s = String(professional.selection_rationale);
-                  return s.length > 120 ? s.slice(0, 120) + "…" : s;
-                })()
-              : "—",
-          },
-          { label: "Lifetime sales", value: professional.total_sales != null ? `>${Number(professional.total_sales).toLocaleString()}` : "—" },
-          { label: "Next audit date", value: formatDate(professional.annual_review_date || professional.next_bill_date) },
-          {
-            label: "Cities served",
-            value: Array.isArray(professional.service_areas)
-              ? (professional.service_areas as string[]).join(", ") || "—"
-              : typeof professional.service_areas === "string"
-                ? professional.service_areas
-                : "—",
-          },
-        ]
-      : null;
-
-  const content: Record<string, { data: string[]; sources: string[] }> = {
-    audited: {
-      data: [
-        "Everything in Certified, plus:",
-        "Selection rationale (why you were chosen)",
-        "Years of experience",
-        "Total transactions",
-        "Company name",
-        "Community roles and organizations",
-        "Notable achievements",
-        "Civic involvement (IRS 990 verified)",
-        "Transaction history",
-      ],
-      sources: [
-        "State DRE",
-        "Zillow",
-        "IRS 990 filings",
-        "Verified transaction records",
-      ],
-    },
-    underwritten: {
-      data: [
-        "Everything in Audited, plus:",
-        "Certifications and designations",
-        "Neighborhood expertise",
-        "Press mentions",
-        "Awards",
-        "Performance data (sales count, last verified)",
-      ],
-      sources: [
-        "State DRE",
-        "Zillow",
-        "IRS 990 filings",
-        "Verified transaction records",
-        "Neighborhood transaction data",
-        "Press and awards verification",
-      ],
-    },
-  };
-
-  const isCertifiedWithData = tier === "certified" && certifiedDataRows;
-  const dataDisplay = isCertifiedWithData
-    ? certifiedDataRows
-    : content[tier]?.data.map((item) => ({ label: null, value: item })) ?? [];
-  const sourcesDisplay = isCertifiedWithData ? certifiedSources : content[tier]?.sources ?? [];
-
-  return (
-    <div className="mt-1">
-      <button
-        type="button"
-        onClick={() => setOpen(!open)}
-        className="text-xs text-primary hover:underline inline-flex items-center gap-1 font-medium"
-      >
-        {triggerText}
-        {open ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
-      </button>
-      {open && (
-        <div className="mt-2 p-3 rounded-lg border bg-muted/30 text-sm space-y-2">
-          <div>
-            <p className="font-medium text-foreground mb-1">Data included</p>
-            {isCertifiedWithData ? (
-              <dl className="text-muted-foreground space-y-1">
-                {certifiedDataRows!.map((row, i) => (
-                  <div key={i} className="flex gap-2">
-                    <dt className="font-medium text-foreground shrink-0">{row.label}:</dt>
-                    <dd>{row.value}</dd>
-                  </div>
-                ))}
-              </dl>
-            ) : (
-              <ul className="text-muted-foreground space-y-0.5 list-disc list-inside">
-                {dataDisplay.map((item, i) => (
-                  <li key={i}>{item.value}</li>
-                ))}
-              </ul>
-            )}
-          </div>
-          <div>
-            <p className="font-medium text-foreground mb-1">Sources</p>
-            <ul className="text-muted-foreground space-y-0.5 list-disc list-inside">
-              {sourcesDisplay.map((src, i) => (
-                <li key={i}>{src}</li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      )}
-    </div>
-  );
 }
 
 /** Normalize tier for display. Listed/unknown = Certified. */
@@ -196,13 +34,14 @@ function estimateAICS(base: number | null, current: string, target: string): num
 
 const TIERS = [
   { id: "certified", name: "Certified", price: "Free", icon: BadgeCheck, features: ["Standard Top10Lists badge", "Standard artifact, monthly refresh", "Core credentials published to AI systems"] },
-  { id: "audited", name: "Audited", price: "$100/mo", icon: Shield, features: ["Richer data payload", "Bimonthly refresh", "Community involvement, transaction stats"] },
+  { id: "audited", name: "Audited", price: "$100/mo", icon: Shield, features: ["Richer data payload", "Every Two Weeks refresh", "Community involvement, transaction stats"] },
   { id: "underwritten", name: "Underwritten", price: "$150/mo", icon: Zap, features: ["Maximum data richness", "Daily refresh", "Full neighborhood endorsement"] },
 ] as const;
 
 /** Convert third-person pronouns to second person for "Why We Selected You" context. */
 function toSecondPerson(text: string): string {
   return text
+    .replace(/\bSelected for your\b/g, "You were selected for your")
     .replace(/\bHis\b/g, "Your")
     .replace(/\bhis\b/g, "your")
     .replace(/\bHim\b/g, "You")
@@ -214,6 +53,7 @@ function toSecondPerson(text: string): string {
 
 export function OverviewSection({ professional }: OverviewSectionProps) {
   const navigate = useNavigate();
+  const [isAnnual, setIsAnnual] = useState(false);
   const rawTier = professional.current_tier || professional.badge_tier || "certified";
   const currentTier = normalizeTier(rawTier);
   const baseScore = professional.signal_score ?? professional.certified_projected_signal ?? null;
@@ -222,9 +62,16 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
     if (tierId === "certified")
       return professional.certified_projected_signal ?? professional.signal_score ?? estimateAICS(baseScore, currentTier, "certified");
     if (tierId === "audited")
-      return professional.audited_projected_signal ?? estimateAICS(baseScore, currentTier, "audited");
+      return professional.audited_projected_signal ?? 79;
     if (tierId === "underwritten") return 98;
     return null;
+  };
+
+  const getPrice = (tierId: string) => {
+    if (tierId === "certified") return "Free";
+    if (tierId === "audited") return isAnnual ? "$1,000/year" : "$100/mo";
+    if (tierId === "underwritten") return isAnnual ? "$1,500/year" : "$150/mo";
+    return "—";
   };
 
   const handleUpgrade = (tierId: string) => {
@@ -236,30 +83,63 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
 
   return (
     <div className="space-y-6">
-      {/* Why We Selected You */}
-      {professional.selection_rationale && (
-        <Card className="border-primary/20 bg-primary/5">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Award className="h-5 w-5 text-primary" />
-              Why We Selected You
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm leading-relaxed">{toSecondPerson(professional.selection_rationale)}</p>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Upgrade Your Tier */}
+      {/* Our Tiered Product Structure */}
       <Card>
         <CardHeader className="space-y-4">
           <div>
-            <CardTitle className="text-lg">Upgrade Your Tier</CardTitle>
-            <CardDescription className="mt-1.5">
-              Higher tiers increase your AI Citability Score. Payment never affects inclusion or ranking.
-            </CardDescription>
+            <CardTitle className="text-lg">Our Tiered Product Structure</CardTitle>
+  
           </div>
+          {/* AICS + Web of Trust + Ways to Improve */}
+          <div className="grid gap-3 sm:grid-cols-2">
+            {/* AI Citability Score */}
+            <div className="rounded-lg border bg-muted/30 p-4">
+              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Your AI Citability Score</p>
+              <p className="text-3xl font-bold text-foreground">
+                {getAICS(currentTier) != null ? `${getAICS(currentTier)}/100` : "Pending"}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">Based on your current tier and verified data</p>
+            </div>
+
+            {/* Web of Trust */}
+            <div className="rounded-lg border bg-muted/30 p-4">
+              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Your Web of Trust</p>
+              {professional.profile_link ? (
+                <div className="flex items-center gap-2 mt-1">
+                  <CheckCircle className="h-5 w-5 text-green-500 shrink-0" />
+                  <span className="text-sm font-semibold text-green-700">Enabled</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 mt-1">
+                  <XCircle className="h-5 w-5 text-muted-foreground shrink-0" />
+                  <span className="text-sm font-semibold text-muted-foreground">Disabled</span>
+                </div>
+              )}
+              <p className="text-xs text-muted-foreground mt-2">Your public trust artifact that AI systems can cite</p>
+            </div>
+          </div>
+
+          {/* Ways to improve */}
+          <div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
+            <p className="text-sm font-semibold flex items-center gap-2 mb-2">
+              <TrendingUp className="h-4 w-4 text-primary" />
+              Ways to improve your score
+            </p>
+            <ul className="space-y-1.5 text-sm text-muted-foreground">
+              <li className="flex items-center gap-2">
+                <span className="text-primary">•</span>
+                Upgrade your tier
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="text-primary">•</span>
+                {professional.profile_link ? "Your Web of Trust is active" : (
+                  <span>Enable your Web of Trust <span className="text-xs text-green-600 font-medium">(free)</span></span>
+                )}
+              </li>
+            </ul>
+          </div>
+
+          {/* Ask any AI challenge */}
           <div className="rounded-lg border bg-muted/30 p-4">
             <p className="text-sm font-medium text-foreground mb-1">Ask any AI:</p>
             <p className="text-sm text-muted-foreground italic leading-relaxed">
@@ -278,20 +158,28 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
               return (
                 <div
                   key={tier.id}
-                  className={`rounded-lg border p-4 ${isCurrent ? "border-primary ring-2 ring-primary/20" : "border-border"}`}
+                  className={`relative rounded-lg border p-4 ${tier.id === "audited" ? "pt-6" : ""} ${isCurrent ? "border-primary ring-2 ring-primary/20" : "border-border"}`}
                 >
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <Icon className="h-5 w-5 text-primary" />
-                      <span className="font-semibold">{tier.name}</span>
-                    </div>
-                    {isCurrent && (
-                      <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary">
-                        Your tier
+                  {tier.id === "audited" && (
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                      <span className="bg-primary text-primary-foreground text-xs font-semibold px-3 py-1 rounded-full">
+                        Most Popular
                       </span>
-                    )}
+                    </div>
+                  )}
+                  {isCurrent && (
+                    <p className="text-sm font-semibold text-primary mb-2">You are on this tier</p>
+                  )}
+                  <div className="flex items-center gap-2 mb-2">
+                    <Icon className="h-5 w-5 text-primary" />
+                    <span className="font-semibold">{tier.name}</span>
                   </div>
-                  <p className="text-sm text-muted-foreground mb-3">{tier.price}</p>
+                  <p className="text-2xl font-bold text-foreground mb-3">{getPrice(tier.id)}</p>
+                  <div className={`flex items-center justify-center gap-2 mb-3 ${tier.id === "certified" ? "opacity-50 pointer-events-none" : ""}`} onClick={(e) => e.stopPropagation()}>
+                    <Label htmlFor={`overview-billing-${tier.id}`} className="text-xs">Monthly</Label>
+                    <Switch id={`overview-billing-${tier.id}`} checked={isAnnual} onCheckedChange={setIsAnnual} disabled={tier.id === "certified"} />
+                    <Label htmlFor={`overview-billing-${tier.id}`} className="text-xs">Annual (2 mo free)</Label>
+                  </div>
                   <div className="p-3 rounded-lg bg-muted/50 border mb-2">
                     <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">AI Citability Score</p>
                     <p className="text-xl font-bold">{aics != null ? `${aics}/100` : "Pending"}</p>
@@ -323,9 +211,6 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
                     <Button size="sm" className="w-full" onClick={() => handleUpgrade(tier.id)}>
                       Upgrade to {tier.name}
                     </Button>
-                  )}
-                  {isCurrent && (
-                    <p className="text-xs text-muted-foreground text-center">You are on this tier</p>
                   )}
                   {tier.id === "certified" && !isCurrent && (
                     <p className="text-xs text-muted-foreground text-center">Free tier</p>

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, ArrowRight, ArrowLeft, HelpCircle, X, Plus } from 'lucide-react';
+import { Loader2, ArrowRight, ArrowLeft, HelpCircle, X, Plus, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import InlineReviewForm from '@/components/funnel/InlineReviewForm';
 
@@ -67,6 +67,7 @@ export default function Step3Review2() {
   const [specialtyInput, setSpecialtyInput] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [reviewField, setReviewField] = useState<string | null>(null);
+  const [submittedReviews, setSubmittedReviews] = useState<Set<string>>(new Set());
   const [selectedSpecialties, setSelectedSpecialties] = useState<string[]>([]);
   const suggestionsRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -265,7 +266,7 @@ export default function Step3Review2() {
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-muted-foreground">Step 2 of 7</span>
+                <span className="text-sm text-muted-foreground">Step 4 of 8</span>
                 <span className="text-sm font-medium">Professional Details</span>
               </div>
               <CardTitle>Review your profile fields</CardTitle>
@@ -282,7 +283,12 @@ export default function Step3Review2() {
                     <div className="flex-1 rounded-md border bg-muted/50 px-3 py-2 text-sm font-mono">
                       {professional?.license_number || 'Not provided'}
                     </div>
-                    {reviewField !== 'license_number' && (
+                    {submittedReviews.has('license_number') ? (
+                      <div className="flex items-center gap-1 text-xs text-green-700 font-medium px-3 py-2 bg-green-50 border border-green-200 rounded-md shrink-0">
+                        <CheckCircle className="h-3.5 w-3.5" />
+                        Review requested
+                      </div>
+                    ) : reviewField !== 'license_number' ? (
                       <Button
                         type="button"
                         variant="outline"
@@ -293,7 +299,7 @@ export default function Step3Review2() {
                         <HelpCircle className="h-4 w-4 mr-1" />
                         Request review
                       </Button>
-                    )}
+                    ) : null}
                   </div>
                   <p className="text-xs text-muted-foreground">To change your license number, request a review.</p>
                   {reviewField === 'license_number' && professional && (
@@ -303,6 +309,7 @@ export default function Step3Review2() {
                       professionalId={professional.id}
                       professionalName={professional.name}
                       professionalEmail={professional.email || undefined}
+                      onSubmitted={() => { setSubmittedReviews(prev => new Set(prev).add('license_number')); setReviewField(null); }}
                       onClose={() => setReviewField(null)}
                     />
                   )}
@@ -315,7 +322,12 @@ export default function Step3Review2() {
                     <div className="flex-1 rounded-md border bg-muted/50 px-3 py-2 text-sm">
                       {professional?.review_stars_rating ?? '—'} stars · {professional?.num_total_reviews?.toLocaleString() ?? 0} reviews
                     </div>
-                    {reviewField !== 'reviews' && (
+                    {submittedReviews.has('reviews') ? (
+                      <div className="flex items-center gap-1 text-xs text-green-700 font-medium px-3 py-2 bg-green-50 border border-green-200 rounded-md shrink-0">
+                        <CheckCircle className="h-3.5 w-3.5" />
+                        Review requested
+                      </div>
+                    ) : reviewField !== 'reviews' ? (
                       <Button
                         type="button"
                         variant="outline"
@@ -326,7 +338,7 @@ export default function Step3Review2() {
                         <HelpCircle className="h-4 w-4 mr-1" />
                         Request review
                       </Button>
-                    )}
+                    ) : null}
                   </div>
                   <p className="text-xs text-muted-foreground">To change your review data, request a review.</p>
                   {reviewField === 'reviews' && professional && (
@@ -336,6 +348,7 @@ export default function Step3Review2() {
                       professionalId={professional.id}
                       professionalName={professional.name}
                       professionalEmail={professional.email || undefined}
+                      onSubmitted={() => { setSubmittedReviews(prev => new Set(prev).add('reviews')); setReviewField(null); }}
                       onClose={() => setReviewField(null)}
                     />
                   )}
@@ -347,7 +360,12 @@ export default function Step3Review2() {
                     <div className="flex-1 rounded-md border bg-muted/50 px-3 py-2 text-sm">
                       {professional?.years_experience != null ? `${professional.years_experience} years` : 'Not provided'}
                     </div>
-                    {reviewField !== 'years_experience' && (
+                    {submittedReviews.has('years_experience') ? (
+                      <div className="flex items-center gap-1 text-xs text-green-700 font-medium px-3 py-2 bg-green-50 border border-green-200 rounded-md shrink-0">
+                        <CheckCircle className="h-3.5 w-3.5" />
+                        Review requested
+                      </div>
+                    ) : reviewField !== 'years_experience' ? (
                       <Button
                         type="button"
                         variant="outline"
@@ -358,7 +376,7 @@ export default function Step3Review2() {
                         <HelpCircle className="h-4 w-4 mr-1" />
                         Request review
                       </Button>
-                    )}
+                    ) : null}
                   </div>
                   <p className="text-xs text-muted-foreground">To change your years of experience, request a review.</p>
                   {reviewField === 'years_experience' && professional && (
@@ -368,6 +386,7 @@ export default function Step3Review2() {
                       professionalId={professional.id}
                       professionalName={professional.name}
                       professionalEmail={professional.email || undefined}
+                      onSubmitted={() => { setSubmittedReviews(prev => new Set(prev).add('years_experience')); setReviewField(null); }}
                       onClose={() => setReviewField(null)}
                     />
                   )}
@@ -397,7 +416,12 @@ export default function Step3Review2() {
                     <div className="flex-1 rounded-md border bg-muted/50 px-3 py-2 text-sm">
                       {totalSalesDisplay != null ? `${totalSalesDisplay.toLocaleString()}+` : 'Not provided'}
                     </div>
-                    {reviewField !== 'total_sales' && (
+                    {submittedReviews.has('total_sales') ? (
+                      <div className="flex items-center gap-1 text-xs text-green-700 font-medium px-3 py-2 bg-green-50 border border-green-200 rounded-md shrink-0">
+                        <CheckCircle className="h-3.5 w-3.5" />
+                        Review requested
+                      </div>
+                    ) : reviewField !== 'total_sales' ? (
                       <Button
                         type="button"
                         variant="outline"
@@ -408,7 +432,7 @@ export default function Step3Review2() {
                         <HelpCircle className="h-4 w-4 mr-1" />
                         Request review
                       </Button>
-                    )}
+                    ) : null}
                   </div>
                   <p className="text-xs text-muted-foreground">To change your total sales count, request a review.</p>
                   {reviewField === 'total_sales' && professional && (
@@ -418,6 +442,7 @@ export default function Step3Review2() {
                       professionalId={professional.id}
                       professionalName={professional.name}
                       professionalEmail={professional.email || undefined}
+                      onSubmitted={() => { setSubmittedReviews(prev => new Set(prev).add('total_sales')); setReviewField(null); }}
                       onClose={() => setReviewField(null)}
                     />
                   )}

@@ -18,6 +18,7 @@ import { getLicenseLookupByStateAbbr } from "@/data/stateLicenseLookups";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { extractYearsFromBio } from "@/utils/bioParser";
+import { getValidImageUrl } from "@/utils/imageUrlValidator";
 
 /** Module-level so minifier cannot drop declaration and leave !isAdmin references broken. */
 const IS_ADMIN = false;
@@ -790,7 +791,7 @@ export const ProfessionalCard = ({
           <div className="flex-shrink-0">
             <div className="relative">
               <img 
-                src={photoPreview || professional.image || (professional as any).image_url || '/placeholder.svg'} 
+                src={photoPreview || getValidImageUrl(professional.image || (professional as any).image_url)} 
                 alt={`${professional.name} - Top professional${(professional.specialties || (professional as any).specialty)?.length ? ` specializing in ${(professional.specialties || (professional as any).specialty).slice(0, 3).join(', ')}` : ''}`}
                 className="w-24 h-24 md:w-32 md:h-32 rounded-lg object-cover border-2 border-border"
                 itemProp="image"

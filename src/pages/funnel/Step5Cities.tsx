@@ -1,32 +1,31 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { SafeHead } from "@/components/SafeHead";
 import { supabase } from '@/integrations/supabase/client';
+import { BundlesPanel, type CityBundle } from '@/components/visibility/BundlesPanel';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Loader2, ArrowRight, ArrowLeft, Search } from 'lucide-react';
-import { Input } from '@/components/ui/input';
+import { Loader2, ArrowRight, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
+import { REGIONAL_PACKAGES } from '@/data/arizonaPackages';
 
-interface CityArea {
-  city_area: string;
-  city_area_slug: string;
-  state: string;
-}
+type LocationState = { professionalId?: string; state_slug?: string | null; license_state?: string | null; professional?: Record<string, unknown> } | null;
+
+const FUNNEL_SELECTION_KEY = 'funnel_selection';
 
 export default function Step5Cities() {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
+  const passedState = location.state as LocationState;
   const [loading, setLoading] = useState(true);
-  const [cityAreas, setCityAreas] = useState<CityArea[]>([]);
-  const [selectedSlugs, setSelectedSlugs] = useState<Set<string>>(new Set());
+  const [bundles, setBundles] = useState<CityBundle[]>([]);
+  const [selectedCityIds, setSelectedCityIds] = useState<Set<string>>(new Set());
   const [professionalId, setProfessionalId] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     loadData();
-  }, [token]);
+  }, [token, passedState?.professionalId]);
 
   const loadData = async () => {
     if (!token) {
@@ -34,111 +33,117 @@ export default function Step5Cities() {
       return;
     }
 
-    try {
-      // Get professional with state info
-      const { data: prof, error: profError } = await supabase
-        .from('professionals')
-        .select('id, state_slug, license_state')
-        .eq('verification_token', token)
-        .single();
+    let stateFilter = 'arizona';
 
-      if (profError || !prof) {
+    if (passedState?.professionalId) {
+      setProfessionalId(passedState.professionalId);
+      const st = passedState.license_state || passedState.state_slug;
+      if (st) stateFilter = typeof st === 'string' ? st.replace(/\s+/g, '-').toLowerCase() : 'arizona';
+    } else {
+      try {
+        const { data: prof, error: profError } = await supabase
+          .from('professionals')
+          .select('id, state_slug, license_state')
+          .eq('verification_token', token)
+          .single();
+
+        if (profError || !prof) {
+          navigate('/404');
+          return;
+        }
+
+        setProfessionalId(prof.id);
+        const st = prof.license_state || prof.state_slug;
+        if (st) stateFilter = typeof st === 'string' ? st.replace(/\s+/g, '-').toLowerCase() : 'arizona';
+      } catch {
         navigate('/404');
         return;
       }
+    }
 
-      setProfessionalId(prof.id);
+    try {
+      const { data: citiesData, error } = await supabase
+        .from('cities')
+        .select('id, name, slug, state_slug')
+        .eq('active', true)
+        .eq('state_slug', stateFilter)
+        .order('name');
 
-      // Determine the agent's state for filtering
-      const agentState = prof.license_state || prof.state_slug || '';
+      if (error) throw error;
 
-      // Pull distinct city_area groups from neighborhood_catalog
-      const allRows: { city_area: string; city_area_slug: string; state: string }[] = [];
-      let offset = 0;
-      const pageSize = 1000;
-      let hasMore = true;
+      const cityOptions = citiesData || [];
+      const cityBySlug = new Map(cityOptions.map((c: { slug: string; id: string }) => [c.slug, c.id]));
+      const cityNameBySlug = new Map(cityOptions.map((c: { slug: string; name: string }) => [c.slug, c.name]));
 
-      while (hasMore) {
-        let query = supabase
-          .from('neighborhood_catalog')
-          .select('city_area, city_area_slug, state')
-          .eq('is_active', true)
-          .order('city_area')
-          .range(offset, offset + pageSize - 1);
-
-        // Filter by agent's state if we know it
-        if (agentState) {
-          query = query.ilike('state', agentState.replace(/-/g, ' '));
-        }
-
-        const { data, error } = await query;
-        if (error) throw error;
-
-        allRows.push(...(data || []));
-        hasMore = (data?.length || 0) === pageSize;
-        offset += pageSize;
+      if (stateFilter === 'arizona') {
+        const resolvedBundles: CityBundle[] = REGIONAL_PACKAGES.map(pkg => ({
+          id: pkg.id,
+          name: pkg.name,
+          description: pkg.description,
+          category: pkg.category,
+          cityIds: pkg.includedCityIds
+            .map((slug: string) => cityBySlug.get(slug))
+            .filter((id): id is string => !!id),
+          cityNames: pkg.includedCityIds
+            .map((slug: string) => cityNameBySlug.get(slug))
+            .filter((name): name is string => !!name),
+        }));
+        setBundles(resolvedBundles);
       }
 
-      // Deduplicate by city_area_slug, filter junk
-      const seen = new Map<string, CityArea>();
-      for (const row of allRows) {
-        if (
-          row.city_area &&
-          row.city_area_slug &&
-          row.city_area.length > 1 &&
-          !row.city_area.includes('null') &&
-          !row.city_area.includes('Placeholder') &&
-          !row.city_area.startsWith('/') &&
-          !row.city_area.startsWith(':')
-        ) {
-          if (!seen.has(row.city_area_slug)) {
-            seen.set(row.city_area_slug, {
-              city_area: row.city_area,
-              city_area_slug: row.city_area_slug,
-              state: row.state,
-            });
+      try {
+        const stored = sessionStorage.getItem(FUNNEL_SELECTION_KEY);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (parsed.selectedCityIds && Array.isArray(parsed.selectedCityIds)) {
+            setSelectedCityIds(new Set(parsed.selectedCityIds));
           }
         }
+      } catch {
+        // ignore
       }
-
-      const sorted = Array.from(seen.values()).sort((a, b) =>
-        a.city_area.localeCompare(b.city_area)
-      );
-
-      setCityAreas(sorted);
     } catch (err) {
       console.error(err);
-      toast.error('Failed to load cities');
+      toast.error('Failed to load bundles');
     } finally {
       setLoading(false);
     }
   };
 
-  const toggleCity = (slug: string) => {
-    const newSelected = new Set(selectedSlugs);
-    if (newSelected.has(slug)) {
-      newSelected.delete(slug);
-    } else {
-      newSelected.add(slug);
+  const persistSelection = (next: Set<string>) => {
+    try {
+      const stored = sessionStorage.getItem(FUNNEL_SELECTION_KEY);
+      const parsed = stored ? JSON.parse(stored) : {};
+      sessionStorage.setItem(FUNNEL_SELECTION_KEY, JSON.stringify({
+        ...parsed,
+        selectedCityIds: Array.from(next),
+        savedAt: new Date().toISOString(),
+      }));
+    } catch {
+      // ignore
     }
-    setSelectedSlugs(newSelected);
+  };
+
+  const handleAddBundle = (_bundleId: string, cityIds: string[]) => {
+    setSelectedCityIds(prev => {
+      const next = new Set(prev);
+      cityIds.forEach(id => next.add(id));
+      persistSelection(next);
+      return next;
+    });
   };
 
   const handleContinue = () => {
-    if (selectedSlugs.size === 0) {
-      toast.error('Please select at least one city');
+    if (selectedCityIds.size === 0) {
+      toast.error('Please add at least one bundle');
       return;
     }
 
-    toast.success(`${selectedSlugs.size} cities selected!`);
-    navigate(`/funnel/${token}/neighborhoods`);
+    toast.success(`${selectedCityIds.size} cities selected!`);
+    navigate(`/funnel/${token}/neighborhoods`, { state: passedState?.professional ? { professional: passedState.professional } : undefined });
   };
 
-  const filtered = searchTerm
-    ? cityAreas.filter((c) =>
-        c.city_area.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    : cityAreas;
+  const cityCount = selectedCityIds.size;
 
   if (loading) {
     return (
@@ -160,51 +165,24 @@ export default function Step5Cities() {
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-muted-foreground">Step 4 of 7</span>
+                <span className="text-sm text-muted-foreground">Step 6 of 8</span>
                 <span className="text-sm font-medium">Select Cities</span>
               </div>
               <CardTitle>Which cities do you serve?</CardTitle>
               <p className="text-sm text-muted-foreground">
-                Select all the cities where you help clients. You can select multiple.
+                Add bundles to select your coverage areas. City listings are free.
               </p>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search cities..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-9"
-                />
-              </div>
+            <CardContent className="space-y-6">
+              <BundlesPanel
+                bundles={bundles}
+                selectedCities={selectedCityIds}
+                onAddBundle={handleAddBundle}
+              />
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-[500px] overflow-y-auto p-4 border rounded-lg">
-                {filtered.map((city) => (
-                  <div
-                    key={city.city_area_slug}
-                    className="flex items-center space-x-2 p-3 rounded-lg hover:bg-accent cursor-pointer"
-                    onClick={() => toggleCity(city.city_area_slug)}
-                  >
-                    <Checkbox
-                      checked={selectedSlugs.has(city.city_area_slug)}
-                      onCheckedChange={() => toggleCity(city.city_area_slug)}
-                    />
-                    <label className="cursor-pointer flex-1">
-                      {city.city_area}, {city.state}
-                    </label>
-                  </div>
-                ))}
-                {filtered.length === 0 && (
-                  <p className="text-sm text-muted-foreground col-span-3 text-center py-4">
-                    No cities found{searchTerm ? ` matching "${searchTerm}"` : ''}.
-                  </p>
-                )}
-              </div>
-
-              {selectedSlugs.size > 0 && (
-                <div className="text-sm text-muted-foreground text-center">
-                  {selectedSlugs.size} {selectedSlugs.size === 1 ? 'city' : 'cities'} selected
+              {cityCount > 0 && (
+                <div className="text-sm text-muted-foreground">
+                  {cityCount} {cityCount === 1 ? 'city' : 'cities'} selected
                 </div>
               )}
 
@@ -219,7 +197,7 @@ export default function Step5Cities() {
                 </Button>
                 <Button
                   onClick={handleContinue}
-                  disabled={selectedSlugs.size === 0}
+                  disabled={cityCount === 0}
                   className="flex-1 gap-2"
                 >
                   Continue

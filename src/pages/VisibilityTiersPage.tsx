@@ -2,10 +2,12 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { SafeHead } from '@/components/SafeHead';
 import { Loader2, BadgeCheck, Shield, Zap, ArrowLeft } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { getCurrentUser } from '@/lib/adminAuth';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 /** Normalize tier for display. Dashboard = at least Certified; map listed/unknown to certified. */
 function normalizeTier(t: string | null): string {
@@ -60,7 +62,7 @@ const TIERS: TierConfig[] = [
     icon: Shield,
     features: [
       'Richer data payload',
-      'Bimonthly refresh',
+      'Every Two Weeks refresh',
       'Community involvement, transaction stats',
     ],
   },
@@ -84,6 +86,7 @@ export default function VisibilityTiersPage() {
   const isDashboard = returnTo === 'dashboard';
 
   const [loading, setLoading] = useState(true);
+  const [isAnnual, setIsAnnual] = useState(false);
   const [professional, setProfessional] = useState<{
     id: string;
     name: string;
@@ -161,7 +164,7 @@ export default function VisibilityTiersPage() {
     if (tierId === 'certified')
       return professional.certified_projected_signal ?? professional.signal_score ?? estimateAICS(baseScore, currentTier, 'certified');
     if (tierId === 'audited')
-      return professional.audited_projected_signal ?? estimateAICS(baseScore, currentTier, 'audited');
+      return professional.audited_projected_signal ?? 79;
     if (tierId === 'underwritten')
       return 98; // per PayloadSection
     return null;
@@ -217,21 +220,29 @@ export default function VisibilityTiersPage() {
             return (
               <Card
                 key={tier.id}
-                className={isCurrent ? 'border-primary ring-2 ring-primary/20' : ''}
+                className={`relative ${tier.id === 'audited' ? 'pt-6' : ''} ${isCurrent ? 'border-primary ring-2 ring-primary/20' : ''}`}
               >
-                <CardHeader className="pb-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Icon className="h-5 w-5 text-primary" />
-                      <CardTitle className="text-lg">{tier.name}</CardTitle>
-                    </div>
-                    {isCurrent && (
-                      <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary">
-                        Your tier
-                      </span>
-                    )}
+                {tier.id === 'audited' && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                    <span className="bg-primary text-primary-foreground text-xs font-semibold px-3 py-1 rounded-full">
+                      Most Popular
+                    </span>
                   </div>
-                  <CardDescription>{tier.price}</CardDescription>
+                )}
+                <CardHeader className="pb-2">
+                  {isCurrent && (
+                    <p className="text-sm font-semibold text-primary mb-2">You are on this tier</p>
+                  )}
+                  <div className="flex items-center gap-2">
+                    <Icon className="h-5 w-5 text-primary" />
+                    <CardTitle className="text-lg">{tier.name}</CardTitle>
+                  </div>
+                  <p className="text-2xl font-bold text-foreground mt-1">{tier.price}</p>
+                  <div className={`flex items-center justify-center gap-2 mt-2 ${tier.id === 'certified' ? 'opacity-50 pointer-events-none' : ''}`} onClick={(e) => e.stopPropagation()}>
+                    <Label htmlFor={`billing-${tier.id}`} className="text-xs">Monthly</Label>
+                    <Switch id={`billing-${tier.id}`} checked={isAnnual} onCheckedChange={setIsAnnual} disabled={tier.id === 'certified'} />
+                    <Label htmlFor={`billing-${tier.id}`} className="text-xs">Annual (2 mo free)</Label>
+                  </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="p-3 rounded-lg bg-muted/50 border">
@@ -260,11 +271,6 @@ export default function VisibilityTiersPage() {
                     >
                       Upgrade to {tier.name}
                     </Button>
-                  )}
-                  {isCurrent && (
-                    <p className="text-xs text-muted-foreground text-center">
-                      You are on this tier
-                    </p>
                   )}
                   {tier.id === 'certified' && !isCurrent && (
                     <p className="text-xs text-muted-foreground text-center">

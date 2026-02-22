@@ -82,6 +82,8 @@ function SignalBadge({ currentScore, projectedScore, currentTier, viewingTier }:
 
 function PayloadExpander({ tier, professional }: { tier: string; professional: any }) {
   const [open, setOpen] = useState(false);
+  const token = professional.verification_token;
+  const artifactUrl = token ? `https://staging.top10lists.us/artifact/${token}` : null;
 
   return (
     <div className="border rounded-lg overflow-hidden">
@@ -89,13 +91,22 @@ function PayloadExpander({ tier, professional }: { tier: string; professional: a
         onClick={() => setOpen(!open)}
         className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-left hover:bg-muted/50 transition-colors"
       >
-        <span>View full payload</span>
+        <span>View your AI-ready profile</span>
         {open ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
       </button>
       {open && (
-        <pre className="text-xs bg-slate-950 text-slate-50 p-4 overflow-x-auto whitespace-pre-wrap font-mono leading-relaxed border-t">
-          {JSON.stringify(buildPayload(professional, tier), null, 2)}
-        </pre>
+        <div className="border-t">
+          {artifactUrl ? (
+            <iframe
+              src={artifactUrl}
+              title="AI-ready profile"
+              className="w-full border-0"
+              style={{ height: "800px" }}
+            />
+          ) : (
+            <p className="text-sm text-muted-foreground p-4">Profile not yet available. Complete verification to generate your AI-ready document.</p>
+          )}
+        </div>
       )}
     </div>
   );

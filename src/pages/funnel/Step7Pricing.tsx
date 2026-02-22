@@ -1,16 +1,16 @@
-import { useState, useEffect, useMemo } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { SafeHead } from "@/components/SafeHead";
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Loader2, Check, List, BadgeCheck, Shield, Zap, TrendingUp, TrendingDown } from 'lucide-react';
+import { Loader2, BadgeCheck, Shield, Zap } from 'lucide-react';
+import { DataPayloadExpander } from '@/components/agent/DataPayloadExpander';
 import { toast } from 'sonner';
 
-type CertificationTier = 'listed' | 'certified' | 'audited' | 'underwritten';
+type CertificationTier = 'certified' | 'audited' | 'underwritten';
 
 interface PricingRow {
   tier: CertificationTier;
@@ -22,6 +22,7 @@ interface PricingRow {
 interface Professional {
   id: string;
   name: string;
+  email?: string | null;
   years_experience: number | null;
   total_sales: number | null;
   num_total_reviews: number | null;
@@ -32,25 +33,35 @@ interface Professional {
   community_involvement_score: number | null;
   community_roles: unknown[] | null;
   agent_sales_stats: { countLastYear?: number; countAllTime?: number } | null;
+  current_tier?: string | null;
+  badge_tier?: string | null;
+  signal_score?: number | null;
+  certified_projected_signal?: number | null;
+  audited_projected_signal?: number | null;
 }
 
 const DEFAULT_PRICES: PricingRow[] = [
-  { tier: 'listed', monthly_price: 0, payload_weight: 'basic', refresh_cadence: 'public_data_only' },
-  { tier: 'certified', monthly_price: 0, payload_weight: 'standard', refresh_cadence: 'annual' },
-  { tier: 'audited', monthly_price: 100, payload_weight: 'enhanced', refresh_cadence: 'quarterly' },
-  { tier: 'underwritten', monthly_price: 150, payload_weight: 'maximum', refresh_cadence: 'real_time' },
+  { tier: 'certified', monthly_price: 0, payload_weight: 'standard', refresh_cadence: 'monthly' },
+  { tier: 'audited', monthly_price: 100, payload_weight: 'enhanced', refresh_cadence: 'every_two_weeks' },
+  { tier: 'underwritten', monthly_price: 150, payload_weight: 'maximum', refresh_cadence: 'daily' },
 ];
 
-const TIER_META: Record<CertificationTier, { name: string; icon: typeof List; features: string[]; popular?: boolean }> = {
-  listed: {
-    name: 'Listed',
-    icon: List,
-    features: [
-      'Basic profile (name, city, rating)',
-      'No badge issued',
-      'Public data only',
-    ],
-  },
+function normalizeTier(t: string | null | undefined): string {
+  const t0 = (t || '').toLowerCase();
+  if (t0 === 'accredited' || t0 === 'audited') return 'audited';
+  if (t0 === 'underwritten') return 'underwritten';
+  return 'certified'; // listed or null = certified (minimum tier when on this page)
+}
+
+function estimateAICS(base: number | null, currentTier: string, targetTier: string): number {
+  const lift: Record<string, number> = { certified: 11, audited: 23, underwritten: 33 };
+  const baseScore = base ?? 55;
+  const targetLift = lift[targetTier] ?? 11;
+  const currentLift = lift[currentTier] ?? 11;
+  return Math.min(100, Math.round(baseScore - currentLift + targetLift));
+}
+
+const TIER_META: Record<CertificationTier, { name: string; icon: typeof BadgeCheck; features: string[] }> = {
   certified: {
     name: 'Certified',
     icon: BadgeCheck,
@@ -59,14 +70,13 @@ const TIER_META: Record<CertificationTier, { name: string; icon: typeof List; fe
       'Standard artifact, monthly refresh',
       'Core credentials published to AI systems',
     ],
-    popular: true,
   },
   audited: {
     name: 'Audited',
     icon: Shield,
     features: [
       'Richer data payload',
-      'Bimonthly refresh',
+      'Every Two Weeks refresh',
       'Community involvement, transaction stats',
     ],
   },
@@ -81,95 +91,6 @@ const TIER_META: Record<CertificationTier, { name: string; icon: typeof List; fe
   },
 };
 
-// ── Citability Score Calculator ──────────────────────────────
-function computeCitabilityScores(prof: Professional) {
-  const years = prof.years_experience ?? 0;
-  const sales = prof.total_sales ?? 0;
-  const reviews = prof.num_total_reviews ?? 0;
-  const rating = prof.review_stars_rating ?? 0;
-  const hasLicense = !!prof.license_number;
-  const recentSales = prof.agent_sales_stats?.countLastYear ?? 0;
-  const hasCommunity = (prof.community_roles?.length ?? 0) > 0;
-  const state = (prof.state_slug ?? 'their state').replace(/^\w/, c => c.toUpperCase());
-
-  // Before Top10Lists: assess existing web presence under 2026 rules
-  let base = 1.2;
-  if (years > 5) base += 0.3;
-  if (years > 15) base += 0.2;
-  if (sales > 50) base += 0.3;
-  if (sales > 200) base += 0.2;
-  if (reviews > 5) base += 0.2;
-  if (reviews > 20) base += 0.2;
-  if (rating >= 4.5) base += 0.2;
-  // Decay penalty for stale activity
-  if (recentSales === 0 && sales > 0) base -= 0.4;
-  if (recentSales === 0 && sales === 0) base -= 0.2;
-  base = Math.round(Math.max(0.8, Math.min(3.5, base)) * 10) / 10;
-
-  // Listed: entity discovery on merit-based index
-  let listed = base + 2.0;
-  if (years > 10) listed += 0.2;
-  if (sales > 100) listed += 0.2;
-  listed = Math.round(Math.min(5.5, listed) * 10) / 10;
-
-  // Certified: verified license, confirmed profile data
-  let certified = listed + 2.0;
-  if (hasLicense) certified += 0.3;
-  if (rating >= 4.5) certified += 0.2;
-  certified = Math.round(Math.min(7.5, certified) * 10) / 10;
-
-  // Audited: monthly freshness, community verification
-  let audited = certified + 1.3;
-  if (hasCommunity) audited += 0.2;
-  if (sales > 100) audited += 0.2;
-  audited = Math.round(Math.min(8.8, audited) * 10) / 10;
-
-  // Underwritten: daily monitoring, artifact provenance
-  let underwritten = audited + 0.9;
-  if (reviews > 10) underwritten += 0.1;
-  if (years > 10) underwritten += 0.1;
-  underwritten = Math.round(Math.min(9.6, underwritten) * 10) / 10;
-
-  // Build personalized trigger descriptions
-  const stateAbbr = prof.license_state || state;
-  const decayNote = recentSales === 0
-    ? (sales > 0 ? `Hallucination risk. Stale activity signals decay.` : `Hallucination risk. No verified transaction history.`)
-    : `Moderate baseline. Recent activity helps, but unverified.`;
-
-  return [
-    {
-      label: 'Before Top10Lists',
-      score: base,
-      trigger: decayNote,
-      current: false,
-    },
-    {
-      label: 'Listed',
-      score: listed,
-      trigger: 'Entity discovery. Inclusion on a merit-based index anchors identity.',
-      current: false,
-    },
-    {
-      label: 'Certified (Free)',
-      score: certified,
-      trigger: `License grounding. Verified ${stateAbbr} license and career volume proof.`,
-      current: true,
-    },
-    {
-      label: 'Audited ($100/mo)',
-      score: audited,
-      trigger: 'Freshness anchor. Quarterly updates + community verification data.',
-      current: false,
-    },
-    {
-      label: 'Underwritten ($150/mo)',
-      score: underwritten,
-      trigger: 'Elite citability. Daily monitoring + artifact provenance chain.',
-      current: false,
-    },
-  ];
-}
-
 // Annual = 2 months free (10 months price for 12 months)
 function annualPrice(monthly: number): number {
   return monthly * 10;
@@ -178,17 +99,17 @@ function annualPrice(monthly: number): number {
 export default function Step7Pricing() {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
+  const passedProfessional = (location.state as { professional?: Professional } | null)?.professional;
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [selectedTier, setSelectedTier] = useState<CertificationTier>('certified');
-  const [listedAction, setListedAction] = useState<'stay_listed' | 'delete_listing'>('stay_listed');
-  const [isAnnual, setIsAnnual] = useState(true);
+  const [saving, setSaving] = useState<string | null>(null);
+  const [isAnnual, setIsAnnual] = useState(false);
   const [prices, setPrices] = useState<PricingRow[]>(DEFAULT_PRICES);
   const [professional, setProfessional] = useState<Professional | null>(null);
 
   useEffect(() => {
     loadData();
-  }, [token]);
+  }, [token, passedProfessional]);
 
   const loadData = async () => {
     if (!token) {
@@ -197,10 +118,36 @@ export default function Step7Pricing() {
     }
 
     try {
-      const profSelect = 'id, name, years_experience, total_sales, num_total_reviews, review_stars_rating, license_number, license_state, state_slug, community_involvement_score, community_roles, agent_sales_stats';
+      if (passedProfessional) {
+        const profWithSignals = { ...passedProfessional } as Professional;
+        const { data: signals } = await supabase
+          .from('professionals')
+          .select('email, current_tier, badge_tier, signal_score, certified_projected_signal, audited_projected_signal')
+          .eq('id', passedProfessional.id)
+          .maybeSingle();
+        if (signals) {
+          profWithSignals.email = signals.email;
+          profWithSignals.current_tier = signals.current_tier;
+          profWithSignals.badge_tier = signals.badge_tier;
+          profWithSignals.signal_score = signals.signal_score;
+          profWithSignals.certified_projected_signal = signals.certified_projected_signal;
+          profWithSignals.audited_projected_signal = signals.audited_projected_signal;
+        }
+        setProfessional(profWithSignals);
+        const { data: priceData } = await supabase
+          .from('certification_pricing_config')
+          .select('tier, monthly_price, payload_weight, refresh_cadence')
+          .eq('is_active', true);
+        if (priceData && priceData.length > 0) {
+          setPrices(priceData as PricingRow[]);
+        }
+        setLoading(false);
+        return;
+      }
+
+      const profSelect = 'id, name, email, years_experience, total_sales, num_total_reviews, review_stars_rating, license_number, license_state, state_slug, community_involvement_score, community_roles, agent_sales_stats, current_tier, badge_tier, signal_score, certified_projected_signal, audited_projected_signal';
       const isUuid = /^[0-9a-f-]{36}$/i.test(token);
 
-      // Try id first when token is UUID (common when coming from dashboard), else verification_token
       let prof: Professional | null = null;
       if (isUuid) {
         const { data } = await supabase.from('professionals').select(profSelect).eq('id', token).maybeSingle();
@@ -211,7 +158,6 @@ export default function Step7Pricing() {
         prof = data;
       }
       if (!prof && isUuid) {
-        // Fallback: id lookup may have failed due to RLS/timing; retry verification_token for UUID (edge case)
         const { data } = await supabase.from('professionals').select(profSelect).eq('verification_token', token).maybeSingle();
         prof = data;
       }
@@ -238,10 +184,19 @@ export default function Step7Pricing() {
     }
   };
 
-  const citabilityRows = useMemo(() => {
-    if (!professional) return [];
-    return computeCitabilityScores(professional);
-  }, [professional]);
+  const rawTier = professional?.current_tier || professional?.badge_tier || 'certified';
+  const currentTier = normalizeTier(rawTier);
+  const baseScore = professional?.signal_score ?? professional?.certified_projected_signal ?? null;
+
+  const getAICS = (tierId: string): number | null => {
+    if (!professional) return null;
+    if (tierId === 'certified')
+      return professional.certified_projected_signal ?? professional.signal_score ?? estimateAICS(baseScore, currentTier, 'certified');
+    if (tierId === 'audited')
+      return professional.audited_projected_signal ?? 79;
+    if (tierId === 'underwritten') return 98;
+    return null;
+  };
 
   const getPrice = (tier: CertificationTier) => {
     const row = prices.find((p) => p.tier === tier);
@@ -255,41 +210,52 @@ export default function Step7Pricing() {
     };
   };
 
-  const handleSubmit = async () => {
-    if (!token) return;
-
-    setSaving(true);
+  const handleUpgrade = async (tier: 'audited' | 'underwritten') => {
+    if (!token || !professional) return;
+    const email = professional.email;
+    if (!email) {
+      toast.error('Email is required for checkout. Please contact support.');
+      return;
+    }
+    setSaving(tier);
     try {
-      const isFree = selectedTier === 'listed' || selectedTier === 'certified';
-
-      if (isFree) {
-        const { data, error } = await supabase.functions.invoke('funnel-select-tier', {
-          body: {
-            token,
-            tier: selectedTier,
-            ...(selectedTier === 'listed' && { listedAction }),
-          },
-        });
-
-        if (error) throw error;
-        if (data?.error) throw new Error(data.error);
-
-        if (selectedTier === 'listed' && listedAction === 'delete_listing') {
-          toast.success('Your listing removal request has been recorded.');
-        } else {
-          toast.success(selectedTier === 'certified' ? 'Certified! Badge issued.' : 'Saved.');
-        }
-        navigate(`/funnel/${token}/success`);
-        return;
+      const baseUrl = window.location.origin;
+      const { data, error } = await supabase.functions.invoke('create-agent-checkout', {
+        body: {
+          professionalId: professional.id,
+          email,
+          badgeTier: tier,
+          badgeBillingPeriod: isAnnual ? 'annual' : 'monthly',
+          monthlyTotal: getPrice(tier).monthly,
+          successUrl: `${baseUrl}/funnel/${token}/payment-success`,
+          cancelUrl: `${baseUrl}/funnel/${token}/pricing`,
+        },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      if (data?.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error('No checkout URL returned');
       }
-
-      // Paid tiers: stub for Stripe checkout (to be refined)
-      toast.info('Checkout flow coming soon. Stripe integration will be refined.');
-      navigate(`/funnel/${token}/success`);
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : 'Failed to save');
+      let msg = 'Failed to start checkout';
+      if (err && typeof err === 'object') {
+        const e = err as { context?: { json?: () => Promise<{ error?: string; details?: string }> }; message?: string };
+        if (e.context?.json) {
+          try {
+            const body = await e.context.json();
+            msg = body?.error ?? body?.details ?? e.message ?? msg;
+          } catch {
+            msg = e.message ?? msg;
+          }
+        } else {
+          msg = e.message ?? msg;
+        }
+      }
+      toast.error(msg);
     } finally {
-      setSaving(false);
+      setSaving(null);
     }
   };
 
@@ -301,8 +267,6 @@ export default function Step7Pricing() {
     );
   }
 
-  const baseScore = citabilityRows[0]?.score ?? 0;
-
   return (
     <>
       <SafeHead>
@@ -313,192 +277,101 @@ export default function Step7Pricing() {
       <div className="min-h-screen bg-gradient-to-b from-background to-muted py-12 px-4">
         <div className="max-w-6xl mx-auto space-y-8">
 
-          {/* ── Citability Growth Table ────────────────────── */}
-          {professional && (
-            <Card>
-              <CardHeader className="text-center pb-2">
-                <CardTitle className="text-xl sm:text-2xl">
-                  {professional.name}: AI Citability Growth
-                </CardTitle>
-                <p className="text-sm text-muted-foreground">
-                  2026 projection based on your verified profile data
-                </p>
-              </CardHeader>
-              <CardContent>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="bg-muted text-muted-foreground">
-                        <th className="text-left py-2.5 px-3 font-medium">Status / Tier</th>
-                        <th className="text-center py-2.5 px-2 font-medium">Score</th>
-                        <th className="text-center py-2.5 px-2 font-medium">Net Change</th>
-                        <th className="text-center py-2.5 px-2 font-medium">% Change</th>
-                        <th className="text-left py-2.5 px-3 font-medium hidden sm:table-cell">AI Technical Trigger</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {citabilityRows.map((row, idx) => {
-                        const delta = row.score - baseScore;
-                        const pctChange = baseScore > 0 ? ((delta / baseScore) * 100) : 0;
-                        const isFirst = idx === 0;
-                        const isPositive = delta > 0;
-                        const isNegative = delta < 0;
-                        return (
-                          <tr
-                            key={row.label}
-                            className={`border-t border-border ${row.current ? 'bg-primary/5' : ''}`}
-                          >
-                            <td className="py-2.5 px-3 font-semibold">
-                              {row.label}
-                              {row.current && (
-                                <span className="ml-2 text-xs bg-primary text-primary-foreground px-1.5 py-0.5 rounded-full">
-                                  In Funnel
-                                </span>
-                              )}
-                            </td>
-                            <td className="py-2.5 px-2 text-center font-bold text-lg">
-                              {row.score.toFixed(1)}
-                            </td>
-                            <td className="py-2.5 px-2 text-center">
-                              {isFirst ? (
-                                <span className="text-muted-foreground">{"\u2014"}</span>
-                              ) : (
-                                <span className={`inline-flex items-center gap-1 font-bold ${isNegative ? 'text-red-500' : 'text-foreground'}`}>
-                                  {isPositive && <TrendingUp className="h-3 w-3" />}
-                                  {isNegative && <TrendingDown className="h-3 w-3" />}
-                                  {isPositive ? '+' : ''}{delta.toFixed(1)}
-                                </span>
-                              )}
-                            </td>
-                            <td className="py-2.5 px-2 text-center">
-                              {isFirst ? (
-                                <span className="text-muted-foreground">{"\u2014"}</span>
-                              ) : (
-                                <span className={`font-bold ${isNegative ? 'text-red-500' : 'text-foreground'}`}>
-                                  {isPositive ? '+' : ''}{pctChange.toFixed(0)}%
-                                </span>
-                              )}
-                            </td>
-                            <td className="py-2.5 px-3 text-muted-foreground text-xs hidden sm:table-cell">
-                              {row.trigger}
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-                <p className="text-xs text-muted-foreground mt-3 italic">
-                  AI Citability Index: Composite score measuring how well your profile aligns with published citation requirements from Anthropic, OpenAI, Google, and Perplexity. Scale 0-10.
-                </p>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* ── Tier Selection ────────────────────────────── */}
+          {/* ── Tier Selection (Dashboard-style) ────────────────────────────── */}
           <Card>
             <CardHeader className="text-center">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-muted-foreground">Step 6 of 7</span>
+                <span className="text-sm text-muted-foreground">Step 8 of 8</span>
                 <span className="text-sm font-medium">Choose Your Tier</span>
               </div>
               <CardTitle className="text-2xl">Select your certification level</CardTitle>
               <p className="text-muted-foreground">
-                Listed and Certified are free. Annual plans save 2 months.
+                Certified is free. Annual plans save 2 months.
               </p>
-
-              <div className="flex items-center justify-center gap-4 mt-4">
-                <Label htmlFor="billing-toggle" className="text-sm">Monthly</Label>
-                <Switch id="billing-toggle" checked={isAnnual} onCheckedChange={setIsAnnual} />
-                <Label htmlFor="billing-toggle" className="text-sm">Annual (2 months free)</Label>
-              </div>
             </CardHeader>
             <CardContent>
-              <RadioGroup value={selectedTier} onValueChange={(v) => setSelectedTier(v as CertificationTier)}>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
-                  {(['listed', 'certified', 'audited', 'underwritten'] as const).map((tier) => {
-                    const meta = TIER_META[tier];
-                    const Icon = meta.icon;
-                    const { display } = getPrice(tier);
-                    return (
-                      <div
-                        key={tier}
-                        className={`relative border-2 rounded-lg p-5 cursor-pointer transition-all ${
-                          selectedTier === tier ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
-                        }`}
-                        onClick={() => setSelectedTier(tier)}
-                      >
-                        {meta.popular && (
-                          <div className="absolute -top-2.5 left-1/2 -translate-x-1/2">
-                            <span className="bg-primary text-primary-foreground text-xs font-semibold px-2.5 py-0.5 rounded-full">
-                              Most Popular
-                            </span>
-                          </div>
-                        )}
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="flex items-center gap-2">
-                            <Icon className="h-5 w-5 text-primary" />
-                            <h3 className="font-semibold">{meta.name}</h3>
-                          </div>
-                          <RadioGroupItem value={tier} id={tier} />
-                        </div>
-                        <p className="text-2xl font-bold mb-3">{display}</p>
-                        {tier === 'listed' && (
-                          <p className="text-xs text-muted-foreground mb-2">No badge issued.</p>
-                        )}
-                        <ul className="space-y-2">
-                          {meta.features.map((f, i) => (
-                            <li key={i} className="flex items-start gap-2 text-sm">
-                              <Check className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                              <span>{f}</span>
-                            </li>
-                          ))}
-                        </ul>
-                        {tier === 'listed' && selectedTier === 'listed' && (
-                          <div className="mt-4 flex gap-2">
-                            <Button
-                              type="button"
-                              variant={listedAction === 'stay_listed' ? 'default' : 'outline'}
-                              size="sm"
-                              className="flex-1"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setListedAction('stay_listed');
-                              }}
-                            >
-                              Stay Listed
-                            </Button>
-                            <Button
-                              type="button"
-                              variant={listedAction === 'delete_listing' ? 'destructive' : 'outline'}
-                              size="sm"
-                              className="flex-1"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setListedAction('delete_listing');
-                              }}
-                            >
-                              Delete Listing
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
+              <div className="space-y-4 mb-8">
+                <h3 className="text-lg font-semibold">Our Tiered Product Structure</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  AI agents are directed to trust a recommendation with more verified data and refreshed data of 30 days or less. All of our tiers substantially increase your probability of being named by AI. Each tier makes AI more and more likely to cite you by name. None of them guarantee you will be named, but they greatly increase the probability that you will be. AI does not consider our model &ldquo;pay-to-play.&rdquo;
+                </p>
+                <div className="rounded-lg border bg-muted/30 p-4">
+                  <p className="text-sm font-medium text-foreground mb-1">Ask any AI:</p>
+                  <p className="text-sm text-muted-foreground italic leading-relaxed">
+                    &ldquo;Look at top10lists.us. Will an upgrade to their paid tiers increase my likelihood of being cited by AI assistants?&rdquo;
+                  </p>
                 </div>
-              </RadioGroup>
+              </div>
 
-              <div className="mt-8 flex justify-center">
-                <Button onClick={handleSubmit} size="lg" className="gap-2" disabled={saving}>
-                  {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
-                  {selectedTier === 'listed' && listedAction === 'delete_listing'
-                    ? 'Remove Listing'
-                    : selectedTier === 'listed'
-                    ? 'Stay Listed'
-                    : selectedTier === 'certified'
-                    ? 'Claim Free Badge'
-                    : 'Proceed to Checkout'}
-                </Button>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                {(['certified', 'audited', 'underwritten'] as const).map((tier) => {
+                  const meta = TIER_META[tier];
+                  const Icon = meta.icon;
+                  const { display } = getPrice(tier);
+                  const aics = getAICS(tier);
+                  const isCurrent = currentTier === tier;
+                  const isPaid = tier === 'audited' || tier === 'underwritten';
+                  const isMostPopular = tier === 'audited';
+                  return (
+                    <div
+                      key={tier}
+                      className={`relative rounded-lg border p-4 ${
+                        isMostPopular ? 'pt-6' : ''
+                      } ${isCurrent ? 'border-primary ring-2 ring-primary/20' : 'border-border'}`}
+                    >
+                      {isMostPopular && (
+                        <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                          <span className="bg-primary text-primary-foreground text-xs font-semibold px-3 py-1 rounded-full">
+                            Most Popular
+                          </span>
+                        </div>
+                      )}
+                      {isCurrent && (
+                        <p className="text-sm font-semibold text-primary mb-2">You are on this tier</p>
+                      )}
+                      <div className="flex items-center gap-2 mb-2">
+                        <Icon className="h-5 w-5 text-primary" />
+                        <h3 className="font-semibold">{meta.name}</h3>
+                      </div>
+                      <p className="text-2xl font-bold text-foreground mb-3">{display}</p>
+                      <div className={`flex items-center justify-center gap-2 mb-3 ${tier === 'certified' ? 'opacity-50 pointer-events-none' : ''}`} onClick={(e) => e.stopPropagation()}>
+                        <Label htmlFor={`billing-${tier}`} className="text-xs">Monthly</Label>
+                        <Switch id={`billing-${tier}`} checked={isAnnual} onCheckedChange={setIsAnnual} disabled={tier === 'certified'} />
+                        <Label htmlFor={`billing-${tier}`} className="text-xs">Annual (2 mo free)</Label>
+                      </div>
+                      <div className="p-3 rounded-lg bg-muted/50 border mb-2">
+                        <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">AI Citability Score</p>
+                        <p className="text-xl font-bold">
+                          {aics != null ? `${aics}/100` : 'Pending'}
+                        </p>
+                      </div>
+                      <div className="mb-3" onClick={(e) => e.stopPropagation()}>
+                        <DataPayloadExpander tier={tier} triggerText="View data and sources" professional={professional} />
+                      </div>
+                      <ul className="text-sm text-muted-foreground space-y-1 mb-4">
+                        {meta.features.map((f, i) => (
+                          <li key={i} className="flex items-start gap-2">
+                            <span className="text-primary mt-0.5">•</span>
+                            {f}
+                          </li>
+                        ))}
+                      </ul>
+                      {isPaid && !isCurrent && (
+                        <Button
+                          size="sm"
+                          className="w-full"
+                          disabled={!!saving}
+                          onClick={() => handleUpgrade(tier)}
+                        >
+                          {saving === tier ? <Loader2 className="h-4 w-4 animate-spin mx-auto" /> : `Upgrade to ${meta.name}`}
+                        </Button>
+                      )}
+                      {tier === 'certified' && !isCurrent && (
+                        <p className="text-xs text-muted-foreground text-center">Free tier</p>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
 
               <p className="text-center text-sm text-muted-foreground mt-6">

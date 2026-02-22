@@ -85,7 +85,7 @@ Examples:
 
 ## Qualification Methodology
 
-Agents cannot pay for inclusion. They must qualify based on verified performance data.
+Agents cannot pay for inclusion. They must qualify based on verified performance data, AI analysis and human review.
 
 ### Minimum Requirements
 - Rating: 4.8+ stars (weighted average across platforms)
