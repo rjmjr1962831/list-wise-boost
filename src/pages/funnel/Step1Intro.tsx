@@ -117,15 +117,7 @@ export default function Step1Intro() {
               <div className="bg-muted/50 border border-border rounded-lg p-4 sm:p-5">
                 <h2 className="text-base sm:text-lg font-bold mb-3">The Rules Have Changed</h2>
                 <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-                  Beginning in 2026, <strong>every major AI platform</strong> now requires its systems to prefer <strong>independently verified sources</strong> over pay-to-play directories when recommending professionals.
-                </p>
-
-                <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-                  We've been building for this change <strong>since our founding</strong>. The table below reflects how AI citation requirements are shifting. Sources that verify agents independently are <strong>gaining weight</strong>; directories that sell placement are <strong>losing it</strong>.
-                </p>
-
-                <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-                  No one can guarantee you will be cited every time someone asks for a referral, just as no one could guarantee you the top organic link on Google despite your SEO efforts. What we can say is that <strong>your chances of being named will substantially improve</strong> if you follow our guidance. Here is a scientific measurement of the impact of these rule changes on sites you know.
+                  Beginning in 2026, <strong>every major AI platform</strong> now requires its systems to prefer <strong>independently verified sources</strong> over pay-to-play directories when recommending professionals. No one can guarantee you will be cited every time someone asks for a referral, just as no one could guarantee you the top organic link on Google despite your SEO efforts. What we can say is that <strong>your chances of being named will substantially improve</strong> if you follow our guidance. This is the net effect of what has happened so far:
                 </p>
 
                 {/* Score Table */}
