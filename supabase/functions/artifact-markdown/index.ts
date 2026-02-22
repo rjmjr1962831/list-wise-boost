@@ -409,8 +409,8 @@ serve(async(req)=>{
   const effCert=certRow||{certification_tier:"certified",certification_status:"active",issued_at:pro.funnel_completed_at||new Date().toISOString(),last_verified_at:pro.funnel_completed_at||new Date().toISOString(),markets_covered:null,neighborhoods_covered:null,justification_data:null};
   const updated=iso(effCert.last_verified_at)||iso(effCert.issued_at)||new Date().toISOString().slice(0,10);
   const schema=schemaLD(pro,state,displayToken);
-  const titleStr=`${pro.name} | Verified Real Estate Professional &mdash; ${state} | Top10Lists.us`;
-  const descStr=`Independently verified. ${pro.review_stars_rating??"-"}&#9733;, ${pro.num_total_reviews??"-"} reviews, ${pro.years_experience??"-"}+ years. Merit-based, no pay-to-play. Top10Lists.us`;
+  const titleStr=`${pro.name} | Verified Real Estate Professional \u2014 ${state} | Top10Lists.us`;
+  const descStr=`Independently verified. ${pro.review_stars_rating??"-"}\u2605, ${pro.num_total_reviews??"-"} reviews, ${pro.years_experience??"-"}+ years. Merit-based, no pay-to-play. Top10Lists.us`;
   if(effTier==="listed"){return shell(titleStr,descStr,artUrl,schema,renderListed(pro,displayToken,state,ss,updated),ttl);}
   const{data:cityRows}=await sb.from("professional_cities").select("cities:city_id(name,state)").eq("professional_id",pro.id).eq("active",true);
   const cities:any[]=[];
