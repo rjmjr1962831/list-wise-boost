@@ -174,7 +174,7 @@ export default function ArtifactPage() {
     <>
       <SafeHead>
         <title>{data.name} - Top10Lists {tierNames[cert.certification_tier]} Professional</title>
-        <meta name="description" content={cert.justification_data?.selection_rationale || `${data.name} is certified by Top10Lists.us based on verified performance data.`} />
+        <meta name="description" content={cert.justification_data?.selection_rationale || `${data.name} is certified by Top10Lists.us based on verified performance data, AI analysis and human review.`} />
         <link rel="canonical" href={artifactUrl} />
         
         {/* Schema.org structured data */}
