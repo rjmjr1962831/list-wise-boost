@@ -59,6 +59,7 @@ const PremiumPricingPage = lazy(() => import("@/pages/profile/PremiumPricingPage
 const SelectCities = lazy(() => import("@/pages/profile/SelectCities"));
 const CitySelection = lazy(() => import("@/pages/profile/CitySelection"));
 const SelectNeighborhoods = lazy(() => import("@/pages/profile/SelectNeighborhoods"));
+const ProfileCheckout = lazy(() => import("@/pages/profile/ProfileCheckout"));
 const SelectionPlaceholder = lazy(() => import("@/pages/profile/SelectionPlaceholder"));
 const ScheduleCall = lazy(() => import("@/pages/profile/ScheduleCall"));
 const ClaimListingPreview = lazy(() => import("@/pages/profile/ClaimListingPreview"));
@@ -249,6 +250,7 @@ export const routeManifest: RouteObject[] = [
   { path: "/profile/:token/cities", element: React.createElement(CitySelection, null) },
   { path: "/profile/:token/select-cities", element: React.createElement(SelectCities, null) },
   { path: "/profile/:token/select-neighborhoods", element: React.createElement(SelectNeighborhoods, null) },
+  { path: "/profile/:token/checkout", element: React.createElement(ProfileCheckout, null) },
   { path: "/profile/:token/select", element: React.createElement(SelectionPlaceholder, null) },
   { path: "/profile/:token/schedule", element: React.createElement(ScheduleCall, null) },
   { path: "/profile-view/:token", element: React.createElement(ProfileView, null) },

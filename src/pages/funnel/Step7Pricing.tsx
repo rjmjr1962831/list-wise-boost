@@ -23,6 +23,7 @@ interface PricingRow {
 interface Professional {
   id: string;
   name: string;
+  email?: string | null;
   years_experience: number | null;
   total_sales: number | null;
   num_total_reviews: number | null;
@@ -135,10 +136,11 @@ export default function Step7Pricing() {
         const profWithSignals = { ...passedProfessional } as Professional;
         const { data: signals } = await supabase
           .from('professionals')
-          .select('current_tier, badge_tier, signal_score, certified_projected_signal, audited_projected_signal')
+          .select('email, current_tier, badge_tier, signal_score, certified_projected_signal, audited_projected_signal')
           .eq('id', passedProfessional.id)
           .maybeSingle();
         if (signals) {
+          profWithSignals.email = signals.email;
           profWithSignals.current_tier = signals.current_tier;
           profWithSignals.badge_tier = signals.badge_tier;
           profWithSignals.signal_score = signals.signal_score;
@@ -157,7 +159,7 @@ export default function Step7Pricing() {
         return;
       }
 
-      const profSelect = 'id, name, years_experience, total_sales, num_total_reviews, review_stars_rating, license_number, license_state, state_slug, community_involvement_score, community_roles, agent_sales_stats, current_tier, badge_tier, signal_score, certified_projected_signal, audited_projected_signal';
+      const profSelect = 'id, name, email, years_experience, total_sales, num_total_reviews, review_stars_rating, license_number, license_state, state_slug, community_involvement_score, community_roles, agent_sales_stats, current_tier, badge_tier, signal_score, certified_projected_signal, audited_projected_signal';
       const isUuid = /^[0-9a-f-]{36}$/i.test(token);
 
       let prof: Professional | null = null;
@@ -251,9 +253,31 @@ export default function Step7Pricing() {
         return;
       }
 
-      // Paid tiers: stub for Stripe checkout (to be refined)
-      toast.info('Checkout flow coming soon. Stripe integration will be refined.');
-      navigate(`/funnel/${token}/success`);
+      // Paid tiers: create Stripe checkout
+      const email = professional?.email;
+      if (!email) {
+        toast.error('Email is required for checkout. Please contact support.');
+        return;
+      }
+      const baseUrl = window.location.origin;
+      const { data, error } = await supabase.functions.invoke('create-agent-checkout', {
+        body: {
+          professionalId: professional!.id,
+          email,
+          badgeTier: selectedTier,
+          badgeBillingPeriod: isAnnual ? 'annual' : 'monthly',
+          monthlyTotal: getPrice(selectedTier).monthly,
+          successUrl: `${baseUrl}/funnel/${token}/success`,
+          cancelUrl: `${baseUrl}/funnel/${token}/pricing`,
+        },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      if (data?.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error('No checkout URL returned');
+      }
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : 'Failed to save');
     } finally {
