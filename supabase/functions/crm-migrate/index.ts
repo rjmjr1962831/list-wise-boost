@@ -9,28 +9,21 @@ serve(async (req) => {
   const conn = await pool.connect();
   const results: any[] = [];
 
-  // Delete any existing test contacts first
-  await conn.queryObject(`DELETE FROM professionals WHERE email IN ('robert@maynard.com', 'robert@aryah.ai')`);
-
-  const inserts = [
-    `INSERT INTO professionals (id, name, email, company, verification_token, business_city, state_slug, num_total_reviews, review_stars_rating, years_experience, specialty, current_tier, badge_tier, active, profile_link)
-     VALUES ('8ac93eb9-4fa3-4327-afe2-c624cf2dae18', 'Robert Maynard', 'robert@maynard.com', 'Top10Lists.us', 'd01aea1c-248d-4cf3-bbaa-fe5240f3c003', 'Scottsdale', 'arizona', 127, 5, 22, '["Buyer''s Agent","Listing Agent","Luxury Homes"]'::jsonb, 'listed', 'certified', true, 'https://www.top10lists.us/funnel/d01aea1c-248d-4cf3-bbaa-fe5240f3c003')`,
-    `INSERT INTO professionals (id, name, email, company, verification_token, business_city, state_slug, num_total_reviews, review_stars_rating, years_experience, specialty, current_tier, badge_tier, active, profile_link)
-     VALUES ('a1db08b3-0ca6-4884-96cc-5feb26067246', 'Robert Aryah', 'robert@aryah.ai', 'Aryah Realty', '3c5d82ad-2f54-4b77-8789-90104473943f', 'Phoenix', 'arizona', 84, 5, 15, '["Buyer''s Agent","Listing Agent","Investment Properties"]'::jsonb, 'listed', 'certified', true, 'https://www.top10lists.us/funnel/3c5d82ad-2f54-4b77-8789-90104473943f')`,
-  ];
-
-  for (const sql of inserts) {
-    try {
-      await conn.queryObject(sql);
-      results.push({ ok: true, contact: sql.includes('maynard') ? 'robert@maynard.com' : 'robert@aryah.ai' });
-    } catch (e: any) {
-      results.push({ error: e.message, contact: sql.includes('maynard') ? 'robert@maynard.com' : 'robert@aryah.ai' });
-    }
+  try {
+    // Only insert robert@aryah.ai (robert@maynard.com already exists)
+    await conn.queryObject(`DELETE FROM professionals WHERE email = 'robert@aryah.ai'`);
+    await conn.queryObject(`
+      INSERT INTO professionals (id, name, email, company, verification_token, business_city, state_slug, num_total_reviews, review_stars_rating, years_experience, specialty, current_tier, badge_tier, active, profile_link)
+      VALUES ('1c364892-9cd8-4ca9-a313-88c21804c26d', 'Robert Aryah', 'robert@aryah.ai', 'Aryah Realty', '016ed143-3639-4248-a768-838348a6a1ff', 'Phoenix', 'arizona', 84, 5, 15, '["Buyer''s Agent","Listing Agent","Investment Properties"]'::jsonb, 'listed', 'certified', true, 'https://www.top10lists.us/funnel/016ed143-3639-4248-a768-838348a6a1ff')
+    `);
+    results.push({ ok: true, contact: 'robert@aryah.ai', id: '1c364892-9cd8-4ca9-a313-88c21804c26d' });
+  } catch (e: any) {
+    results.push({ error: e.message });
   }
 
   conn.release();
   await pool.end();
-  return new Response(JSON.stringify({ ok: true, results, ids: ['8ac93eb9-4fa3-4327-afe2-c624cf2dae18','a1db08b3-0ca6-4884-96cc-5feb26067246'] }), {
+  return new Response(JSON.stringify({ ok: true, results }), {
     headers: { "Content-Type": "application/json" }
   });
 });
