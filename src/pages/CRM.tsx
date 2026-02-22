@@ -2,13 +2,18 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { LogOut, Users, ClipboardList, Mail } from "lucide-react";
+import { LogOut, Users, ClipboardList, Mail, Zap } from "lucide-react";
 import { EmailManager } from "@/components/crm/EmailManager";
 import { toast } from "sonner";
 import { ContactsManager } from "@/components/crm/ContactsManager";
 import { TasksManager } from "@/components/crm/TasksManager";
 
 type View = "contacts" | "tasks" | "email";
+
+interface InstantlySyncResult {
+  stats?: { total: number; created: number; updated: number; errors: number };
+  error?: string;
+}
 
 const CRM = () => {
   const [isAdmin, setIsAdmin] = useState(false);
