@@ -2,12 +2,13 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { LogOut, Users, ClipboardList } from "lucide-react";
+import { LogOut, Users, ClipboardList, Mail } from "lucide-react";
+import { EmailManager } from "@/components/crm/EmailManager";
 import { toast } from "sonner";
 import { ContactsManager } from "@/components/crm/ContactsManager";
 import { TasksManager } from "@/components/crm/TasksManager";
 
-type View = "contacts" | "tasks";
+type View = "contacts" | "tasks" | "email";
 
 const CRM = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -74,6 +75,7 @@ const CRM = () => {
   const navItems: { id: View; label: string; icon: React.ReactNode; badge?: number }[] = [
     { id: "contacts", label: "Contacts", icon: <Users className="h-5 w-5" /> },
     { id: "tasks",    label: "Tasks",    icon: <ClipboardList className="h-5 w-5" />, badge: pendingTaskCount },
+    { id: "email",    label: "Email",    icon: <Mail className="h-5 w-5" /> },
   ];
 
   return (
@@ -131,6 +133,7 @@ const CRM = () => {
           {activeView === "tasks" && (
             <TasksManager onTaskResolved={fetchPendingCount} />
           )}
+          {activeView === "email" && <EmailManager />}
         </div>
       </main>
     </div>
