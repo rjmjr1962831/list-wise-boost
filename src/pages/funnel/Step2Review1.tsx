@@ -210,7 +210,7 @@ export default function Step2Review1() {
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-muted-foreground">Step 1 of 7</span>
+                <span className="text-sm text-muted-foreground">Step 2 of 8</span>
                 <span className="text-sm font-medium">Basic Information</span>
               </div>
               <CardTitle>Let's verify your contact information</CardTitle>
