@@ -152,7 +152,7 @@ export default function Step6Neighborhoods() {
               <div className="flex gap-3 pt-4">
                 <Button
                   variant="outline"
-                  onClick={() => navigate(`/funnel/${token}/cities`)}
+                  onClick={() => navigate(`/funnel/${token}/review-final`)}
                   className="gap-2"
                 >
                   <ArrowLeft className="h-4 w-4" />
