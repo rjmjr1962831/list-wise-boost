@@ -67,7 +67,7 @@ function tb(t: string): string {
   return m[t.toLowerCase()] || "listed";
 }
 function ac(t: string): string | null {
-  const m: Record<string, string> = { underwritten: "daily", accredited: "bimonthly", audited: "bimonthly", certified: "monthly" };
+  const m: Record<string, string> = { underwritten: "daily", accredited: "every two weeks", audited: "every two weeks", certified: "monthly" };
   return m[t.toLowerCase()] || null;
 }
 function tierOf(a: any): string { return a.current_tier || a.badge_tier || "listed"; }
