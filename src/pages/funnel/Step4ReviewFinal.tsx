@@ -84,7 +84,7 @@ export default function Step4ReviewFinal() {
     toast.success('Profile confirmed!');
     sessionStorage.setItem('visibility_professional_id', professional.id);
     sessionStorage.setItem('visibility_professional_token', token!);
-    navigate('/visibility/coverage');
+    window.location.href = '/visibility/coverage';
   };
 
   if (loading) {
