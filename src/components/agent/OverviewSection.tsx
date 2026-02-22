@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Award, BadgeCheck, Shield, Zap, Sparkles } from "lucide-react";
+import { Award, BadgeCheck, Shield, Zap, Sparkles, CheckCircle, XCircle, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -90,6 +90,56 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
             <CardTitle className="text-lg">Our Tiered Product Structure</CardTitle>
   
           </div>
+          {/* AICS + Web of Trust + Ways to Improve */}
+          <div className="grid gap-3 sm:grid-cols-2">
+            {/* AI Citability Score */}
+            <div className="rounded-lg border bg-muted/30 p-4">
+              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Your AI Citability Score</p>
+              <p className="text-3xl font-bold text-foreground">
+                {getAICS(currentTier) != null ? `${getAICS(currentTier)}/100` : "Pending"}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">Based on your current tier and verified data</p>
+            </div>
+
+            {/* Web of Trust */}
+            <div className="rounded-lg border bg-muted/30 p-4">
+              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Your Web of Trust</p>
+              {professional.profile_link ? (
+                <div className="flex items-center gap-2 mt-1">
+                  <CheckCircle className="h-5 w-5 text-green-500 shrink-0" />
+                  <span className="text-sm font-semibold text-green-700">Enabled</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 mt-1">
+                  <XCircle className="h-5 w-5 text-muted-foreground shrink-0" />
+                  <span className="text-sm font-semibold text-muted-foreground">Disabled</span>
+                </div>
+              )}
+              <p className="text-xs text-muted-foreground mt-2">Your public trust artifact that AI systems can cite</p>
+            </div>
+          </div>
+
+          {/* Ways to improve */}
+          <div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
+            <p className="text-sm font-semibold flex items-center gap-2 mb-2">
+              <TrendingUp className="h-4 w-4 text-primary" />
+              Ways to improve your score
+            </p>
+            <ul className="space-y-1.5 text-sm text-muted-foreground">
+              <li className="flex items-center gap-2">
+                <span className="text-primary">•</span>
+                Upgrade your tier
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="text-primary">•</span>
+                {professional.profile_link ? "Your Web of Trust is active" : (
+                  <span>Enable your Web of Trust <span className="text-xs text-green-600 font-medium">(free)</span></span>
+                )}
+              </li>
+            </ul>
+          </div>
+
+          {/* Ask any AI challenge */}
           <div className="rounded-lg border bg-muted/30 p-4">
             <p className="text-sm font-medium text-foreground mb-1">Ask any AI:</p>
             <p className="text-sm text-muted-foreground italic leading-relaxed">
