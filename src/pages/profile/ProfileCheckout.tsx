@@ -136,7 +136,7 @@ export default function ProfileCheckout() {
           allNeighborhoodIds: selectedNeighborhoods.map((n) => n.neighborhoodId),
           billingPeriod,
           monthlyTotal,
-          successUrl: `${baseUrl}/profile/${token}/success`,
+          successUrl: `${baseUrl}/profile/${token}/payment-success`,
           cancelUrl: `${baseUrl}/profile/${token}/select-neighborhoods`,
         },
       });

@@ -164,7 +164,7 @@ export default function VisibilityTiersPage() {
     if (tierId === 'certified')
       return professional.certified_projected_signal ?? professional.signal_score ?? estimateAICS(baseScore, currentTier, 'certified');
     if (tierId === 'audited')
-      return professional.audited_projected_signal ?? estimateAICS(baseScore, currentTier, 'audited');
+      return professional.audited_projected_signal ?? 79;
     if (tierId === 'underwritten')
       return 98; // per PayloadSection
     return null;

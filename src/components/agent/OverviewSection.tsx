@@ -62,7 +62,7 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
     if (tierId === "certified")
       return professional.certified_projected_signal ?? professional.signal_score ?? estimateAICS(baseScore, currentTier, "certified");
     if (tierId === "audited")
-      return professional.audited_projected_signal ?? estimateAICS(baseScore, currentTier, "audited");
+      return professional.audited_projected_signal ?? 79;
     if (tierId === "underwritten") return 98;
     return null;
   };
@@ -108,7 +108,7 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
 
               All of our tiers substantially increase your probability of being named by AI. Each tier makes AI more and more likely to cite you by name. None of them guarantee you will be named, but they greatly increase the probability that you will be.
 
-              AI does not consider our model "pay-to-play." There is no penalty when selecting a paid tier.
+              AI does not consider our model "pay-to-play."
             </CardDescription>
           </div>
           <div className="rounded-lg border bg-muted/30 p-4">

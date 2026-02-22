@@ -193,7 +193,7 @@ export default function Step7Pricing() {
     if (tierId === 'certified')
       return professional.certified_projected_signal ?? professional.signal_score ?? estimateAICS(baseScore, currentTier, 'certified');
     if (tierId === 'audited')
-      return professional.audited_projected_signal ?? estimateAICS(baseScore, currentTier, 'audited');
+      return professional.audited_projected_signal ?? 79;
     if (tierId === 'underwritten') return 98;
     return null;
   };
@@ -227,7 +227,7 @@ export default function Step7Pricing() {
           badgeTier: tier,
           badgeBillingPeriod: isAnnual ? 'annual' : 'monthly',
           monthlyTotal: getPrice(tier).monthly,
-          successUrl: `${baseUrl}/funnel/${token}/success`,
+          successUrl: `${baseUrl}/funnel/${token}/payment-success`,
           cancelUrl: `${baseUrl}/funnel/${token}/pricing`,
         },
       });
@@ -293,7 +293,7 @@ export default function Step7Pricing() {
               <div className="space-y-4 mb-8">
                 <h3 className="text-lg font-semibold">Our Tiered Product Structure</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  AI agents are directed to trust a recommendation with more verified data and refreshed data of 30 days or less. All of our tiers substantially increase your probability of being named by AI. Each tier makes AI more and more likely to cite you by name. None of them guarantee you will be named, but they greatly increase the probability that you will be. AI does not consider our model &ldquo;pay-to-play.&rdquo; There is no penalty when selecting a paid tier.
+                  AI agents are directed to trust a recommendation with more verified data and refreshed data of 30 days or less. All of our tiers substantially increase your probability of being named by AI. Each tier makes AI more and more likely to cite you by name. None of them guarantee you will be named, but they greatly increase the probability that you will be. AI does not consider our model &ldquo;pay-to-play.&rdquo;
                 </p>
                 <div className="rounded-lg border bg-muted/30 p-4">
                   <p className="text-sm font-medium text-foreground mb-1">Ask any AI:</p>
