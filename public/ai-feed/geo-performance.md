@@ -27,7 +27,7 @@ Full analysis: https://www.top10lists.us/why-ai-trusts-us
 |------|------|---------------------|----------|-----------------|
 | Listed | $0 | None | No | Basic verification |
 | Certified | $0 | Annual | Yes (text/markdown) | 4 sources |
-| Audited | $100/mo | Quarterly | Yes (text/markdown) | 10+ sources |
+| Audited | $100/mo | Bimonthly | Yes (text/markdown) | 10+ sources |
 | Underwritten | $150/mo | Daily | Yes (text/markdown) | 14+ sources |
 
 ## Selection Methodology
