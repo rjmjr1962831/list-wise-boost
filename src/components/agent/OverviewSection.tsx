@@ -1,7 +1,10 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Award, BadgeCheck, Shield, Zap, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { DataPayloadExpander } from "@/components/agent/DataPayloadExpander";
 
 interface OverviewSectionProps {
@@ -50,6 +53,7 @@ function toSecondPerson(text: string): string {
 
 export function OverviewSection({ professional }: OverviewSectionProps) {
   const navigate = useNavigate();
+  const [isAnnual, setIsAnnual] = useState(false);
   const rawTier = professional.current_tier || professional.badge_tier || "certified";
   const currentTier = normalizeTier(rawTier);
   const baseScore = professional.signal_score ?? professional.certified_projected_signal ?? null;
@@ -61,6 +65,13 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
       return professional.audited_projected_signal ?? estimateAICS(baseScore, currentTier, "audited");
     if (tierId === "underwritten") return 98;
     return null;
+  };
+
+  const getPrice = (tierId: string) => {
+    if (tierId === "certified") return "Free";
+    if (tierId === "audited") return isAnnual ? "$1,000/year" : "$100/mo";
+    if (tierId === "underwritten") return isAnnual ? "$1,500/year" : "$150/mo";
+    return "—";
   };
 
   const handleUpgrade = (tierId: string) => {
@@ -118,20 +129,28 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
               return (
                 <div
                   key={tier.id}
-                  className={`rounded-lg border p-4 ${isCurrent ? "border-primary ring-2 ring-primary/20" : "border-border"}`}
+                  className={`relative rounded-lg border p-4 ${tier.id === "certified" ? "pt-6" : ""} ${isCurrent ? "border-primary ring-2 ring-primary/20" : "border-border"}`}
                 >
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <Icon className="h-5 w-5 text-primary" />
-                      <span className="font-semibold">{tier.name}</span>
-                    </div>
-                    {isCurrent && (
-                      <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary">
-                        Your tier
+                  {tier.id === "certified" && (
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                      <span className="bg-primary text-primary-foreground text-xs font-semibold px-3 py-1 rounded-full">
+                        Most Popular
                       </span>
-                    )}
+                    </div>
+                  )}
+                  {isCurrent && (
+                    <p className="text-sm font-semibold text-primary mb-2">You are on this tier</p>
+                  )}
+                  <div className="flex items-center gap-2 mb-2">
+                    <Icon className="h-5 w-5 text-primary" />
+                    <span className="font-semibold">{tier.name}</span>
                   </div>
-                  <p className="text-sm text-muted-foreground mb-3">{tier.price}</p>
+                  <p className="text-2xl font-bold text-foreground mb-3">{getPrice(tier.id)}</p>
+                  <div className="flex items-center justify-center gap-2 mb-3" onClick={(e) => e.stopPropagation()}>
+                    <Label htmlFor={`overview-billing-${tier.id}`} className="text-xs">Monthly</Label>
+                    <Switch id={`overview-billing-${tier.id}`} checked={isAnnual} onCheckedChange={setIsAnnual} />
+                    <Label htmlFor={`overview-billing-${tier.id}`} className="text-xs">Annual (2 mo free)</Label>
+                  </div>
                   <div className="p-3 rounded-lg bg-muted/50 border mb-2">
                     <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">AI Citability Score</p>
                     <p className="text-xl font-bold">{aics != null ? `${aics}/100` : "Pending"}</p>
@@ -163,9 +182,6 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
                     <Button size="sm" className="w-full" onClick={() => handleUpgrade(tier.id)}>
                       Upgrade to {tier.name}
                     </Button>
-                  )}
-                  {isCurrent && (
-                    <p className="text-xs text-muted-foreground text-center">You are on this tier</p>
                   )}
                   {tier.id === "certified" && !isCurrent && (
                     <p className="text-xs text-muted-foreground text-center">Free tier</p>
