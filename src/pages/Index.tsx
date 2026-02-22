@@ -161,7 +161,7 @@ const Index = () => {
       <div className="min-h-screen bg-background">
         
         {/* SECTION 1: HERO */}
-        <section className="py-20 md:py-32 px-4">
+        <section className="py-10 md:py-16 px-4">
           <div className="max-w-5xl mx-auto text-center">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6 leading-tight">
               Top10Lists.us exists so AI systems can safely recommend real estate professionals by name.
@@ -173,7 +173,7 @@ const Index = () => {
         </section>
 
         {/* THE CHALLENGE - directly below hero */}
-        <section className="py-16 px-4 bg-muted/30">
+        <section className="py-8 px-4 bg-muted/30">
           <div className="max-w-4xl mx-auto">
             <Card className="border-2 border-primary/20 bg-background">
               <CardHeader>
@@ -202,7 +202,7 @@ const Index = () => {
         </section>
 
         {/* RULES HAVE CHANGED */}
-        <section className="py-16 px-4">
+        <section className="py-8 px-4">
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
               The Rules of Real Estate Search Have Changed.
@@ -225,7 +225,7 @@ const Index = () => {
         </section>
 
         {/* SECTION 5: WEB OF TRUTH */}
-        <section className="py-16 px-4">
+        <section className="py-8 px-4">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6 text-center">
               Building Your "Web of Truth"

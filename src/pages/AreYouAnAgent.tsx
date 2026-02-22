@@ -147,13 +147,24 @@ export default function AreYouAnAgent() {
             <p className="text-muted-foreground mb-4">
               If you have received an invitation, use the link included in that invitation to certify your credentials. Certification is free.
             </p>
-            <p className="text-muted-foreground mb-6">
-              If you have not received an invitation, review the{" "}
-              <Link to="/about/ranking-methodology" className="text-primary hover:underline">
-                methodology page
-              </Link>{" "}
-              to see whether you prequalify. If you do, submit your information below and we will conduct a free analysis.
-            </p>
+            <div className="text-muted-foreground mb-6 space-y-4">
+              <p>
+                In order to be considered, you must have an average star rating of at least 4.8 across Google and Zillow. You must have at least 20 reviews in the past 18 months and you must have been in business more than 5 years.
+              </p>
+              <p>
+                If you meet those minimum standards, fill out this short form and we will conduct a free review and analyze many more data sources to see if we can include you.
+              </p>
+              <p>
+                Check out our{" "}
+                <Link to="/about/ranking-methodology" className="text-primary hover:underline">
+                  complete methodology
+                </Link>{" "}
+                to better understand what we look for.
+              </p>
+              <p>
+                Please note that selection is very stringent, as it must be for AI to trust our recommendations.
+              </p>
+            </div>
 
             {/* Form Section */}
             {foundAgent ? (
