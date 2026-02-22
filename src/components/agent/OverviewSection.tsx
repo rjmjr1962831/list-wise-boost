@@ -196,7 +196,7 @@ function estimateAICS(base: number | null, current: string, target: string): num
 
 const TIERS = [
   { id: "certified", name: "Certified", price: "Free", icon: BadgeCheck, features: ["Standard Top10Lists badge", "Standard artifact, monthly refresh", "Core credentials published to AI systems"] },
-  { id: "audited", name: "Audited", price: "$100/mo", icon: Shield, features: ["Richer data payload", "Bimonthly refresh", "Community involvement, transaction stats"] },
+  { id: "audited", name: "Audited", price: "$100/mo", icon: Shield, features: ["Richer data payload", "Every Two Weeks refresh", "Community involvement, transaction stats"] },
   { id: "underwritten", name: "Underwritten", price: "$150/mo", icon: Zap, features: ["Maximum data richness", "Daily refresh", "Full neighborhood endorsement"] },
 ] as const;
 
