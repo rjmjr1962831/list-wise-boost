@@ -204,7 +204,7 @@ function community(civic:any[]):string{
     const role=esc(r.role??r.title??"Member");
     const srcRaw:string=r.source??r.filing_url??"";
     const ein=r.ein?` &mdash; EIN: ${esc(r.ein)}`:"";
-    const srcHtml=srcRaw.startsWith("http")?a(srcRaw,srcRaw.replace(/^https?:\/\//,"").split("/")[0]):esc(srcRaw);
+    const srcHtml=srcRaw.startsWith("http")?a(srcRaw,srcRaw.replace(/^https?:\/\//,"").split("/")[0]):esc(srcRaw)||"pending audit";
     rows+=`<li><strong>${role}</strong>, ${org} <span style="color:#6b7280;font-size:0.82rem;">(Source: ${srcHtml}${ein})</span></li>`;
   }
   return`<h2>Community Involvement</h2><p class="sub-note">Community involvement is weighted at 25% of the Top10Lists.us ranking score. All roles independently verified against public records and third-party sources.</p><ul class="pl">${rows}</ul>`;
