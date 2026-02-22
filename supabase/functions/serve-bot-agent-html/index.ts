@@ -12,6 +12,7 @@
  */
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { bioToPlainText } from "../_shared/formatParagraphs.ts";
 
 const SUPABASE_URL = "https://wiotrvoirdgzfacuuiem.supabase.co";
 const SUPABASE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
@@ -523,7 +524,7 @@ serve(async (req) => {
       "@type": "RealEstateAgent",
       name: a.name,
       url: canon,
-      description: bio || `Top-rated real estate agent in ${city.name}, ${si.display}. Independently verified by Top10Lists.us.`,
+      description: bioToPlainText(bio) || `Top-rated real estate agent in ${city.name}, ${si.display}. Independently verified by Top10Lists.us.`,
       address: {
         "@type": "PostalAddress",
         addressLocality: city.name,

@@ -1,5 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { formatWithParagraphs } from '../_shared/formatParagraphs.ts';
+import { sanitizeBioHtml } from '../_shared/formatParagraphs.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -143,7 +143,7 @@ Write only the bio, no preamble.`;
           }
 
           // Format bio with proper paragraph breaks
-          const formattedBio = formatWithParagraphs(generatedBio) || generatedBio;
+          const formattedBio = sanitizeBioHtml(generatedBio) || generatedBio;
 
           // Update professional with generated bio (synthesized_bio is the primary field)
           const { error: updateError } = await supabase

@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
 import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
-import { formatWithParagraphs } from '../_shared/formatParagraphs.ts';
+import { sanitizeBioHtml } from '../_shared/formatParagraphs.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -1013,27 +1013,9 @@ REMEMBER:
       console.log('⚠️ Used OpenAI GPT-4o fallback for this synthesis');
     }
     
-    // Post-process bio: strip any HTML tags Claude might have included, then convert markdown to HTML
+    // Sanitize bio to clean HTML (<p>, <strong>, <br> only) before storing.
     if (synthesizedData.synthesized_bio) {
-      // First, strip any HTML tags that shouldn't be there
-      let cleanBio = synthesizedData.synthesized_bio
-        .replace(/<\/?p>/g, '\n\n')  // Convert <p> tags to double newlines
-        .replace(/<br\s*\/?>/gi, '\n')  // Convert <br> to single newline
-        .replace(/<\/?strong>/g, '**')  // Convert <strong> to markdown bold
-        .replace(/<\/?b>/g, '**')  // Convert <b> to markdown bold
-        .replace(/<\/?em>/g, '*')  // Convert <em> to markdown italic
-        .replace(/<\/?i>/g, '*')  // Convert <i> to markdown italic
-        .replace(/<[^>]+>/g, '')  // Strip any remaining HTML tags
-        .replace(/\n{3,}/g, '\n\n')  // Normalize multiple newlines to double
-        .trim();
-      
-      // Now convert markdown bold to HTML strong
-      cleanBio = cleanBio.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-      
-      // Convert double newlines to paragraph breaks
-      cleanBio = cleanBio.split('\n\n').map((p: string) => `<p>${p.trim()}</p>`).join('\n');
-      
-      synthesizedData.synthesized_bio = cleanBio;
+      synthesizedData.synthesized_bio = sanitizeBioHtml(synthesizedData.synthesized_bio);
     }
     
     console.log('Synthesized data:', JSON.stringify(synthesizedData, null, 2));
@@ -1067,12 +1049,9 @@ REMEMBER:
     
     console.log(`   📊 Deduplication complete: ${finalAchievements.length} achievements, ${filteredPressMentions.length} press mentions`);
 
-    // Format synthesized bio with proper paragraph breaks
-    const formattedBio = formatWithParagraphs(synthesizedData.synthesized_bio) || synthesizedData.synthesized_bio;
-
     // Update professional record
     const updateData: Record<string, any> = {
-      synthesized_bio: formattedBio,
+      synthesized_bio: synthesizedData.synthesized_bio,
       notable_achievements: finalAchievements,
       press_mentions: filteredPressMentions,
       publications: synthesizedData.publications || [],

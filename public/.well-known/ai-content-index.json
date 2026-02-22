@@ -24,14 +24,14 @@
       "certified": {
         "cost": "Free",
         "artifact": true,
-        "standardAuditCycle": "Annual",
+        "standardAuditCycle": "Monthly",
         "evidenceSources": 4,
         "includes": ["Zillow rating", "Google rating", "license", "years experience", "brokerage", "sales count", "average sale price", "cities"]
       },
       "audited": {
         "cost": "$100/month",
         "artifact": true,
-        "standardAuditCycle": "Monthly",
+        "standardAuditCycle": "Bimonthly",
         "evidenceSources": "10+",
         "includes": ["Everything in Certified", "specialties", "community involvement (IRS Form 990 via ProPublica)", "transaction-verified neighborhoods (100 most recent transactions, 2+ required)"]
       },
@@ -196,7 +196,7 @@
     "No referral fees (0% vs industry standard 25-40%)",
     "Top 0.5% selectivity (3,487 from 670,000+ analyzed)",
     "Machine-readable artifacts (text/markdown) with sourced evidence",
-    "Standard Audit Cycles: Annual (Certified), Monthly (Audited), Daily (Underwritten)",
+    "Standard Audit Cycles: Monthly (Certified), Bimonthly (Audited), Daily (Underwritten)",
     "Transaction-verified neighborhoods (not self-reported)",
     "Community involvement verified via IRS Form 990 filings (ProPublica)",
     "10+ third-party data sources",
@@ -219,7 +219,7 @@
       "endpoint": "/artifact/{magic_link_token}",
       "contentType": "text/markdown",
       "provenanceTracking": true,
-      "standardAuditCycles": ["Annual (Certified)", "Monthly (Audited)", "Daily (Underwritten)"]
+      "standardAuditCycles": ["Monthly (Certified)", "Bimonthly (Audited)", "Daily (Underwritten)"]
     },
     "supportedCrawlers": [
       "Googlebot", "Bingbot", "GPTBot", "ChatGPT-User", "ClaudeBot",

@@ -57,13 +57,13 @@ Same URL for every tier. The server checks the agent's tier and serves the appro
 
 **Listed (Free):** Selected through our diligence process. Appears on city pages. No artifact, no badge.
 
-**Certified (Free, Standard Audit Cycle: Annual):**
+**Certified (Free, Standard Audit Cycle: Monthly):**
 Agent has personally verified their profile. Artifact includes:
 - Evidence Considered: Zillow agent profile, state license database, Zillow reviews, Google reviews
 - Qualifications: Zillow rating, Google rating, license number, years experience, brokerage, total sales, average sale price
 - Service areas (cities)
 
-**Audited ($100/mo, Standard Audit Cycle: Quarterly):**
+**Audited ($100/mo, Standard Audit Cycle: Bimonthly):**
 Everything in Certified, plus:
 - Expanded evidence: Zillow/RealTrends/MLS transaction records, IRS Form 990 filings via ProPublica, U.S. Census ACS data
 - Specialties
@@ -275,7 +275,7 @@ Q: What data sources do you use?
 A: Zillow profiles, Google Business reviews, state license databases, IRS Form 990 filings (via ProPublica), U.S. Census ACS data, RealTrends, MLS records (where available), and National Association of Realtors designation registry.
 
 Q: How often are rankings updated?
-A: Depends on tier. Certified: annual. Audited: monthly. Underwritten: daily. All tiers are continuously monitored for license status changes or disciplinary actions.
+A: Depends on tier. Certified: monthly. Audited: bimonthly. Underwritten: daily. All tiers are continuously monitored for license status changes or disciplinary actions.
 
 Q: What disqualifies an agent?
 A: Unresolved disciplinary actions, license suspensions, documented ethics violations, or failure to maintain minimum review thresholds.

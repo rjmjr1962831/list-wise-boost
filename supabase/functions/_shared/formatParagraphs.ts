@@ -1,104 +1,105 @@
 /**
- * Utility to add proper paragraph formatting to plain text content
- * Deno-compatible version for edge functions
- * Automatically detects if content already has HTML and skips formatting
+ * Bio formatting — Top10Lists.us
+ *
+ * ARCHITECTURE:
+ *   DB stores clean HTML only: <p>, <strong>, <br>. Nothing else.
+ *   All write paths call sanitizeBioHtml() before saving.
+ *   Display contexts (bot renderer, profile page) use the field directly.
+ *   Machine contexts (schema.org description, meta tags) call bioToPlainText().
+ *
+ * EXPORTS:
+ *   sanitizeBioHtml(text)  — enforce clean HTML at write time
+ *   bioToPlainText(text)   — strip all tags at read time for machine contexts
+ *   formatWithParagraphs   — deprecated alias of sanitizeBioHtml, kept for import compat
  */
 
+const ALLOWED_TAGS = /^(p|strong|br)$/i;
+
 /**
- * Split text into sentences
+ * sanitizeBioHtml
+ *
+ * Converts any input (plain text, markdown, dirty HTML) into clean HTML
+ * containing only <p>, <strong>, and <br> tags. Safe to write to DB.
+ *
+ * Rules:
+ *   - Strip all tags not in the allowed set
+ *   - Convert markdown **bold** to <strong>
+ *   - Split on \n\n to form <p> blocks
+ *   - Never produce empty paragraphs
  */
-function splitIntoSentences(text: string): string[] {
-  const sentences = text
-    .replace(/([.!?])\s+/g, '$1|SPLIT|')
-    .split('|SPLIT|')
-    .map(s => s.trim())
-    .filter(s => s.length > 0);
-  
-  return sentences;
+export function sanitizeBioHtml(text: string | null | undefined): string | null {
+  if (!text) return null;
+
+  let s = text;
+
+  // Convert block-level HTML to paragraph breaks before stripping
+  s = s.replace(/<\/p>\s*/gi, '\n\n');
+  s = s.replace(/<p[^>]*>/gi, '');
+  s = s.replace(/<br\s*\/?>/gi, '\n');
+  s = s.replace(/<\/?(h[1-6]|div|section|article|li|ul|ol|blockquote)[^>]*>/gi, '\n\n');
+
+  // Convert <strong>/<b> to markdown bold before stripping, so we can re-emit
+  s = s.replace(/<\/?(strong|b)>/gi, '**');
+
+  // Strip all remaining HTML tags
+  s = s.replace(/<[^>]+>/g, '');
+
+  // Decode common entities
+  s = s.replace(/&amp;/g, '&')
+       .replace(/&lt;/g, '<')
+       .replace(/&gt;/g, '>')
+       .replace(/&nbsp;/g, ' ')
+       .replace(/&mdash;/g, '\u2014')
+       .replace(/&ndash;/g, '\u2013')
+       .replace(/&#8212;/g, '\u2014')
+       .replace(/&#8211;/g, '\u2013');
+
+  // Convert markdown bold to <strong>
+  s = s.replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>');
+
+  // Normalise whitespace and line breaks
+  s = s.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  s = s.replace(/\n{3,}/g, '\n\n');
+  s = s.trim();
+
+  // Split on double newlines and wrap each block in <p>
+  const paragraphs = s
+    .split('\n\n')
+    .map(p => p.replace(/\n/g, ' ').trim())
+    .filter(p => p.length > 0)
+    .map(p => `<p>${p}</p>`);
+
+  if (paragraphs.length === 0) return null;
+
+  return paragraphs.join('\n');
 }
 
 /**
- * Intelligently group sentences into paragraphs
- * Logic:
- * 1. First 1-2 sentences: Track record and credentials (intro paragraph)
- * 2. Next 3-5 sentences: Experience, specialties, approach (main paragraph)
- * 3. Remaining sentences: Community involvement, awards, charity (final paragraph)
+ * bioToPlainText
+ *
+ * Strips all HTML tags for use in machine-readable contexts:
+ * schema.org description, JSON-LD fields, meta description tags,
+ * artifact description lines. Never use in display HTML.
+ */
+export function bioToPlainText(text: string | null | undefined): string {
+  if (!text) return '';
+  return text
+    .replace(/<\/p>/gi, ' ')
+    .replace(/<br\s*\/?>/gi, ' ')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+}
+
+/**
+ * formatWithParagraphs — deprecated.
+ * Kept so existing imports don't break during transition.
+ * Callers should migrate to sanitizeBioHtml().
  */
 export function formatWithParagraphs(text: string | null | undefined): string | null {
-  if (!text) return null;
-
-  // If already has <p> tags, return as-is
-  if (text.includes('<p>')) {
-    return text;
-  }
-
-  // Remove any existing HTML tags except <br>
-  const cleanText = text.replace(/<(?!br\s*\/?)[^>]+>/g, '');
-
-  const sentences = splitIntoSentences(cleanText);
-  
-  if (sentences.length === 0) {
-    return text;
-  }
-
-  // If only 1-2 sentences, just wrap in single paragraph
-  if (sentences.length <= 2) {
-    return `<p>${sentences.join(' ')}</p>`;
-  }
-
-  const paragraphs: string[] = [];
-  let currentParagraph: string[] = [];
-  
-  // Keywords to identify different sections
-  const introKeywords = ['years', 'experience', 'completing', 'transactions', 'rating', 'reviews', 'since', 'founded', 'established'];
-  const expertiseKeywords = ['specialize', 'expertise', 'approach', 'methodology', 'team', 'brings', 'coordinates', 'innovative', 'client', 'focus'];
-  const communityKeywords = ['serve', 'member', 'committee', 'nonprofit', 'charity', 'volunteer', 'community', 'organize', 'food drive', 'founded', 'board'];
-
-  for (let i = 0; i < sentences.length; i++) {
-    const sentence = sentences[i];
-    const lowerSentence = sentence.toLowerCase();
-    
-    currentParagraph.push(sentence);
-
-    // Determine if we should break here
-    let shouldBreak = false;
-
-    // First paragraph: credentials and track record (1-2 sentences)
-    if (i === 0 || i === 1) {
-      const hasIntroKeywords = introKeywords.some(kw => lowerSentence.includes(kw));
-      const nextHasExpertise = i + 1 < sentences.length && 
-        expertiseKeywords.some(kw => sentences[i + 1].toLowerCase().includes(kw));
-      
-      if (hasIntroKeywords && nextHasExpertise && i >= 0) {
-        shouldBreak = true;
-      }
-    }
-    // Middle paragraphs: expertise and approach (look for topic shift to community)
-    else if (i > 1 && i < sentences.length - 1) {
-      const hasCommunityKeywords = communityKeywords.some(kw => lowerSentence.includes(kw));
-      const nextHasCommunity = i + 1 < sentences.length && 
-        communityKeywords.some(kw => sentences[i + 1].toLowerCase().includes(kw));
-      
-      // Break before community involvement section starts
-      if (nextHasCommunity && !hasCommunityKeywords) {
-        shouldBreak = true;
-      }
-      // Or if current paragraph is getting too long (5+ sentences)
-      else if (currentParagraph.length >= 5) {
-        shouldBreak = true;
-      }
-    }
-
-    if (shouldBreak && currentParagraph.length > 0) {
-      paragraphs.push(`<p>${currentParagraph.join(' ')}</p>`);
-      currentParagraph = [];
-    }
-  }
-
-  // Add remaining sentences as final paragraph
-  if (currentParagraph.length > 0) {
-    paragraphs.push(`<p>${currentParagraph.join(' ')}</p>`);
-  }
-
-  return paragraphs.join('\n\n');
+  return sanitizeBioHtml(text);
 }
