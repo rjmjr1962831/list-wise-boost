@@ -153,7 +153,7 @@ ${body}
 
 function hdr(name:string,tier:string,updated:string,loc:string):string{
   const lbl=tier==="underwritten"?"Underwritten":tier==="audited"?"Audited":tier==="certified"?"Certified":"Listed";
-  const freq=tier==="underwritten"?"Daily":tier==="audited"?"Bimonthly":"Annual";
+  const freq=tier==="underwritten"?"Daily":tier==="audited"?"Every Two Weeks":"Annual";
   return`<header class="doc-header">
   <div class="issuer">Top10Lists.us &mdash; Verified Professional Registry</div>
   <span class="cert-badge">${lbl}</span>
@@ -316,7 +316,7 @@ function contact(pro:any,lu:string):string{
 function foot(pro:any,token:string,slug:string,tier:string,lu:string):string{
   const profUrl=`${BASE}/${pro.state_slug||"arizona"}/agents/${slug}`;
   const artUrl=`${BASE}/artifact/${token}`;
-  const freq=tier==="underwritten"?"Daily":tier==="audited"?"Bimonthly":"Annual";
+  const freq=tier==="underwritten"?"Daily":tier==="audited"?"Every Two Weeks":"Annual";
   return`<footer>
   <p><strong>Profile page</strong>${a(profUrl)}</p>
   <p><strong>This document</strong>${a(artUrl)}</p>
