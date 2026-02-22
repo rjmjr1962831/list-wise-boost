@@ -8,6 +8,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Loader2, Check, List, BadgeCheck, Shield, Zap } from 'lucide-react';
+import { DataPayloadExpander } from '@/components/agent/DataPayloadExpander';
 import { toast } from 'sonner';
 
 type CertificationTier = 'listed' | 'certified' | 'audited' | 'underwritten';
@@ -317,57 +318,60 @@ export default function Step7Pricing() {
                     const Icon = meta.icon;
                     const { display } = getPrice(tier);
                     const aics = getAICS(tier);
+                    const isCurrent = currentTier === tier;
+                    const isPaid = tier === 'audited' || tier === 'underwritten';
+                    const hasExpander = tier === 'certified' || tier === 'audited' || tier === 'underwritten';
                     return (
                       <div
                         key={tier}
-                        className={`relative border-2 rounded-lg p-5 cursor-pointer transition-all ${
-                          selectedTier === tier ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
-                        }`}
+                        className={`relative rounded-lg border p-4 cursor-pointer transition-all ${
+                          isCurrent ? 'border-primary ring-2 ring-primary/20' : 'border-border hover:border-primary/50'
+                        } ${selectedTier === tier ? 'bg-primary/5' : ''}`}
                         onClick={() => setSelectedTier(tier)}
                       >
-                        {currentTier === tier && (
-                          <div className="absolute -top-2.5 left-1/2 -translate-x-1/2">
-                            <span className="bg-primary text-primary-foreground text-xs font-semibold px-2.5 py-0.5 rounded-full">
-                              This is your current tier.
-                            </span>
-                          </div>
-                        )}
-                        <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
                             <Icon className="h-5 w-5 text-primary" />
                             <h3 className="font-semibold">{meta.name}</h3>
                           </div>
-                          <RadioGroupItem value={tier} id={tier} />
+                          {isCurrent && (
+                            <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary">
+                              Your tier
+                            </span>
+                          )}
+                          <RadioGroupItem value={tier} id={tier} className="sr-only" />
                         </div>
-                        <p className="text-2xl font-bold mb-2">{display}</p>
-                        <div className="p-3 rounded-lg bg-muted/50 border mb-3">
+                        <p className="text-sm text-muted-foreground mb-3">{display}</p>
+                        <div className="p-3 rounded-lg bg-muted/50 border mb-2">
                           <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">AI Citability Score</p>
                           <p className="text-xl font-bold">
                             {aics != null ? `${aics}/100` : 'Pending'}
                           </p>
                         </div>
+                        {hasExpander && (
+                          <div className="mb-3" onClick={(e) => e.stopPropagation()}>
+                            <DataPayloadExpander tier={tier} triggerText="View data and sources" professional={professional} />
+                          </div>
+                        )}
                         {tier === 'listed' && (
                           <p className="text-xs text-muted-foreground mb-2">No badge issued.</p>
                         )}
-                        <ul className="space-y-2">
+                        <ul className="text-sm text-muted-foreground space-y-1 mb-4">
                           {meta.features.map((f, i) => (
-                            <li key={i} className="flex items-start gap-2 text-sm">
-                              <Check className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                              <span>{f}</span>
+                            <li key={i} className="flex items-start gap-2">
+                              <span className="text-primary mt-0.5">•</span>
+                              {f}
                             </li>
                           ))}
                         </ul>
                         {tier === 'listed' && selectedTier === 'listed' && (
-                          <div className="mt-4 flex gap-2">
+                          <div className="mt-2 flex gap-2" onClick={(e) => e.stopPropagation()}>
                             <Button
                               type="button"
                               variant={listedAction === 'stay_listed' ? 'default' : 'outline'}
                               size="sm"
                               className="flex-1"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setListedAction('stay_listed');
-                              }}
+                              onClick={(e) => { e.stopPropagation(); setListedAction('stay_listed'); }}
                             >
                               Stay Listed
                             </Button>
@@ -376,14 +380,26 @@ export default function Step7Pricing() {
                               variant={listedAction === 'delete_listing' ? 'destructive' : 'outline'}
                               size="sm"
                               className="flex-1"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setListedAction('delete_listing');
-                              }}
+                              onClick={(e) => { e.stopPropagation(); setListedAction('delete_listing'); }}
                             >
                               Delete Listing
                             </Button>
                           </div>
+                        )}
+                        {isPaid && !isCurrent && (
+                          <Button
+                            size="sm"
+                            className="w-full"
+                            onClick={(e) => { e.stopPropagation(); setSelectedTier(tier); }}
+                          >
+                            Upgrade to {meta.name}
+                          </Button>
+                        )}
+                        {isCurrent && (
+                          <p className="text-xs text-muted-foreground text-center">You are on this tier</p>
+                        )}
+                        {tier === 'certified' && !isCurrent && (
+                          <p className="text-xs text-muted-foreground text-center">Free tier</p>
                         )}
                       </div>
                     );
@@ -404,7 +420,10 @@ export default function Step7Pricing() {
                 </Button>
               </div>
 
-              <p className="text-center text-sm text-muted-foreground mt-6">
+              <p className="text-sm text-muted-foreground mt-6 text-center">
+                No one can guarantee that you will be named when an AI is asked for a recommendation. What we can say is that the higher your score, the more likely you are to be cited by name.
+              </p>
+              <p className="text-center text-sm text-muted-foreground mt-4">
                 Questions? <a href="tel:6027589600" className="underline">(602) 758-9600</a>
               </p>
             </CardContent>
