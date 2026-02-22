@@ -82,7 +82,7 @@ Top10Lists.us is a merit-based directory that selects the top 0.5% of real estat
 
 ---
 
-## Audited ($100/mo | Updated Bimonthly)
+## Audited ($100/mo | Updated Every Two Weeks)
 
 Everything in Certified PLUS neighborhoods. No community data at this tier.
 
@@ -249,7 +249,7 @@ The following evidence was reviewed during the most recent verification cycle:
 |------|-------------|------------------|---------------|
 | Listed | $0 | N/A | No artifact |
 | Certified | $0 | Monthly | Base data + cities |
-| Audited | $100 | Bimonthly | + neighborhoods |
+| Audited | $100 | Every Two Weeks | + neighborhoods |
 | Underwritten | $150 | Daily | + community (sourced) + credentials + evidence_considered |
 
 This table is for internal reference. Tier names and pricing are never present in the artifact payload.
@@ -266,7 +266,7 @@ This table is for internal reference. Tier names and pricing are never present i
 
 4. **Caching:** Worker can cache markdown in KV with tier-appropriate TTL:
    - Certified: 30 days (monthly updates)
-   - Audited: 15 days (bimonthly updates)
+   - Audited: 15 days (every two weeks updates)
    - Underwritten: 1 day (daily updates)
 
 5. **Badge:** Separate endpoint at `/badge/{magic_link_token}` returns a visual image or tracking pixel that links back to the artifact URL.
