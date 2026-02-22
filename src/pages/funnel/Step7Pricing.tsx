@@ -334,9 +334,9 @@ export default function Step7Pricing() {
                         <h3 className="font-semibold">{meta.name}</h3>
                       </div>
                       <p className="text-2xl font-bold text-foreground mb-3">{display}</p>
-                      <div className="flex items-center justify-center gap-2 mb-3" onClick={(e) => e.stopPropagation()}>
+                      <div className={`flex items-center justify-center gap-2 mb-3 ${tier === 'certified' ? 'opacity-50 pointer-events-none' : ''}`} onClick={(e) => e.stopPropagation()}>
                         <Label htmlFor={`billing-${tier}`} className="text-xs">Monthly</Label>
-                        <Switch id={`billing-${tier}`} checked={isAnnual} onCheckedChange={setIsAnnual} />
+                        <Switch id={`billing-${tier}`} checked={isAnnual} onCheckedChange={setIsAnnual} disabled={tier === 'certified'} />
                         <Label htmlFor={`billing-${tier}`} className="text-xs">Annual (2 mo free)</Label>
                       </div>
                       <div className="p-3 rounded-lg bg-muted/50 border mb-2">

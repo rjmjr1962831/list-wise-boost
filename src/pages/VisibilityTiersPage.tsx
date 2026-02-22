@@ -238,9 +238,9 @@ export default function VisibilityTiersPage() {
                     <CardTitle className="text-lg">{tier.name}</CardTitle>
                   </div>
                   <p className="text-2xl font-bold text-foreground mt-1">{tier.price}</p>
-                  <div className="flex items-center justify-center gap-2 mt-2" onClick={(e) => e.stopPropagation()}>
+                  <div className={`flex items-center justify-center gap-2 mt-2 ${tier.id === 'certified' ? 'opacity-50 pointer-events-none' : ''}`} onClick={(e) => e.stopPropagation()}>
                     <Label htmlFor={`billing-${tier.id}`} className="text-xs">Monthly</Label>
-                    <Switch id={`billing-${tier.id}`} checked={isAnnual} onCheckedChange={setIsAnnual} />
+                    <Switch id={`billing-${tier.id}`} checked={isAnnual} onCheckedChange={setIsAnnual} disabled={tier.id === 'certified'} />
                     <Label htmlFor={`billing-${tier.id}`} className="text-xs">Annual (2 mo free)</Label>
                   </div>
                 </CardHeader>
