@@ -71,12 +71,13 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
     setProcessing(task.id);
     try {
       // Update the professional record
+      // Only fields that have a "Request review" button in the onboarding funnel
       const fieldMap: Record<string, string> = {
-        "License Number": "license_number",
-        "Email": "email",
-        "Phone": "phone",
-        "Website": "website",
         "Name": "name",
+        "License Number": "license_number",
+        "Reviews": "num_total_reviews",
+        "Years of Experience": "years_experience",
+        "Total Sales": "total_sales",
       };
       const dbField = fieldMap[task.field_name];
       if (dbField && task.proposed_value) {
