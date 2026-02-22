@@ -334,6 +334,84 @@ export function ProfileSection({
                 )}
               </div>
             </div>
+
+            {/* Credentials on file */}
+            {(
+              (professional.press_mentions && professional.press_mentions.length > 0) ||
+              (professional.awards_verified && professional.awards_verified.length > 0) ||
+              (professional.notable_achievements && professional.notable_achievements.length > 0) ||
+              (professional.community_roles && professional.community_roles.length > 0)
+            ) && (
+              <div className="space-y-3 pt-2 border-t">
+                <Label className="flex items-center gap-2 text-sm text-muted-foreground uppercase tracking-wide">
+                  <Shield className="h-4 w-4" />
+                  Credentials on File
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  This information was sourced from public records. To request a correction, use the Verified Information section below.
+                </p>
+
+                {professional.awards_verified && professional.awards_verified.length > 0 && (
+                  <div>
+                    <p className="text-xs font-medium mb-1">Awards</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {professional.awards_verified.map((a: any, i: number) => (
+                        <Badge key={i} variant="secondary" className="text-xs">
+                          {a.title || a.name || String(a)}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {professional.notable_achievements && professional.notable_achievements.length > 0 && (
+                  <div>
+                    <p className="text-xs font-medium mb-1">Notable Achievements</p>
+                    <ul className="space-y-1">
+                      {professional.notable_achievements.map((a: any, i: number) => (
+                        <li key={i} className="text-sm py-1.5 px-3 bg-muted/50 rounded-md">
+                          {a.title || String(a)}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {professional.press_mentions && professional.press_mentions.length > 0 && (
+                  <div>
+                    <p className="text-xs font-medium mb-1">Press Mentions</p>
+                    <ul className="space-y-1">
+                      {professional.press_mentions.map((p: any, i: number) => {
+                        const hasTitle = p.title && !p.title.startsWith('Source ');
+                        const label = hasTitle ? p.title : (p.source || p.url || 'Press mention');
+                        return (
+                          <li key={i} className="text-sm py-1.5 px-3 bg-muted/50 rounded-md">
+                            {p.url ? (
+                              <a href={p.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                                {label}
+                              </a>
+                            ) : label}
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                )}
+
+                {professional.community_roles && professional.community_roles.length > 0 && (
+                  <div>
+                    <p className="text-xs font-medium mb-1">Community Involvement</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {professional.community_roles.map((r: any, i: number) => (
+                        <Badge key={i} variant="secondary" className="text-xs">
+                          {typeof r === 'string' ? r : r.role || r.title || String(r)}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </CardContent>
         </Card>
 
