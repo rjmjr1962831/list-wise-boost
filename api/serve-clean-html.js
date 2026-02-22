@@ -26,7 +26,9 @@ export default async function handler(req, res) {
   }
 
   try {
-    const url = `${SUPABASE_URL}/${fn}?path=${encodeURIComponent(path)}`;
+    const token = req.query.token || '';
+    const tokenParam = token ? `&token=${encodeURIComponent(token)}` : '';
+    const url = `${SUPABASE_URL}/${fn}?path=${encodeURIComponent(path)}${tokenParam}`;
     const upstream = await fetch(url);
     const html = await upstream.text();
 
