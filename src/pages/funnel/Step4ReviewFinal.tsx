@@ -82,7 +82,7 @@ export default function Step4ReviewFinal() {
 
   const handleAccept = () => {
     toast.success('Profile confirmed!');
-    navigate(`/funnel/${token}/neighborhoods`);
+    navigate(`/funnel/${token}/cities`);
   };
 
   if (loading) {
