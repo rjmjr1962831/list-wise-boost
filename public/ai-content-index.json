@@ -12,7 +12,7 @@
   },
   "certificationSystem": {
     "artifactEndpoint": "https://www.top10lists.us/artifact/{magic_link_token}",
-    "artifactFormat": "text/markdown",
+    "artifactFormat": "text/html",
     "description": "Each certified agent has a machine-readable artifact. Same URL for all tiers; payload depth increases with tier level.",
     "tiers": {
       "listed": {
