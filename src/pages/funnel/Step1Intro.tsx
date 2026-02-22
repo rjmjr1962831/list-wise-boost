@@ -116,11 +116,11 @@ export default function Step1Intro() {
               {/* The Rules Have Changed */}
               <div className="bg-muted/50 border border-border rounded-lg p-4 sm:p-5">
                 <h2 className="text-base sm:text-lg font-bold mb-3">The Rules Have Changed</h2>
-                <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+                <p className="text-sm text-muted-foreground leading-relaxed mb-4 text-justify">
                   Beginning in 2026, <strong>every major AI platform</strong> now requires its systems to prefer <strong>independently verified sources</strong> over pay-to-play directories when recommending professionals.
                 </p>
 
-                <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+                <p className="text-sm text-muted-foreground leading-relaxed mb-4 text-justify">
                   This is the net effect of what has happened so far:
                 </p>
 
@@ -168,17 +168,17 @@ export default function Step1Intro() {
                     </tbody>
                   </table>
                 </div>
-                <p className="text-sm text-muted-foreground mt-4 leading-relaxed">
-                  No one can guarantee you will be cited every time someone asks for a referral, just as no one could guarantee you the top organic link on Google despite your SEO efforts. What we can say is that <strong>your chances of being named will substantially improve</strong> if you follow our guidance.
+                <p className="text-sm text-muted-foreground mt-3 leading-relaxed text-justify">
+                  AI Citation Probability Index: Composite score measuring how well a source aligns with published citation requirements from Anthropic, OpenAI, Google, and Perplexity. Scale 0-10.
                 </p>
 
-                <p className="text-xs text-muted-foreground mt-2 leading-relaxed italic">
-                  AI Citation Probability Index: Composite score measuring how well a source aligns with published citation requirements from Anthropic, OpenAI, Google, and Perplexity. Scale 0-10.
+                <p className="text-sm text-muted-foreground mt-4 leading-relaxed text-justify">
+                  No one can guarantee you will be cited every time someone asks for a referral, just as no one could guarantee you the top organic link on Google despite your SEO efforts. What we can say is that <strong>your chances of being named will substantially improve</strong> if you follow our guidance.
                 </p>
               </div>
 
               {/* Body Copy */}
-              <div className="space-y-4 text-sm text-muted-foreground leading-relaxed">
+              <div className="space-y-4 text-sm text-muted-foreground leading-relaxed text-justify">
                 <p>
                   In order to improve the probability you will be recommended by name when someone asks for a referral to a real estate agent, you must confirm the data that we have assembled.
                 </p>
