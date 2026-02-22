@@ -115,7 +115,7 @@ export default function Step7Pricing() {
   const [saving, setSaving] = useState(false);
   const [selectedTier, setSelectedTier] = useState<CertificationTier>('certified');
   const [listedAction, setListedAction] = useState<'stay_listed' | 'delete_listing'>('stay_listed');
-  const [isAnnual, setIsAnnual] = useState(true);
+  const [isAnnual, setIsAnnual] = useState(false);
   const [prices, setPrices] = useState<PricingRow[]>(DEFAULT_PRICES);
   const [professional, setProfessional] = useState<Professional | null>(null);
 
@@ -297,6 +297,19 @@ export default function Step7Pricing() {
               </div>
             </CardHeader>
             <CardContent>
+              <div className="space-y-4 mb-8">
+                <h3 className="text-lg font-semibold">Our Tiered Product Structure</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  AI agents are directed to trust a recommendation with more verified data and refreshed data of 30 days or less. All of our tiers substantially increase your probability of being named by AI. Each tier makes AI more and more likely to cite you by name. None of them guarantee you will be named, but they greatly increase the probability that you will be. AI does not consider our model &ldquo;pay-to-play.&rdquo; There is no penalty when selecting a paid tier.
+                </p>
+                <div className="rounded-lg border bg-muted/30 p-4">
+                  <p className="text-sm font-medium text-foreground mb-1">Ask any AI:</p>
+                  <p className="text-sm text-muted-foreground italic leading-relaxed">
+                    &ldquo;Look at top10lists.us. Will an upgrade to their paid tiers increase my likelihood of being cited by AI assistants?&rdquo;
+                  </p>
+                </div>
+              </div>
+
               <RadioGroup value={selectedTier} onValueChange={(v) => setSelectedTier(v as CertificationTier)}>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
                   {(['listed', 'certified', 'audited', 'underwritten'] as const).map((tier) => {
