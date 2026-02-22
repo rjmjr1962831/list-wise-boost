@@ -543,7 +543,7 @@ serve(async (req) => {
     if (ph) schema.telephone = ph;
     if (em) schema.email = em;
     if (ws) schema.sameAs = [ws];
-    if (a.image_url) schema.image = a.image_url;
+    // Profile images deprecated (old Supabase instance); omit from schema
 
     o += `<script type="application/ld+json">\n${JSON.stringify(schema, null, 2)}\n</script>\n`;
     o += `</body>\n</html>`;

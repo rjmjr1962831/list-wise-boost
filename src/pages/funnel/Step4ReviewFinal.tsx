@@ -244,7 +244,7 @@ export default function Step4ReviewFinal() {
                   </div>
                   <div className="flex gap-2">
                     <dt className="font-medium w-32">Profile Image:</dt>
-                    <dd>{professional.image_url || 'Not provided'}</dd>
+                    <dd>Deprecated (no longer displayed)</dd>
                   </div>
                   <div className="flex gap-2">
                     <dt className="font-medium w-32">Profile Link:</dt>

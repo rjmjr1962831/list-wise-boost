@@ -5,8 +5,10 @@
 
 /**
  * Known fake/placeholder URL patterns that should be rejected as profile photos
+ * DEPRECATED: bgdtekbhelormzbymkhh = old Supabase project; profile images deprecated.
  */
 const INVALID_URL_PATTERNS = [
+  'bgdtekbhelormzbymkhh.supabase.co',  // Old Supabase project; profile images deprecated
   'example.com',
   '/path/to/',
   'johndoe',
