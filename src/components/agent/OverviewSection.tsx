@@ -259,6 +259,8 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
             <CardDescription className="mt-1.5">
               AI agents are directed to trust a recommendation with more verified data and refreshed data of 30 days or less.
 
+              All of our tiers substantially increase your probability of being named by AI. Each tier makes AI more and more likely to cite you by name. None of them guarantee you will be named, but they greatly increase the probability that you will be.
+
               AI does not consider our model "pay-to-play." There is no penalty when selecting a paid tier.
             </CardDescription>
           </div>
