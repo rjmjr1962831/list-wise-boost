@@ -189,7 +189,7 @@ export default function Step4ReviewFinal() {
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-muted-foreground">Step 4 of 7</span>
+                <span className="text-sm text-muted-foreground">Step 5 of 8</span>
                 <span className="text-sm font-medium">Final Review</span>
               </div>
               <CardTitle>Does everything look correct?</CardTitle>
