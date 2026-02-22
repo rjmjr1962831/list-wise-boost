@@ -53,6 +53,11 @@ function buildLeadPayload(agent: any) {
       star_rating: String(agent.review_stars_rating || ""),
       years_experience: String(agent.years_experience || ""),
       specialties,
+      aics_current: tier === "listed" ? "23/100" : tier === "certified" ? "45/100" : tier === "audited" ? "80/100" : "95/100",
+      aics_listed: "23/100",
+      aics_certified: "45/100",
+      aics_audited: "80/100",
+      aics_underwritten: "95/100",
     },
   };
 }
