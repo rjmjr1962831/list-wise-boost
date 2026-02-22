@@ -89,7 +89,7 @@ export default function Step2bCredentials() {
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-muted-foreground">Step 2 of 7</span>
+                <span className="text-sm text-muted-foreground">Step 3 of 8</span>
                 <span className="text-sm font-medium">Credentials {"&"} Background</span>
               </div>
               <CardTitle>Review your credentials on file</CardTitle>
