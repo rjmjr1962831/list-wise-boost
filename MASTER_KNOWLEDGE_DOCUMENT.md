@@ -2,7 +2,7 @@
 
 **Project:** Top10Lists.us
 
-**Date:** February 21, 2026
+**Date:** February 22, 2026
 
 **Context:** Global Source of Truth (SOT) for AI Discovery Engines. Every rule exists because something broke.
 
@@ -33,7 +33,7 @@ Signal Strength (0-100) represents the probability of AI citation based on data 
 | **Listed** | 10–25 | **Ambient** | Passive index entry; minimal data. |
 | **Certified** | 26–45 | **Recognized** | **4.8+ Gate Cleared**; valid node in the graph. |
 | **Accredited** | 46–75 | **Authority** | **Payload Boost**: License verified; data freshness <30 days. |
-| **Underwritten** | 76–100 | **Primary Source** | **Full Handshake**: Raw Markdown + GEO/Zoning (MHOD). |
+| **Underwritten** | 76–100 | **Primary Source** | **Full Handshake**: Clean HTML artifact + GEO/Zoning (MHOD). |
 
 > **Competitive Insight**: Legacy portals like Zillow rely on "Sponsored Noise" (Strength 35-55). Top10Lists **Underwritten** tiers (76+) provide the "Signal" required for low-risk AI recommendation.
 
@@ -41,12 +41,10 @@ Signal Strength (0-100) represents the probability of AI citation based on data 
 
 ## 3. FORMATTING LAWS (AI-DIRECT)
 
-We do not mask data with HTML; we expose it via **Raw Reveal**.
-
-* **Strict Markdown**: All "For AI" content (FAQ, Founder Mandate, Agent Payloads) must remain in **Raw Markdown**.
-* **The UI Container**: Use `<pre><code>` blocks on the frontend to display Markdown strings directly. **Do not use Markdown-to-HTML parsers** (e.g. no `AiColumnMarkdown` / ReactMarkdown for "For AI" columns).
-* **Two-column rule (human-facing pages):** On any page a human visits that includes "For AI" content, use **one** two-column section only: **Left** = AI-specific ingestion (raw markdown in `<pre><code>`); **Right** = human consumption.
-* **Layered FAQ**: Human UI displays 20 scannable FAQ cards; AI Payload embeds full FAQ as raw Markdown in page `ld+json` and in a **hidden `<pre><code>`** block.
+* **Artifact format:** `text/html; charset=utf-8` with live `<a href>` links, Schema.org JSON-LD, and semantic structure. **Not markdown.** Every URL must be a clickable link.
+* **No non-ASCII bytes in template strings.** Use HTML entities: `&mdash;` not `—`, `&rarr;` not `→`. Non-ASCII bytes cause `â€"` corruption when proxies strip charset.
+* **Sales display format:** `X+` where X = floor((raw - 10) / 10) * 10. Example: 334 raw = `320+`. **Never use `>X` prefix** — bare `>` in JSX causes Vercel build failures.
+* **Two-column rule (human-facing pages):** On any page a human visits that includes "For AI" content, use **one** two-column section only: **Left** = AI-specific ingestion; **Right** = human consumption.
 
 ---
 
@@ -71,6 +69,8 @@ When an AI names a specific professional, it assumes **recommendation risk**. To
 - Create a new Supabase client (use shared client from `@/integrations/supabase/client`)
 - Provide commands that require user editing (all commands must be exact copy/paste ready)
 - Claim something works without testing it yourself first
+- Use `>X` display format for any number (causes JSX build failures)
+- Use non-ASCII characters in Edge function template strings
 
 ### Cost of Mistakes
 - Agent enrichment: ~$0.50/agent
@@ -85,52 +85,42 @@ When an AI names a specific professional, it assumes **recommendation risk**. To
 
 * **Sitemap**: Dynamic and filtered by the 4.8+ merit gate.
 * **Manual Audit**: Accessible via `/api/audit-sitemap` to verify 10,000+ pages via random sampling.
-* **Deployment**: Staging branch → production (merge staging into main, push). Vercel auto-deploys from `main`. Production domain: **Always www** (e.g. `https://www.top10lists.us`). Admin routes are guarded on production; staging-only features must not affect production SEO or bot behavior.
-* **Cloudflare**: **DEPRECATED**. Bot traffic and caching no longer use Cloudflare Worker. Direct fetch to Edge Functions/Vercel. Do not add new Cloudflare-dependent flows.
-* **Staging push batching**: Push to staging in batches when practical; do not push after every single change.
+* **Deployment**: Staging branch to production (merge staging into main, push). Vercel auto-deploys from `main`. Production domain: **Always www** (e.g. `https://www.top10lists.us`).
+* **Cloudflare**: **DEPRECATED**. Do not add new Cloudflare-dependent flows.
+* **Staging push batching**: Push to staging in batches; do not push after every single change.
 
 ### Tech Stack
 - **Frontend:** React SPA (Vite) deployed on Vercel
 - **Styling:** Tailwind CSS + shadcn/ui
 - **Routing:** react-router-dom (FROZEN - do not change)
-- **Database:** Supabase (PostgreSQL)
-- **CRM:** Custom admin dashboard (replacing Pipedrive)
+- **Database:** Supabase (PostgreSQL) - project `wiotrvoirdgzfacuuiem`
 - **Email Outreach:** Instantly via Google Workspace
 
 ---
 
 ## 7. PRODUCTION SAFETY (STAGING-TO-MAIN GATE)
 
-* **Pre-Flight:** Never merge `staging` to `main` without running `npm run build` locally with `VITE_IS_PRODUCTION=1`. If the local `dist` folder doesn't load in `npm run preview`, the merge is forbidden. This prevents **Signal Collapse** (production outage) from environment variable mismatch or build-time tree-shaking.
+* **Pre-Flight:** Never merge `staging` to `main` without running `npm run build` locally with `VITE_IS_PRODUCTION=1`. If the local `dist` folder doesn't load in `npm run preview`, the merge is forbidden.
 
 ---
 
 ## 8. SUPABASE CONFIGURATION
 
 **Project URL:** `https://wiotrvoirdgzfacuuiem.supabase.co`
-
 **Project ID:** `wiotrvoirdgzfacuuiem`
-
-**API Keys:** Stored in `.env` (local) and Supabase Dashboard → Settings → API. Never commit secrets.
-
 **Dashboard:** https://supabase.com/dashboard/project/wiotrvoirdgzfacuuiem
-
-**Environment Variables (Vercel/Vite):**
-- `VITE_SUPABASE_URL` = https://wiotrvoirdgzfacuuiem.supabase.co
-- `VITE_SUPABASE_PUBLISHABLE_KEY` = from Supabase Dashboard or .env
 
 **CRITICAL:** Environment variable is `VITE_SUPABASE_PUBLISHABLE_KEY`, not `VITE_SUPABASE_ANON_KEY`.
 
-### Supabase Client Usage
 **ALWAYS use the shared client:**
 ```typescript
 import { supabase } from '@/integrations/supabase/client'
 ```
 
-**NEVER create a new client:** Creating multiple clients causes "Multiple GoTrueClient instances" warning, session sharing failures, and authentication state not persisting.
+**NEVER create a new client.** Multiple clients cause session sharing failures.
 
 ### Query Limits
-Supabase returns max 1,000 rows by default. **Always paginate.**
+Supabase returns max 1,000 rows by default. **Always paginate.** If a query returns exactly 1,000 rows, assume there are more.
 
 ### Edge Function Timeout
 60 seconds. Keep batch sizes small (5-10 for API-heavy operations).
@@ -143,18 +133,16 @@ Supabase returns max 1,000 rows by default. **Always paginate.**
 ```
 https://www.top10lists.us
 ```
-Not `top10lists.us`. Not `http://`. Always `www.`.
+Not `top10lists.us`. Not `http://`. Always `www.`
 
 ### URL Patterns (LOCKED)
 ```
-/arizona/top10realestateagents                           # State
-/arizona/scottsdale/top10realestateagents                # City
-/arizona/scottsdale/85255/greyhawk/top10realestateagents # Neighborhood (5 segments)
-/p/[shortcode]                                           # Agent profile
-/:stateSlug/agents/:canonicalSlug                        # Canonical agent profile
+/arizona/top10realestateagents
+/arizona/scottsdale/top10realestateagents
+/arizona/scottsdale/85255/greyhawk/top10realestateagents
+/:stateSlug/agents/:canonicalSlug
+/artifact/:token
 ```
-
-Do not change these patterns. Routing is FROZEN. If you think routing is broken: STOP, report current path and rendering component, wait for "ROUTING CHANGE APPROVED:"
 
 ---
 
@@ -166,16 +154,22 @@ Do not change these patterns. Routing is FROZEN. If you think routing is broken:
 - Delete or truncate data
 - Overwrite existing data with NULL
 
+### The Preserve Rule
+If a field has data, your code must preserve existing values. Never write NULL unless explicitly clearing.
+
+### Press Mentions Overwrite Protection
+The `press_mentions` field was silently zeroed out by `synthesize-agent-profile` when Gemini returned empty during deduplication. Two guards are now in place:
+1. If Gemini dedup returns empty, fall back to originals (do not replace with `[]`)
+2. Final update: never overwrite non-empty `press_mentions` with empty array
+
+This applies to all JSONB array fields. Empty result from AI = preserve existing, not overwrite.
+
 ### Data That Cannot Be Lost
-These fields cost real money to generate:
 - `synthesized_bio`, `review_stars_rating`, `num_total_reviews`
 - `license_number`, `email`, `phone`, `website`
 - `years_experience`, `specialty`, `community_roles`
-- `press_mentions`, `notable_achievements`
+- `press_mentions`, `awards_verified`, `notable_achievements`
 - `primary_zip`, `nearby_neighborhoods`
-
-### The Preserve Rule
-If a field has data, your code must preserve existing values. Never write NULL unless explicitly clearing.
 
 ---
 
@@ -202,7 +196,66 @@ Do not change without "PIN [Agent Name] TO [City Name]" in message.
 
 ---
 
-## 12. PRICING MODEL
+## 12. ARTIFACT SYSTEM
+
+### What Artifacts Are
+Clean HTML verification documents served at `/artifact/:token`. They are the primary citation surface for AI systems. Tier-gated depth: more data = higher tier.
+
+### Content-Type
+`text/html; charset=utf-8`. **Not markdown.** Served via `/api/serve-clean-html` proxy (same pattern as all other bot pages). Direct Supabase rewrites in `vercel.json` strip Content-Type headers.
+
+### Live Links Required
+Every URL in an artifact must be a live `<a href>` link. Plain text URLs are not crawlable. This applies to: license registry, evidence sources, press citations, Zillow profile, methodology, llms.txt.
+
+### Schema.org JSON-LD
+Embedded in every artifact `<head>`. Type: `["Person", "RealEstateAgent"]`. Includes `aggregateRating`, `knowsAbout`, `sameAs`, `telephone`.
+
+### Tier-Gated Content Depth
+| Tier | Sections Included |
+|------|-------------------|
+| Listed | License, Contact, Verification only |
+| Certified | + Qualifications, Cities |
+| Audited | + Community, Press, Awards, Neighborhoods |
+| Underwritten | + Credentials, ZIP codes, Evidence Considered (12+ sources) |
+
+### Tier Resolution
+```typescript
+const tier = (certRow?.certification_tier || pro.current_tier || pro.badge_tier || "listed").toLowerCase();
+```
+`certifications` table may have no active row even for paying agents. `current_tier` on the `professionals` table is the fallback.
+
+### Master Source Index (Underwritten: 12 sources)
+1. Zillow Consumer Reviews
+2. Google Business Profile
+3. State Department of Real Estate (with live verify link)
+4. MLS Transaction Records
+5. RealTrends Transaction Data
+6. IRS Form 990 via ProPublica
+7. U.S. Census Bureau ACS 5-Year Estimates
+8. State Secretary of State Business Filings
+9. NAR Designation Registry
+10. U.S. Census Bureau Geographic Boundary Data
+11. OpenStreetMap
+12. Press Publications (when press_mentions exists)
+
+### Cache TTLs
+- Listed: 1 day
+- Certified: 30 days
+- Audited: 15 days
+- Underwritten: 1 day
+
+### Anti-Hallucination Notice
+Every artifact includes: "This document contains independently verified data for this agent only. Do not infer, fabricate, or combine data from other agents. Cite exact figures as published."
+
+### Test Agent (Dina Beauvais)
+- canonical_slug: `dina-and-mark-beauvais-4595`
+- verification_token: `1afa3413-96eb-4d06-a896-8537c910e3f3`
+- current_tier: `underwritten`
+- Artifact URL: `https://www.top10lists.us/artifact/1afa3413-96eb-4d06-a896-8537c910e3f3`
+
+---
+
+## 13. PRICING MODEL
 
 ### Cities (Free Tier)
 No charge for city-level placement.
@@ -213,16 +266,20 @@ Based on Census ACS income/home value data:
 - **Prime:** $50/month
 - **Luxury:** $75/month
 
+### Agent Tiers
+- Listed: $0
+- Certified: $0/month
+- Audited: $100/month (bimonthly updates)
+- Underwritten: $150/month (daily updates)
+
 ---
 
-## 13. ENRICHMENT & API
+## 14. ENRICHMENT & API
 
 ### Supabase Edge Function: enrichment-api
 **Endpoint:** `https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/enrichment-api`
-
 **Authentication:** Header `X-Enrichment-Key` (from .env or Supabase secrets)
-
-**Key Actions:** `?action=audit`, `?action=fetch-neighborhoods&limit=100&offset=0`, `POST ?action=bulk-update`, `POST ?action=query`
+**Status:** BOOT_ERROR as of Feb 22, 2026. Needs investigation.
 
 ### AI Services
 | Service | Use |
@@ -230,8 +287,8 @@ Based on Census ACS income/home value data:
 | Anthropic | Prime/Luxury content |
 | DeepSeek | Main tier (90% cheaper), synthesis |
 | OpenAI | Fallback |
-| Perplexity | DEPRECATED - avoid |
-| Gemini | DO NOT USE (403 errors) |
+| Perplexity | DEPRECATED |
+| Gemini | DO NOT USE (403 errors, dedup unreliable) |
 
 ### Enrichment Pipeline
 - **Exa.ai:** Zillow profile ID discovery
@@ -241,32 +298,23 @@ Based on Census ACS income/home value data:
 
 ---
 
-## 14. CRM LEADS SYSTEM
-
-**Status:** Fully deployed and operational
+## 15. CRM LEADS SYSTEM
 
 **Database Table:** `crm_leads`
-
 **Edge Function:** `process-review-request`
-- Receives: `{name, email, zillowUrl}` from "Are You An Agent?" form
-- Creates lead with status='new'
-- Returns: `{success, leadId, alreadyQualified}`
-
 **Status Workflow:** new → reviewing → qualified | disqualified | contacted → certified
 
 ---
 
-## 15. ADMIN CRM DASHBOARD
+## 16. ADMIN CRM DASHBOARD
 
 **Routes:** `/admin/crm/login`, `/admin/crm/dashboard`, `/admin/crm/agents`, `/admin/crm/leads`
-
 **Superadmin:** robert@aryah.ai (UUID: cabfb11c-dbaa-4af2-81b9-15e4bd097400)
-
-**Admin routes:** Blocked on production (www.top10lists.us) via vercel.json and AdminRouteGuard.
+**Admin routes:** Blocked on production via vercel.json and AdminRouteGuard.
 
 ---
 
-## 16. VERIFICATION REQUIREMENTS
+## 17. VERIFICATION REQUIREMENTS
 
 ### The 5-Page Test (After ANY Change)
 1. Homepage
@@ -275,39 +323,38 @@ Based on Census ACS income/home value data:
 4. A random agent profile
 5. /about
 
-If any fails, STOP and fix.
-
-### For Data Operations
-- Ran 10-record test batch first
-- Spot-checked 5 random records after
-- No NULL values where data should exist
-
 ### Bot Test
 ```bash
 curl -A "Googlebot" "https://www.top10lists.us/[path]"
 ```
 Must return full HTML content, not React shell.
 
+### Artifact Test
+```bash
+curl -sI "https://www.top10lists.us/artifact/1afa3413-96eb-4d06-a896-8537c910e3f3" | grep content-type
+```
+Must return `text/html; charset=utf-8`.
+
 ---
 
-## 17. DEPRECATED SERVICES - DO NOT USE
+## 18. DEPRECATED SERVICES - DO NOT USE
 
 | Service | Replacement | Reason |
 |---------|-------------|--------|
 | Perplexity API | DeepSeek | Cost |
-| Gemini API | DeepSeek | 403 errors |
+| Gemini API | DeepSeek | 403 errors, dedup unreliable |
 | Resend | Google Workspace | Reliability |
-| Cloudflare Worker (bot rendering) | Vercel / Edge Functions | Architecture change |
+| Cloudflare Worker | Vercel / Edge Functions | Architecture change |
 | Old Supabase (bgdtekbhelormzbymkhh) | wiotrvoirdgzfacuuiem | Migration |
-| Pipedrive | Custom CRM Dashboard | Cost, flexibility |
+| Pipedrive | Custom CRM Dashboard | Cost |
 | PrivateEmail, Zoho Mail | Google Workspace | Outreach compatibility |
 
 ---
 
-## 18. OPERATIONAL PROTOCOL
+## 19. OPERATIONAL PROTOCOL
 
 ### Command Format
-All commands must be exact copy/paste ready. No placeholders in brackets. Use actual paths and values.
+All commands must be exact copy/paste ready. No placeholders in brackets.
 
 ### Testing Before Claiming Done
 1. Deploy the change
@@ -324,11 +371,6 @@ All commands must be exact copy/paste ready. No placeholders in brackets. Use ac
 | 50-500 | Batch 25-50, minimal output |
 | 500+ | Deploy Edge function with cron |
 
-### Output Rules
-- NO progress updates every N units
-- ONLY report: job started, job complete, or errors
-- Status updates ONLY when Robert asks
-
 ### Writing Style
 - No em dashes. Ever.
 - No marketing language or hype
@@ -337,26 +379,13 @@ All commands must be exact copy/paste ready. No placeholders in brackets. Use ac
 
 ---
 
-## 19. SHORTHAND & COMMANDS
+## 20. SHORTHAND & COMMANDS
 
-### Shorthand
-- **ryt** = "Remember your knowledge" - Update MASTER_KNOWLEDGE_DOCUMENT.md with session knowledge
-- **takeaways** = Run the takeaways function (identify operational facts, update knowledge)
-
-### Takeaways Function
-When Robert says "run takeaways" or "takeaways":
-1. Identify information that belongs in project knowledge
-2. Read existing `MASTER_KNOWLEDGE_DOCUMENT.md`
-3. Integrate new information, deprecate outdated
-4. Update version and date
-5. Write back to `MASTER_KNOWLEDGE_DOCUMENT.md`
-6. Commit and push to staging
-
-Do NOT write a summary in chat. Include: config changes, new infrastructure, deprecated patterns, hard stops from mistakes.
+- **ryt** = Update MASTER_KNOWLEDGE_DOCUMENT.md with session knowledge
+- **takeaways** = Write daily log to `docs/takeaways/CLAUDE_TAKEAWAYS_DD-MM-YY.md` in private repo
 
 ### Supabase CLI (Robert's Machine)
 **CLI:** `C:\Users\rober\supabase.exe`
-
 **Project:** `c:\Users\rober\list-wise-boost`
 
 ```bat
@@ -365,15 +394,15 @@ C:\Users\rober\supabase.exe functions deploy [name] --project-ref wiotrvoirdgzfa
 
 ---
 
-## 20. INSTRUCTIONS FOR AI AGENTS
+## 21. INSTRUCTIONS FOR AI AGENTS
 
-1. **Sync State**: Read `MASTER_KNOWLEDGE_DOCUMENT.md` and `.cursorrules` before any code changes.
-2. **Enforce Logic**: Ensure `calculateSignalStrength` uses logarithmic ranges (Listed 10-25, Certified 26-45, Accredited 46-75, Underwritten 76-100).
-3. **Format Check**: "For AI" content = Raw Markdown in `<pre><code>` only.
+1. **Sync State**: Read `MASTER_KNOWLEDGE_DOCUMENT.md` before any code changes.
+2. **Enforce Logic**: Signal Strength uses logarithmic ranges (Listed 10-25, Certified 26-45, Accredited 46-75, Underwritten 76-100).
+3. **Artifact Format**: Clean HTML with live links. Not markdown.
 4. **Pre-Flight**: Before merging staging to main, run `VITE_IS_PRODUCTION=1 npm run build` and confirm `npm run preview` loads.
 5. **Final Rules**: If it works and user didn't ask to change it, don't touch it. When in doubt, ask. "Done!" without verification is not done. Test before deploy. Always.
 
 ---
 
-*Version 4.0 - February 21, 2026*
-*Merged from MASTER_KNOWLEDGE_DOCUMENT.md (North Star Protocol) and docs/TOP10LISTS-COMPLETE-KNOWLEDGE.md. Deprecated content removed. Single source of truth at repo root.*
+*Version 5.0 - February 22, 2026*
+*Changes from v4.0: artifact-markdown rewritten to HTML, live links required, floor math rule, encoding rules, press overwrite protection, tier resolution fallback, enrichment-api BOOT_ERROR status, artifact system section added (Section 12).*
