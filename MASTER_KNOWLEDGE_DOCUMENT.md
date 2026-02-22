@@ -252,10 +252,10 @@ const tier = (certRow?.certification_tier || pro.current_tier || pro.badge_tier 
 12. Press Publications (when press_mentions exists)
 
 ### Cache TTLs
-- Listed: 1 day
-- Certified: 30 days
-- Audited: 15 days
-- Underwritten: 1 day
+- Listed: Annual
+- Certified: Monthly
+- Audited: Every Two Weeks
+- Underwritten: Daily
 
 ### Anti-Hallucination Notice
 Every artifact includes: "This document contains independently verified data for this agent only. Do not infer, fabricate, or combine data from other agents. Cite exact figures as published."
