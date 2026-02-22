@@ -365,7 +365,9 @@ serve(async (req) => {
         address: { "@type": "PostalAddress", addressLocality: city.name, addressRegion: si.abbr, addressCountry: "US" },
         aggregateRating: { "@type": "AggregateRating", ratingValue: a.review_stars_rating || 0, reviewCount: a.num_total_reviews || 0, bestRating: 5 } } };
       if (a.company && a.company !== "Unknown") it.item.worksFor = { "@type": "Organization", name: a.company };
-      if (a.license_number) it.item.identifier = a.license_number;
+      const PLACEHOLDER_IDS = ['1522444','N/A','Not provided','AZ License','HSMOVE','DV139'];
+      const licId = a.license_number && !PLACEHOLDER_IDS.includes(a.license_number.trim()) ? a.license_number : 'pending audit';
+      it.item.identifier = licId;
       if (a.phone && a.phone !== "Unknown") it.item.telephone = a.phone;
       return it;
     });
