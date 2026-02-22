@@ -83,33 +83,12 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
 
   return (
     <div className="space-y-6">
-      {/* Why We Selected You */}
-      {professional.selection_rationale && (
-        <Card className="border-primary/20 bg-primary/5">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Award className="h-5 w-5 text-primary" />
-              Why We Selected You
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm leading-relaxed">{toSecondPerson(professional.selection_rationale)}</p>
-          </CardContent>
-        </Card>
-      )}
-
       {/* Our Tiered Product Structure */}
       <Card>
         <CardHeader className="space-y-4">
           <div>
             <CardTitle className="text-lg">Our Tiered Product Structure</CardTitle>
-            <CardDescription className="mt-1.5">
-              AI agents are directed to trust a recommendation with more verified data and refreshed data of 30 days or less.
-
-              All of our tiers substantially increase your probability of being named by AI. Each tier makes AI more and more likely to cite you by name. None of them guarantee you will be named, but they greatly increase the probability that you will be.
-
-              AI does not consider our model "pay-to-play."
-            </CardDescription>
+  
           </div>
           <div className="rounded-lg border bg-muted/30 p-4">
             <p className="text-sm font-medium text-foreground mb-1">Ask any AI:</p>
