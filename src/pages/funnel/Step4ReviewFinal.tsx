@@ -82,7 +82,9 @@ export default function Step4ReviewFinal() {
 
   const handleAccept = () => {
     toast.success('Profile confirmed!');
-    navigate(`/funnel/${token}/cities`);
+    sessionStorage.setItem('visibility_professional_id', professional.id);
+    sessionStorage.setItem('visibility_professional_token', token!);
+    navigate('/visibility/coverage');
   };
 
   if (loading) {
