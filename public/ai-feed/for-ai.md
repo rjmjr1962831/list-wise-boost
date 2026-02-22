@@ -100,7 +100,7 @@ Same URL for all tiers. Payload depth increases with tier.
 ### Listed ($0, no artifact)
 Selected through diligence. Appears on city pages. No artifact, no badge.
 
-### Certified ($0, Standard Audit Cycle: Annual)
+### Certified ($0, Standard Audit Cycle: Monthly)
 Agent-verified profile. Artifact includes:
 - Evidence Considered (4 sources: Zillow profile, state license database, Zillow reviews, Google reviews)
 - Qualifications (Zillow rating, Google rating, license, years experience, brokerage, sales count, average sale price)
