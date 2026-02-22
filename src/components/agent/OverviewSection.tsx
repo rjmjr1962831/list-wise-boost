@@ -129,9 +129,9 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
               return (
                 <div
                   key={tier.id}
-                  className={`relative rounded-lg border p-4 ${tier.id === "certified" ? "pt-6" : ""} ${isCurrent ? "border-primary ring-2 ring-primary/20" : "border-border"}`}
+                  className={`relative rounded-lg border p-4 ${tier.id === "audited" ? "pt-6" : ""} ${isCurrent ? "border-primary ring-2 ring-primary/20" : "border-border"}`}
                 >
-                  {tier.id === "certified" && (
+                  {tier.id === "audited" && (
                     <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                       <span className="bg-primary text-primary-foreground text-xs font-semibold px-3 py-1 rounded-full">
                         Most Popular

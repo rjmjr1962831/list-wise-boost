@@ -311,13 +311,13 @@ export default function Step7Pricing() {
                   const aics = getAICS(tier);
                   const isCurrent = currentTier === tier;
                   const isPaid = tier === 'audited' || tier === 'underwritten';
-                  const isMostPopular = tier === 'certified';
+                  const isMostPopular = tier === 'audited';
                   return (
                     <div
                       key={tier}
                       className={`relative rounded-lg border p-4 ${
-                        isCurrent ? 'border-primary ring-2 ring-primary/20' : 'border-border'
-                      }`}
+                        isMostPopular ? 'pt-6' : ''
+                      } ${isCurrent ? 'border-primary ring-2 ring-primary/20' : 'border-border'}`}
                     >
                       {isMostPopular && (
                         <div className="absolute -top-3 left-1/2 -translate-x-1/2">

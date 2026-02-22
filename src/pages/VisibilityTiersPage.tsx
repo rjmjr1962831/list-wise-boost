@@ -220,9 +220,9 @@ export default function VisibilityTiersPage() {
             return (
               <Card
                 key={tier.id}
-                className={`relative ${isCurrent ? 'border-primary ring-2 ring-primary/20' : ''}`}
+                className={`relative ${tier.id === 'audited' ? 'pt-6' : ''} ${isCurrent ? 'border-primary ring-2 ring-primary/20' : ''}`}
               >
-                {tier.id === 'certified' && (
+                {tier.id === 'audited' && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                     <span className="bg-primary text-primary-foreground text-xs font-semibold px-3 py-1 rounded-full">
                       Most Popular
