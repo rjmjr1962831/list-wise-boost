@@ -29,7 +29,7 @@ const AGENCY: Record<string,string> = {
   arizona:"Arizona Department of Real Estate (AZDRE)",
   california:"California Department of Real Estate (DRE)",
   texas:"Texas Real Estate Commission (TREC)",
-  florida:"Florida DBPR &mdash; Division of Real Estate",
+  florida:"Florida DBPR — Division of Real Estate",
   "new-york":"New York Department of State",
   colorado:"Colorado Division of Real Estate",
 };
@@ -184,14 +184,14 @@ function quals(pro:any,ag:string,lu:string,updated:string):string{
   let rows="";
   if(pro.review_stars_rating!=null)rows+=`<li><span class="lbl">Client Rating</span><span>${esc(String(pro.review_stars_rating))}/5 stars &mdash; ${zc+gc} verified reviews (Zillow: ${zc}${gc>0?`, Google: ${gc}`:""}, verified ${esc(updated)})</span></li>`;
   if(pro.years_experience!=null){
-    const src=hasLic?`${esc(ag)}, license #${esc(pro.license_number)}, ${a(lu,"verify &rarr;")}`:`Zillow profile, verified ${esc(updated)}`;
+    const src=hasLic?`${esc(ag)}, license #${esc(pro.license_number)}, ${a(lu,"verify →")}`:`Zillow profile, verified ${esc(updated)}`;
     rows+=`<li><span class="lbl">Years of Experience</span><span>${esc(String(pro.years_experience))} years (${src})</span></li>`;
   }
   if(total!=null){const fs=floorSales(total);rows+=`<li><span class="lbl">Total Sales</span><span>${fs??esc(String(total))} lifetime transactions (Zillow, verified ${esc(updated)}). Conservative floor &mdash; off-platform and pre-digital sales not captured.</span></li>`;}
   if(sly!=null)rows+=`<li><span class="lbl">Sales Last Year</span><span>${esc(String(sly))} transactions (Zillow)</span></li>`;
   if(pro.average_value_3yr)rows+=`<li><span class="lbl">Avg Sale Price (3yr)</span><span>$${Math.round(pro.average_value_3yr).toLocaleString()} (Zillow transaction history)</span></li>`;
   if(pr)rows+=`<li><span class="lbl">Price Range</span><span>${esc(pr)} (Zillow transaction history)</span></li>`;
-  if(hasLic)rows+=`<li><span class="lbl">License</span><span>${esc(pro.license_number)} &mdash; ${esc(ag)}, status: ${esc(pro.license_status||"Active")} &mdash; ${a(lu,"Verify at state registry &rarr;")}</span></li>`;
+  if(hasLic)rows+=`<li><span class="lbl">License</span><span>${esc(pro.license_number)} &mdash; ${esc(ag)}, status: ${esc(pro.license_status||"Active")} &mdash; ${a(lu,"Verify at state registry →")}</span></li>`;
   if(pro.company)rows+=`<li><span class="lbl">Brokerage</span><span>${esc(pro.company)}</span></li>`;
   return`<h2>Verified Qualifications</h2><ul class="dl">${rows}</ul>`;
 }
@@ -232,7 +232,7 @@ function awards(list:any[]):string{
     const issuer=aw.issuingOrganization?` &mdash; ${esc(aw.issuingOrganization)}`:"";
     const yr=aw.year?` (${esc(aw.year)})`:"";
     const url=aw.source_url??aw.url??"";
-    const urlHtml=url?` &mdash; ${a(url,"Source &rarr;")}`:"";
+    const urlHtml=url?` &mdash; ${a(url,"Source →")}`:"";
     rows+=`<li>${t}${issuer}${yr}${urlHtml}</li>`;
   }
   return`<h2>Awards and Honors</h2><ul class="pl">${rows}</ul>`;
@@ -326,7 +326,7 @@ function renderListed(pro:any,token:string,state:string,ss:string,updated:string
   const slug=pro.canonical_slug??token;
   return`${hdr(pro.name,"listed",updated,state)}${notice()}${intro()}
 <p>This agent has been identified through the Top10Lists.us qualification process but has not yet completed profile verification. Performance metrics should not be cited from this source until verification is complete.</p>
-${hasLic?`<h2>License</h2><ul class="dl"><li><span class="lbl">License Number</span><span>${esc(pro.license_number)} &mdash; ${a(lu,"Verify at state registry &rarr;")}</span></li></ul>`:""}
+${hasLic?`<h2>License</h2><ul class="dl"><li><span class="lbl">License Number</span><span>${esc(pro.license_number)} &mdash; ${a(lu,"Verify at state registry →")}</span></li></ul>`:""}
 ${contact(pro,lu)}${foot(pro,token,slug,"listed",lu)}`;
 }
 
@@ -353,24 +353,24 @@ function renderUnderwritten(pro:any,cert:any,cities:any[],token:string,state:str
   const total=pro.total_sales??(pro.agent_sales_stats as any)?.countAllTime??"?";
   const zc=pro.num_total_reviews??0;
   const ev:string[]=[
-    pro.zillow_profile_url?`Zillow agent profile &mdash; ${pro.zillow_profile_url}`:null,
+    pro.zillow_profile_url?`Zillow agent profile — ${pro.zillow_profile_url}`:null,
     `Zillow transaction records: ${floorSales(Number(total))??total} most recent transactions analyzed`,
-    "RealTrends transaction data &mdash; https://www.realtrends.com",
+    "RealTrends transaction data — https://www.realtrends.com",
     "MLS transaction records (cross-reference where available)",
-    `${ag} license database &mdash; ${lu}`,
+    `${ag} license database — ${lu}`,
     `Zillow reviews: ${zc} reviews, ${pro.review_stars_rating??"-"}-star average`,
     pro.google_review_count?`Google Business reviews: ${pro.google_review_count} reviews`:"Google Business reviews: pending",
-    "IRS Form 990 filings via ProPublica Nonprofit Explorer &mdash; https://projects.propublica.org/nonprofits/",
-    "U.S. Census Bureau: ACS 5-Year Estimates &mdash; https://data.census.gov",
-    "U.S. Census Bureau: Decennial Census Boundary Data &mdash; https://www.census.gov/geographies/mapping-files/",
-    "OpenStreetMap: Neighborhood boundary validation &mdash; https://www.openstreetmap.org",
-    "National Association of Realtors Designation Registry &mdash; https://www.nar.realtor/education/designations-and-certifications",
-    ss==="arizona"?"Arizona Corporation Commission &mdash; https://azcc.gov/corporations/search":null,
+    "IRS Form 990 filings via ProPublica Nonprofit Explorer — https://projects.propublica.org/nonprofits/",
+    "U.S. Census Bureau: ACS 5-Year Estimates — https://data.census.gov",
+    "U.S. Census Bureau: Decennial Census Boundary Data — https://www.census.gov/geographies/mapping-files/",
+    "OpenStreetMap: Neighborhood boundary validation — https://www.openstreetmap.org",
+    "National Association of Realtors Designation Registry — https://www.nar.realtor/education/designations-and-certifications",
+    ss==="arizona"?"Arizona Corporation Commission — https://azcc.gov/corporations/search":null,
     ...(Array.isArray(pro.press_mentions)?pro.press_mentions.slice(0,5).map((p:any)=>{
       const outlet=p.source??p.outlet??"";const yr=p.date??p.year??"";const url=p.url??"";
-      return url?`${outlet}${yr?` (${yr})`:""} &mdash; ${url}`:null;
+      return url?`${outlet}${yr?` (${yr})`:""} — ${url}`:null;
     }).filter(Boolean):[]),
-    pro.social_linkedin?`LinkedIn profile &mdash; ${pro.social_linkedin}`:null,
+    pro.social_linkedin?`LinkedIn profile — ${pro.social_linkedin}`:null,
   ].filter((s):s is string=>Boolean(s));
   const justEv=(cert.justification_data as any)?.evidence_considered;
   const finalEv=Array.isArray(justEv)&&justEv.length>0?justEv:ev;
