@@ -93,18 +93,30 @@ export default function Step6Neighborhoods() {
     }
     setIsSearching(true);
     try {
+      // Match term at start of any word in neighborhood name: "Arc" matches Arcadia, Little Arcadia, Eleven Arches
+      const t = trimmed.replace(/[%_\\]/g, '\\$&'); // escape LIKE special chars
       const { data, error } = await supabase
         .from('neighborhood_catalog')
         .select('id, neighborhood, city_area, state')
         .eq('is_active', true)
         .eq('state', agentState)
-        .or(`neighborhood.ilike.%${trimmed}%,city_area.ilike.%${trimmed}%`)
-        .order('city_area')
+        .or(`neighborhood.ilike.${t}%,neighborhood.ilike.% ${t}%,neighborhood.ilike.%-${t}%`)
         .order('neighborhood')
-        .limit(15);
+        .limit(30);
 
       if (error) throw error;
-      setSuggestions((data || []) as Neighborhood[]);
+      const list = (data || []) as Neighborhood[];
+      // Sort by relevance: starts with term first, then term at word start, then alphabetical
+      const lower = trimmed.toLowerCase();
+      list.sort((a, b) => {
+        const an = a.neighborhood.toLowerCase();
+        const bn = b.neighborhood.toLowerCase();
+        const aStarts = an.startsWith(lower) ? 0 : (an.includes(' ' + lower) || an.includes('-' + lower)) ? 1 : 2;
+        const bStarts = bn.startsWith(lower) ? 0 : (bn.includes(' ' + lower) || bn.includes('-' + lower)) ? 1 : 2;
+        if (aStarts !== bStarts) return aStarts - bStarts;
+        return an.localeCompare(bn);
+      });
+      setSuggestions(list);
     } catch (err) {
       console.error(err);
       setSuggestions([]);
