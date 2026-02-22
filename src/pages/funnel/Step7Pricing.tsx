@@ -288,12 +288,6 @@ export default function Step7Pricing() {
               <p className="text-muted-foreground">
                 Certified is free. Annual plans save 2 months.
               </p>
-
-              <div className="flex items-center justify-center gap-4 mt-4">
-                <Label htmlFor="billing-toggle" className="text-sm">Monthly</Label>
-                <Switch id="billing-toggle" checked={isAnnual} onCheckedChange={setIsAnnual} />
-                <Label htmlFor="billing-toggle" className="text-sm">Annual (2 months free)</Label>
-              </div>
             </CardHeader>
             <CardContent>
               <div className="space-y-4 mb-8">
@@ -317,6 +311,7 @@ export default function Step7Pricing() {
                   const aics = getAICS(tier);
                   const isCurrent = currentTier === tier;
                   const isPaid = tier === 'audited' || tier === 'underwritten';
+                  const isMostPopular = tier === 'certified';
                   return (
                     <div
                       key={tier}
@@ -324,18 +319,26 @@ export default function Step7Pricing() {
                         isCurrent ? 'border-primary ring-2 ring-primary/20' : 'border-border'
                       }`}
                     >
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                          <Icon className="h-5 w-5 text-primary" />
-                          <h3 className="font-semibold">{meta.name}</h3>
-                        </div>
-                        {isCurrent && (
-                          <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary">
-                            Your tier
+                      {isMostPopular && (
+                        <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                          <span className="bg-primary text-primary-foreground text-xs font-semibold px-3 py-1 rounded-full">
+                            Most Popular
                           </span>
-                        )}
+                        </div>
+                      )}
+                      {isCurrent && (
+                        <p className="text-sm font-semibold text-primary mb-2">You are on this tier</p>
+                      )}
+                      <div className="flex items-center gap-2 mb-2">
+                        <Icon className="h-5 w-5 text-primary" />
+                        <h3 className="font-semibold">{meta.name}</h3>
                       </div>
-                      <p className="text-sm text-muted-foreground mb-3">{display}</p>
+                      <p className="text-2xl font-bold text-foreground mb-3">{display}</p>
+                      <div className="flex items-center justify-center gap-2 mb-3" onClick={(e) => e.stopPropagation()}>
+                        <Label htmlFor={`billing-${tier}`} className="text-xs">Monthly</Label>
+                        <Switch id={`billing-${tier}`} checked={isAnnual} onCheckedChange={setIsAnnual} />
+                        <Label htmlFor={`billing-${tier}`} className="text-xs">Annual (2 mo free)</Label>
+                      </div>
                       <div className="p-3 rounded-lg bg-muted/50 border mb-2">
                         <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">AI Citability Score</p>
                         <p className="text-xl font-bold">
@@ -362,9 +365,6 @@ export default function Step7Pricing() {
                         >
                           {saving === tier ? <Loader2 className="h-4 w-4 animate-spin mx-auto" /> : `Upgrade to ${meta.name}`}
                         </Button>
-                      )}
-                      {isCurrent && (
-                        <p className="text-xs text-muted-foreground text-center">You are on this tier</p>
                       )}
                       {tier === 'certified' && !isCurrent && (
                         <p className="text-xs text-muted-foreground text-center">Free tier</p>
