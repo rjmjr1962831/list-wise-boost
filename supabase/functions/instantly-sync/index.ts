@@ -30,6 +30,12 @@ function buildLeadPayload(agent: any) {
   const firstName = nameParts[0] || "";
   const lastName = nameParts.slice(1).join(" ") || "";
   const tier = (agent.current_tier || agent.badge_tier || "listed").toLowerCase();
+  const magicLink = agent.verification_token
+    ? `https://www.top10lists.us/funnel/${agent.verification_token}`
+    : "";
+  const specialties = Array.isArray(agent.specialty)
+    ? agent.specialty.slice(0, 3).join(", ")
+    : "";
 
   return {
     email: agent.email,
@@ -40,12 +46,13 @@ function buildLeadPayload(agent: any) {
     custom_variables: {
       tier: tier === "listed" ? "hot" : tier,
       tier_level: tier,
-      state: (agent.state_slug || "").toUpperCase().replace("arizona","ARIZONA").replace("california","CALIFORNIA"),
-      profile_url: agent.profile_link || "",
+      state: agent.state_slug === "arizona" ? "Arizona" : "California",
+      magic_link: magicLink,
       business_city: agent.business_city || "",
-      cities_served: Array.isArray(agent.cities_served)
-        ? agent.cities_served.slice(0,3).join(", ")
-        : "",
+      num_reviews: String(agent.num_total_reviews || ""),
+      star_rating: String(agent.review_stars_rating || ""),
+      years_experience: String(agent.years_experience || ""),
+      specialties,
     },
   };
 }
@@ -66,7 +73,7 @@ serve(async (req) => {
     while (true) {
       const { data } = await supabase
         .from("professionals")
-        .select("id, name, email, state_slug, company, profile_link, business_city, current_tier, badge_tier, instantly_id")
+        .select("id, name, email, state_slug, company, verification_token, business_city, num_total_reviews, review_stars_rating, years_experience, specialty, current_tier, badge_tier, instantly_id")
         .eq("active", true)
         .eq("state_slug", state)
         .not("email", "is", null)
