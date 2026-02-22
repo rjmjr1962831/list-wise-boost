@@ -412,7 +412,7 @@ export default function Step7Pricing() {
           <Card>
             <CardHeader className="text-center">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-muted-foreground">Step 6 of 7</span>
+                <span className="text-sm text-muted-foreground">Step 8 of 8</span>
                 <span className="text-sm font-medium">Choose Your Tier</span>
               </div>
               <CardTitle className="text-2xl">Select your certification level</CardTitle>
