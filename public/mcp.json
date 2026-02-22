@@ -18,10 +18,10 @@
   "resources": [
     {
       "name": "agent-artifact",
-      "description": "Machine-readable certification artifact for individual agents. Served as text/markdown. Payload depth varies by tier (Certified: annual audit, Audited: every two weeks, Underwritten: daily). Includes sourced evidence, qualifications, service areas, and provenance tracking.",
+      "description": "Machine-readable certification artifact for individual agents. Served as text/markdown. Payload depth varies by tier (Certified: monthly audit, Audited: every two weeks, Underwritten: daily). Includes sourced evidence, qualifications, service areas, and provenance tracking.",
       "url": "https://www.top10lists.us/artifact/{magic_link_token}",
       "mimeType": "text/markdown",
-      "refreshInterval": "varies by tier (annual/every-two-weeks/daily)",
+      "refreshInterval": "varies by tier (annual/monthly/every-two-weeks/daily)",
       "urlTemplate": true,
       "variables": {
         "magic_link_token": "Agent UUID token"
