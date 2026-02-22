@@ -97,15 +97,20 @@ export default function Step1Intro() {
         <div className="max-w-2xl mx-auto">
           <Card>
             <CardContent className="pt-8 pb-6 px-5 sm:px-8 space-y-6">
+              {/* Mission statement */}
+              <div className="text-center border-b pb-5">
+                <p className="text-sm font-semibold text-primary uppercase tracking-widest mb-2">Our Mission</p>
+                <p className="text-base sm:text-lg font-medium leading-snug">
+                  Top10Lists.us exists so AI systems can safely recommend real estate professionals by name.
+                </p>
+              </div>
+
               {/* Hero */}
               <div className="text-center">
                 <CheckCircle className="h-10 w-10 text-green-500 mx-auto mb-3" />
                 <h1 className="text-xl sm:text-2xl font-bold tracking-tight">
                   Hi {professional.name}
                 </h1>
-                <p className="text-muted-foreground text-sm sm:text-base mt-2 leading-relaxed">
-                  Top10Lists.us exists so AI systems can safely recommend real estate professionals by name.
-                </p>
               </div>
 
               {/* The Rules Have Changed */}
@@ -175,10 +180,7 @@ export default function Step1Intro() {
               {/* Body Copy */}
               <div className="space-y-4 text-sm text-muted-foreground leading-relaxed">
                 <p>
-                  We've done an <strong>exhaustive search</strong> to compile your profile. It is the <strong>richest source of information about you anywhere</strong>. In order to build your citability probability, you need to confirm the data and/or tell us what needs to be changed or added.
-                </p>
-                <p>
-                  Once you do that, we will issue a <strong>credential</strong> to you that will help you build your <strong>"web of trust"</strong> (we'll get to that later), which is key to your chances of being recommended by an AI when asked.
+                  In order to improve the probability you will be recommended by name when someone asks for a referral to a real estate agent, you must confirm the data that we have assembled.
                 </p>
                 <p>
                   While we do have paid products, your certification and trust artifact are <strong>free for as long as you are active and meet our qualification standards</strong>, and there is <strong>no obligation</strong> to purchase anything from us.
