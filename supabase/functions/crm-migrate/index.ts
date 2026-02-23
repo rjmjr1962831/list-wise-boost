@@ -6,10 +6,31 @@ serve(async (req) => {
   const pool = new Pool(Deno.env.get("SUPABASE_DB_URL")!, 1, true);
   const conn = await pool.connect();
 
-  await conn.queryObject(`ALTER TABLE professionals ADD COLUMN IF NOT EXISTS email_unsubscribed BOOLEAN DEFAULT false`);
-  await conn.queryObject(`ALTER TABLE crm_sequence_enrollments ADD COLUMN IF NOT EXISTS assigned_account TEXT`);
+  // Enable pg_cron extension
+  await conn.queryObject(`CREATE EXTENSION IF NOT EXISTS pg_cron`);
 
+  // Schedule sequence-processor every 5 minutes
+  await conn.queryObject(`SELECT cron.unschedule('sequence-processor') WHERE EXISTS (SELECT 1 FROM cron.job WHERE jobname = 'sequence-processor')`).catch(() => {});
+  
+  await conn.queryObject(`
+    SELECT cron.schedule(
+      'sequence-processor',
+      '*/5 * * * *',
+      $$
+        SELECT net.http_post(
+          url := '${Deno.env.get("SUPABASE_URL")}/functions/v1/sequence-processor',
+          headers := jsonb_build_object(
+            'Content-Type', 'application/json',
+            'Authorization', 'Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}'
+          ),
+          body := '{}'::jsonb
+        )
+      $$
+    )
+  `);
+
+  const jobs = await conn.queryObject(`SELECT jobname, schedule, active FROM cron.job`);
   conn.release();
   await pool.end();
-  return new Response(JSON.stringify({ ok: true }), { headers: { "Content-Type": "application/json" } });
+  return new Response(JSON.stringify({ ok: true, jobs: jobs.rows }), { headers: { "Content-Type": "application/json" } });
 });
