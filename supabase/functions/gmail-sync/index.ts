@@ -163,6 +163,24 @@ async function syncAccount(account: any) {
     ]);
     const direction = OUR_ACCOUNTS.has(fromEmail.toLowerCase()) ? "outbound" : "inbound";
 
+    // Skip inbound from unknown senders (spam, cold outreach)
+    if (direction === "inbound") {
+      const fromLower = fromEmail.toLowerCase().trim();
+      const { data: knownEnrollment } = await supabase
+        .from("crm_sequence_enrollments")
+        .select("id")
+        .eq("email", fromLower)
+        .limit(1)
+        .maybeSingle();
+      const { data: knownContact } = await supabase
+        .from("contacts")
+        .select("id")
+        .eq("email", fromLower)
+        .limit(1)
+        .maybeSingle();
+      if (!knownEnrollment && !knownContact) continue;
+    }
+
     const senderEmail = direction === "inbound" ? fromEmail : (to.match(/<(.+)>/)?.[1] || to);
     const { data: contact } = await supabase
       .from("contacts")
@@ -185,24 +203,8 @@ async function syncAccount(account: any) {
       sent_at: sentAt,
     }, { onConflict: "gmail_message_id" });
 
-    // Skip inbound from unknown senders (spam, cold outreach)
+    // Reply detection -- if inbound from known sender, check if in active sequence
     if (direction === "inbound") {
-      const fromLower = fromEmail.toLowerCase().trim();
-      const { data: knownEnrollment } = await supabase
-        .from("crm_sequence_enrollments")
-        .select("id")
-        .eq("email", fromLower)
-        .limit(1)
-        .maybeSingle();
-      const { data: knownContact } = await supabase
-        .from("contacts")
-        .select("id")
-        .eq("email", fromLower)
-        .limit(1)
-        .maybeSingle();
-      if (!knownEnrollment && !knownContact) continue;
-
-      // Reply detection -- if inbound, check if this person is in an active sequence
       await handleReply(fromEmail);
     }
 
