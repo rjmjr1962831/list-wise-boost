@@ -4,8 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Mail, Phone, Search, ExternalLink, Star } from "lucide-react";
+import { Mail, Phone, Search, Star } from "lucide-react";
 import { toast } from "sonner";
+import { ContactDetail } from "./ContactDetail";
 
 interface Professional {
   id: string;
@@ -26,6 +27,7 @@ export const ContactsManager = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+  const [selectedPro, setSelectedPro] = useState<Professional | null>(null);
 
   const searchProfessionals = useCallback(async (term: string) => {
     if (term.length < 2) {
@@ -68,6 +70,10 @@ export const ContactsManager = () => {
     }
   };
 
+  if (selectedPro) {
+    return <ContactDetail professional={selectedPro} onBack={() => setSelectedPro(null)} />;
+  }
+
   return (
     <div className="space-y-6">
       <Card>
@@ -96,7 +102,7 @@ export const ContactsManager = () => {
       {!isLoading && professionals.length > 0 && (
         <div className="grid gap-3">
           {professionals.map((pro) => (
-            <Card key={pro.id}>
+            <Card key={pro.id} className="cursor-pointer hover:border-primary/50 transition-colors" onClick={() => setSelectedPro(pro)}>
               <CardContent className="py-4 px-5">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
@@ -111,9 +117,9 @@ export const ContactsManager = () => {
                     )}
                     <div className="flex items-center gap-4 mt-2 flex-wrap">
                       {pro.email && pro.email !== "pending@123.com" && (
-                        <a href={`mailto:${pro.email}`} className="flex items-center gap-1 text-sm text-primary hover:underline">
+                        <span className="flex items-center gap-1 text-sm text-primary">
                           <Mail className="h-3 w-3" />{pro.email}
-                        </a>
+                        </span>
                       )}
                       {pro.email === "pending@123.com" && (
                         <span className="flex items-center gap-1 text-sm text-destructive">
@@ -121,9 +127,9 @@ export const ContactsManager = () => {
                         </span>
                       )}
                       {pro.phone && (
-                        <a href={`tel:${pro.phone}`} className="flex items-center gap-1 text-sm text-primary hover:underline">
+                        <span className="flex items-center gap-1 text-sm text-primary">
                           <Phone className="h-3 w-3" />{pro.phone}
-                        </a>
+                        </span>
                       )}
                     </div>
                     <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground">
@@ -135,20 +141,6 @@ export const ContactsManager = () => {
                         </span>
                       )}
                     </div>
-                  </div>
-                  <div className="flex gap-2 shrink-0">
-                    {pro.canonical_slug && (
-                      <Button size="sm" variant="outline" asChild>
-                        <a href={`/artifact/${pro.id}`} target="_blank" rel="noopener noreferrer">
-                          <ExternalLink className="h-3 w-3 mr-1" />Artifact
-                        </a>
-                      </Button>
-                    )}
-                    {pro.email && pro.email !== "pending@123.com" && (
-                      <Button size="sm" variant="outline" asChild>
-                        <a href={`mailto:${pro.email}`}>Reply</a>
-                      </Button>
-                    )}
                   </div>
                 </div>
               </CardContent>
