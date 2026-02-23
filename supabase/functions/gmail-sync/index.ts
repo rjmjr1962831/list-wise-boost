@@ -119,6 +119,67 @@ async function handleReply(fromEmail: string) {
   }
 }
 
+
+async function handleBounce(bodyText: string, bodyHtml: string, toAddress: string) {
+  const text = (bodyText || bodyHtml || "").toLowerCase();
+  const hardBouncePatterns = [
+    "mailbox not found",
+    "domain not found",
+    "user unknown",
+    "no such user",
+    "does not exist",
+    "recipient rejected",
+    "address rejected",
+    "unknown user",
+    "invalid recipient",
+    "undeliverable",
+    "mailbox unavailable",
+    "account has been disabled",
+    "no mailbox here",
+    "not found",
+  ];
+  const isHardBounce = hardBouncePatterns.some(p => text.includes(p));
+  if (!isHardBounce) return;
+
+  // Extract the bounced email from the bounce body
+  // Common patterns: "delivery to <email>" or "The email account that you tried to reach does not exist"
+  // The original To address is in the bounce report
+  const emailRegex = /[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/g;
+  const allEmails = (bodyText || bodyHtml || "").match(emailRegex) || [];
+  
+  // Filter out our own addresses and common system addresses
+  const ourDomains = ["top10lists.us", "toptenlists.us", "googlemail.com", "google.com"];
+  const bouncedEmails = allEmails.filter(e => {
+    const domain = e.split("@")[1]?.toLowerCase();
+    return !ourDomains.some(d => domain === d || domain?.endsWith("." + d));
+  });
+
+  if (bouncedEmails.length === 0) return;
+
+  // Use first external email found as the bounced address
+  const bouncedEmail = bouncedEmails[0].toLowerCase().trim();
+
+  // Update professional email to pending@123.com
+  const { data: pro } = await supabase
+    .from("professionals")
+    .select("id, email")
+    .ilike("email", bouncedEmail)
+    .limit(1)
+    .maybeSingle();
+
+  if (pro) {
+    await supabase.from("professionals")
+      .update({ email: "pending@123.com" })
+      .eq("id", pro.id);
+  }
+
+  // Disable any active enrollment for this email
+  await supabase.from("crm_sequence_enrollments")
+    .update({ status: "bounced" })
+    .eq("email", bouncedEmail)
+    .eq("status", "active");
+}
+
 async function syncAccount(account: any) {
   const token = await getValidToken(account);
 
@@ -162,6 +223,14 @@ async function syncAccount(account: any) {
       "hello@toptenlists.us",
     ]);
     const direction = OUR_ACCOUNTS.has(fromEmail.toLowerCase()) ? "outbound" : "inbound";
+
+    // Handle bounce notifications - process but don't store
+    const isBounce = fromEmail.toLowerCase().includes("mailer-daemon") || 
+                     fromEmail.toLowerCase().includes("postmaster");
+    if (direction === "inbound" && isBounce) {
+      await handleBounce(bodyText, bodyHtml, to);
+      continue;
+    }
 
     // Skip inbound from unknown senders (spam, cold outreach)
     if (direction === "inbound") {
