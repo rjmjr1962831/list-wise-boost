@@ -75,7 +75,7 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
 
   const loadTasks = async () => {
     const { data } = await supabase
-      .from("crm_tasks")
+      .from("crm_tasks" as any)
       .select("*")
       .eq("professional_id", professional.id)
       .order("created_at", { ascending: false })
@@ -95,7 +95,7 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
 
   const loadPayments = async () => {
     const { data } = await supabase
-      .from("crm_payment_log")
+      .from("crm_payment_log" as any)
       .select("*")
       .eq("professional_id", professional.id)
       .order("created_at", { ascending: false })
@@ -127,7 +127,7 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
 
   const addTask = async () => {
     if (!newTaskTitle.trim()) return;
-    const { error } = await supabase.from("crm_tasks").insert({
+    const { error } = await supabase.from("crm_tasks" as any).insert({
       professional_id: professional.id,
       title: newTaskTitle.trim(),
       priority: newTaskPriority,
@@ -143,7 +143,7 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
 
   const toggleTask = async (taskId: string, currentStatus: string) => {
     const newStatus = currentStatus === "completed" ? "pending" : "completed";
-    await supabase.from("crm_tasks").update({
+    await supabase.from("crm_tasks" as any).update({
       status: newStatus,
       completed_at: newStatus === "completed" ? new Date().toISOString() : null,
     }).eq("id", taskId);
