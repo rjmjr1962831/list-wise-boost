@@ -207,7 +207,8 @@ Please provide a more detailed explanation justifying the change. Please include
 
 Just reply here with the information.
 
-Thank you.`;
+Robert Maynard
+Founder`;
       }
 
       try {
