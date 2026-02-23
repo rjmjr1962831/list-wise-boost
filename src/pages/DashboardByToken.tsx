@@ -25,6 +25,7 @@ interface ProfessionalData {
   short_code: string | null;
   verification_token: string | null;
   funnel_status: string | null;
+  current_tier: string | null;
   paid_cities: unknown;
   monthly_revenue_cents: number | null;
   subscription_status: string | null;
@@ -34,9 +35,10 @@ function getTierDisplay(p: ProfessionalData): string {
   const revenue = p.monthly_revenue_cents ?? 0;
   const hasPaid = (p.paid_cities && Array.isArray(p.paid_cities) && (p.paid_cities as unknown[]).length > 0) || revenue > 0;
   const sub = (p.subscription_status || '').toLowerCase();
-  if (revenue >= 15000 || sub === 'underwritten') return 'Underwritten';
-  if (revenue >= 5000 || sub === 'accredited' || sub === 'audited') return 'Audited';
-  if (hasPaid || p.funnel_status === 'approved' || p.funnel_status === 'edit_complete') return 'Certified';
+  const ct = (p.current_tier || '').toLowerCase();
+  if (revenue >= 15000 || sub === 'underwritten' || ct === 'underwritten') return 'Underwritten';
+  if (revenue >= 5000 || sub === 'accredited' || sub === 'audited' || ct === 'audited') return 'Audited';
+  if (hasPaid || p.funnel_status === 'approved' || p.funnel_status === 'edit_complete' || ct === 'certified') return 'Certified';
   return 'Listed';
 }
 
@@ -91,7 +93,7 @@ export default function DashboardByToken() {
           .select(`
             id, name, company, business_name, image_url,
             review_stars_rating, num_total_reviews, license_number, specialty,
-            short_code, verification_token, funnel_status,
+            short_code, verification_token, funnel_status, current_tier,
             paid_cities, monthly_revenue_cents, subscription_status
           `)
           .eq('verification_token', token)
