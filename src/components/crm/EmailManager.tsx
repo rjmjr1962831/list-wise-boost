@@ -150,9 +150,18 @@ export const EmailManager = () => {
       setProfessional(null);
     }
 
-    // Pre-fill reply
+    // Pre-fill reply - skip bounce notifications and find actual contact
     const last = thread[thread.length - 1];
-    const replyTo = last.direction === "inbound" ? (last.from_address.match(/<(.+)>/)?.[1] || last.from_address) : last.to_address;
+    let replyTo = "";
+    const bounceSenders = ["mailer-daemon@googlemail.com", "postmaster@", "mailer-daemon@"];
+    const isBounce = bounceSenders.some(b => last.from_address.toLowerCase().includes(b));
+    if (isBounce) {
+      // Find the last outbound email in thread to get the original recipient
+      const lastOutbound = [...thread].reverse().find(e => e.direction === "outbound");
+      replyTo = lastOutbound ? lastOutbound.to_address : "";
+    } else {
+      replyTo = last.direction === "inbound" ? (last.from_address.match(/<(.+)>/)?.[1] || last.from_address) : last.to_address;
+    }
     setToAddress(replyTo);
     setSubject(last.subject?.startsWith("Re:") ? (last.subject || "") : `Re: ${last.subject || ""}`);
     setFromAccount(firstEmail.account_email || (accounts[0]?.email ?? ""));
