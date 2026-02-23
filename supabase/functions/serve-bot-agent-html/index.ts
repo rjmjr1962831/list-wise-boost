@@ -223,11 +223,11 @@ serve(async (req) => {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${nm} - Real Estate Agent in ${esc(city.name)}, ${si.display} | Top10Lists.us</title>
-  <meta name="description" content="${nm} is a top-rated real estate agent in ${esc(city.name)}, ${si.display}. ${a.review_stars_rating || 0} stars, ${a.num_total_reviews || 0}+ reviews. Independently verified by Top10Lists.us. No pay-to-play.">
+  <meta name="description" content="${nm} is a top-rated real estate agent in ${esc(city.name)}, ${si.display}. ${a.review_stars_rating || 0} stars, ${normNum(a.num_total_reviews || 0) || "0+"} reviews. Independently verified by Top10Lists.us. No pay-to-play.">
   <link rel="canonical" href="${canon}">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="${nm} - Real Estate Agent in ${esc(city.name)}, ${si.display}">
-  <meta property="og:description" content="Independently verified. ${a.review_stars_rating || 0} stars, ${a.num_total_reviews || 0}+ reviews.">
+  <meta property="og:description" content="Independently verified. ${a.review_stars_rating || 0} stars, ${normNum(a.num_total_reviews || 0) || "0+"} reviews.">
   <meta property="og:type" content="profile">
   <meta property="og:url" content="${canon}">
   <style>${CSS}</style>
@@ -259,7 +259,7 @@ serve(async (req) => {
     o += `  <h2>${nm} <span class="tier-badge badge-${tb(t)}">${tl(t)}</span></h2>\n`;
     o += `  <div class="stats-row">\n`;
     o += `    <span>${a.review_stars_rating || 0} stars<sup>[1]</sup><sup>[2]</sup></span>\n`;
-    o += `    <span>${a.num_total_reviews || 0}+ reviews<sup>[1]</sup><sup>[2]</sup></span>\n`;
+    o += `    <span>${normNum(a.num_total_reviews || 0) || "0+"} reviews<sup>[1]</sup><sup>[2]</sup></span>\n`;
     o += `    <span>Lic #${lic}<sup>[3]</sup></span>\n`;
     if (co) o += `    <span>${co}</span>\n`;
     o += `  </div>\n`;
@@ -307,7 +307,7 @@ serve(async (req) => {
       if (a.average_value_3yr) rows.push(["Average Sale Price (3yr)", `${fp(a.average_value_3yr)}<sup>[4]</sup>`]);
       if (a.price_range_3yr_min && a.price_range_3yr_max) rows.push(["Price Range (3yr)", `${fp(a.price_range_3yr_min)} to ${fp(a.price_range_3yr_max)}<sup>[4]</sup>`]);
       if (a.review_stars_rating) rows.push(["Star Rating", `${a.review_stars_rating}/5<sup>[1][2]</sup>`]);
-      if (a.num_total_reviews)   rows.push(["Total Reviews", `${a.num_total_reviews}+<sup>[1][2]</sup>`]);
+      if (a.num_total_reviews)   rows.push(["Total Reviews", `${normNum(a.num_total_reviews)}<sup>[1][2]</sup>`]);
 
       if (rows.length > 0) {
         o += `<section>\n  <h2>Performance Data</h2>\n`;

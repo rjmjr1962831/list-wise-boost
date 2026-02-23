@@ -58,6 +58,11 @@ function floorSales(n:number|null|undefined):string|null{
   const floored=Math.floor((Number(n)-10)/10)*10;
   return`${Math.max(0,floored)}+`;
 }
+function floorReviews(n:number|null|undefined):string|null{
+  if(n==null||!Number.isFinite(Number(n)))return null;
+  const floored=Math.floor((Number(n)-10)/10)*10;
+  return`${Math.max(0,floored)}+`;
+}
 function getPhones(pro:any):string[]{
   const out:string[]=[];const pn=pro.phone_numbers;
   if(pn&&typeof pn==="object"){
@@ -182,13 +187,13 @@ function quals(pro:any,ag:string,lu:string,updated:string):string{
   const hasLic=pro.license_number&&pro.license_number!=="Not Provided"&&pro.license_number!=="N/A";
   const zc=pro.num_total_reviews??0;const gc=pro.google_review_count??0;
   let rows="";
-  if(pro.review_stars_rating!=null)rows+=`<li><span class="lbl">Client Rating</span><span>${esc(String(pro.review_stars_rating))}/5 stars &mdash; ${zc+gc} verified reviews (Zillow: ${zc}${gc>0?`, Google: ${gc}`:""}, verified ${esc(updated)})</span></li>`;
+  if(pro.review_stars_rating!=null){const revDisp=floorReviews(zc+gc)??`${zc+gc}`;rows+=`<li><span class="lbl">Client Rating</span><span>${esc(String(pro.review_stars_rating))}/5 stars &mdash; ${revDisp} verified reviews (Zillow: ${floorReviews(zc)??zc}${gc>0?`, Google: ${floorReviews(gc)??gc}`:""}, verified ${esc(updated)})</span></li>`;}
   if(pro.years_experience!=null){
     const src=hasLic?`${esc(ag)}, license #${esc(pro.license_number)}, ${a(lu,"verify →")}`:`Zillow profile, verified ${esc(updated)}`;
     rows+=`<li><span class="lbl">Years of Experience</span><span>${esc(String(pro.years_experience))} years (${src})</span></li>`;
   }
   if(total!=null){const fs=floorSales(total);rows+=`<li><span class="lbl">Total Sales</span><span>${fs??esc(String(total))} lifetime transactions (Zillow, verified ${esc(updated)}). Conservative floor &mdash; off-platform and pre-digital sales not captured.</span></li>`;}
-  if(sly!=null)rows+=`<li><span class="lbl">Sales Last Year</span><span>${esc(String(sly))} transactions (Zillow)</span></li>`;
+  if(sly!=null){const slyDisp=floorSales(sly)??esc(String(sly));rows+=`<li><span class="lbl">Sales Last Year</span><span>${slyDisp} transactions (Zillow)</span></li>`;}
   if(pro.average_value_3yr)rows+=`<li><span class="lbl">Avg Sale Price (3yr)</span><span>$${Math.round(pro.average_value_3yr).toLocaleString()} (Zillow transaction history)</span></li>`;
   if(pr)rows+=`<li><span class="lbl">Price Range</span><span>${esc(pr)} (Zillow transaction history)</span></li>`;
   if(hasLic)rows+=`<li><span class="lbl">License</span><span>${esc(pro.license_number)} &mdash; ${esc(ag)}, status: ${esc(pro.license_status||"Active")} &mdash; ${a(lu,"Verify at state registry →")} (license last verified: ${esc(updated)})</span></li>`;
@@ -266,7 +271,7 @@ function markets(cities:any[],hoods:any[],zips:any[],state:string):string{
   }
   if(hoods.length>0){
     const rows=hoods.map((n:any)=>{
-      const count=n.count!=null?` &mdash; <strong>${n.count}</strong> verified transactions (Zillow, MLS where available)`:` <span style="color:#6b7280;font-size:0.82rem;">(verification pending)</span>`;
+      const count=n.count!=null?` &mdash; <strong>${floorSales(n.count)??n.count}</strong> verified transactions (Zillow, MLS where available)`:` <span style="color:#6b7280;font-size:0.82rem;">(verification pending)</span>`;
       return`<li><strong>${esc(n.name)}</strong>, ${esc(n.city||"")}${count}</li>`;
     }).join("");
     out+=`<h2>Neighborhoods (Verified Transaction Activity)</h2><p class="sub-note">Minimum 2 transactions within a neighborhood boundary required for publication.</p><ul class="pl">${rows}</ul>`;
@@ -274,7 +279,7 @@ function markets(cities:any[],hoods:any[],zips:any[],state:string):string{
     out+=`<h2>Neighborhoods</h2><p class="sub-note">Neighborhood verification requires geolocating the agent's most recent 100 transactions. Verification is in progress &mdash; check back at next update.</p>`;
   }
   if(zips.length>0){
-    const rows=zips.map((z:any)=>`<li><strong>${esc(z.zip)}</strong> &mdash; ${z.count} verified transactions (past 3 years)</li>`).join("");
+    const rows=zips.map((z:any)=>`<li><strong>${esc(z.zip)}</strong> &mdash; ${floorSales(z.count)??z.count} verified transactions (past 3 years)</li>`).join("");
     out+=`<h2>ZIP Codes (Verified Transaction Activity)</h2><ul class="pl">${rows}</ul>`;
   }
   return out;
@@ -369,8 +374,8 @@ function renderUnderwritten(pro:any,cert:any,cities:any[],token:string,state:str
     "RealTrends transaction data — https://www.realtrends.com",
     "MLS transaction records (cross-reference where available)",
     `${ag} license database — ${lu}`,
-    `Zillow reviews: ${zc} reviews, ${pro.review_stars_rating??"-"}-star average`,
-    pro.google_review_count?`Google Business reviews: ${pro.google_review_count} reviews`:"Google Business reviews: pending",
+    `Zillow reviews: ${floorReviews(zc)??zc} reviews, ${pro.review_stars_rating??"-"}-star average`,
+    pro.google_review_count?`Google Business reviews: ${floorReviews(pro.google_review_count)??pro.google_review_count} reviews`:"Google Business reviews: pending",
     "IRS Form 990 filings via ProPublica Nonprofit Explorer — https://projects.propublica.org/nonprofits/",
     "U.S. Census Bureau: ACS 5-Year Estimates — https://data.census.gov",
     "U.S. Census Bureau: Decennial Census Boundary Data — https://www.census.gov/geographies/mapping-files/",
@@ -421,7 +426,7 @@ serve(async(req)=>{
   const updated=iso(effCert.last_verified_at)||iso(effCert.issued_at)||new Date().toISOString().slice(0,10);
   const schema=schemaLD(pro,state,displayToken);
   const titleStr=`${pro.name} | Verified Real Estate Professional \u2014 ${state} | Top10Lists.us`;
-  const descStr=`Independently verified. ${pro.review_stars_rating??"-"}\u2605, ${pro.num_total_reviews??"-"} reviews, ${pro.years_experience??"-"}+ years. Merit-based, no pay-to-play. Top10Lists.us`;
+  const revStr=pro.num_total_reviews!=null?floorReviews(pro.num_total_reviews)??String(pro.num_total_reviews):"-";const descStr=`Independently verified. ${pro.review_stars_rating??"-"}\u2605, ${revStr} reviews, ${pro.years_experience??"-"}+ years. Merit-based, no pay-to-play. Top10Lists.us`;
   if(effTier==="listed"){return shell(titleStr,descStr,artUrl,schema,renderListed(pro,displayToken,state,ss,updated),ttl);}
   const{data:cityRows}=await sb.from("professional_cities").select("cities:city_id(name,state)").eq("professional_id",pro.id).eq("active",true);
   const cities:any[]=[];

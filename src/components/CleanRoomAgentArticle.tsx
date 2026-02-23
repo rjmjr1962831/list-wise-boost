@@ -30,7 +30,7 @@ const REALTENDS_URL = 'https://www.realtrends.com/';
 const PROPUBLICA_URL = 'https://projects.propublica.org/nonprofits/';
 
 function formatReviewCount(count: number): string {
-  return `${Math.max(0, Math.floor((count - 5) / 5) * 5)}+`;
+  return `${Math.max(0, Math.floor((count - 10) / 10) * 10).toLocaleString('en-US')}+`;
 }
 
 function formatSalesCount(count: number): string {

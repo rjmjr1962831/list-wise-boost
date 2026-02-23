@@ -3,6 +3,7 @@
 
 import { SafeHead } from "@/components/SafeHead";
 import { generateAgentProfileSchema, AgentSchemaData } from '@/utils/agentSchema';
+import { floorSales, floorReviews } from '@/utils/floorDisplay';
 
 interface AgentProfileHeadProps {
   agent: AgentSchemaData;
@@ -13,7 +14,9 @@ export function AgentProfileHead({ agent }: AgentProfileHeadProps) {
   const currentYear = new Date().getFullYear();
   
   const title = `${agent.name} - Top Real Estate Agent in ${agent.city}, ${agent.stateAbbrev} | Top10Lists.us`;
-  const description = `${agent.name} is a top-rated real estate agent in ${agent.city}, ${agent.stateAbbrev} with ${agent.yearsExperience} years experience and >${agent.totalSales.toLocaleString()} sales. ${agent.ratingValue}★ rating from ${agent.reviewCount} reviews.`;
+  const salesStr = agent.totalSales != null ? (floorSales(agent.totalSales) ?? agent.totalSales.toLocaleString()) : '';
+  const reviewsStr = agent.reviewCount != null ? (floorReviews(agent.reviewCount) ?? agent.reviewCount) : '';
+  const description = `${agent.name} is a top-rated real estate agent in ${agent.city}, ${agent.stateAbbrev} with ${agent.yearsExperience} years experience${salesStr ? ` and ${salesStr} sales` : ''}. ${agent.ratingValue}★ rating${reviewsStr ? ` from ${reviewsStr} reviews` : ''}.`;
   const url = `https://www.top10lists.us/profile/${agent.slug}`;
   
   return (

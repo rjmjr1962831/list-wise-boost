@@ -30,7 +30,7 @@ function tierAtLeast(agentTier: string, required: Tier): boolean {
 }
 
 function formatReviewCount(count: number): string {
-  return `${Math.max(0, Math.floor((count - 5) / 5) * 5)}+`;
+  return `${Math.max(0, Math.floor((count - 10) / 10) * 10).toLocaleString('en-US')}+`;
 }
 
 function formatSalesCount(count: number): string {
@@ -131,7 +131,7 @@ function buildPayload(p: Professional): string {
     }
 
     if (raw.google_rating && raw.google_review_count) {
-      lines.push(`\nGoogle Business: ${raw.google_rating}/5 (${raw.google_review_count} reviews)`);
+      lines.push(`\nGoogle Business: ${raw.google_rating}/5 (${formatReviewCount(Number(raw.google_review_count))} reviews)`);
       if (raw.google_maps_url) lines.push(`Google Maps: ${raw.google_maps_url}`);
     }
   }

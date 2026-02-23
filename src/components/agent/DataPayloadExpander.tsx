@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
+import { floorSales } from "@/utils/floorDisplay";
 
 /** State abbreviation to state DRE name for sources. */
 function getStateDreName(stateSlug: string | null | undefined): string {
@@ -62,7 +63,7 @@ export function DataPayloadExpander({
                 })()
               : "—",
           },
-          { label: "Lifetime sales", value: professional.total_sales != null ? `>${Number(professional.total_sales).toLocaleString()}` : "—" },
+          { label: "Lifetime sales", value: professional.total_sales != null ? (floorSales(professional.total_sales) ?? "—") : "—" },
           { label: "Next audit date", value: formatDate((professional.annual_review_date ?? professional.next_bill_date) as string | null) },
           {
             label: "Cities served",

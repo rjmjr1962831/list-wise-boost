@@ -11,6 +11,7 @@ import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
 import { Loader2, Zap, CheckCircle2, AlertCircle, User, Search, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
+import { floorReviews } from "@/utils/floorDisplay";
 
 interface City {
   id: string;
@@ -853,7 +854,7 @@ export default function FullEnrichmentPipeline() {
                       <div className="flex-1 min-w-0">
                         <p className="font-medium truncate">{agent.name}</p>
                         <p className="text-xs text-muted-foreground truncate">
-                          {agent.email || 'No email'} • {agent.review_stars_rating?.toFixed(1) || 'NA'}★ • {agent.num_total_reviews || 0} reviews
+                          {agent.email || 'No email'} • {agent.review_stars_rating?.toFixed(1) || 'NA'}★ • {floorReviews(agent.num_total_reviews || 0) ?? (agent.num_total_reviews || 0)} reviews
                         </p>
                       </div>
                       {agent.synthesized_bio && (

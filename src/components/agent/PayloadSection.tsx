@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Bot, Lock, ChevronDown, ChevronUp, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { floorSales, floorReviews } from "@/utils/floorDisplay";
 
 interface PayloadSectionProps {
   professional: any;
@@ -186,11 +187,11 @@ function buildPayload(professional: any, tier: string) {
       issuer: "Top10Lists.us",
       verification_depth: {
         license: "verified",
-        reviews: `confirmed_${professional.num_total_reviews || 0}+`,
+        reviews: `confirmed_${floorReviews(professional.num_total_reviews || 0) ?? (professional.num_total_reviews || 0)}`,
       },
       qualifications: {
         rating: professional.review_stars_rating,
-        review_count: professional.num_total_reviews ? `${professional.num_total_reviews}+` : null,
+        review_count: professional.num_total_reviews != null ? (floorReviews(professional.num_total_reviews) ?? `${professional.num_total_reviews}+`) : null,
         license_number: professional.license_number,
         specialties: professional.specialty || [],
       },
@@ -211,16 +212,16 @@ function buildPayload(professional: any, tier: string) {
       selection_rationale: professional.selection_rationale || null,
       verification_depth: {
         license: "verified",
-        reviews: `confirmed_${professional.num_total_reviews || 0}+`,
+        reviews: `confirmed_${floorReviews(professional.num_total_reviews || 0) ?? (professional.num_total_reviews || 0)}`,
         civic_involvement: "irs_990_verified",
         transaction_history: "audited",
       },
       qualifications: {
         rating: professional.review_stars_rating,
-        review_count: professional.num_total_reviews ? `${professional.num_total_reviews}+` : null,
+        review_count: professional.num_total_reviews != null ? (floorReviews(professional.num_total_reviews) ?? `${professional.num_total_reviews}+`) : null,
         years_experience: professional.years_experience,
         license_number: professional.license_number,
-        total_transactions: professional.total_sales ? `>${professional.total_sales}` : "included_at_this_tier",
+        total_transactions: professional.total_sales != null ? (floorSales(professional.total_sales) ?? "included_at_this_tier") : "included_at_this_tier",
         specialties: professional.specialty || [],
       },
       markets: {
@@ -254,17 +255,17 @@ function buildPayload(professional: any, tier: string) {
     },
     verification_depth: {
       license: "verified",
-      reviews: `confirmed_${professional.num_total_reviews || 0}+`,
+      reviews: `confirmed_${floorReviews(professional.num_total_reviews || 0) ?? (professional.num_total_reviews || 0)}`,
       civic_involvement: "irs_990_verified",
       transaction_history: "underwritten",
       performance_data: "audited_and_guaranteed",
     },
     qualifications: {
       rating: professional.review_stars_rating,
-      review_count: professional.num_total_reviews ? `${professional.num_total_reviews}+` : null,
+      review_count: professional.num_total_reviews != null ? (floorReviews(professional.num_total_reviews) ?? `${professional.num_total_reviews}+`) : null,
       years_experience: professional.years_experience,
       license_number: professional.license_number,
-      total_transactions: professional.total_sales ? `>${professional.total_sales}` : "included_at_this_tier",
+      total_transactions: professional.total_sales != null ? (floorSales(professional.total_sales) ?? "included_at_this_tier") : "included_at_this_tier",
       specialties: professional.specialty || [],
       certifications: professional.certifications_verified || [],
     },
@@ -286,7 +287,7 @@ function buildPayload(professional: any, tier: string) {
       awards: professional.awards_verified || "included_at_this_tier",
     },
     performance: {
-      sales_count_all_time: professional.total_sales ? `>${professional.total_sales}` : "included_at_this_tier",
+      sales_count_all_time: professional.total_sales != null ? (floorSales(professional.total_sales) ?? "included_at_this_tier") : "included_at_this_tier",
       last_verified: "included_at_this_tier",
     },
   };

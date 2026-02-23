@@ -19,6 +19,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import { floorSales, floorReviews } from "@/utils/floorDisplay";
 
 const QALandingPage = () => {
   const { stateSlug, citySlug, year } = useParams<{ 
@@ -215,8 +216,8 @@ const QALandingPage = () => {
           <ol className="list-decimal list-inside space-y-2 font-mono text-sm bg-background p-4 rounded border">
             {professionals.slice(0, 3).map((pro, idx) => (
               <li key={pro.id || idx} className="text-foreground">
-                <strong>{pro.name}</strong> — {pro.rating}★ ({pro.reviews} reviews)
-                {pro.total_sales && `, >${pro.total_sales.toLocaleString()} sales`}
+                <strong>{pro.name}</strong> — {pro.rating}★ ({floorReviews(pro.reviews) ?? pro.reviews} reviews)
+                {pro.total_sales != null && `, ${floorSales(pro.total_sales) ?? pro.total_sales} sales`}
               </li>
             ))}
           </ol>

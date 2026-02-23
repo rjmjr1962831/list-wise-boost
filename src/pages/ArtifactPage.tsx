@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Shield, Check, Copy, ExternalLink, Calendar, MapPin, Star, Award } from "lucide-react";
 import { toast } from "sonner";
 import { AgentSourcesBlock } from "@/components/AgentSourcesBlock";
+import { floorReviews } from "@/utils/floorDisplay";
 
 interface CertificationData {
   id: string;
@@ -328,7 +329,7 @@ export default function ArtifactPage() {
                 </div>
                 <div className="text-center p-4 bg-muted rounded-lg">
                   <div className="text-3xl font-bold text-primary mb-1">
-                    {data.num_total_reviews}
+                    {floorReviews(data.num_total_reviews) ?? data.num_total_reviews}
                   </div>
                   <div className="text-sm text-muted-foreground">Reviews</div>
                 </div>

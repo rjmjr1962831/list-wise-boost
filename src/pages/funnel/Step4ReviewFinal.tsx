@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, ArrowRight, ArrowLeft, CheckCircle, Edit } from 'lucide-react';
 import { toast } from 'sonner';
+import { floorSales, floorReviews } from '@/utils/floorDisplay';
 
 interface Professional {
   id: string;
@@ -242,9 +243,9 @@ export default function Step4ReviewFinal() {
                 <dl className="space-y-2 text-sm">
                   <Row label="License"     value={professional.license_number}                                                                      fieldName="License Number" />
                   <Row label="Experience"  value={professional.years_experience ? `${professional.years_experience} years` : null}                  fieldName="Years of Experience" />
-                  <Row label="Total Sales" value={professional.total_sales ? `${professional.total_sales.toLocaleString()}+` : null}                fieldName="Total Sales" />
+                  <Row label="Total Sales" value={professional.total_sales != null ? (floorSales(professional.total_sales) ?? null) : null}                fieldName="Total Sales" />
                   <Row label="Rating"      value={professional.review_stars_rating ? `${professional.review_stars_rating} stars` : null}            fieldName="Reviews" />
-                  <Row label="Reviews"     value={professional.num_total_reviews ? `${professional.num_total_reviews.toLocaleString()} reviews` : null} />
+                  <Row label="Reviews"     value={professional.num_total_reviews != null ? `${floorReviews(professional.num_total_reviews) ?? professional.num_total_reviews} reviews` : null} />
                   {volumeDisplay && <Row label="Volume (3yr)" value={volumeDisplay} />}
                   <Row label="Website"     value={professional.website} />
                   <Row label="Title"       value={professional.title} />

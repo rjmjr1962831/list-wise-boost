@@ -55,6 +55,7 @@ import FieldReviewRequestModal from '@/components/profile/FieldReviewRequestModa
 import { cn } from '@/lib/utils';
 import { ProfessionalCard } from '@/components/ProfessionalCard';
 import type { Professional } from '@/types/professional';
+import { floorReviews } from '@/utils/floorDisplay';
 
 const toNum = (v: any) => {
   const n = Number(v);
@@ -1209,7 +1210,7 @@ export default function StreamlinedOnboarding() {
                               <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
                               <span>{professional.review_stars_rating}</span>
                               {professional?.num_total_reviews && (
-                                <span>({professional.num_total_reviews} reviews)</span>
+                                <span>({floorReviews(professional.num_total_reviews) ?? professional.num_total_reviews} reviews)</span>
                               )}
                             </div>
                           )}
@@ -1389,7 +1390,7 @@ export default function StreamlinedOnboarding() {
                     )}
                     {professional?.num_total_reviews && (
                       <div className="text-muted-foreground">
-                        <span className="font-medium text-foreground">{professional.num_total_reviews}</span> total reviews
+                        <span className="font-medium text-foreground">{floorReviews(professional.num_total_reviews) ?? professional.num_total_reviews}</span> total reviews
                       </div>
                     )}
                   </div>

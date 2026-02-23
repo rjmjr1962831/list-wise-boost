@@ -10,6 +10,7 @@ import FieldReviewRequestModal from '@/components/profile/FieldReviewRequestModa
 import { useFunnelTracking, FUNNEL_EVENTS } from '@/hooks/useFunnelTracking';
 import { useToast } from '@/hooks/use-toast';
 import { FunnelPhoneSupport } from '@/components/funnel/FunnelPhoneSupport';
+import { floorSales, floorReviews } from '@/utils/floorDisplay';
 
 interface PressMention {
   title: string;
@@ -207,22 +208,15 @@ export default function AccuracyReview() {
   };
 
   const formatTransactionCount = (sales: number | null): string => {
-    if (!sales) return 'Not disclosed';
-    if (sales < 10) return `${sales} transactions`;
-    const lowerBound = Math.floor(sales / 100) * 100;
-    const upperBound = lowerBound + 100;
-    if (lowerBound === 0) {
-      return `${sales} transactions`;
-    }
-    return `${lowerBound.toLocaleString()} - ${upperBound.toLocaleString()} transactions`;
+    if (sales == null) return 'Not disclosed';
+    const floored = floorSales(sales);
+    return floored ? `${floored} transactions` : 'Not disclosed';
   };
 
   const formatReviewCount = (reviews: number | null): string => {
-    if (!reviews) return 'Not disclosed';
-    if (reviews < 10) return `${reviews} reviews`;
-    const lowerBound = Math.floor(reviews / 10) * 10;
-    const upperBound = lowerBound + 10;
-    return `${lowerBound} - ${upperBound} reviews`;
+    if (reviews == null) return 'Not disclosed';
+    const floored = floorReviews(reviews);
+    return floored ? `${floored} reviews` : 'Not disclosed';
   };
 
   const getStateAuthority = (stateSlug: string | null): string => {
