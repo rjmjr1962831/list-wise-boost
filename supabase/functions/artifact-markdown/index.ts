@@ -191,7 +191,7 @@ function quals(pro:any,ag:string,lu:string,updated:string):string{
   if(sly!=null)rows+=`<li><span class="lbl">Sales Last Year</span><span>${esc(String(sly))} transactions (Zillow)</span></li>`;
   if(pro.average_value_3yr)rows+=`<li><span class="lbl">Avg Sale Price (3yr)</span><span>$${Math.round(pro.average_value_3yr).toLocaleString()} (Zillow transaction history)</span></li>`;
   if(pr)rows+=`<li><span class="lbl">Price Range</span><span>${esc(pr)} (Zillow transaction history)</span></li>`;
-  if(hasLic)rows+=`<li><span class="lbl">License</span><span>${esc(pro.license_number)} &mdash; ${esc(ag)}, status: ${esc(pro.license_status||"Active")} &mdash; ${a(lu,"Verify at state registry →")}</span></li>`;
+  if(hasLic)rows+=`<li><span class="lbl">License</span><span>${esc(pro.license_number)} &mdash; ${esc(ag)}, status: ${esc(pro.license_status||"Active")} &mdash; ${a(lu,"Verify at state registry →")} (license last verified: ${esc(updated)})</span></li>`;
   if(pro.company)rows+=`<li><span class="lbl">Brokerage</span><span>${esc(pro.company)}</span></li>`;
   return`<h2>Verified Qualifications</h2><ul class="dl">${rows}</ul>`;
 }

@@ -848,7 +848,7 @@ export default function FullEnrichmentPipeline() {
                   >
                     <div className="flex items-center gap-2">
                       {agent.image_url && (
-                        <img src={agent.image_url} alt="" className="w-8 h-8 rounded-full object-cover" />
+                        <img src={agent.image_url} alt={agent.name ? `${agent.name} – agent profile` : 'Agent profile'} className="w-8 h-8 rounded-full object-cover" />
                       )}
                       <div className="flex-1 min-w-0">
                         <p className="font-medium truncate">{agent.name}</p>

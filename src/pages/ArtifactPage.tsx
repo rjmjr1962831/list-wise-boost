@@ -109,7 +109,7 @@ export default function ArtifactPage() {
     const embedCode = `<!-- Top10Lists Certification Badge -->
 <div itemscope itemtype="https://schema.org/Certification">
   <a href="https://www.top10lists.us/artifact/${agentId}" itemprop="url" target="_blank">
-    <img src="https://www.top10lists.us/badge/${agentId}.png" alt="Top10Lists Certified" itemprop="image" style="max-width: 200px;" />
+    <img src="https://www.top10lists.us/badge/${agentId}.png" alt="Top10Lists Certified Agent badge" itemprop="image" style="max-width: 200px;" />
   </a>
   <meta itemprop="name" content="Top10Lists Certified Professional" />
   <meta itemprop="issuedBy" content="Top10Lists.us" />
@@ -439,7 +439,7 @@ export default function ArtifactPage() {
   <a href="https://www.top10lists.us/artifact/${agentId}" 
      itemprop="url" target="_blank">
     <img src="https://www.top10lists.us/badge/${agentId}.png" 
-         alt="Top10Lists Certified" 
+         alt="Top10Lists Certified Agent badge" 
          itemprop="image" 
          style="max-width: 200px;" />
   </a>

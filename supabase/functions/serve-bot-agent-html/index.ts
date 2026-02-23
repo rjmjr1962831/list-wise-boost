@@ -426,6 +426,7 @@ serve(async (req) => {
     o += `    <tr><td>Issuing Authority</td><td><a href="${si.url}">${si.auth}</a></td></tr>\n`;
     if (a.license_type)   o += `    <tr><td>License Type</td><td>${esc(a.license_type)}</td></tr>\n`;
     if (a.license_status) o += `    <tr><td>Status</td><td>${esc(a.license_status)}</td></tr>\n`;
+    o += `    <tr><td>Last verified</td><td>${TODAY}</td></tr>\n`;
     if (a.license_issued_at)  o += `    <tr><td>Issued</td><td>${esc(String(a.license_issued_at).slice(0, 10))}</td></tr>\n`;
     if (a.license_expires_at) o += `    <tr><td>Expires</td><td>${esc(String(a.license_expires_at).slice(0, 10))}</td></tr>\n`;
     o += `  </tbody></table>\n`;
