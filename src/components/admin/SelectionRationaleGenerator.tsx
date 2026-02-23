@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Sparkles, RefreshCw, CheckCircle, XCircle, Loader2 } from "lucide-react";
+import { floorReviews } from "@/utils/floorDisplay";
 
 interface City {
   id: string;
@@ -277,7 +278,7 @@ export function SelectionRationaleGenerator() {
                     <div className="flex items-center gap-2">
                       <span className="font-medium">{agent.name}</span>
                       <Badge variant="outline">
-                        {agent.review_stars_rating}★ • {agent.num_total_reviews} reviews
+                        {agent.review_stars_rating}★ • {floorReviews(agent.num_total_reviews) ?? agent.num_total_reviews} reviews
                       </Badge>
                       {agent.selection_rationale ? (
                         <Badge className="bg-green-600">Has Rationale</Badge>

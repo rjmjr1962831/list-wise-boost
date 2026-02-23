@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Star, Shield, MapPin, Briefcase, Clock, Phone, Mail, Globe, ExternalLink } from 'lucide-react';
 import { AgentSearchResult } from '@/hooks/useAgentNameSearch';
 import { Link } from 'react-router-dom';
+import { floorReviews } from '@/utils/floorDisplay';
 
 interface AgentLookupModalProps {
   agent: AgentSearchResult | null;
@@ -98,7 +99,7 @@ export function AgentLookupModal({ agent, open, onOpenChange }: AgentLookupModal
                   <Star className="h-3 w-3" />
                   Reviews
                 </p>
-                <p className="font-medium text-foreground mt-1">{agent.num_total_reviews} reviews</p>
+                <p className="font-medium text-foreground mt-1">{floorReviews(agent.num_total_reviews) ?? agent.num_total_reviews} reviews</p>
               </div>
             )}
 

@@ -144,7 +144,7 @@ export function NeighborhoodExpertPage({
                 const reviews = raw.num_total_reviews || agent.reviews || 0;
                 const reviewStr =
                   reviews > 0
-                    ? `${Math.max(0, Math.floor((reviews - 5) / 5) * 5)}+`
+                    ? `${Math.max(0, Math.floor((reviews - 10) / 10) * 10)}+`
                     : '';
                 const parts: string[] = [];
                 if (rating > 0) parts.push(`${rating} stars`);

@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 import { isValidImageUrl, getValidImageUrl } from "@/utils/imageUrlValidator";
+import { floorReviews } from "@/utils/floorDisplay";
 
 interface Professional {
   id: string;
@@ -207,7 +208,7 @@ export default function ProfileView() {
                 )}
                 {professional.num_total_reviews !== undefined && (
                   <div>
-                    <div className="text-2xl font-bold text-primary">{professional.num_total_reviews}</div>
+                    <div className="text-2xl font-bold text-primary">{floorReviews(professional.num_total_reviews) ?? professional.num_total_reviews}</div>
                     <div className="text-sm text-muted-foreground">Reviews</div>
                   </div>
                 )}

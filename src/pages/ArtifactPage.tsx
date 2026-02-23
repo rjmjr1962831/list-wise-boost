@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Shield, Check, Copy, ExternalLink, Calendar, MapPin, Star, Award } from "lucide-react";
 import { toast } from "sonner";
 import { AgentSourcesBlock } from "@/components/AgentSourcesBlock";
+import { floorReviews } from "@/utils/floorDisplay";
 
 interface CertificationData {
   id: string;
@@ -109,7 +110,7 @@ export default function ArtifactPage() {
     const embedCode = `<!-- Top10Lists Certification Badge -->
 <div itemscope itemtype="https://schema.org/Certification">
   <a href="https://www.top10lists.us/artifact/${agentId}" itemprop="url" target="_blank">
-    <img src="https://www.top10lists.us/badge/${agentId}.png" alt="Top10Lists Certified" itemprop="image" style="max-width: 200px;" />
+    <img src="https://www.top10lists.us/badge/${agentId}.png" alt="Top10Lists Certified Agent badge" itemprop="image" style="max-width: 200px;" />
   </a>
   <meta itemprop="name" content="Top10Lists Certified Professional" />
   <meta itemprop="issuedBy" content="Top10Lists.us" />
@@ -328,7 +329,7 @@ export default function ArtifactPage() {
                 </div>
                 <div className="text-center p-4 bg-muted rounded-lg">
                   <div className="text-3xl font-bold text-primary mb-1">
-                    {data.num_total_reviews}
+                    {floorReviews(data.num_total_reviews) ?? data.num_total_reviews}
                   </div>
                   <div className="text-sm text-muted-foreground">Reviews</div>
                 </div>
@@ -439,7 +440,7 @@ export default function ArtifactPage() {
   <a href="https://www.top10lists.us/artifact/${agentId}" 
      itemprop="url" target="_blank">
     <img src="https://www.top10lists.us/badge/${agentId}.png" 
-         alt="Top10Lists Certified" 
+         alt="Top10Lists Certified Agent badge" 
          itemprop="image" 
          style="max-width: 200px;" />
   </a>

@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Loader2, ArrowRight, ArrowLeft, HelpCircle, X, Plus, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import InlineReviewForm from '@/components/funnel/InlineReviewForm';
+import { floorSales, floorReviews } from '@/utils/floorDisplay';
 
 // Known specialties for autocomplete - kept in sync with DB
 const KNOWN_SPECIALTIES = [
@@ -320,7 +321,7 @@ export default function Step3Review2() {
                   <Label>Reviews</Label>
                   <div className="flex items-center gap-2">
                     <div className="flex-1 rounded-md border bg-muted/50 px-3 py-2 text-sm">
-                      {professional?.review_stars_rating ?? '—'} stars · {professional?.num_total_reviews?.toLocaleString() ?? 0} reviews
+                      {professional?.review_stars_rating ?? '—'} stars · {professional?.num_total_reviews != null ? (floorReviews(professional.num_total_reviews) ?? professional.num_total_reviews) : 0} reviews
                     </div>
                     {submittedReviews.has('reviews') ? (
                       <div className="flex items-center gap-1 text-xs text-green-700 font-medium px-3 py-2 bg-green-50 border border-green-200 rounded-md shrink-0">
@@ -344,7 +345,7 @@ export default function Step3Review2() {
                   {reviewField === 'reviews' && professional && (
                     <InlineReviewForm
                       fieldName="Reviews"
-                      currentValue={`${professional.review_stars_rating ?? '—'} stars, ${professional.num_total_reviews?.toLocaleString() ?? 0} reviews`}
+                      currentValue={`${professional.review_stars_rating ?? '—'} stars, ${professional.num_total_reviews != null ? (floorReviews(professional.num_total_reviews) ?? professional.num_total_reviews) : 0} reviews`}
                       professionalId={professional.id}
                       professionalName={professional.name}
                       professionalEmail={professional.email || undefined}
@@ -414,7 +415,7 @@ export default function Step3Review2() {
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="flex-1 rounded-md border bg-muted/50 px-3 py-2 text-sm">
-                      {totalSalesDisplay != null ? `${totalSalesDisplay.toLocaleString()}+` : 'Not provided'}
+                      {totalSalesDisplay != null ? (floorSales(totalSalesDisplay) ?? `${totalSalesDisplay.toLocaleString()}+`) : 'Not provided'}
                     </div>
                     {submittedReviews.has('total_sales') ? (
                       <div className="flex items-center gap-1 text-xs text-green-700 font-medium px-3 py-2 bg-green-50 border border-green-200 rounded-md shrink-0">

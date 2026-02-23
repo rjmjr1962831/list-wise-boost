@@ -144,7 +144,7 @@ serve(async (req) => {
           ⭐ ${rating.toFixed(1)}
         </text>
         <text x="150" y="280" font-family="Inter, sans-serif" font-size="19" fill="hsl(234, 45%, 41%)">
-          ${Math.max(0, Math.floor((reviewCount - 5) / 5) * 5)}+ reviews
+          ${Math.max(0, Math.floor((reviewCount - 10) / 10) * 10)}+ reviews
         </text>
         ${yearsExp > 0 ? `
           <text x="330" y="280" font-family="Inter, sans-serif" font-size="19" fill="hsl(234, 45%, 41%)">

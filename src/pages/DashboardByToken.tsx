@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loader2, Check, Pencil, ExternalLink, Shield } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { floorReviews } from '@/utils/floorDisplay';
 
 const BASE_URL = 'https://www.top10lists.us';
 
@@ -213,7 +214,7 @@ export default function DashboardByToken() {
                 </div>
                 <div className="flex justify-between">
                   <dt className="text-muted-foreground">Review count</dt>
-                  <dd>{professional.num_total_reviews ?? '—'}</dd>
+                  <dd>{professional.num_total_reviews != null ? (floorReviews(professional.num_total_reviews) ?? professional.num_total_reviews) : '—'}</dd>
                 </div>
                 <div className="flex justify-between">
                   <dt className="text-muted-foreground">License</dt>

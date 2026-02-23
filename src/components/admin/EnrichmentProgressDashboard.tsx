@@ -16,6 +16,7 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { floorReviews } from '@/utils/floorDisplay';
 
 interface CityStats {
   city_id: string;
@@ -425,7 +426,7 @@ export function EnrichmentProgressDashboard() {
                   <div className="flex items-center gap-3">
                     <div className="text-right">
                       <p className="text-sm font-medium">
-                        {agent.review_stars_rating}★ ({agent.num_total_reviews} reviews)
+                        {agent.review_stars_rating}★ ({floorReviews(agent.num_total_reviews) ?? agent.num_total_reviews} reviews)
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {new Date(agent.zillow_data_fetched_at).toLocaleTimeString()}

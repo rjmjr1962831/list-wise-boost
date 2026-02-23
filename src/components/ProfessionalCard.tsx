@@ -1367,7 +1367,7 @@ export const ProfessionalCard = ({
                           ))}
                         </div>
                         <span className="font-bold text-lg" itemProp="ratingValue">{displayRating}</span>
-                        <span className="text-sm text-muted-foreground">(<span itemProp="reviewCount">{Math.max(0, Math.floor((displayReviews - 5) / 5) * 5).toLocaleString('en-US')}+</span> reviews)</span>
+                        <span className="text-sm text-muted-foreground">(<span itemProp="reviewCount">{Math.max(0, Math.floor((displayReviews - 10) / 10) * 10).toLocaleString('en-US')}+</span> reviews)</span>
                         <meta itemProp="bestRating" content="5" />
                       </div>
                     ) : (
@@ -1778,7 +1778,7 @@ export const ProfessionalCard = ({
                     <div className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2">
                       <span className="font-semibold text-xs sm:text-sm whitespace-nowrap">Reviews</span>
                       <Badge variant="secondary" className="bg-primary/10 text-primary text-[10px] sm:text-xs px-1.5 sm:px-2">
-                        {Math.max(0, Math.floor(((professional.reviews || (professional as any).num_total_reviews || 0) - 5) / 5) * 5).toLocaleString('en-US')}+
+                        {Math.max(0, Math.floor(((professional.reviews || (professional as any).num_total_reviews || 0) - 10) / 10) * 10).toLocaleString('en-US')}+
                       </Badge>
                     </div>
                     <ChevronDown className={cn("h-4 w-4 transition-transform flex-shrink-0", reviewsOpen && "rotate-180")} />
