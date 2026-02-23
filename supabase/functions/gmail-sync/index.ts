@@ -184,14 +184,14 @@ async function syncAccount(account: any) {
   const token = await getValidToken(account);
 
   const listRes = await fetch(
-    `https://www.googleapis.com/gmail/v1/users/me/messages?maxResults=50&q=in:inbox OR from:me`,
+    `https://www.googleapis.com/gmail/v1/users/me/messages?maxResults=20&q=in:inbox OR from:me`,
     { headers: { Authorization: `Bearer ${token}` } }
   );
   const list = await listRes.json();
   if (!list.messages) return { synced: 0 };
 
   let synced = 0;
-  for (const msg of list.messages.slice(0, 50)) {
+  for (const msg of list.messages.slice(0, 20)) {
     const { data: existing } = await supabase
       .from("crm_emails")
       .select("id")
@@ -232,22 +232,31 @@ async function syncAccount(account: any) {
       continue;
     }
 
-    // Skip inbound from unknown senders (spam, cold outreach)
+    // Skip inbound spam/cold outreach - allow enrolled agents, contacts, and known domains
     if (direction === "inbound") {
       const fromLower = fromEmail.toLowerCase().trim();
-      const { data: knownEnrollment } = await supabase
-        .from("crm_sequence_enrollments")
-        .select("id")
-        .eq("email", fromLower)
-        .limit(1)
-        .maybeSingle();
-      const { data: knownContact } = await supabase
-        .from("contacts")
-        .select("id")
-        .eq("email", fromLower)
-        .limit(1)
-        .maybeSingle();
-      if (!knownEnrollment && !knownContact) continue;
+      const fromDomain = fromLower.split("@")[1] || "";
+      
+      // Always allow our own domains and known admin addresses
+      const trustedDomains = ["top10lists.us", "toptenlists.us", "maynard.com", "aryah.ai"];
+      const isTrusted = trustedDomains.some(d => fromDomain === d || fromDomain.endsWith("." + d));
+      
+      if (!isTrusted) {
+        // Check if sender is a known enrollment or contact
+        const { data: knownEnrollment } = await supabase
+          .from("crm_sequence_enrollments")
+          .select("id")
+          .eq("email", fromLower)
+          .limit(1)
+          .maybeSingle();
+        const { data: knownContact } = await supabase
+          .from("contacts")
+          .select("id")
+          .eq("email", fromLower)
+          .limit(1)
+          .maybeSingle();
+        if (!knownEnrollment && !knownContact) continue;
+      }
     }
 
     const senderEmail = direction === "inbound" ? fromEmail : (to.match(/<(.+)>/)?.[1] || to);
