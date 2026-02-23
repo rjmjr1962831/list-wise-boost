@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,55 +19,45 @@ interface Professional {
   review_stars_rating: number | null;
   num_total_reviews: number | null;
   canonical_slug: string | null;
-  active: boolean;
 }
 
 export const ContactsManager = () => {
   const [professionals, setProfessionals] = useState<Professional[]>([]);
-  const [totalCount, setTotalCount] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [stateFilter, setStateFilter] = useState("all");
+  const [hasSearched, setHasSearched] = useState(false);
 
-  const searchProfessionals = useCallback(async (term: string, state: string) => {
+  const searchProfessionals = useCallback(async (term: string) => {
+    if (term.length < 2) {
+      setProfessionals([]);
+      setHasSearched(false);
+      return;
+    }
     setIsLoading(true);
-    let query = supabase
+    setHasSearched(true);
+
+    const { data, error } = await supabase
       .from("professionals")
-      .select("id, name, email, phone, company, business_city, state_slug, current_tier, review_stars_rating, num_total_reviews, canonical_slug, active", { count: "exact" })
+      .select("id, name, email, phone, company, business_city, state_slug, current_tier, review_stars_rating, num_total_reviews, canonical_slug")
       .eq("active", true)
+      .or(`name.ilike.%${term}%,email.ilike.%${term}%,company.ilike.%${term}%,business_city.ilike.%${term}%`)
       .order("name", { ascending: true })
-      .limit(50);
-
-    if (state !== "all") {
-      query = query.eq("state_slug", state);
-    }
-
-    if (term.length >= 2) {
-      query = query.or(`name.ilike.%${term}%,email.ilike.%${term}%,company.ilike.%${term}%,business_city.ilike.%${term}%`);
-    }
-
-    const { data, error, count } = await query;
+      .limit(25);
 
     if (error) {
-      toast.error("Failed to search professionals");
+      toast.error("Search failed");
       console.error(error);
     } else {
       setProfessionals(data || []);
-      setTotalCount(count || 0);
     }
     setIsLoading(false);
   }, []);
 
-  useEffect(() => {
-    searchProfessionals(searchTerm, stateFilter);
-  }, [stateFilter]);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      searchProfessionals(searchTerm, stateFilter);
-    }, 300);
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+    const timer = setTimeout(() => searchProfessionals(value), 300);
     return () => clearTimeout(timer);
-  }, [searchTerm]);
+  };
 
   const tierColor = (tier: string | null) => {
     switch (tier) {
@@ -78,31 +68,11 @@ export const ContactsManager = () => {
     }
   };
 
-  const states = [
-    { value: "all", label: "All States" },
-    { value: "arizona", label: "Arizona" },
-    { value: "california", label: "California" },
-  ];
-
   return (
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>Professionals ({totalCount.toLocaleString()})</CardTitle>
-            <div className="flex gap-2">
-              {states.map(s => (
-                <Button
-                  key={s.value}
-                  size="sm"
-                  variant={stateFilter === s.value ? "default" : "outline"}
-                  onClick={() => setStateFilter(s.value)}
-                >
-                  {s.label}
-                </Button>
-              ))}
-            </div>
-          </div>
+          <CardTitle>Search Contacts</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="relative">
@@ -110,22 +80,20 @@ export const ContactsManager = () => {
             <Input
               placeholder="Search by name, email, company, or city..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => handleSearchChange(e.target.value)}
               className="pl-10"
             />
           </div>
-          <p className="text-xs text-muted-foreground mt-2">
-            {searchTerm.length < 2 ? "Type 2+ characters to search. " : ""}
-            Showing {professionals.length} of {totalCount.toLocaleString()} results.
-          </p>
         </CardContent>
       </Card>
 
-      {isLoading ? (
+      {isLoading && (
         <div className="flex items-center justify-center p-8">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
-      ) : (
+      )}
+
+      {!isLoading && professionals.length > 0 && (
         <div className="grid gap-3">
           {professionals.map((pro) => (
             <Card key={pro.id}>
@@ -189,7 +157,7 @@ export const ContactsManager = () => {
         </div>
       )}
 
-      {!isLoading && professionals.length === 0 && (
+      {!isLoading && hasSearched && professionals.length === 0 && (
         <Card>
           <CardContent className="py-8 text-center text-muted-foreground">
             No professionals found
