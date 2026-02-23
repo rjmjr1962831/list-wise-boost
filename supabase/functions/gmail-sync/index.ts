@@ -184,7 +184,7 @@ async function syncAccount(account: any) {
   const token = await getValidToken(account);
 
   const listRes = await fetch(
-    `https://www.googleapis.com/gmail/v1/users/me/messages?maxResults=20&q=in:inbox -from:me`,
+    `https://www.googleapis.com/gmail/v1/users/me/messages?maxResults=20&q=newer_than:1d -from:me -in:trash`,
     { headers: { Authorization: `Bearer ${token}` } }
   );
   const list = await listRes.json();
