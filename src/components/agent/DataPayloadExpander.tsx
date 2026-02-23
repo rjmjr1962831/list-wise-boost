@@ -9,10 +9,6 @@ function getStateDreName(stateSlug: string | null | undefined): string {
   const map: Record<string, string> = {
     AZ: "AZDRE",
     CA: "CADRE",
-    TX: "TREC",
-    FL: "FREC",
-    NY: "NYS Department of State",
-    CO: "Colorado DRE",
     NV: "Nevada Real Estate Division",
   };
   return map[s] || `${s} Department of Real Estate`;

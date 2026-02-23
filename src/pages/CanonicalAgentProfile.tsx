@@ -139,10 +139,6 @@ function convertToLicense(dbProf: DBProfessional, stateName: string): StateLicen
   const agencyNames: Record<string, string> = {
     'Arizona': 'Arizona Dept. of Real Estate',
     'California': 'California DRE',
-    'Texas': 'Texas Real Estate Commission',
-    'Florida': 'Florida DBPR',
-    'New York': 'NY Dept. of State',
-    'Colorado': 'Colorado DORA',
   };
 
   return {

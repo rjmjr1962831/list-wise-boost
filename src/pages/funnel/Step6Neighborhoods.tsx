@@ -21,10 +21,6 @@ function stateSlugToFullState(slugOrAbbr: string | null | undefined): string {
   const s = slugOrAbbr.toLowerCase().trim();
   if (s === 'az' || s === 'arizona') return 'Arizona';
   if (s === 'ca' || s === 'california') return 'California';
-  if (s === 'tx' || s === 'texas') return 'Texas';
-  if (s === 'fl' || s === 'florida') return 'Florida';
-  if (s === 'co' || s === 'colorado') return 'Colorado';
-  if (s === 'ny' || s === 'new-york') return 'New York';
   return slugOrAbbr.charAt(0).toUpperCase() + slugOrAbbr.slice(1).replace(/-/g, ' ');
 }
 

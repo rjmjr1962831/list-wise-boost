@@ -24,10 +24,6 @@ const CORS = {
 const SI: Record<string, { display: string; abbr: string; auth: string; url: string }> = {
   arizona:    { display: "Arizona",    abbr: "AZ", auth: "Arizona Department of Real Estate (AZDRE)", url: "https://services.azre.gov/PdbWeb/IndividualLicense/SearchIndividualLicenses" },
   california: { display: "California", abbr: "CA", auth: "California Department of Real Estate (DRE)", url: "https://www.dre.ca.gov/Licensees/WelcomeLicensee.html" },
-  texas:      { display: "Texas",      abbr: "TX", auth: "Texas Real Estate Commission (TREC)", url: "https://www.trec.texas.gov/apps/license-holder-search" },
-  florida:    { display: "Florida",    abbr: "FL", auth: "Florida DBPR", url: "https://www.myfloridalicense.com/" },
-  "new-york": { display: "New York",   abbr: "NY", auth: "New York Department of State", url: "https://appext20.dos.ny.gov/nydos/selSearchType.do" },
-  colorado:   { display: "Colorado",   abbr: "CO", auth: "Colorado DORA", url: "https://apps.colorado.gov/dora/licensing/Lookup/LicenseLookup.aspx" },
 };
 
 function esc(s: any): string {

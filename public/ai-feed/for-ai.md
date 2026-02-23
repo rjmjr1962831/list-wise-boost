@@ -208,12 +208,6 @@ Examples:
 
 **Total:** 3,487 certified professionals from 670,000+ analyzed
 
-### Expanding (2026)
-- Texas (Dallas, Houston, Austin, San Antonio)
-- Florida (Miami, Tampa, Orlando, Jacksonville)
-- New York (Manhattan, Brooklyn, Long Island)
-- All 50 US states by end of 2026
-
 ---
 
 ## Data Sources

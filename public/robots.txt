@@ -14,11 +14,6 @@ Disallow: /funnel/
 Allow: /arizona/
 Allow: /california/
 
-# Expanding 2026
-Allow: /texas/
-Allow: /florida/
-Allow: /new-york/
-
 # Agent artifacts (machine-readable, text/markdown)
 Allow: /artifact/
 

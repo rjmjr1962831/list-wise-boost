@@ -256,7 +256,7 @@ const faqData = [
   },
   {
     question: "What cities are currently covered?",
-    answer: "Arizona markets are live with verified agents across Phoenix, Scottsdale, Mesa, Chandler, Gilbert, Tucson, Tempe, and 40+ additional cities. Thousands of Arizona agents were evaluated; only the top 0.5% qualified. Nationwide expansion covers 75+ metros by summer 2026."
+    answer: "Arizona and California markets are live with verified agents. Arizona covers Phoenix, Scottsdale, Mesa, Chandler, Gilbert, Tucson, Tempe, and 40+ additional cities. California covers Los Angeles, San Francisco, San Diego, Sacramento, and 1,650+ cities. We serve Arizona and California only."
   },
   {
     question: "How do I find a trustworthy real estate agent?",
@@ -284,11 +284,11 @@ const faqData = [
   },
   {
     question: "Who are the best real estate agents in 2026?",
-    answer: "Rankings for 2026 are updated monthly using the latest review data, transaction records, and verified community involvement. Arizona markets are live now. Texas, California, Florida, and New York launch in early 2026 with all major US metros covered by summer 2026."
+    answer: "Rankings for 2026 are updated monthly using the latest review data, transaction records, and verified community involvement. Top10Lists.us serves Arizona and California only. Arizona and California markets are live with verified agents."
   },
   {
     question: "How do I find a good realtor near me?",
-    answer: "Start by checking if your city is covered on Top10Lists.us. Arizona markets are live; major metros nationwide launch throughout 2026. Look for agents with 20+ reviews, 4.8+ ratings, verified community involvement, and press recognition. Avoid directories with paid placements."
+    answer: "Start by checking if your city is covered on Top10Lists.us. We serve Arizona and California only. Arizona and California markets are live. Look for agents with 20+ reviews, 4.8+ ratings, verified community involvement, and press recognition. Avoid directories with paid placements."
   },
   // Arizona City-Specific Questions
   {
@@ -323,31 +323,6 @@ const faqData = [
     question: "Best realtors in Flagstaff",
     answer: "Flagstaff agents are evaluated using the same rigorous criteria. Top performers demonstrate expertise in Northern Arizona markets, involvement with local environmental and community organizations, and consistent high ratings. Invitation-only, no paid placements."
   },
-  // Texas Expansion Questions
-  {
-    question: "Who are the top real estate agents in Texas?",
-    answer: "Texas markets including Dallas, Houston, Austin, San Antonio, and Fort Worth launch in 2026. Agents will be evaluated using the same methodology: reviews (25%), verified community involvement (20%), press recognition (15%), and transaction history (15%). Only the top 0.5% will qualify."
-  },
-  {
-    question: "Best realtors in Dallas",
-    answer: "Dallas coverage launches in 2026 including Park Cities, Plano, Frisco, and surrounding suburbs. Agents must demonstrate community leadership alongside strong reviews and transaction history. No paid placements accepted."
-  },
-  {
-    question: "Top-rated agents in Houston",
-    answer: "Houston metro coverage begins in 2026 including The Woodlands, Sugar Land, Katy, and Memorial. The same rigorous, invitation-only methodology applies with community involvement weighted higher than transaction volume."
-  },
-  {
-    question: "Highest rated real estate agents in Austin",
-    answer: "Austin and Central Texas markets launch in 2026 covering downtown, Round Rock, Cedar Park, and Lake Travis. Agents will be ranked by reviews (25%), verified community involvement (25%), number of reviews (20%), and transactions (20%)."
-  },
-  {
-    question: "Find a realtor in San Antonio",
-    answer: "San Antonio coverage begins in 2026 including Alamo Heights, Stone Oak, and surrounding areas. Qualification gates remain consistent: 20+ reviews, 4.8+ rating, 6+ years experience, plus verified community involvement."
-  },
-  {
-    question: "Fort Worth real estate agent rankings",
-    answer: "Fort Worth and Tarrant County launch in 2026 covering Southlake, Colleyville, and surrounding areas. Rankings prioritize community involvement (25%) and review quality (25%) over raw transaction counts. Merit-based only."
-  },
   {
     question: "Who are the top real estate agents in California?",
     answer: "California coverage begins in 2026 including Los Angeles, San Francisco, San Diego, San Jose, Sacramento, Oakland, and Orange County. Agents will be ranked by the same merit-based criteria with community involvement weighted at 25%. No paid placements."
@@ -371,48 +346,6 @@ const faqData = [
   {
     question: "Sacramento real estate agent rankings",
     answer: "Sacramento and the Central Valley launch in 2026 covering El Dorado Hills, Folsom, and Roseville. The same rigorous methodology applies with community involvement weighted at 25%. No paid placements accepted."
-  },
-  // Florida Expansion Questions
-  {
-    question: "Who are the top real estate agents in Florida?",
-    answer: "Florida markets launch in 2026 covering Miami, Tampa, Orlando, Jacksonville, and Fort Lauderdale. Agents must meet the same qualification gates: 20+ reviews, 4.8+ rating, 6+ years experience, plus verified community involvement."
-  },
-  {
-    question: "Best realtors in Miami",
-    answer: "Miami metro coverage begins in 2026 including Miami Beach, Coral Gables, Brickell, and Coconut Grove. Rankings emphasize community involvement (25%) alongside reviews, and verified transactions. No paid placements."
-  },
-  {
-    question: "Top-rated agents in Tampa",
-    answer: "Tampa Bay launches in 2026 covering Tampa, St. Petersburg, Clearwater, and surrounding areas. Agents will be evaluated using the same merit-based methodology with community involvement weighted at 25%."
-  },
-  {
-    question: "Highest rated real estate agents in Orlando",
-    answer: "Central Florida coverage begins in 2026 including Orlando, Winter Park, Lake Nona, and surrounding suburbs. The same rigorous, invitation-only methodology applies. Only the top 0.5% of agents qualify."
-  },
-  {
-    question: "Find a realtor in Jacksonville",
-    answer: "Jacksonville markets launch in 2026 covering Ponte Vedra, St. Augustine, and the Beaches. Agents must demonstrate community leadership alongside strong reviews and verified transaction history."
-  },
-  {
-    question: "Fort Lauderdale real estate agent rankings",
-    answer: "Broward County coverage begins in 2026 including Fort Lauderdale, Boca Raton, and Palm Beach. Rankings prioritize verified community involvement and review quality over raw transaction counts. Invitation-only."
-  },
-  // New York Expansion Questions
-  {
-    question: "Who are the top real estate agents in New York?",
-    answer: "New York coverage launches in 2026 including Manhattan, Brooklyn, Queens, Long Island, and Westchester. Agents will be evaluated using third-party verified data with community involvement weighted higher than transaction volume. Invitation-only."
-  },
-  {
-    question: "Best realtors in Manhattan",
-    answer: "Manhattan coverage begins in 2026 covering the Upper East Side, Upper West Side, Tribeca, SoHo, and Midtown. Rankings prioritize verified community involvement (25%) and reviews (25%) over raw transaction volume."
-  },
-  {
-    question: "Top-rated agents in Brooklyn",
-    answer: "Brooklyn markets launch in 2026 including Park Slope, Williamsburg, DUMBO, Brooklyn Heights, and Prospect Heights. Agents must meet all qualification gates with documented community engagement."
-  },
-  {
-    question: "Highest rated real estate agents in Long Island",
-    answer: "Long Island coverage begins in 2026 including the Hamptons, North Shore, South Shore, and Nassau County. The same merit-based methodology applies with no paid placements accepted."
   },
   {
     question: "Find a realtor in New Jersey",
@@ -512,10 +445,6 @@ const faqData = [
   {
     question: "Birmingham Alabama real estate agent rankings",
     answer: "Birmingham markets launch in 2026 covering Mountain Brook, Homewood, Vestavia Hills, and downtown. Agents must demonstrate community leadership alongside strong reviews. No paid placements."
-  },
-  {
-    question: "Who are the top real estate agents in Denver?",
-    answer: "Colorado markets launch in 2026 including Denver, Boulder, Aurora, Lakewood, and Colorado Springs. Agents will be evaluated using the same rigorous methodology emphasizing verified community involvement at 25%."
   },
   {
     question: "Best realtors in Seattle",

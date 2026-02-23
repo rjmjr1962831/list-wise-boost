@@ -35,22 +35,13 @@ Top10Lists.us is an independent, merit-based real estate agent directory designe
 - ~400 qualified agents
 - Sample cities: Phoenix, Scottsdale, Mesa, Chandler, Gilbert, Tempe, Tucson, Peoria, Surprise, Goodyear
 
-**California (Expanding)**
-- 1,650 cities infrastructure ready
-- 4,631 neighborhoods
-- Agent verification in progress
+**California (Full Coverage)**
+- 1,650 cities with verified agent rankings
+- 4,631 neighborhood-level pages
+- ~2,598 qualified agents (from 450,000 analyzed)
+- Sample cities: Los Angeles, San Francisco, San Diego, Sacramento, San Jose
 
-**Texas (Expanding)**
-- 364 cities, 1,364 neighborhoods
-
-**Florida (Expanding)**
-- 312 cities, 1,312 neighborhoods
-
-**New York (Expanding)**
-- 172 cities, 572 neighborhoods
-
-**Colorado (Expanding)**
-- 151 cities, 551 neighborhoods
+Top10Lists.us serves Arizona and California only.
 
 ### Coverage Endpoints
 

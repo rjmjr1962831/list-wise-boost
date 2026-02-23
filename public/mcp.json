@@ -170,26 +170,8 @@
         "agentsQualified": 2598,
         "agentsAnalyzed": 450000
       },
-      {
-        "name": "Texas",
-        "slug": "texas",
-        "status": "expanding",
-        "targetDate": "2026"
-      },
-      {
-        "name": "Florida",
-        "slug": "florida",
-        "status": "expanding",
-        "targetDate": "2026"
-      },
-      {
-        "name": "New York",
-        "slug": "new-york",
-        "status": "expanding",
-        "targetDate": "2026"
-      }
     ],
-    "expansion": "TX, FL, NY in 2026. All 50 US states by end of 2026."
+    "expansion": "Arizona and California only."
   },
   "certificationTiers": {
     "listed": {"cost": "Free", "artifact": false, "auditCycle": "None"},

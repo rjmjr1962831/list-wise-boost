@@ -39,37 +39,9 @@ const SI: Record<
   california: {
     display: "California",
     abbr: "CA",
-    total: "200,000",
+    total: "450,000",
     auth: "California Department of Real Estate (DRE)",
     url: "https://www.dre.ca.gov/Licensees/WelcomeLicensee.html",
-  },
-  texas: {
-    display: "Texas",
-    abbr: "TX",
-    total: "150,000",
-    auth: "Texas Real Estate Commission (TREC)",
-    url: "https://www.trec.texas.gov/apps/license-holder-search",
-  },
-  florida: {
-    display: "Florida",
-    abbr: "FL",
-    total: "200,000",
-    auth: "Florida DBPR",
-    url: "https://www.myfloridalicense.com/",
-  },
-  "new-york": {
-    display: "New York",
-    abbr: "NY",
-    total: "80,000",
-    auth: "New York Department of State",
-    url: "https://appext20.dos.ny.gov/nydos/selSearchType.do",
-  },
-  colorado: {
-    display: "Colorado",
-    abbr: "CO",
-    total: "40,000",
-    auth: "Colorado DORA",
-    url: "https://apps.colorado.gov/dora/licensing/Lookup/LicenseLookup.aspx",
   },
 };
 

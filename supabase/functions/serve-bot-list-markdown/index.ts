@@ -12,8 +12,7 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 
 const STATE_ABBREV: Record<string, string> = {
-  arizona: "AZ", california: "CA", texas: "TX", florida: "FL",
-  "new-york": "NY", colorado: "CO",
+  arizona: "AZ", california: "CA",
 };
 
 function toTitleCase(str: string): string {
