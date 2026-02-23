@@ -1,4 +1,5 @@
 -- Run in Supabase Dashboard → SQL Editor to schedule midnight MST job.
+-- Optional: replace X-Enrichment-Key value with the UPDATER secret (Dashboard → Project Settings → Edge Functions → Secrets).
 SELECT cron.unschedule('daily-certification-update');
 
 SELECT cron.schedule(
