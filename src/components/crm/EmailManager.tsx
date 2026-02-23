@@ -458,7 +458,7 @@ export const EmailManager = () => {
                     <label className="text-xs text-muted-foreground mb-1 block">From</label>
                     <select className="w-full text-sm border rounded-md px-2 py-1.5 bg-background"
                       value={fromAccount} onChange={e => setFromAccount(e.target.value)}>
-                      {accounts.map(a => <option key={a.email} value={a.email}>{a.email}</option>)}
+                      {accounts.map(a => <option key={a.email} value={a.email}>{a.display_name ? `${a.display_name} <${a.email}>` : a.email}</option>)}
                     </select>
                   </div>
                   <div>
@@ -516,7 +516,7 @@ export const EmailManager = () => {
                 <label className="text-xs text-muted-foreground mb-1 block">From</label>
                 <select className="w-full text-sm border rounded-md px-2 py-1.5 bg-background"
                   value={fromAccount} onChange={e => setFromAccount(e.target.value)}>
-                  {accounts.map(a => <option key={a.email} value={a.email}>{a.email}</option>)}
+                  {accounts.map(a => <option key={a.email} value={a.email}>{a.display_name ? `${a.display_name} <${a.email}>` : a.email}</option>)}
                 </select>
               </div>
               <Input placeholder="To" className="text-sm h-8" value={toAddress} onChange={e => setToAddress(e.target.value)} />
