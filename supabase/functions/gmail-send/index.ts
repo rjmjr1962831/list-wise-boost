@@ -41,7 +41,7 @@ function buildRawEmail(params: {
   threadId?: string; inReplyTo?: string; references?: string;
 }): string {
   const lines = [
-    `From: ${params.from}`,
+    `From: Robert Maynard <${params.from}>`,
     `To: ${params.to}`,
     `Subject: ${params.subject}`,
     "MIME-Version: 1.0",
