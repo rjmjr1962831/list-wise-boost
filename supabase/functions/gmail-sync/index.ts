@@ -77,10 +77,51 @@ function getHeader(headers: any[], name: string): string {
   return headers?.find((h: any) => h.name.toLowerCase() === name.toLowerCase())?.value || "";
 }
 
+async function handleReply(fromEmail: string) {
+  // Find active enrollment for this email address
+  const { data: enrollment } = await supabase
+    .from("crm_sequence_enrollments")
+    .select("id, sequence_id, crm_sequences!inner(on_reply_sequence_id, from_account)")
+    .eq("email", fromEmail.toLowerCase().trim())
+    .eq("status", "active")
+    .single();
+
+  if (!enrollment) return;
+
+  const seq = enrollment.crm_sequences as any;
+  const now = new Date().toISOString();
+
+  // Pause the current enrollment
+  await supabase.from("crm_sequence_enrollments")
+    .update({ status: "replied", replied_at: now })
+    .eq("id", enrollment.id);
+
+  // If there is a follow-up sequence, enroll them in it
+  if (seq.on_reply_sequence_id) {
+    const { data: agent } = await supabase
+      .from("crm_sequence_enrollments")
+      .select("professional_id, first_name, metadata")
+      .eq("id", enrollment.id)
+      .single();
+
+    if (agent) {
+      await supabase.from("crm_sequence_enrollments").upsert({
+        sequence_id: seq.on_reply_sequence_id,
+        professional_id: agent.professional_id,
+        email: fromEmail.toLowerCase().trim(),
+        first_name: agent.first_name,
+        status: "active",
+        current_step: 0,
+        next_send_at: now,
+        metadata: agent.metadata,
+      }, { onConflict: "sequence_id,email", ignoreDuplicates: true });
+    }
+  }
+}
+
 async function syncAccount(account: any) {
   const token = await getValidToken(account);
 
-  // Fetch last 50 messages
   const listRes = await fetch(
     `https://www.googleapis.com/gmail/v1/users/me/messages?maxResults=50&q=in:inbox OR from:me`,
     { headers: { Authorization: `Bearer ${token}` } }
@@ -90,7 +131,6 @@ async function syncAccount(account: any) {
 
   let synced = 0;
   for (const msg of list.messages.slice(0, 50)) {
-    // Check if already stored
     const { data: existing } = await supabase
       .from("crm_emails")
       .select("id")
@@ -114,11 +154,9 @@ async function syncAccount(account: any) {
     const bodyText = extractPlainText(msgData.payload);
     const bodyHtml = extractHtml(msgData.payload);
 
-    // Determine direction
     const fromEmail = from.match(/<(.+)>/)?.[1] || from;
     const direction = fromEmail.toLowerCase() === account.email.toLowerCase() ? "outbound" : "inbound";
 
-    // Match to contact
     const senderEmail = direction === "inbound" ? fromEmail : (to.match(/<(.+)>/)?.[1] || to);
     const { data: contact } = await supabase
       .from("contacts")
@@ -140,6 +178,11 @@ async function syncAccount(account: any) {
       contact_id: contact?.id || null,
       sent_at: sentAt,
     }, { onConflict: "gmail_message_id" });
+
+    // Reply detection -- if inbound, check if this person is in an active sequence
+    if (direction === "inbound") {
+      await handleReply(fromEmail);
+    }
 
     synced++;
   }
@@ -163,7 +206,7 @@ serve(async (req) => {
       const result = await syncAccount(account);
       results.push({ email: account.email, ...result });
     } catch (e: any) {
-      results.push({ email: account.email, error: e.message });
+      results.push({ email: account.email, error: (e as Error).message });
     }
   }
 
