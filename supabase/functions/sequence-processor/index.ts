@@ -9,7 +9,7 @@ const GMAIL_CLIENT_SECRET = Deno.env.get("GMAIL_CLIENT_SECRET")!;
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
 // Throttle: max sends per invocation per account
-const MAX_PER_ACCOUNT_PER_RUN = 5;
+const MAX_PER_ACCOUNT_PER_RUN = 10;
 
 async function refreshAccessToken(account: any): Promise<string> {
   const res = await fetch("https://oauth2.googleapis.com/token", {
@@ -66,7 +66,7 @@ serve(async (req) => {
     const { data: accounts } = await supabase
       .from("crm_email_accounts")
       .select("*")
-      .in("email", ["hello@toptenlists.us", "robert@toptenlists.us"]);
+      .in("email", ["hello@toptenlists.us", "robert@toptenlists.us", "hello@top10lists.us", "robert@top10lists.us"]);
 
     if (!accounts || accounts.length === 0) {
       return new Response(JSON.stringify({ error: "No active accounts" }), { status: 500 });
