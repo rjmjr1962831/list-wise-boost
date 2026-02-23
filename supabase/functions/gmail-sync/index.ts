@@ -185,8 +185,24 @@ async function syncAccount(account: any) {
       sent_at: sentAt,
     }, { onConflict: "gmail_message_id" });
 
-    // Reply detection -- if inbound, check if this person is in an active sequence
+    // Skip inbound from unknown senders (spam, cold outreach)
     if (direction === "inbound") {
+      const fromLower = fromEmail.toLowerCase().trim();
+      const { data: knownEnrollment } = await supabase
+        .from("crm_sequence_enrollments")
+        .select("id")
+        .eq("email", fromLower)
+        .limit(1)
+        .maybeSingle();
+      const { data: knownContact } = await supabase
+        .from("contacts")
+        .select("id")
+        .eq("email", fromLower)
+        .limit(1)
+        .maybeSingle();
+      if (!knownEnrollment && !knownContact) continue;
+
+      // Reply detection -- if inbound, check if this person is in an active sequence
       await handleReply(fromEmail);
     }
 
