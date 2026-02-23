@@ -150,12 +150,11 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
     loadTasks();
   };
 
-  const handleChangeRequest = async (requestId: string, action: "approved" | "rejected", rejectionReason?: string) => {
+  const handleChangeRequest = async (requestId: string, action: "approved" | "rejected") => {
     const cr = changeRequests.find(r => r.id === requestId);
     if (!cr) return;
 
     if (action === "approved") {
-      // Apply the change to the professional
       const fieldMap: Record<string, string> = {
         "License Number": "license_number",
         "Phone": "phone",
@@ -173,8 +172,61 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
       reviewed_by: "admin",
     }).eq("id", requestId);
 
-    toast.success(`Change request ${action}`);
+    // Send notification email to agent
+    const { data: proData } = await supabase
+      .from("professionals")
+      .select("email, name, magic_link")
+      .eq("id", professional.id)
+      .single();
+
+    if (proData?.email && proData.email !== "pending@123.com") {
+      const firstName = (proData.name || "").split(" ")[0] || "there";
+
+      let subject = "";
+      let body = "";
+
+      if (action === "approved") {
+        subject = "Your review request at top10lists.us";
+        body = `Hi ${firstName} -
+
+We have reviewed your request to update your ${cr.field_name}. We have updated the information as you have requested.
+
+To see the change, click here: ${proData.magic_link || "https://www.top10lists.us"}
+
+Best Regards,
+
+Robert Maynard
+Founder`;
+      } else {
+        subject = "We need more information";
+        body = `Hi ${firstName} -
+
+We are reviewing your request to update your ${cr.field_name}. Before we can approve it, we need more information.
+
+Please provide a more detailed explanation justifying the change. Please include any links that will support your request.
+
+Just reply here with the information.
+
+Thank you.`;
+      }
+
+      try {
+        await supabase.functions.invoke("gmail-send", {
+          body: {
+            from_account: "hello@top10lists.us",
+            to: proData.email,
+            subject,
+            message_body: body,
+          },
+        });
+      } catch (e) {
+        console.error("Failed to send notification email:", e);
+      }
+    }
+
+    toast.success(`Change request ${action} - notification sent`);
     loadChangeRequests();
+    loadEmails();
   };
 
   const tierBadge = (tier: string | null) => {
