@@ -72,7 +72,7 @@ export const EmailManager = () => {
   const [threadEmails, setThreadEmails] = useState<Email[]>([]);
   const [contact, setContact] = useState<Contact | null>(null);
   const [professional, setProfessional] = useState<any | null>(null);
-  const [filter, setFilter] = useState<"all" | "inbound" | "outbound">("all");
+  const [filter, setFilter] = useState<"all" | "inbound" | "outbound">("inbound");
   const [search, setSearch] = useState("");
 
   // Compose state
