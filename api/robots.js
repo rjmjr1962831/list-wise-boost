@@ -30,9 +30,6 @@ Disallow: /agent-setup/
 
 Allow: /arizona/
 Allow: /california/
-Allow: /texas/
-Allow: /florida/
-Allow: /new-york/
 
 # AI Crawler Declarations - pre-rendered HTML for citation
 User-agent: GPTBot

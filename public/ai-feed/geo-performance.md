@@ -48,7 +48,7 @@ Artifacts include provenance tracking: Updated date, Standard Audit Cycle, next 
 
 - Arizona: 889 agents from 220,000+ analyzed, 88 cities, 2,923 neighborhoods
 - California: 2,598 agents from 450,000+ analyzed, 1,650+ cities, 4,631 neighborhoods
-- Expanding 2026: Texas, Florida, New York. All 50 states by end of 2026.
+- Arizona and California only.
 
 ## Data Sources
 

@@ -19,14 +19,6 @@ const SUPPORTED_STATES: Record<string, { name: string; slug: string }> = {
   'az': { name: 'Arizona', slug: 'arizona' },
   'california': { name: 'California', slug: 'california' },
   'ca': { name: 'California', slug: 'california' },
-  'texas': { name: 'Texas', slug: 'texas' },
-  'tx': { name: 'Texas', slug: 'texas' },
-  'florida': { name: 'Florida', slug: 'florida' },
-  'fl': { name: 'Florida', slug: 'florida' },
-  'colorado': { name: 'Colorado', slug: 'colorado' },
-  'co': { name: 'Colorado', slug: 'colorado' },
-  'new-york': { name: 'New York', slug: 'new-york' },
-  'ny': { name: 'New York', slug: 'new-york' },
 };
 
 // Only AZ and CA are fully enriched and should be indexed

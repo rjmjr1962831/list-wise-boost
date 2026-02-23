@@ -410,12 +410,10 @@ Our weekly update cycle means you're seeing rankings based on recent performance
 - Buckeye, Goodyear, Avondale
 - Flagstaff (coming soon)
 
-**Expansion Timeline**
+**Coverage**
 
-**2024 Q4** - Arizona complete
-**2025 Q1** - Colorado (Denver metro)
-**2025 Q2** - Texas (Austin, Dallas)
-**2025 Q3** - California (select markets)
+**Arizona** - Complete (88 cities, 2,923 neighborhoods)
+**California** - Complete (1,650+ cities, 4,631 neighborhoods)
 
 **Why Arizona First?**
 
@@ -432,7 +430,7 @@ Don't see your city? Let us know at hello@top10lists.us and we'll prioritize bas
       { text: "Phoenix Rankings", href: "/arizona/phoenix" },
       { text: "Scottsdale Rankings", href: "/arizona/scottsdale" }
     ],
-    metaDescription: "Top10Lists covers 48+ Arizona cities including Phoenix, Scottsdale, Tucson, and surrounding areas. Colorado and Texas expansion coming 2025."
+    metaDescription: "Top10Lists covers 48+ Arizona cities including Phoenix, Scottsdale, Tucson, and surrounding areas. Arizona and California only."
   },
   // City-specific question pages
   "who-is-the-best-real-estate-agent-in-phoenix-az": {

@@ -22,24 +22,15 @@ const LLMS_URL   = `${BASE}/llms.txt`;
 const LLMS_FULL  = `${BASE}/llms-full.txt`;
 
 const STATES: Record<string,string> = {
-  arizona:"Arizona",california:"California",texas:"Texas",
-  florida:"Florida","new-york":"New York",colorado:"Colorado",
+  arizona:"Arizona",california:"California",
 };
 const AGENCY: Record<string,string> = {
   arizona:"Arizona Department of Real Estate (AZDRE)",
   california:"California Department of Real Estate (DRE)",
-  texas:"Texas Real Estate Commission (TREC)",
-  florida:"Florida DBPR — Division of Real Estate",
-  "new-york":"New York Department of State",
-  colorado:"Colorado Division of Real Estate",
 };
 const LIC_URL: Record<string,string> = {
   arizona:"https://services.azre.gov/PdbWeb/IndividualLicense/SearchIndividualLicenses",
   california:"https://www2.dre.ca.gov/PublicASP/pplinfo.asp",
-  texas:"https://www.trec.texas.gov/apps/license-holder-search/",
-  florida:"https://www.myfloridalicense.com/wl11.asp",
-  "new-york":"https://appext20.dos.ny.gov/nydos/selSearchType.do",
-  colorado:"https://apps2.colorado.gov/dre/licensing/Lookup/LicenseLookup.aspx",
 };
 const CACHE: Record<string,number> = {listed:86400,certified:2592000,audited:1296000,underwritten:86400};
 

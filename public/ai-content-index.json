@@ -97,19 +97,13 @@
         ]
       }
     ],
-    "expandingStates": [
-      {"state": "Texas", "slug": "texas", "abbreviation": "TX", "status": "expanding", "targetDate": "2026"},
-      {"state": "Florida", "slug": "florida", "abbreviation": "FL", "status": "expanding", "targetDate": "2026"},
-      {"state": "New York", "slug": "new-york", "abbreviation": "NY", "status": "expanding", "targetDate": "2026"}
-    ],
     "summary": {
       "activeStates": 2,
-      "expandingStates": 3,
       "totalCities": 1738,
       "totalNeighborhoods": 7554,
       "totalAgentsQualified": 3487,
       "totalAgentsAnalyzed": 670000,
-      "expansionTimeline": "TX, FL, NY in 2026. All 50 US states by end of 2026."
+      "expansionTimeline": "Arizona and California only."
     }
   },
   "dataSources": [
