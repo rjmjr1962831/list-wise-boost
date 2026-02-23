@@ -155,7 +155,13 @@ async function syncAccount(account: any) {
     const bodyHtml = extractHtml(msgData.payload);
 
     const fromEmail = from.match(/<(.+)>/)?.[1] || from;
-    const direction = fromEmail.toLowerCase() === account.email.toLowerCase() ? "outbound" : "inbound";
+    const OUR_ACCOUNTS = new Set([
+      "robert@top10lists.us",
+      "hello@top10lists.us",
+      "robert@toptenlists.us",
+      "hello@toptenlists.us",
+    ]);
+    const direction = OUR_ACCOUNTS.has(fromEmail.toLowerCase()) ? "outbound" : "inbound";
 
     const senderEmail = direction === "inbound" ? fromEmail : (to.match(/<(.+)>/)?.[1] || to);
     const { data: contact } = await supabase
