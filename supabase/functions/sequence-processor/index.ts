@@ -6,14 +6,19 @@ const supabase = createClient(
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
 );
 
-async function sendEmail(fromAccount: string, to: string, subject: string, body: string, contactId?: string) {
+const UNSUBSCRIBE_FOOTER = `
+
+--
+To stop receiving emails from Top10Lists.us: {{unsubscribe_url}}`;
+
+async function sendEmail(fromAccount: string, to: string, subject: string, body: string, professionalId?: string) {
   const res = await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/gmail-send`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       "Authorization": `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`
     },
-    body: JSON.stringify({ from_account: fromAccount, to, subject, message_body: body, contact_id: contactId })
+    body: JSON.stringify({ from_account: fromAccount, to, subject, message_body: body, contact_id: professionalId })
   });
   return res.ok;
 }
@@ -25,24 +30,24 @@ function interpolate(template: string, vars: Record<string, string>): string {
 serve(async (req) => {
   try {
     const now = new Date().toISOString();
-    const batchSize = 50;
 
-    // Fetch due enrollments
     const { data: enrollments, error } = await supabase
       .from("crm_sequence_enrollments")
       .select(`
-        id, sequence_id, professional_id, email, first_name, current_step, metadata,
-        crm_sequences!inner(id, name, from_account, on_reply_sequence_id,
+        id, sequence_id, professional_id, email, first_name,
+        current_step, metadata, assigned_account,
+        crm_sequences!inner(
+          id, from_account, on_reply_sequence_id,
           crm_sequence_steps(id, step_number, delay_days, subject, body)
         )
       `)
       .eq("status", "active")
       .lte("next_send_at", now)
-      .limit(batchSize);
+      .limit(100);
 
     if (error) throw error;
     if (!enrollments?.length) {
-      return new Response(JSON.stringify({ ok: true, processed: 0, message: "No pending enrollments" }), {
+      return new Response(JSON.stringify({ ok: true, processed: 0, message: "No pending emails" }), {
         headers: { "Content-Type": "application/json" }
       });
     }
@@ -53,10 +58,9 @@ serve(async (req) => {
       try {
         const seq = enrollment.crm_sequences as any;
         const steps: any[] = seq.crm_sequence_steps.sort((a: any, b: any) => a.step_number - b.step_number);
-        const nextStepIndex = enrollment.current_step; // 0-based index into steps array
-        
-        if (nextStepIndex >= steps.length) {
-          // All steps done -- mark complete
+        const stepIndex = enrollment.current_step;
+
+        if (stepIndex >= steps.length) {
           await supabase.from("crm_sequence_enrollments")
             .update({ status: "completed", completed_at: now })
             .eq("id", enrollment.id);
@@ -64,19 +68,22 @@ serve(async (req) => {
           continue;
         }
 
-        const step = steps[nextStepIndex];
-        const meta = enrollment.metadata as Record<string, string>;
+        const step = steps[stepIndex];
+        const meta = (enrollment.metadata ?? {}) as Record<string, string>;
         const vars = { firstName: enrollment.first_name ?? "", ...meta };
 
         const subject = interpolate(step.subject, vars);
-        const body = interpolate(step.body, vars);
+        const bodyWithFooter = step.body + UNSUBSCRIBE_FOOTER;
+        const body = interpolate(bodyWithFooter, vars);
 
-        const ok = await sendEmail(seq.from_account, enrollment.email, subject, body, enrollment.professional_id);
+        // Use assigned account, fall back to sequence default
+        const fromAccount = (enrollment.assigned_account as string) ?? seq.from_account;
+
+        const ok = await sendEmail(fromAccount, enrollment.email, subject, body, enrollment.professional_id ?? undefined);
 
         if (ok) {
-          const nextIndex = nextStepIndex + 1;
+          const nextIndex = stepIndex + 1;
           const nextStep = steps[nextIndex];
-          
           if (nextStep) {
             const nextSend = new Date();
             nextSend.setDate(nextSend.getDate() + nextStep.delay_days);
@@ -95,7 +102,7 @@ serve(async (req) => {
         }
       } catch (e) {
         errors++;
-        console.error("Error processing enrollment", enrollment.id, e);
+        console.error("Error on enrollment", enrollment.id, e);
       }
     }
 
