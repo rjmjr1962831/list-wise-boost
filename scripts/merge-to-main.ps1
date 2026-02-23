@@ -25,11 +25,13 @@ function Test-ProductionBuild {
     try {
         $env:VITE_IS_PRODUCTION = "1"
         Write-Host "Running production build..."
-        & npm run build 2>&1 | Out-Host
+        & npm run build
         if ($LASTEXITCODE -ne 0) {
             throw "Production build failed. Fix errors before merging to main."
         }
         Write-Host "Production build OK."
+        # Prebuild generates public/api/faq/full.json; discard so working tree stays clean for checkout
+        git checkout -- public/api/faq/full.json 2>$null
     } finally {
         Pop-Location
     }

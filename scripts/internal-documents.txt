@@ -3,6 +3,7 @@
 # Used by merge-to-main.ps1 when merging staging -> main
 
 MASTER_KNOWLEDGE_DOCUMENT.md
+MASTER_KNOWLEDGE_DOCUMENT_TODAY.MD
 docs/cursor-daily-updates.md
 docs/daily-logs/
 docs/takeaways/
