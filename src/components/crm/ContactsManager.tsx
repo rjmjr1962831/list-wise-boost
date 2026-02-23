@@ -4,145 +4,69 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Mail, Phone, Calendar, Search, ExternalLink, RefreshCw, Upload, Globe } from "lucide-react";
+import { Mail, Phone, Search, ExternalLink, Globe, Star } from "lucide-react";
 import { toast } from "sonner";
-import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 
-interface Contact {
+interface Professional {
   id: string;
-  full_name: string;
+  name: string;
   email: string;
   phone: string | null;
-  website: string | null;
-  message: string;
-  created_at: string;
+  company: string | null;
+  business_city: string | null;
+  state_slug: string | null;
+  current_tier: string | null;
+  review_stars_rating: number | null;
+  num_total_reviews: number | null;
+  canonical_slug: string | null;
+  active: boolean;
 }
 
 export const ContactsManager = () => {
-  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [professionals, setProfessionals] = useState<Professional[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(true);
-  const [isSyncing, setIsSyncing] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchContacts();
+    fetchProfessionals();
   }, []);
 
-  const fetchContacts = async () => {
+  const fetchProfessionals = async () => {
     setIsLoading(true);
     const { data, error } = await supabase
-      .from("contacts")
-      .select("*")
-      .order("created_at", { ascending: false });
+      .from("professionals")
+      .select("id, name, email, phone, company, business_city, state_slug, current_tier, review_stars_rating, num_total_reviews, canonical_slug, active")
+      .eq("active", true)
+      .order("name", { ascending: true })
+      .limit(500);
 
     if (error) {
-      toast.error("Failed to load contacts");
+      toast.error("Failed to load professionals");
       console.error(error);
     } else {
-      setContacts(data || []);
+      setProfessionals(data || []);
     }
     setIsLoading(false);
   };
 
-  const filteredContacts = contacts.filter(
-    (contact) =>
-      contact.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      contact.email.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredProfessionals = professionals.filter(
+    (pro) =>
+      pro.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      pro.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      pro.company?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      pro.business_city?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleViewProfile = async (contact: Contact) => {
-    try {
-      // Search for matching professional by name
-      const { data: professionals, error } = await supabase
-        .from("professionals")
-        .select("id, name, city_id, cities(slug, state_slug)")
-        .ilike("name", `%${contact.full_name}%`)
-        .limit(1)
-        .single();
+  const displayedProfessionals = searchTerm ? filteredProfessionals : filteredProfessionals.slice(0, 50);
 
-      if (error || !professionals) {
-        toast.error("This contact doesn't have a profile in the directory yet");
-        return;
-      }
-
-      // Navigate to their specific profile
-      const cityData = professionals.cities as any;
-      if (cityData) {
-        navigate(`/${cityData.slug}-${cityData.state_slug}/realtors`);
-      }
-    } catch (error) {
-      console.error("Error finding profile:", error);
-      toast.error("Could not find profile for this contact");
-    }
-  };
-
-  const handleSyncToHubspot = async (contactId: string) => {
-    try {
-      setIsSyncing(true);
-      const { data, error } = await supabase.functions.invoke('sync-contact-to-hubspot', {
-        body: { contactId }
-      });
-
-      if (error) throw error;
-
-      toast.success(`Contact ${data.action} in HubSpot successfully`);
-    } catch (error) {
-      console.error('Error syncing to HubSpot:', error);
-      toast.error('Failed to sync contact to HubSpot');
-    } finally {
-      setIsSyncing(false);
-    }
-  };
-
-  const handleBulkSync = async () => {
-    try {
-      setIsSyncing(true);
-      toast.info('Starting bulk sync to HubSpot...');
-      
-      const { data, error } = await supabase.functions.invoke('sync-all-contacts-to-hubspot');
-
-      if (error) throw error;
-
-      toast.success(
-        `Synced ${data.success} contacts (${data.created} created, ${data.updated} updated). ${data.failed} failed.`
-      );
-      
-      if (data.errors.length > 0) {
-        console.error('Sync errors:', data.errors);
-      }
-    } catch (error) {
-      console.error('Error in bulk sync:', error);
-      toast.error('Failed to sync contacts to HubSpot');
-    } finally {
-      setIsSyncing(false);
-    }
-  };
-
-  const handleSyncAgentsToContacts = async () => {
-    try {
-      setIsSyncing(true);
-      toast.info('Importing agents to contacts...');
-      
-      const { data, error } = await supabase.functions.invoke('sync-agents-to-contacts');
-
-      if (error) throw error;
-
-      toast.success(
-        `Imported ${data.created} agents. ${data.skipped} already exist. Total: ${data.total}`
-      );
-      
-      await fetchContacts();
-      
-      if (data.errors && data.errors.length > 0) {
-        console.error('Import errors:', data.errors);
-      }
-    } catch (error) {
-      console.error('Error importing agents:', error);
-      toast.error('Failed to import agents to contacts');
-    } finally {
-      setIsSyncing(false);
+  const tierColor = (tier: string | null) => {
+    switch (tier) {
+      case "underwritten": return "default";
+      case "audited": return "default";
+      case "certified": return "secondary";
+      default: return "outline";
     }
   };
 
@@ -159,110 +83,78 @@ export const ContactsManager = () => {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>Search Contacts</CardTitle>
-            <div className="flex gap-2">
-              <Button 
-                onClick={handleSyncAgentsToContacts} 
-                disabled={isSyncing}
-                variant="outline"
-              >
-                <RefreshCw className="mr-2 h-4 w-4" />
-                {isSyncing ? 'Importing...' : 'Import Agents'}
-              </Button>
-              <Button 
-                onClick={handleBulkSync} 
-                disabled={isSyncing}
-                variant="outline"
-              >
-                <Upload className="mr-2 h-4 w-4" />
-                {isSyncing ? 'Syncing...' : 'Sync to HubSpot'}
-              </Button>
-            </div>
+            <CardTitle>Professionals ({professionals.length})</CardTitle>
           </div>
         </CardHeader>
         <CardContent>
           <div className="relative">
             <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search by name or email..."
+              placeholder="Search by name, email, company, or city..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10"
             />
           </div>
+          {!searchTerm && (
+            <p className="text-xs text-muted-foreground mt-2">Showing first 50. Search to find specific agents.</p>
+          )}
         </CardContent>
       </Card>
 
-      <div className="grid gap-4">
-        {filteredContacts.map((contact) => (
-          <Card key={contact.id}>
-            <CardContent className="pt-6">
-              <div className="space-y-4">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h3 className="text-lg font-semibold">{contact.full_name}</h3>
-                    <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
-                      <Calendar className="h-3 w-3" />
-                      {format(new Date(contact.created_at), "MMM d, yyyy")}
-                    </div>
+      <div className="grid gap-3">
+        {displayedProfessionals.map((pro) => (
+          <Card key={pro.id}>
+            <CardContent className="py-4 px-5">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="font-semibold truncate">{pro.name}</h3>
+                    <Badge variant={tierColor(pro.current_tier)}>
+                      {pro.current_tier || "listed"}
+                    </Badge>
                   </div>
-                  <Badge variant="outline">New</Badge>
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-sm">
-                    <Mail className="h-4 w-4 text-muted-foreground" />
-                    <a href={`mailto:${contact.email}`} className="text-primary hover:underline">
-                      {contact.email}
-                    </a>
+                  {pro.company && (
+                    <p className="text-sm text-muted-foreground truncate">{pro.company}</p>
+                  )}
+                  <div className="flex items-center gap-4 mt-2 flex-wrap">
+                    {pro.email && pro.email !== "pending@123.com" && (
+                      <a href={`mailto:${pro.email}`} className="flex items-center gap-1 text-sm text-primary hover:underline">
+                        <Mail className="h-3 w-3" />{pro.email}
+                      </a>
+                    )}
+                    {pro.email === "pending@123.com" && (
+                      <span className="flex items-center gap-1 text-sm text-destructive">
+                        <Mail className="h-3 w-3" />Bounced
+                      </span>
+                    )}
+                    {pro.phone && (
+                      <a href={`tel:${pro.phone}`} className="flex items-center gap-1 text-sm text-primary hover:underline">
+                        <Phone className="h-3 w-3" />{pro.phone}
+                      </a>
+                    )}
                   </div>
-                  {contact.phone && (
-                    <div className="flex items-center gap-2 text-sm">
-                      <Phone className="h-4 w-4 text-muted-foreground" />
-                      <a href={`tel:${contact.phone}`} className="text-primary hover:underline">
-                        {contact.phone}
-                      </a>
-                    </div>
-                  )}
-                  {contact.website && (
-                    <div className="flex items-center gap-2 text-sm">
-                      <Globe className="h-4 w-4 text-muted-foreground" />
-                      <a 
-                        href={contact.website.startsWith('http') ? contact.website : `https://${contact.website}`} 
-                        target="_blank" 
-                        rel="noopener noreferrer" 
-                        className="text-primary hover:underline"
-                      >
-                        {contact.website}
-                      </a>
-                    </div>
-                  )}
+                  <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground">
+                    {pro.business_city && <span>{pro.business_city}, {pro.state_slug?.toUpperCase()}</span>}
+                    {pro.review_stars_rating && (
+                      <span className="flex items-center gap-0.5">
+                        <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                        {pro.review_stars_rating} ({pro.num_total_reviews} reviews)
+                      </span>
+                    )}
+                  </div>
                 </div>
-
-                <div className="p-3 bg-muted rounded-md">
-                  <p className="text-sm whitespace-pre-line">{contact.message}</p>
-                </div>
-
-                <div className="flex gap-2 flex-wrap">
-                  <Button 
-                    size="sm" 
-                    variant="default" 
-                    onClick={() => handleSyncToHubspot(contact.id)}
-                    disabled={isSyncing}
-                  >
-                    <RefreshCw className="mr-1 h-3 w-3" />
-                    Sync to HubSpot
-                  </Button>
-                  <Button size="sm" variant="outline" onClick={() => handleViewProfile(contact)}>
-                    <ExternalLink className="mr-1 h-3 w-3" />
-                    View Profile
-                  </Button>
-                  <Button size="sm" variant="outline" asChild>
-                    <a href={`mailto:${contact.email}`}>Reply</a>
-                  </Button>
-                  {contact.phone && (
+                <div className="flex gap-2 shrink-0">
+                  {pro.canonical_slug && (
                     <Button size="sm" variant="outline" asChild>
-                      <a href={`tel:${contact.phone}`}>Call</a>
+                      <a href={`/artifact/${pro.id}`} target="_blank" rel="noopener noreferrer">
+                        <ExternalLink className="h-3 w-3 mr-1" />Artifact
+                      </a>
+                    </Button>
+                  )}
+                  {pro.email && pro.email !== "pending@123.com" && (
+                    <Button size="sm" variant="outline" asChild>
+                      <a href={`mailto:${pro.email}`}>Reply</a>
                     </Button>
                   )}
                 </div>
@@ -272,10 +164,10 @@ export const ContactsManager = () => {
         ))}
       </div>
 
-      {filteredContacts.length === 0 && (
+      {displayedProfessionals.length === 0 && (
         <Card>
           <CardContent className="py-8 text-center text-muted-foreground">
-            No contacts found
+            No professionals found
           </CardContent>
         </Card>
       )}
