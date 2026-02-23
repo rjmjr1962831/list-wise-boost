@@ -6,16 +6,20 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-enrichment-key",
 };
 
-/** Allow X-Enrichment-Key or Bearer. Uses env ENRICHMENT_API_KEY / X_ENRICHMENT_KEY / ENRICHMENT_KEY if set; otherwise accepts same literal as prerender cron. */
+/** Allow X-Enrichment-Key or Bearer. Uses env UPDATER, ENRICHMENT_API_KEY, X_ENRICHMENT_KEY, or ENRICHMENT_KEY if set; otherwise accepts same literal as prerender cron. */
 const CRON_ENRICHMENT_KEY = "t10l_enrich_0448c4870d72ed90fd43171123fd0e44558f019a2b5807d1b297604dad6b235a";
 
 function isAuthorized(req: Request): boolean {
   const key = req.headers.get("x-enrichment-key");
   const auth = req.headers.get("authorization");
+  const updater = Deno.env.get("UPDATER");
   const expected = Deno.env.get("ENRICHMENT_API_KEY") || Deno.env.get("X_ENRICHMENT_KEY") || Deno.env.get("ENRICHMENT_KEY");
-  const allowedKeys = expected ? [expected, CRON_ENRICHMENT_KEY] : [CRON_ENRICHMENT_KEY];
+  const allowedKeys = [CRON_ENRICHMENT_KEY];
+  if (updater) allowedKeys.push(updater);
+  if (expected) allowedKeys.push(expected);
   if (key && allowedKeys.includes(key)) return true;
   if (auth && expected && auth === `Bearer ${expected}`) return true;
+  if (auth && updater && auth === `Bearer ${updater}`) return true;
   if (auth && auth === `Bearer ${CRON_ENRICHMENT_KEY}`) return true;
   return false;
 }
