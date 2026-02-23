@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Mail, Phone, Star, ArrowLeft, Plus, Check, Clock, CreditCard, Send, Activity, ListTodo, X } from "lucide-react";
+import { Mail, Phone, Star, ArrowLeft, Plus, Check, Clock, CreditCard, Send, Activity, ListTodo, X, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 
@@ -32,6 +32,7 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
   const [emails, setEmails] = useState<any[]>([]);
   const [activities, setActivities] = useState<any[]>([]);
   const [tasks, setTasks] = useState<any[]>([]);
+  const [changeRequests, setChangeRequests] = useState<any[]>([]);
   const [payments, setPayments] = useState<any[]>([]);
   const [enrollment, setEnrollment] = useState<any>(null);
   const [certification, setCertification] = useState<any>(null);
@@ -47,7 +48,7 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
 
   const loadAll = async () => {
     setIsLoading(true);
-    await Promise.all([loadEmails(), loadActivities(), loadTasks(), loadPayments(), loadEnrollment(), loadCertification()]);
+    await Promise.all([loadEmails(), loadActivities(), loadTasks(), loadChangeRequests(), loadPayments(), loadEnrollment(), loadCertification()]);
     setIsLoading(false);
   };
 
@@ -80,6 +81,16 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
       .order("created_at", { ascending: false })
       .limit(50);
     setTasks(data || []);
+  };
+
+  const loadChangeRequests = async () => {
+    const { data } = await supabase
+      .from("field_change_requests")
+      .select("*")
+      .eq("professional_id", professional.id)
+      .order("created_at", { ascending: false })
+      .limit(50);
+    setChangeRequests(data || []);
   };
 
   const loadPayments = async () => {
@@ -139,6 +150,33 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
     loadTasks();
   };
 
+  const handleChangeRequest = async (requestId: string, action: "approved" | "rejected", rejectionReason?: string) => {
+    const cr = changeRequests.find(r => r.id === requestId);
+    if (!cr) return;
+
+    if (action === "approved") {
+      // Apply the change to the professional
+      const fieldMap: Record<string, string> = {
+        "License Number": "license_number",
+        "Phone": "phone",
+        "Email": "email",
+        "Company": "company",
+        "Name": "name",
+      };
+      const dbField = fieldMap[cr.field_name] || cr.field_name.toLowerCase().replace(/ /g, "_");
+      await supabase.from("professionals").update({ [dbField]: cr.proposed_value }).eq("id", professional.id);
+    }
+
+    await supabase.from("field_change_requests").update({
+      status: action,
+      reviewed_at: new Date().toISOString(),
+      reviewed_by: "admin",
+    }).eq("id", requestId);
+
+    toast.success(`Change request ${action}`);
+    loadChangeRequests();
+  };
+
   const tierBadge = (tier: string | null) => {
     const colors: Record<string, string> = {
       underwritten: "bg-purple-100 text-purple-800 border-purple-200",
@@ -149,10 +187,13 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
     return colors[tier || "listed"] || colors.listed;
   };
 
+  const pendingChangeCount = changeRequests.filter(r => r.status === "pending").length;
+  const pendingTaskCount = tasks.filter(t => t.status === "pending").length;
+
   const tabs = [
     { key: "email" as const, label: "Emails", icon: Mail, count: emails.length },
     { key: "activity" as const, label: "Activity", icon: Activity, count: activities.length },
-    { key: "tasks" as const, label: "Tasks", icon: ListTodo, count: tasks.filter(t => t.status === "pending").length },
+    { key: "tasks" as const, label: "Tasks", icon: ListTodo, count: pendingTaskCount + pendingChangeCount },
     { key: "payments" as const, label: "Payments", icon: CreditCard, count: payments.length },
   ];
 
@@ -197,14 +238,12 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
                   </span>
                 )}
               </div>
-              {/* Enrollment status */}
               {enrollment && (
                 <div className="mt-2 text-xs text-muted-foreground">
                   Sequence: {(enrollment.crm_sequences as any)?.name || "Unknown"} | Status: <Badge variant="outline" className="text-xs">{enrollment.status}</Badge> | Step {enrollment.current_step}
                   {enrollment.replied_at && ` | Replied ${format(new Date(enrollment.replied_at), "MMM d")}`}
                 </div>
               )}
-              {/* Certification */}
               {certification && (
                 <div className="mt-1 text-xs text-muted-foreground">
                   Certified: {format(new Date(certification.issued_at), "MMM d, yyyy")} | Methodology: {certification.methodology_version}
@@ -310,68 +349,119 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
 
           {/* Tasks Tab */}
           {activeTab === "tasks" && (
-            <div className="space-y-2">
-              <div className="flex justify-end">
-                <Button size="sm" variant="outline" onClick={() => setShowAddTask(!showAddTask)}>
-                  {showAddTask ? <X className="h-3.5 w-3.5 mr-1" /> : <Plus className="h-3.5 w-3.5 mr-1" />}
-                  {showAddTask ? "Cancel" : "Add Task"}
-                </Button>
-              </div>
-              {showAddTask && (
-                <Card>
-                  <CardContent className="py-3 px-4 space-y-2">
-                    <Input placeholder="Task title..." value={newTaskTitle} onChange={e => setNewTaskTitle(e.target.value)} />
-                    <div className="flex gap-2">
-                      <Input type="date" value={newTaskDue} onChange={e => setNewTaskDue(e.target.value)} className="w-40" />
-                      <select
-                        value={newTaskPriority}
-                        onChange={e => setNewTaskPriority(e.target.value)}
-                        className="border rounded px-2 py-1 text-sm"
-                      >
-                        <option value="low">Low</option>
-                        <option value="normal">Normal</option>
-                        <option value="high">High</option>
-                        <option value="urgent">Urgent</option>
-                      </select>
-                      <Button size="sm" onClick={addTask}>Save</Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-              {tasks.length === 0 && !showAddTask && (
-                <Card><CardContent className="py-6 text-center text-sm text-muted-foreground">No tasks</CardContent></Card>
-              )}
-              {tasks.map(task => (
-                <Card key={task.id} className={task.status === "completed" ? "opacity-60" : ""}>
-                  <CardContent className="py-3 px-4">
-                    <div className="flex items-center gap-3">
-                      <button onClick={() => toggleTask(task.id, task.status)} className="shrink-0">
-                        {task.status === "completed"
-                          ? <Check className="h-4 w-4 text-green-600" />
-                          : <Clock className="h-4 w-4 text-muted-foreground" />}
-                      </button>
-                      <div className="flex-1 min-w-0">
-                        <span className={`text-sm ${task.status === "completed" ? "line-through" : "font-medium"}`}>
-                          {task.title}
-                        </span>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          {task.priority !== "normal" && (
-                            <Badge variant={task.priority === "urgent" ? "destructive" : task.priority === "high" ? "default" : "secondary"} className="text-xs">
-                              {task.priority}
-                            </Badge>
-                          )}
-                          {task.due_date && (
-                            <span className="text-xs text-muted-foreground">Due {format(new Date(task.due_date), "MMM d")}</span>
-                          )}
+            <div className="space-y-4">
+              {/* Field Change Requests */}
+              {changeRequests.length > 0 && (
+                <div className="space-y-2">
+                  <h3 className="text-sm font-semibold text-muted-foreground flex items-center gap-1.5">
+                    <AlertCircle className="h-3.5 w-3.5" />Field Change Requests
+                  </h3>
+                  {changeRequests.map(cr => (
+                    <Card key={cr.id} className={cr.status !== "pending" ? "opacity-60" : ""}>
+                      <CardContent className="py-3 px-4">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-medium">{cr.field_name}</span>
+                              <Badge variant={cr.status === "pending" ? "default" : cr.status === "approved" ? "secondary" : "destructive"} className="text-xs">
+                                {cr.status}
+                              </Badge>
+                            </div>
+                            <div className="flex items-center gap-4 mt-1 text-xs">
+                              <span className="text-muted-foreground">Current: <span className="font-mono">{cr.current_value}</span></span>
+                              <span className="text-primary">Proposed: <span className="font-mono">{cr.proposed_value}</span></span>
+                            </div>
+                            {cr.change_request && (
+                              <p className="text-xs text-muted-foreground mt-1">Note: {cr.change_request}</p>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0">
+                            <span className="text-xs text-muted-foreground">{format(new Date(cr.created_at), "MMM d")}</span>
+                            {cr.status === "pending" && (
+                              <>
+                                <Button size="sm" variant="default" className="h-7 text-xs" onClick={() => handleChangeRequest(cr.id, "approved")}>
+                                  Accept
+                                </Button>
+                                <Button size="sm" variant="outline" className="h-7 text-xs text-destructive" onClick={() => handleChangeRequest(cr.id, "rejected")}>
+                                  Reject
+                                </Button>
+                              </>
+                            )}
+                          </div>
                         </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+
+              {/* Manual Tasks */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-semibold text-muted-foreground flex items-center gap-1.5">
+                    <ListTodo className="h-3.5 w-3.5" />Tasks
+                  </h3>
+                  <Button size="sm" variant="outline" onClick={() => setShowAddTask(!showAddTask)}>
+                    {showAddTask ? <X className="h-3.5 w-3.5 mr-1" /> : <Plus className="h-3.5 w-3.5 mr-1" />}
+                    {showAddTask ? "Cancel" : "Add Task"}
+                  </Button>
+                </div>
+                {showAddTask && (
+                  <Card>
+                    <CardContent className="py-3 px-4 space-y-2">
+                      <Input placeholder="Task title..." value={newTaskTitle} onChange={e => setNewTaskTitle(e.target.value)} />
+                      <div className="flex gap-2">
+                        <Input type="date" value={newTaskDue} onChange={e => setNewTaskDue(e.target.value)} className="w-40" />
+                        <select
+                          value={newTaskPriority}
+                          onChange={e => setNewTaskPriority(e.target.value)}
+                          className="border rounded px-2 py-1 text-sm"
+                        >
+                          <option value="low">Low</option>
+                          <option value="normal">Normal</option>
+                          <option value="high">High</option>
+                          <option value="urgent">Urgent</option>
+                        </select>
+                        <Button size="sm" onClick={addTask}>Save</Button>
                       </div>
-                      <span className="text-xs text-muted-foreground shrink-0">
-                        {format(new Date(task.created_at), "MMM d")}
-                      </span>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    </CardContent>
+                  </Card>
+                )}
+                {tasks.length === 0 && !showAddTask && (
+                  <Card><CardContent className="py-4 text-center text-sm text-muted-foreground">No tasks</CardContent></Card>
+                )}
+                {tasks.map(task => (
+                  <Card key={task.id} className={task.status === "completed" ? "opacity-60" : ""}>
+                    <CardContent className="py-3 px-4">
+                      <div className="flex items-center gap-3">
+                        <button onClick={() => toggleTask(task.id, task.status)} className="shrink-0">
+                          {task.status === "completed"
+                            ? <Check className="h-4 w-4 text-green-600" />
+                            : <Clock className="h-4 w-4 text-muted-foreground" />}
+                        </button>
+                        <div className="flex-1 min-w-0">
+                          <span className={`text-sm ${task.status === "completed" ? "line-through" : "font-medium"}`}>
+                            {task.title}
+                          </span>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            {task.priority !== "normal" && (
+                              <Badge variant={task.priority === "urgent" ? "destructive" : task.priority === "high" ? "default" : "secondary"} className="text-xs">
+                                {task.priority}
+                              </Badge>
+                            )}
+                            {task.due_date && (
+                              <span className="text-xs text-muted-foreground">Due {format(new Date(task.due_date), "MMM d")}</span>
+                            )}
+                          </div>
+                        </div>
+                        <span className="text-xs text-muted-foreground shrink-0">
+                          {format(new Date(task.created_at), "MMM d")}
+                        </span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             </div>
           )}
 
