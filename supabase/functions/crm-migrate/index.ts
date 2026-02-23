@@ -9,21 +9,57 @@ serve(async (req) => {
   const conn = await pool.connect();
   const results: any[] = [];
 
-  try {
-    // Only insert robert@aryah.ai (robert@maynard.com already exists)
-    await conn.queryObject(`DELETE FROM professionals WHERE email = 'robert@aryah.ai'`);
-    await conn.queryObject(`
-      INSERT INTO professionals (id, name, email, company, verification_token, business_city, state_slug, num_total_reviews, review_stars_rating, years_experience, specialty, current_tier, badge_tier, active, profile_link)
-      VALUES ('1c364892-9cd8-4ca9-a313-88c21804c26d', 'Robert Aryah', 'robert@aryah.ai', 'Aryah Realty', '016ed143-3639-4248-a768-838348a6a1ff', 'Phoenix', 'arizona', 84, 5, 15, '["Buyer''s Agent","Listing Agent","Investment Properties"]'::jsonb, 'listed', 'certified', true, 'https://www.top10lists.us/funnel/016ed143-3639-4248-a768-838348a6a1ff')
-    `);
-    results.push({ ok: true, contact: 'robert@aryah.ai', id: '1c364892-9cd8-4ca9-a313-88c21804c26d' });
-  } catch (e: any) {
-    results.push({ error: e.message });
+  const statements = [
+    `CREATE TABLE IF NOT EXISTS crm_sequences (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      name TEXT NOT NULL,
+      description TEXT,
+      from_account TEXT NOT NULL,
+      status TEXT DEFAULT 'active',
+      on_reply_sequence_id UUID REFERENCES crm_sequences(id),
+      created_at TIMESTAMPTZ DEFAULT NOW(),
+      updated_at TIMESTAMPTZ DEFAULT NOW()
+    )`,
+    `CREATE TABLE IF NOT EXISTS crm_sequence_steps (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      sequence_id UUID NOT NULL REFERENCES crm_sequences(id) ON DELETE CASCADE,
+      step_number INTEGER NOT NULL,
+      delay_days INTEGER NOT NULL DEFAULT 0,
+      subject TEXT NOT NULL,
+      body TEXT NOT NULL,
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    )`,
+    `CREATE TABLE IF NOT EXISTS crm_sequence_enrollments (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      sequence_id UUID NOT NULL REFERENCES crm_sequences(id),
+      professional_id UUID REFERENCES professionals(id),
+      email TEXT NOT NULL,
+      first_name TEXT,
+      status TEXT DEFAULT 'active',
+      current_step INTEGER DEFAULT 0,
+      enrolled_at TIMESTAMPTZ DEFAULT NOW(),
+      next_send_at TIMESTAMPTZ DEFAULT NOW(),
+      completed_at TIMESTAMPTZ,
+      replied_at TIMESTAMPTZ,
+      metadata JSONB DEFAULT '{}',
+      UNIQUE(sequence_id, email)
+    )`,
+    `CREATE INDEX IF NOT EXISTS idx_enrollments_status ON crm_sequence_enrollments(status)`,
+    `CREATE INDEX IF NOT EXISTS idx_enrollments_next_send ON crm_sequence_enrollments(next_send_at)`,
+    `CREATE INDEX IF NOT EXISTS idx_enrollments_sequence ON crm_sequence_enrollments(sequence_id)`,
+    `CREATE INDEX IF NOT EXISTS idx_enrollments_email ON crm_sequence_enrollments(email)`,
+  ];
+
+  for (const sql of statements) {
+    try {
+      await conn.queryObject(sql);
+      results.push({ ok: true, sql: sql.slice(0, 50) });
+    } catch (e: any) {
+      results.push({ error: e.message, sql: sql.slice(0, 50) });
+    }
   }
 
   conn.release();
   await pool.end();
-  return new Response(JSON.stringify({ ok: true, results }), {
-    headers: { "Content-Type": "application/json" }
-  });
+  return new Response(JSON.stringify({ ok: true, results }), { headers: { "Content-Type": "application/json" } });
 });
