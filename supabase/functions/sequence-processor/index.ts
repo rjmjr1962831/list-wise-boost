@@ -13,7 +13,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 // HARD DAILY LIMITS - checked against actual crm_emails counts
 // ============================================================
 // Campaign start date: Feb 25, 2026 (reset after emergency stop)
-const CAMPAIGN_START = new Date("2026-02-25T00:00:00Z");
+const CAMPAIGN_START = new Date("2026-02-24T00:00:00Z");
 
 function getDailyLimit(account: string): number {
   const now = new Date();
