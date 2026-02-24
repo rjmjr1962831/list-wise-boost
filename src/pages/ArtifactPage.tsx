@@ -23,6 +23,23 @@ interface CertificationData {
   license_number: string | null;
   specialty: string[] | null;
   short_code: string | null;
+  phone: string | null;
+  email: string | null;
+  company: string | null;
+  website: string | null;
+  zillow_profile_url: string | null;
+  google_maps_url: string | null;
+  sales_count_all_time: number | null;
+  sales_count_last_year: number | null;
+  agent_sales_stats: { countLastYear?: number } | null;
+  raw_scraper_data: { social_urls?: { linkedin?: string } } | null;
+  community_roles: { role: string; description?: string; organization?: string }[] | null;
+  awards_verified: { title: string; date?: string; credibility?: number }[] | null;
+  selection_rationale: string | null;
+  canonical_slug: string | null;
+  state_slug: string | null;
+  verification_token: string | null;
+  served_cities: string[] | null;
   cities: {
     name: string;
     state: string;
@@ -44,6 +61,15 @@ interface CertificationData {
       evidence_considered?: string[];
     };
   };
+}
+
+/** Returns the numeric floor for a count value per the master doc floor rule.
+ *  floor((raw - 10) / 10) * 10. Returns null if input is null/undefined/NaN.
+ *  Used in JSON-LD (no "+" suffix -- that is display-only).
+ */
+function floorCount(n: number | null | undefined): number | null {
+  if (n == null || !Number.isFinite(n)) return null;
+  return Math.max(0, Math.floor((Number(n) - 10) / 10) * 10);
 }
 
 export default function ArtifactPage() {
@@ -71,6 +97,23 @@ export default function ArtifactPage() {
             license_number,
             specialty,
             short_code,
+            phone,
+            email,
+            company,
+            website,
+            zillow_profile_url,
+            google_maps_url,
+            sales_count_all_time,
+            sales_count_last_year,
+            agent_sales_stats,
+            raw_scraper_data,
+            community_roles,
+            awards_verified,
+            selection_rationale,
+            canonical_slug,
+            state_slug,
+            verification_token,
+            served_cities,
             cities:city_id (
               name,
               state,
@@ -179,30 +222,127 @@ export default function ArtifactPage() {
         <meta name="description" content={cert.justification_data?.selection_rationale || `${data.name} is certified by Top10Lists.us based on verified performance data, AI analysis and human review.`} />
         <link rel="canonical" href={artifactUrl} />
         
-        {/* Schema.org structured data */}
+        {/* Schema.org structured data - tier-gated per Top10Lists JSON-LD spec */}
         <script type="application/ld+json">
-          {JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "ProfessionalService",
-            "name": data.name,
-            "certification": {
-              "@type": "Certification",
-              "name": `Top10Lists ${tierNames[cert.certification_tier]} Professional`,
-              "issuedBy": {
-                "@type": "Organization",
-                "name": "Top10Lists.us",
-                "url": "https://www.top10lists.us"
-              },
-              "validFrom": cert.issued_at,
-              "credentialSubject": profileUrl,
-              "verificationURL": artifactUrl
-            },
-            "aggregateRating": {
-              "@type": "AggregateRating",
-              "ratingValue": data.review_stars_rating,
-              "reviewCount": data.num_total_reviews
+          {(() => {
+            const tier = cert.certification_tier.toLowerCase();
+            const artifactId = `https://www.top10lists.us/artifact/${data.verification_token ?? agentId}`;
+            const agentProfileUrl = data.short_code
+              ? `https://www.top10lists.us/p/${data.short_code}`
+              : `https://www.top10lists.us/${data.state_slug ?? data.cities.state_slug}/agents/${data.canonical_slug ?? data.cities.slug}`;
+            const linkedin = data.raw_scraper_data?.social_urls?.linkedin ?? null;
+
+            // Build sameAs array - omit missing URLs
+            const sameAsUrls = [
+              data.zillow_profile_url,
+              data.google_maps_url,
+              linkedin,
+              agentProfileUrl,
+            ].filter(Boolean) as string[];
+
+            // Numeric floors (no "+" suffix in JSON-LD)
+            const reviewCountFloor = floorCount(data.num_total_reviews);
+            const transactionsFloor = floorCount(data.sales_count_all_time);
+            const transactionsLastYear = data.sales_count_last_year
+              ?? data.agent_sales_stats?.countLastYear
+              ?? null;
+            const transactionsLastYearFloor = floorCount(transactionsLastYear);
+
+            // Community involvement: extract description strings, omit if empty
+            const communityRoles = (data.community_roles ?? [])
+              .map(r => r.description ?? r.role)
+              .filter(Boolean);
+
+            // Notable awards: extract title strings, omit if empty
+            const awards = (data.awards_verified ?? [])
+              .filter(a => a.credibility == null || a.credibility >= 8)
+              .map(a => a.title)
+              .filter(Boolean);
+
+            // areaServed: use served_cities if available, fall back to primary city
+            const areaServed = (data.served_cities && data.served_cities.length > 0)
+              ? data.served_cities.map(c => c.charAt(0).toUpperCase() + c.slice(1))
+              : [data.cities.name];
+
+            // Tier display name
+            const tierNames: Record<string, string> = {
+              listed: 'Listed',
+              certified: 'Certified',
+              audited: 'Audited',
+              accredited: 'Audited',
+              underwritten: 'Underwritten',
+            };
+
+            // Build the object - always-present fields
+            const jsonld: Record<string, unknown> = {
+              "@context": "https://schema.org",
+              "@type": ["Person", "RealEstateAgent"],
+              "jobTitle": "Real Estate Agent",
+              "name": data.name,
+              "@id": artifactId,
+              "url": agentProfileUrl,
+              "areaServed": areaServed,
+              "sameAs": sameAsUrls,
+              "top10listsTier": tierNames[tier] ?? tier,
+            };
+
+            // Conditionally include contact/identity fields
+            if (data.phone) jsonld["telephone"] = data.phone;
+            if (data.email) jsonld["email"] = data.email;
+            if (data.company) jsonld["worksFor"] = { "@type": "Organization", "name": data.company };
+            if (data.license_number) jsonld["licenseNumber"] = data.license_number;
+
+            jsonld["address"] = {
+              "@type": "PostalAddress",
+              "addressLocality": data.cities.name,
+              "addressRegion": data.cities.state,
+              "addressCountry": "US",
+            };
+
+            // Ratings - always include if available
+            if (reviewCountFloor != null) {
+              jsonld["aggregateRating"] = {
+                "@type": "AggregateRating",
+                "ratingValue": data.review_stars_rating ?? data.ratings?.average,
+                "reviewCount": reviewCountFloor,
+                "ratingSource": ["Zillow", "Google"].filter(Boolean),
+              };
             }
-          })}
+
+            // Certified+ fields
+            if (['certified', 'audited', 'accredited', 'underwritten'].includes(tier)) {
+              if (data.years_experience != null) jsonld["yearsOfExperience"] = data.years_experience;
+              const filteredSpecs = filterSpecialties(data.specialty ?? []);
+              if (filteredSpecs.length > 0) jsonld["specialty"] = filteredSpecs;
+              const rationale = data.selection_rationale
+                ?? cert.justification_data?.selection_rationale
+                ?? null;
+              if (rationale) jsonld["selectionRationale"] = rationale;
+              if (transactionsFloor != null) jsonld["numberOfTransactions"] = transactionsFloor;
+              if (transactionsLastYearFloor != null) jsonld["transactionsLast12Months"] = transactionsLastYearFloor;
+            }
+
+            // Audited+ fields
+            if (['audited', 'accredited', 'underwritten'].includes(tier)) {
+              if (cert.last_verified_at) {
+                jsonld["lastVerified"] = cert.last_verified_at.split('T')[0];
+              }
+              jsonld["verificationFrequency"] = tier === 'underwritten' ? 'daily' : 'monthly';
+              jsonld["dataSources"] = [
+                "AZDRE", "MLS", "Zillow", "Google Business Profile",
+                "RealTrends", "IRS Form 990 via ProPublica", "U.S. Census Bureau ACS",
+              ];
+            }
+
+            // Underwritten-only fields
+            if (tier === 'underwritten') {
+              jsonld["underwritingDepth"] = "highest";
+              if (communityRoles.length > 0) jsonld["communityInvolvement"] = communityRoles;
+              if (awards.length > 0) jsonld["notableAwards"] = awards;
+            }
+
+            return JSON.stringify(jsonld);
+          })()}
         </script>
       </SafeHead>
 
