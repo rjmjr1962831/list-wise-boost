@@ -86,7 +86,7 @@ function textToHtml(text: string): string {
   // Convert [[BLOCK]]...[[/BLOCK]] to styled box
   html = html.replace(/\[\[BLOCK\]\]\n?([\s\S]*?)\n?\[\[\/BLOCK\]\]/g, (_match, content) => {
     const inner = content.replace(/\n/g, "<br>");
-    return `<table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:16px 0;"><tr><td style="background:#f5f5f5;border:1px solid #ddd;border-radius:8px;padding:20px 24px;font-family:monospace;font-size:14px;line-height:1.6;color:#333;">${inner}<br><br><em style="font-family:sans-serif;font-size:12px;color:#888;">Copy the text above and paste it into any AI assistant.</em></td></tr></table>`;
+    return `<table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:16px 0;"><tr><td style="background:#f5f5f5;border:1px solid #ddd;border-radius:8px;padding:20px 24px;font-family:monospace;font-size:14px;line-height:1.6;color:#333;">${inner}</td></tr></table>`;
   });
   html = html.replace(/\n/g, "<br>");
   return html;
