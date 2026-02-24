@@ -127,14 +127,13 @@ serve(async (req) => {
   // Generate a tracking ID (will be replaced by gmail message ID after send)
   const trackingId = crypto.randomUUID();
 
-  // Append unsubscribe footer to body
+  // Plain text gets URL, HTML gets clickable word
   const fullBody = unsubUrl
-    ? message_body + `\n\n---\nIf you no longer wish to receive these emails, click here to unsubscribe: ${unsubUrl}`
+    ? message_body + `\n\n---\nUnsubscribe: ${unsubUrl}`
     : message_body;
-
-  // Build HTML with tracking
-  const baseHtml = textToHtml(fullBody);
-  const trackedHtml = injectTracking(baseHtml, trackingId);
+  const baseHtml = textToHtml(message_body);
+  const unsubHtml = unsubUrl ? `<br><br><hr style="border:none;border-top:1px solid #ccc;"><p style="font-size:12px;color:#888;"><a href="${unsubUrl}">Unsubscribe</a></p>` : "";
+  const trackedHtml = injectTracking(baseHtml + unsubHtml, trackingId);
 
   const raw = buildRawEmail({
     from: from_account,
