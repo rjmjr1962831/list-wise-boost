@@ -63,6 +63,7 @@ This payload complies with the **2026 AI Citation Protocol**. It prioritizes "In
 interface Sample {
   tier: string;
   name: string;
+  id: string;
   verification_token: string;
 }
 
@@ -96,10 +97,11 @@ export default function BadgeLevelsPreview() {
           if (byTier[tier]) continue;
           const prof = r.professionals;
           const token = prof?.verification_token ?? prof?.id;
-          if (!token) continue;
+          if (!token || !prof?.id) continue;
           byTier[tier] = {
             tier,
             name: prof?.name ?? "Unknown",
+            id: prof?.id ?? "",
             verification_token: token,
           };
         }
@@ -154,7 +156,7 @@ export default function BadgeLevelsPreview() {
       </SafeHead>
       <h1 className="text-xl font-semibold mb-1">Payload examples by tier</h1>
       <p className="text-sm text-muted-foreground mb-2">
-        One agent per tier. Raw markdown only (machine consumption, no images). Spec:{" "}
+        One agent per tier; badge image and artifact payload per tier. Spec:{" "}
         <a href="https://github.com/rjmjr1962831/list-wise-boost/blob/main/docs/specs/tier-and-artifact-spec-v1.md" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
           tier-and-artifact-spec-v1.md
         </a>
@@ -177,7 +179,7 @@ export default function BadgeLevelsPreview() {
       <div className="space-y-6">
         {sorted.map((s) => (
           <section key={s.tier} className="border rounded p-4 bg-muted/30">
-            <div className="flex items-baseline gap-2 mb-2">
+            <div className="flex flex-wrap items-baseline gap-2 mb-2">
               <h2 className="font-medium capitalize">{TIER_LABELS[s.tier] ?? s.tier}</h2>
               <span className="text-xs text-muted-foreground">{s.name}</span>
               <a
@@ -189,6 +191,22 @@ export default function BadgeLevelsPreview() {
                 Open artifact URL
               </a>
             </div>
+            {s.id && (
+              <div className="mb-3">
+                <a
+                  href={`${BASE}/artifact/${s.verification_token}`}
+                  target="_blank"
+                  rel="noopener"
+                  className="inline-block"
+                >
+                  <img
+                    src={`${BASE}/api/v1/badge/${s.id}/image`}
+                    alt={`${TIER_LABELS[s.tier] ?? s.tier} badge`}
+                    className="max-w-[200px] h-auto rounded"
+                  />
+                </a>
+              </div>
+            )}
             <pre className="p-3 bg-background rounded text-xs overflow-auto max-h-80 whitespace-pre-wrap break-words font-mono">
               {payloads[s.tier] ?? "…"}
             </pre>
