@@ -64,7 +64,8 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
     setIsLoading(true);
     await Promise.all([
       loadFullPro(), loadEmails(), loadActivities(), loadTasks(),
-      loadChangeRequests(), loadPayments(), loadSubscriptions(), loadNotes(), loadEnrollment(), loadAccounts()
+      loadChangeRequests(), loadPayments(), loadSubscriptions(), loadNotes(),
+      loadEnrollment(), loadAccounts()
     ]);
     setIsLoading(false);
   };
@@ -487,6 +488,33 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
           {/* OVERVIEW */}
           {activeTab === "overview" && (
             <div className="space-y-4">
+              {/* Engagement Stats */}
+              {emails.filter(e => e.direction === "outbound").length > 0 && (() => {
+                const outbound = emails.filter(e => e.direction === "outbound");
+                const opened = outbound.filter(e => e.opened_at);
+                const clicked = outbound.filter(e => e.clicked_at);
+                return (
+                  <Card>
+                    <CardHeader className="py-3 px-4 pb-2"><CardTitle className="text-sm font-semibold flex items-center gap-1.5"><BarChart3 className="h-3.5 w-3.5" />Email Engagement</CardTitle></CardHeader>
+                    <CardContent className="px-4 pb-3">
+                      <div className="grid grid-cols-3 gap-4">
+                        <div className="bg-muted/30 rounded p-3 text-center">
+                          <p className="text-lg font-bold">{outbound.length}</p>
+                          <p className="text-xs text-muted-foreground">Sent</p>
+                        </div>
+                        <div className="bg-muted/30 rounded p-3 text-center">
+                          <p className="text-lg font-bold">{opened.length}</p>
+                          <p className="text-xs text-muted-foreground">Opened ({outbound.length > 0 ? Math.round(opened.length / outbound.length * 100) : 0}%)</p>
+                        </div>
+                        <div className="bg-muted/30 rounded p-3 text-center">
+                          <p className="text-lg font-bold">{clicked.length}</p>
+                          <p className="text-xs text-muted-foreground">Clicked ({outbound.length > 0 ? Math.round(clicked.length / outbound.length * 100) : 0}%)</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })()}
               <Card>
                 <CardHeader className="py-3 px-4 pb-2"><CardTitle className="text-sm font-semibold flex items-center gap-1.5"><StickyNote className="h-3.5 w-3.5" />Notes</CardTitle></CardHeader>
                 <CardContent className="px-4 pb-3 space-y-3">
@@ -570,6 +598,8 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
                               <span className="text-xs text-muted-foreground shrink-0">
                                 {inbound.length} in{outbound.length > 0 ? ` / ${outbound.length} out` : ""}
                               </span>
+                              {thread.some(e => e.opened_at) && <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-green-50 text-green-700">Opened</Badge>}
+                              {thread.some(e => e.clicked_at) && <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-blue-50 text-blue-700">Clicked</Badge>}
                             </div>
                             <p className="text-xs text-muted-foreground mt-1">From: {inbound[0]?.from_address}</p>
                             {inbound[0]?.body_text && <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{inbound[0].body_text.substring(0, 200)}</p>}
