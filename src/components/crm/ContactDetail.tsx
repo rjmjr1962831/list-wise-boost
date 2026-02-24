@@ -85,9 +85,17 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
   };
 
   const loadActivities = async () => {
-    const { data } = await supabase.from("funnel_events").select("*")
-      .eq("professional_id", professional.id).order("created_at", { ascending: false }).limit(50);
-    setActivities(data || []);
+    const [{ data: funnelEvents }, { data: contactActivity }] = await Promise.all([
+      supabase.from("funnel_events").select("*")
+        .eq("professional_id", professional.id).order("created_at", { ascending: false }).limit(50),
+      (supabase.from as any)("crm_contact_activity").select("*")
+        .eq("professional_id", professional.id).order("created_at", { ascending: false }).limit(100),
+    ]);
+    const merged = [
+      ...(funnelEvents || []).map((e: any) => ({ ...e, _source: "funnel" })),
+      ...(contactActivity || []).map((e: any) => ({ ...e, _source: "email_engagement" })),
+    ].sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    setActivities(merged);
   };
 
   const loadTasks = async () => {
@@ -631,20 +639,61 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
           {activeTab === "activity" && (
             <div className="space-y-2">
               {activities.length === 0 && <Card><CardContent className="py-6 text-center text-sm text-muted-foreground">No activity recorded</CardContent></Card>}
-              {activities.map(event => (
-                <Card key={event.id}>
-                  <CardContent className="py-3 px-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Activity className="h-3.5 w-3.5 text-muted-foreground" />
-                        <span className="text-sm font-medium">{event.event_name.replace(/_/g, " ")}</span>
-                        {event.event_data && Object.keys(event.event_data).length > 0 && <span className="text-xs text-muted-foreground">{JSON.stringify(event.event_data).substring(0, 80)}</span>}
+              {activities.map((event: any) => {
+                if (event._source === "email_engagement") {
+                  const isClick = event.event_type === "email_click";
+                  const isOpen  = event.event_type === "email_open";
+                  return (
+                    <Card key={event.id} className={isClick ? "border-blue-200" : "border-green-200"}>
+                      <CardContent className="py-3 px-4">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex items-start gap-2">
+                            <span className={`mt-0.5 text-base ${isClick ? "text-blue-500" : "text-green-500"}`}>
+                              {isClick ? "👆" : "👁"}
+                            </span>
+                            <div>
+                              <span className="text-sm font-semibold">
+                                {isClick ? "Clicked link" : "Opened email"}
+                              </span>
+                              {event.subject && (
+                                <p className="text-xs text-muted-foreground mt-0.5 font-medium">{event.subject}</p>
+                              )}
+                              {isClick && event.link_url && (
+                                <a href={event.link_url} target="_blank" rel="noopener noreferrer"
+                                  className="text-xs text-blue-600 hover:underline truncate block max-w-xs mt-0.5">
+                                  {event.link_url.replace(/https?:\/\/[^/]+/, "") || event.link_url}
+                                </a>
+                              )}
+                              {event.from_account && (
+                                <p className="text-xs text-muted-foreground mt-0.5">
+                                  via {event.from_account}
+                                  {event.sequence_name && <span className="ml-1 text-muted-foreground/70">· {event.sequence_name}</span>}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                          <span className="text-xs text-muted-foreground shrink-0">{format(new Date(event.created_at), "MMM d, h:mm a")}</span>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                }
+                // Funnel events (existing)
+                return (
+                  <Card key={event.id}>
+                    <CardContent className="py-3 px-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Activity className="h-3.5 w-3.5 text-muted-foreground" />
+                          <span className="text-sm font-medium">{(event.event_name || event.event_type || "").replace(/_/g, " ")}</span>
+                          {event.event_data && Object.keys(event.event_data).length > 0 && <span className="text-xs text-muted-foreground">{JSON.stringify(event.event_data).substring(0, 80)}</span>}
+                        </div>
+                        <span className="text-xs text-muted-foreground shrink-0">{format(new Date(event.created_at), "MMM d, h:mm a")}</span>
                       </div>
-                      <span className="text-xs text-muted-foreground shrink-0">{format(new Date(event.created_at), "MMM d, h:mm a")}</span>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           )}
 
