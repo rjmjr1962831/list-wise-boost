@@ -12,8 +12,23 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 // ============================================================
 // HARD DAILY LIMITS - checked against actual crm_emails counts
 // ============================================================
-// Campaign start date: Feb 25, 2026 (reset after emergency stop)
-const CAMPAIGN_START = new Date("2026-02-25T00:00:00Z");
+// Day boundary = 5am MST = 12:00 UTC (we're behind UTC)
+const CAMPAIGN_START = new Date("2026-02-24T12:00:00Z"); // 5am MST Feb 24
+
+/** Start of current "MST day" in UTC: 12:00 UTC (5am MST) on or before now. */
+function getMSTDayStart(now: Date): Date {
+  const d = new Date(now);
+  d.setUTCHours(12, 0, 0, 0);
+  if (now.getTime() < d.getTime()) d.setUTCDate(d.getUTCDate() - 1);
+  return d;
+}
+
+// PER-INVOCATION CAP: Do not remove or increase without explicit approval.
+// One email per account per run = 5-minute spacing; protects domain reputation.
+const MAX_SENDS_PER_ACCOUNT_PER_RUN = 1;
+
+// Stagger between accounts within one run (minute 0 = account1, minute 1 = account2).
+const STAGGER_MS_BETWEEN_ACCOUNTS = 60_000;
 
 function getDailyLimit(account: string): number {
   const now = new Date();
@@ -21,8 +36,8 @@ function getDailyLimit(account: string): number {
   if (dayNum < 1) return 0; // before campaign starts
 
   if (account.endsWith("@toptenlists.us")) {
-    // Start 25, +5/day, max 50
-    return Math.min(25 + (dayNum - 1) * 5, 50);
+    // Start 25, +5/day, max 100
+    return Math.min(25 + (dayNum - 1) * 5, 100);
   }
   if (account.endsWith("@top10lists.us")) {
     // Start 10, +2/day, max 25
@@ -32,8 +47,7 @@ function getDailyLimit(account: string): number {
 }
 
 async function getSentTodayCount(account: string): Promise<number> {
-  const todayStart = new Date();
-  todayStart.setUTCHours(0, 0, 0, 0);
+  const todayStart = getMSTDayStart(new Date());
   const { count } = await supabase
     .from("crm_emails")
     .select("id", { count: "exact", head: true })
@@ -41,6 +55,18 @@ async function getSentTodayCount(account: string): Promise<number> {
     .eq("direction", "outbound")
     .gte("sent_at", todayStart.toISOString());
   return count || 0;
+}
+
+/** Set of recipient emails (to_address) already sent to today by this account. */
+async function getSentTodayRecipients(account: string): Promise<Set<string>> {
+  const todayStart = getMSTDayStart(new Date());
+  const { data } = await supabase
+    .from("crm_emails")
+    .select("to_address")
+    .eq("account_email", account)
+    .eq("direction", "outbound")
+    .gte("sent_at", todayStart.toISOString());
+  return new Set((data ?? []).map((r: { to_address: string }) => r.to_address?.toLowerCase()).filter(Boolean));
 }
 
 // ============================================================
@@ -157,17 +183,24 @@ serve(async (req) => {
       continue;
     }
 
-    // Get due enrollments, limited to remaining daily budget
-    const { data: enrollments } = await supabase
+    // Get due enrollments: at most 1 per account per run (5-min gap between sends from same account).
+    const limitThisRun = Math.min(remaining, MAX_SENDS_PER_ACCOUNT_PER_RUN);
+    const { data: rawEnrollments } = await supabase
       .from("crm_sequence_enrollments")
       .select("*, crm_sequences(name)")
       .eq("assigned_account", account.email)
       .eq("status", "active")
       .lte("next_send_at", new Date().toISOString())
       .order("next_send_at", { ascending: true })
-      .limit(remaining);
+      .limit(limitThisRun);
 
-    if (!enrollments?.length) {
+    // Exclude anyone we already sent to today (no second email same day).
+    const sentTodayRecipients = await getSentTodayRecipients(account.email);
+    const enrollments = (rawEnrollments ?? []).filter(
+      (e: any) => !sentTodayRecipients.has((e.email ?? "").toLowerCase())
+    );
+
+    if (!enrollments.length) {
       results.push({
         account: account.email, sent: 0,
         message: `Nothing due (${sentToday}/${dailyLimit} sent today)`,
@@ -196,7 +229,7 @@ serve(async (req) => {
 
       const { data: pro } = await supabase
         .from("professionals")
-        .select("email, name, magic_link, state_slug, verification_token, business_city, zillow_search_city")
+        .select("email, name, magic_link, state_slug, verification_token, business_city, zillow_search_city, current_tier")
         .eq("id", enrollment.professional_id)
         .single();
 
@@ -206,6 +239,17 @@ serve(async (req) => {
         }).eq("id", enrollment.id);
         continue;
       }
+
+    // Only send to listed tier.
+    if ((pro as any).current_tier !== "listed") {
+      const tomorrow = new Date();
+      tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
+      tomorrow.setUTCHours(12, 0, 0, 0);
+      await supabase.from("crm_sequence_enrollments").update({
+        next_send_at: tomorrow.toISOString(),
+      }).eq("id", enrollment.id);
+      continue;
+    }
 
       const { data: step } = await supabase
         .from("crm_sequence_steps")
@@ -222,18 +266,21 @@ serve(async (req) => {
       }
 
       const firstName = enrollment.first_name || (pro.name || "").split(" ")[0] || "there";
+      const lastName = ((enrollment as any).last_name ?? (enrollment.metadata as any)?.last_name ?? (pro.name || "").split(" ").slice(1).join(" ")) || "";
       const magicLink = pro.magic_link || "https://www.top10lists.us";
       const stateName = (pro.state_slug || "your state").replace(/-/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase());
       const cityName = pro.business_city || (pro.zillow_search_city || "").replace(/,.*$/, "") || "here";
       const unsubUrl = pro.verification_token ? `${SUPABASE_URL}/functions/v1/unsubscribe?token=${pro.verification_token}` : "";
       const subject = (step.subject || "")
         .replace(/\{\{firstName\}\}/g, firstName)
+        .replace(/\{\{lastName\}\}/g, lastName)
         .replace(/\{\{magicLink\}\}/g, magicLink)
         .replace(/\{\{magic_link\}\}/g, magicLink)
         .replace(/\{\{state\}\}/g, stateName)
         .replace(/\{\{city\}\}/g, cityName);
       const bodyRaw = (step.body || "")
         .replace(/\{\{firstName\}\}/g, firstName)
+        .replace(/\{\{lastName\}\}/g, lastName)
         .replace(/\{\{magicLink\}\}/g, magicLink)
         .replace(/\{\{magic_link\}\}/g, magicLink)
         .replace(/\{\{state\}\}/g, stateName)
@@ -304,14 +351,16 @@ serve(async (req) => {
         accountSent.push(pro.email);
         totalSent++;
 
-        // 5 second pause between sends
-        await new Promise(r => setTimeout(r, 5000));
-
       } catch (e) {
         console.error(`Exception sending to ${pro.email}:`, e);
         accountErrors++;
         totalErrors++;
       }
+    }
+
+    // Stagger: next account sends ~1 minute after this one (minute 0 = account1, minute 1 = account2).
+    if (accountSent.length > 0) {
+      await new Promise((r) => setTimeout(r, STAGGER_MS_BETWEEN_ACCOUNTS));
     }
 
     results.push({

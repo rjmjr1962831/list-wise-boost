@@ -132,6 +132,7 @@ const CRMLogin = lazy(() => import("@/pages/admin/crm/CRMLogin"));
 const CRMDashboard = lazy(() => import("@/pages/admin/crm/CRMDashboard"));
 const CRMAgentList = lazy(() => import("@/pages/admin/crm/AgentList"));
 const CRMLeads = lazy(() => import("@/pages/admin/crm/Leads"));
+const SequenceDashboard = lazy(() => import("@/pages/admin/crm/SequenceDashboard"));
 const CRMLayout = lazy(() => import("@/components/admin/AdminLayout"));
 
 const wrapAdmin = (el: React.ReactNode): React.ReactElement =>
@@ -158,6 +159,7 @@ export const routeManifest: RouteObject[] = [
       { path: "dashboard", element: React.createElement(CRMDashboard, null) },
       { path: "agents", element: React.createElement(CRMAgentList, null) },
       { path: "leads", element: React.createElement(CRMLeads, null) },
+      { path: "sequences", element: React.createElement(SequenceDashboard, null) },
     ],
   },
   { path: "/admin/mobile-preview", element: wrapAdmin(React.createElement(MobilePreview, null)) },
