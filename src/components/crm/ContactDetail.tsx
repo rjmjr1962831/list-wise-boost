@@ -40,6 +40,7 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
   const [tasks, setTasks] = useState<any[]>([]);
   const [changeRequests, setChangeRequests] = useState<any[]>([]);
   const [payments, setPayments] = useState<any[]>([]);
+  const [subscriptions, setSubscriptions] = useState<any[]>([]);
   const [notes, setNotes] = useState<any[]>([]);
   const [enrollment, setEnrollment] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -63,7 +64,7 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
     setIsLoading(true);
     await Promise.all([
       loadFullPro(), loadEmails(), loadActivities(), loadTasks(),
-      loadChangeRequests(), loadPayments(), loadNotes(), loadEnrollment(), loadAccounts()
+      loadChangeRequests(), loadPayments(), loadSubscriptions(), loadNotes(), loadEnrollment(), loadAccounts()
     ]);
     setIsLoading(false);
   };
@@ -104,6 +105,12 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
     const { data } = await supabase.from("crm_payment_log" as any).select("*")
       .eq("professional_id", professional.id).order("created_at", { ascending: false }).limit(50);
     setPayments(data || []);
+  };
+
+  const loadSubscriptions = async () => {
+    const { data } = await supabase.from("agent_neighborhood_subscriptions").select("*")
+      .eq("professional_id", professional.id).order("created_at", { ascending: false }).limit(50);
+    setSubscriptions(data || []);
   };
 
   const loadNotes = async () => {
@@ -652,23 +659,90 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
 
           {/* PAYMENTS */}
           {activeTab === "payments" && (
-            <div className="space-y-2">
-              {payments.length === 0 && <Card><CardContent className="py-6 text-center text-sm text-muted-foreground">No payment history. Payments will appear here once Stripe is connected.</CardContent></Card>}
-              {payments.map(payment => (
-                <Card key={payment.id}>
-                  <CardContent className="py-3 px-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <CreditCard className="h-3.5 w-3.5 text-muted-foreground" />
-                        <span className="text-sm font-medium">${(payment.amount_cents / 100).toFixed(2)}</span>
-                        <span className="text-sm text-muted-foreground">{payment.description}</span>
-                        <Badge variant={payment.status === "succeeded" ? "default" : "destructive"} className="text-xs">{payment.status}</Badge>
-                      </div>
-                      <span className="text-xs text-muted-foreground">{format(new Date(payment.created_at), "MMM d, yyyy")}</span>
+            <div className="space-y-4">
+              {/* Stripe Summary */}
+              <Card>
+                <CardHeader className="py-3 px-4 pb-2"><CardTitle className="text-sm font-semibold">Billing Summary</CardTitle></CardHeader>
+                <CardContent className="px-4 pb-3">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="bg-muted/30 rounded p-3">
+                      <p className="text-xs text-muted-foreground">MRR</p>
+                      <p className="text-lg font-bold">${((pro.monthly_revenue_cents || 0) / 100).toFixed(2)}</p>
                     </div>
+                    <div className="bg-muted/30 rounded p-3">
+                      <p className="text-xs text-muted-foreground">Subscription</p>
+                      <p className={`text-sm font-semibold ${statusPill(pro.subscription_status)}`}>{pro.subscription_status || "none"}</p>
+                    </div>
+                    <div className="bg-muted/30 rounded p-3">
+                      <p className="text-xs text-muted-foreground">Last Payment</p>
+                      <p className="text-sm font-medium">{pro.last_payment_at ? format(new Date(pro.last_payment_at), "MMM d, yyyy") : "-"}</p>
+                      {pro.last_payment_status && <p className="text-xs text-muted-foreground">{pro.last_payment_status}</p>}
+                    </div>
+                    <div className="bg-muted/30 rounded p-3">
+                      <p className="text-xs text-muted-foreground">Next Bill</p>
+                      <p className="text-sm font-medium">{pro.next_bill_date ? format(new Date(pro.next_bill_date), "MMM d, yyyy") : "-"}</p>
+                    </div>
+                  </div>
+                  {pro.payment_failed_at && (
+                    <div className="mt-3 bg-red-50 border border-red-200 rounded p-3 text-sm text-red-700">
+                      Payment failed on {format(new Date(pro.payment_failed_at), "MMM d, yyyy")}
+                      {pro.grace_period_ends_at && ` - Grace period ends ${format(new Date(pro.grace_period_ends_at), "MMM d, yyyy")}`}
+                    </div>
+                  )}
+                  {pro.paid_cities?.length > 0 && (
+                    <div className="mt-3 text-xs">
+                      <span className="text-muted-foreground">Paid cities: </span>
+                      <span className="font-medium">{pro.paid_cities.join(", ")}</span>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Neighborhood Subscriptions */}
+              {subscriptions.length > 0 && (
+                <Card>
+                  <CardHeader className="py-3 px-4 pb-2"><CardTitle className="text-sm font-semibold">Neighborhood Subscriptions</CardTitle></CardHeader>
+                  <CardContent className="px-4 pb-3 space-y-2">
+                    {subscriptions.map((sub: any) => (
+                      <div key={sub.id} className="flex items-center justify-between text-sm bg-muted/20 rounded p-2">
+                        <div className="flex items-center gap-2">
+                          <Badge variant={sub.is_active ? "default" : "secondary"} className="text-xs">{sub.is_active ? "Active" : "Inactive"}</Badge>
+                          <span>Neighborhood #{sub.neighborhood_id?.substring(0, 8)}</span>
+                          <span className="text-muted-foreground">{sub.tier_at_purchase}</span>
+                        </div>
+                        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                          <span>${sub.price_paid}/mo</span>
+                          {sub.started_at && <span>Since {format(new Date(sub.started_at), "MMM d, yyyy")}</span>}
+                        </div>
+                      </div>
+                    ))}
                   </CardContent>
                 </Card>
-              ))}
+              )}
+
+              {/* Payment Log */}
+              {payments.length > 0 && (
+                <Card>
+                  <CardHeader className="py-3 px-4 pb-2"><CardTitle className="text-sm font-semibold">Payment History</CardTitle></CardHeader>
+                  <CardContent className="px-4 pb-3 space-y-2">
+                    {payments.map(payment => (
+                      <div key={payment.id} className="flex items-center justify-between text-sm">
+                        <div className="flex items-center gap-2">
+                          <CreditCard className="h-3.5 w-3.5 text-muted-foreground" />
+                          <span className="font-medium">${(payment.amount_cents / 100).toFixed(2)}</span>
+                          <span className="text-muted-foreground">{payment.description}</span>
+                          <Badge variant={payment.status === "succeeded" ? "default" : "destructive"} className="text-xs">{payment.status}</Badge>
+                        </div>
+                        <span className="text-xs text-muted-foreground">{format(new Date(payment.created_at), "MMM d, yyyy")}</span>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+              )}
+
+              {payments.length === 0 && !pro.monthly_revenue_cents && subscriptions.length === 0 && (
+                <Card><CardContent className="py-6 text-center text-sm text-muted-foreground">No payment activity yet.</CardContent></Card>
+              )}
             </div>
           )}
         </div>
