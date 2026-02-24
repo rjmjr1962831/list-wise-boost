@@ -89,7 +89,7 @@ function injectTracking(html: string, emailId: string): string {
 function buildRawEmail(from: string, to: string, subject: string, bodyText: string, trackingId: string, unsubUrl?: string): string {
   const boundary = `b_${Date.now()}_${Math.random().toString(36).slice(2)}`;
   const baseHtml = textToHtml(bodyText.replace(/\n\n---\nUnsubscribe:.*$/, ""));
-  const unsubHtml = unsubUrl ? `<br><br><hr style="border:none;border-top:1px solid #ccc;"><p style="font-size:12px;color:#888;"><a href="${unsubUrl}">Unsubscribe</a></p>` : "";
+  const unsubHtml = unsubUrl ? `<br><br><hr style="border:none;border-top:1px solid #ccc;margin-top:20px;"><p style="font-size:13px;color:#555;margin-top:12px;"><a href="${unsubUrl}" style="color:#555;text-decoration:underline;">Unsubscribe</a></p>` : "";
   const bodyHtml = injectTracking(baseHtml + unsubHtml, trackingId);
   const headers = [
     `From: Robert Maynard <${from}>`, `To: ${to}`, `Subject: ${subject}`,
