@@ -62,7 +62,7 @@ function injectTracking(html: string, emailId: string): string {
 
 function buildRawEmail(params: {
   from: string; to: string; subject: string; bodyText: string; bodyHtml: string;
-  threadId?: string; inReplyTo?: string; references?: string;
+  threadId?: string; inReplyTo?: string; references?: string; unsubUrl?: string;
 }): string {
   const boundary = `boundary_${Date.now()}_${Math.random().toString(36).slice(2)}`;
   const lines = [
@@ -72,6 +72,7 @@ function buildRawEmail(params: {
     "MIME-Version: 1.0",
     `Content-Type: multipart/alternative; boundary="${boundary}"`,
   ];
+  if (params.unsubUrl) lines.push(`List-Unsubscribe: <${params.unsubUrl}>`);
   if (params.inReplyTo) lines.push(`In-Reply-To: ${params.inReplyTo}`);
   if (params.references) lines.push(`References: ${params.references}`);
   lines.push(
@@ -114,20 +115,35 @@ serve(async (req) => {
 
   const token = await getValidToken(account);
 
+  // Look up professional's verification_token for unsubscribe link
+  const { data: proRecord } = await supabase
+    .from("professionals")
+    .select("verification_token")
+    .eq("email", to)
+    .maybeSingle();
+  const unsubToken = proRecord?.verification_token || "";
+  const unsubUrl = unsubToken ? `${SUPABASE_URL}/functions/v1/unsubscribe?token=${unsubToken}` : "";
+
   // Generate a tracking ID (will be replaced by gmail message ID after send)
   const trackingId = crypto.randomUUID();
 
+  // Append unsubscribe footer to body
+  const fullBody = unsubUrl
+    ? message_body + `\n\n---\nIf you no longer wish to receive these emails, click here to unsubscribe: ${unsubUrl}`
+    : message_body;
+
   // Build HTML with tracking
-  const baseHtml = textToHtml(message_body);
+  const baseHtml = textToHtml(fullBody);
   const trackedHtml = injectTracking(baseHtml, trackingId);
 
   const raw = buildRawEmail({
     from: from_account,
     to, subject,
-    bodyText: message_body,
+    bodyText: fullBody,
     bodyHtml: trackedHtml,
     inReplyTo: in_reply_to,
     references,
+    unsubUrl: unsubUrl || undefined,
   });
 
   const sendPayload: any = { raw };
