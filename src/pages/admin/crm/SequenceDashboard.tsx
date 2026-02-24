@@ -12,16 +12,6 @@ interface SequenceStats {
   unsubscribed: number;
 }
 
-interface RecentEmail {
-  id: string;
-  to_address: string;
-  subject: string;
-  sent_at: string;
-  opened_at: string | null;
-  clicked_at: string | null;
-  account_email: string;
-}
-
 interface ContactRow {
   email: string;
   name: string;
@@ -36,7 +26,6 @@ export default function SequenceDashboard() {
   const [sequences, setSequences] = useState<any[]>([]);
   const [selected, setSelected] = useState<string>("3bed1ae8-61d9-49d8-8349-610e738c47d2");
   const [stats, setStats] = useState<SequenceStats | null>(null);
-  const [recentEmails, setRecentEmails] = useState<RecentEmail[]>([]);
   const [accountBreakdown, setAccountBreakdown] = useState<any[]>([]);
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
   const [loading, setLoading] = useState(true);
@@ -76,7 +65,6 @@ export default function SequenceDashboard() {
 
     const emailList = [...new Set((enrollments ?? []).map(e => e.email))].slice(0, 1000);
     let sent = 0, opens = 0, clicks = 0;
-    const recentRows: RecentEmail[] = [];
     const acctMap: Record<string, { sent: number; opens: number; clicks: number }> = {};
     const allEmailRows: any[] = [];
 
@@ -100,7 +88,6 @@ export default function SequenceDashboard() {
           acctMap[acct].sent++;
           if (e.opened_at) acctMap[acct].opens++;
           if (e.clicked_at) acctMap[acct].clicks++;
-          if (recentRows.length < 50) recentRows.push(e);
         }
       }
     }
@@ -109,7 +96,6 @@ export default function SequenceDashboard() {
 
     const seqName = sequences.find(s => s.id === seqId)?.name ?? seqId;
     setStats({ sequence_id: seqId, name: seqName, enrolled: enrolled ?? 0, sent, opens, clicks, replies: repliedCount, unsubscribed: unsubCount });
-    setRecentEmails(recentRows.slice(0, 30));
     setAccountBreakdown(
       Object.entries(acctMap).map(([acct, data]) => ({
         account: acct, ...data,
@@ -384,40 +370,8 @@ export default function SequenceDashboard() {
           </div>
         )}
 
-        {/* Recent sends */}
-        <div>
-          <h2 style={{ fontSize: "16px", fontWeight: "700", margin: "0 0 12px" }}>Recent Sends</h2>
-          {recentEmails.length === 0
-            ? <p style={{ color: "#888", fontSize: "14px" }}>No emails sent yet.</p>
-            : (
-              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
-                <thead>
-                  <tr style={{ background: "#f5f5f5" }}>
-                    {["Recipient", "From", "Sent", "Opened", "Clicked"].map(h => (
-                      <th key={h} style={{ padding: "8px 12px", textAlign: "left", fontWeight: "600", fontSize: "12px", color: "#555", textTransform: "uppercase", letterSpacing: "0.04em" }}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {recentEmails.map(e => (
-                    <tr key={e.id} style={{ borderBottom: "1px solid #eee" }}>
-                      <td style={{ padding: "9px 12px" }}>{e.to_address}</td>
-                      <td style={{ padding: "9px 12px", fontFamily: "monospace", fontSize: "12px", color: "#666" }}>{e.account_email?.split("@")[0]}@...</td>
-                      <td style={{ padding: "9px 12px", color: "#666" }}>{fmt(e.sent_at)}</td>
-                      <td style={{ padding: "9px 12px" }}>
-                        {e.opened_at ? <span style={{ color: "#059669", fontWeight: "600" }}>✓ {fmt(e.opened_at)}</span> : <span style={{ color: "#ccc" }}>—</span>}
-                      </td>
-                      <td style={{ padding: "9px 12px" }}>
-                        {e.clicked_at ? <span style={{ color: "#2563eb", fontWeight: "600" }}>✓ {fmt(e.clicked_at)}</span> : <span style={{ color: "#ccc" }}>—</span>}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-        </div>
-
-      </>)}
+      </>
+      )}
     </div>
   );
 }
