@@ -5,6 +5,7 @@ const CLIENT_ID = Deno.env.get("GMAIL_CLIENT_ID")!;
 const CLIENT_SECRET = Deno.env.get("GMAIL_CLIENT_SECRET")!;
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+const TRACK_BASE = `${SUPABASE_URL}/functions/v1/email-track`;
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
@@ -36,20 +37,59 @@ async function getValidToken(account: any): Promise<string> {
   return account.access_token;
 }
 
+function textToHtml(text: string): string {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\n/g, "<br>")
+    .replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1">$1</a>');
+}
+
+function injectTracking(html: string, emailId: string): string {
+  // Rewrite links for click tracking
+  const tracked = html.replace(
+    /href="(https?:\/\/[^"]+)"/g,
+    (_match, url) => {
+      const trackUrl = `${TRACK_BASE}?t=c&eid=${encodeURIComponent(emailId)}&url=${encodeURIComponent(url)}`;
+      return `href="${trackUrl}"`;
+    }
+  );
+  // Append open tracking pixel
+  const pixel = `<img src="${TRACK_BASE}?t=o&eid=${encodeURIComponent(emailId)}" width="1" height="1" style="display:none" alt="">`;
+  return tracked + pixel;
+}
+
 function buildRawEmail(params: {
-  from: string; to: string; subject: string; body: string;
+  from: string; to: string; subject: string; bodyText: string; bodyHtml: string;
   threadId?: string; inReplyTo?: string; references?: string;
 }): string {
+  const boundary = `boundary_${Date.now()}_${Math.random().toString(36).slice(2)}`;
   const lines = [
     `From: Robert Maynard <${params.from}>`,
     `To: ${params.to}`,
     `Subject: ${params.subject}`,
     "MIME-Version: 1.0",
-    "Content-Type: text/plain; charset=utf-8",
+    `Content-Type: multipart/alternative; boundary="${boundary}"`,
   ];
   if (params.inReplyTo) lines.push(`In-Reply-To: ${params.inReplyTo}`);
   if (params.references) lines.push(`References: ${params.references}`);
-  lines.push("", params.body);
+  lines.push(
+    "",
+    `--${boundary}`,
+    "Content-Type: text/plain; charset=utf-8",
+    "Content-Transfer-Encoding: base64",
+    "",
+    btoa(unescape(encodeURIComponent(params.bodyText))),
+    "",
+    `--${boundary}`,
+    "Content-Type: text/html; charset=utf-8",
+    "Content-Transfer-Encoding: base64",
+    "",
+    btoa(unescape(encodeURIComponent(params.bodyHtml))),
+    "",
+    `--${boundary}--`,
+  );
   const raw = lines.join("\r\n");
   return btoa(unescape(encodeURIComponent(raw)))
     .replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
@@ -66,19 +106,26 @@ serve(async (req) => {
   }
 
   const { data: account } = await supabase
-    .from("crm_email_accounts")
-    .select("*")
-    .eq("email", from_account)
-    .single();
+    .from("crm_email_accounts").select("*").eq("email", from_account).single();
 
   if (!account) {
     return new Response(JSON.stringify({ error: "Account not connected" }), { status: 404 });
   }
 
   const token = await getValidToken(account);
+
+  // Generate a tracking ID (will be replaced by gmail message ID after send)
+  const trackingId = crypto.randomUUID();
+
+  // Build HTML with tracking
+  const baseHtml = textToHtml(message_body);
+  const trackedHtml = injectTracking(baseHtml, trackingId);
+
   const raw = buildRawEmail({
     from: from_account,
-    to, subject, body: message_body,
+    to, subject,
+    bodyText: message_body,
+    bodyHtml: trackedHtml,
     inReplyTo: in_reply_to,
     references,
   });
@@ -100,9 +147,9 @@ serve(async (req) => {
     return new Response(JSON.stringify({ error: sent.error.message }), { status: 500 });
   }
 
-  // Store the sent message
+  // Store with tracking ID for event correlation
   await supabase.from("crm_emails").insert({
-    gmail_message_id: sent.id,
+    gmail_message_id: trackingId,
     gmail_thread_id: sent.threadId || thread_id || sent.id,
     account_email: from_account,
     direction: "outbound",
@@ -114,7 +161,7 @@ serve(async (req) => {
     sent_at: new Date().toISOString(),
   });
 
-  return new Response(JSON.stringify({ success: true, message_id: sent.id }), {
+  return new Response(JSON.stringify({ success: true, message_id: sent.id, tracking_id: trackingId }), {
     headers: { "Content-Type": "application/json" }
   });
 });
