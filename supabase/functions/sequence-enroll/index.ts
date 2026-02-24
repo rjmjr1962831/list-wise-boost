@@ -33,12 +33,13 @@ serve(async (req) => {
       status: 400, headers: { "Content-Type": "application/json" }
     });
 
-    // Build agent query
+    // Build agent query (listed tier only — sequence is for listed agents)
     let query = supabase
       .from("professionals")
       .select("id, name, email, email_provider, verification_token, business_city, state_slug, current_tier")
       .eq("active", true)
       .eq("email_unsubscribed", false)
+      .eq("current_tier", "listed")
       .not("email", "is", null)
       .not("verification_token", "is", null);
 
@@ -92,17 +93,24 @@ serve(async (req) => {
 
       const unsubUrl = `https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/unsubscribe?token=${agent.verification_token}`;
 
+      const nameParts = (agent.name ?? "").trim().split(/\s+/);
+      const first_name = nameParts[0] ?? "";
+      const last_name = nameParts.slice(1).join(" ") ?? "";
+
       enrollments.push({
         sequence_id,
         professional_id: agent.id,
         email: agent.email,
-        first_name: agent.name?.split(" ")[0] ?? "",
+        first_name,
+        last_name,
         status: "active",
         current_step: 0,
         next_send_at: sendTime.toISOString(),
         assigned_account: SENDING_ACCOUNTS[accountIndex],
         metadata: {
           magic_link: `https://www.top10lists.us/funnel/${agent.verification_token}`,
+          first_name,
+          last_name,
           business_city: agent.business_city ?? "",
           state: agent.state_slug === "arizona" ? "Arizona" : "California",
           tier: agent.current_tier ?? "listed",
