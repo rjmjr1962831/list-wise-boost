@@ -22,6 +22,16 @@ interface RecentEmail {
   account_email: string;
 }
 
+interface ContactRow {
+  email: string;
+  name: string;
+  professional_id: string | null;
+  date: string | null;
+  extra?: string | null;
+}
+
+type DrilldownBucket = "replies" | "unsubscribed" | "opens" | "clicks" | null;
+
 export default function SequenceDashboard() {
   const [sequences, setSequences] = useState<any[]>([]);
   const [selected, setSelected] = useState<string>("3bed1ae8-61d9-49d8-8349-610e738c47d2");
@@ -30,6 +40,15 @@ export default function SequenceDashboard() {
   const [accountBreakdown, setAccountBreakdown] = useState<any[]>([]);
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
   const [loading, setLoading] = useState(true);
+
+  // Drilldown state
+  const [drilldown, setDrilldown] = useState<DrilldownBucket>(null);
+  const [drillContacts, setDrillContacts] = useState<ContactRow[]>([]);
+  const [drillLoading, setDrillLoading] = useState(false);
+
+  // Full enrollment data for drilldowns
+  const [enrollmentData, setEnrollmentData] = useState<any[]>([]);
+  const [emailData, setEmailData] = useState<any[]>([]);
 
   const loadSequences = useCallback(async () => {
     const { data } = await supabase
@@ -40,32 +59,28 @@ export default function SequenceDashboard() {
   }, []);
 
   const loadStats = useCallback(async (seqId: string) => {
-    // Enrollments count
     const { count: enrolled } = await supabase
       .from("crm_sequence_enrollments")
       .select("id", { count: "exact", head: true })
       .eq("sequence_id", seqId);
 
-    // Sent emails for this sequence (via crm_emails joined through enrollment)
-    // We tag emails with sequence info via account + timing — use crm_emails joined on enrollment email match
-    const { data: enrollmentEmails } = await supabase
+    const { data: enrollments } = await supabase
       .from("crm_sequence_enrollments")
-      .select("email, assigned_account, status, replied_at")
+      .select("email, assigned_account, status, replied_at, professional_id, first_name")
       .eq("sequence_id", seqId);
 
-    const emailSet = new Set((enrollmentEmails ?? []).map(e => e.email));
-    const repliedCount = (enrollmentEmails ?? []).filter(e => e.replied_at).length;
-    const unsubCount = (enrollmentEmails ?? []).filter(e => e.status === "unsubscribed").length;
+    setEnrollmentData(enrollments ?? []);
 
-    // Get sent/open/click counts for enrolled emails
-    // Fetch crm_emails for these recipient addresses
-    const emailList = Array.from(emailSet).slice(0, 1000);
+    const repliedCount = (enrollments ?? []).filter(e => e.replied_at).length;
+    const unsubCount   = (enrollments ?? []).filter(e => e.status === "unsubscribed").length;
+
+    const emailList = [...new Set((enrollments ?? []).map(e => e.email))].slice(0, 1000);
     let sent = 0, opens = 0, clicks = 0;
     const recentRows: RecentEmail[] = [];
     const acctMap: Record<string, { sent: number; opens: number; clicks: number }> = {};
+    const allEmailRows: any[] = [];
 
     if (emailList.length > 0) {
-      // Query in batches of 100
       for (let i = 0; i < emailList.length; i += 100) {
         const batch = emailList.slice(i, i + 100);
         const { data: emails } = await supabase
@@ -79,6 +94,7 @@ export default function SequenceDashboard() {
           sent++;
           if (e.opened_at) opens++;
           if (e.clicked_at) clicks++;
+          allEmailRows.push(e);
           const acct = e.account_email || "unknown";
           if (!acctMap[acct]) acctMap[acct] = { sent: 0, opens: 0, clicks: 0 };
           acctMap[acct].sent++;
@@ -89,43 +105,27 @@ export default function SequenceDashboard() {
       }
     }
 
+    setEmailData(allEmailRows);
+
     const seqName = sequences.find(s => s.id === seqId)?.name ?? seqId;
-
-    setStats({
-      sequence_id: seqId,
-      name: seqName,
-      enrolled: enrolled ?? 0,
-      sent,
-      opens,
-      clicks,
-      replies: repliedCount,
-      unsubscribed: unsubCount,
-    });
-
+    setStats({ sequence_id: seqId, name: seqName, enrolled: enrolled ?? 0, sent, opens, clicks, replies: repliedCount, unsubscribed: unsubCount });
     setRecentEmails(recentRows.slice(0, 30));
-
     setAccountBreakdown(
       Object.entries(acctMap).map(([acct, data]) => ({
-        account: acct,
-        ...data,
-        open_rate: data.sent > 0 ? ((data.opens / data.sent) * 100).toFixed(1) + "%" : "—",
+        account: acct, ...data,
+        open_rate:  data.sent > 0 ? ((data.opens  / data.sent) * 100).toFixed(1) + "%" : "—",
         click_rate: data.sent > 0 ? ((data.clicks / data.sent) * 100).toFixed(1) + "%" : "—",
       }))
     );
-
     setLastRefresh(new Date());
     setLoading(false);
+    setDrilldown(null);
   }, [sequences]);
 
   useEffect(() => { loadSequences(); }, [loadSequences]);
   useEffect(() => {
-    if (selected && sequences.length > 0) {
-      setLoading(true);
-      loadStats(selected);
-    }
+    if (selected && sequences.length > 0) { setLoading(true); loadStats(selected); }
   }, [selected, sequences]);
-
-  // Auto-refresh every 30s
   useEffect(() => {
     const interval = setInterval(() => {
       if (selected && sequences.length > 0) loadStats(selected);
@@ -133,8 +133,90 @@ export default function SequenceDashboard() {
     return () => clearInterval(interval);
   }, [selected, sequences, loadStats]);
 
-  const pct = (num: number, den: number) =>
-    den > 0 ? ((num / den) * 100).toFixed(1) + "%" : "—";
+  const openDrilldown = useCallback(async (bucket: DrilldownBucket) => {
+    if (!bucket) return;
+    if (drilldown === bucket) { setDrilldown(null); return; }
+    setDrilldown(bucket);
+    setDrillLoading(true);
+
+    let rows: ContactRow[] = [];
+
+    if (bucket === "replies") {
+      const replied = enrollmentData.filter(e => e.replied_at);
+      rows = replied.map(e => ({
+        email: e.email,
+        name: e.first_name || e.email,
+        professional_id: e.professional_id,
+        date: e.replied_at,
+        extra: "Replied",
+      }));
+    }
+
+    if (bucket === "unsubscribed") {
+      const unsub = enrollmentData.filter(e => e.status === "unsubscribed");
+      rows = unsub.map(e => ({
+        email: e.email,
+        name: e.first_name || e.email,
+        professional_id: e.professional_id,
+        date: null,
+        extra: "Unsubscribed",
+      }));
+    }
+
+    if (bucket === "opens") {
+      const opened = emailData.filter(e => e.opened_at);
+      const seen = new Set<string>();
+      for (const e of opened) {
+        if (seen.has(e.to_address)) continue;
+        seen.add(e.to_address);
+        const enrollment = enrollmentData.find(en => en.email === e.to_address);
+        rows.push({
+          email: e.to_address,
+          name: enrollment?.first_name || e.to_address,
+          professional_id: enrollment?.professional_id || null,
+          date: e.opened_at,
+          extra: null,
+        });
+      }
+    }
+
+    if (bucket === "clicks") {
+      const clicked = emailData.filter(e => e.clicked_at);
+      const seen = new Set<string>();
+      for (const e of clicked) {
+        if (seen.has(e.to_address)) continue;
+        seen.add(e.to_address);
+        const enrollment = enrollmentData.find(en => en.email === e.to_address);
+        rows.push({
+          email: e.to_address,
+          name: enrollment?.first_name || e.to_address,
+          professional_id: enrollment?.professional_id || null,
+          date: e.clicked_at,
+          extra: null,
+        });
+      }
+    }
+
+    // Enrich names from professionals table
+    const ids = rows.map(r => r.professional_id).filter(Boolean) as string[];
+    if (ids.length > 0) {
+      const { data: pros } = await supabase
+        .from("professionals")
+        .select("id, name, email")
+        .in("id", ids);
+      const proMap: Record<string, string> = {};
+      (pros || []).forEach((p: any) => { proMap[p.id] = p.name; });
+      rows = rows.map(r => ({
+        ...r,
+        name: (r.professional_id && proMap[r.professional_id]) ? proMap[r.professional_id] : r.name,
+      }));
+    }
+
+    setDrillContacts(rows);
+    setDrillLoading(false);
+  }, [drilldown, enrollmentData, emailData]);
+
+  const pct = (num: number, den: number) => den > 0 ? ((num / den) * 100).toFixed(1) + "%" : "—";
 
   const fmt = (iso: string | null) => {
     if (!iso) return null;
@@ -143,18 +225,31 @@ export default function SequenceDashboard() {
       " " + d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
   };
 
+  const bucketLabel: Record<string, string> = {
+    replies: "Replies", unsubscribed: "Unsubscribes", opens: "Opens", clicks: "Clicks"
+  };
+
+  const cards = stats ? [
+    { label: "Enrolled",  value: stats.enrolled,    sub: null,                              bucket: null },
+    { label: "Sent",      value: stats.sent,         sub: null,                              bucket: null },
+    { label: "Opens",     value: stats.opens,        sub: pct(stats.opens, stats.sent),      bucket: "opens" as DrilldownBucket },
+    { label: "Clicks",    value: stats.clicks,       sub: pct(stats.clicks, stats.sent),     bucket: "clicks" as DrilldownBucket },
+    { label: "Replies",   value: stats.replies,      sub: pct(stats.replies, stats.sent),    bucket: "replies" as DrilldownBucket },
+    { label: "Unsubs",    value: stats.unsubscribed, sub: pct(stats.unsubscribed, stats.sent), bucket: "unsubscribed" as DrilldownBucket },
+  ] : [];
+
   return (
     <div style={{ fontFamily: "system-ui, sans-serif", padding: "24px", maxWidth: "1100px", margin: "0 auto", color: "#1a1a1a" }}>
+
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "24px" }}>
         <div>
           <h1 style={{ fontSize: "22px", fontWeight: "700", margin: "0 0 4px" }}>Sequence Dashboard</h1>
           <p style={{ margin: 0, fontSize: "13px", color: "#666" }}>
-            Last refresh: {lastRefresh.toLocaleTimeString()} &nbsp;·&nbsp; Auto-refreshes every 30s
+            Last refresh: {lastRefresh.toLocaleTimeString()} · Auto-refreshes every 30s
           </p>
         </div>
-        <button
-          onClick={() => loadStats(selected)}
+        <button onClick={() => loadStats(selected)}
           style={{ padding: "8px 16px", background: "#1a1a1a", color: "#fff", border: "none", borderRadius: "6px", cursor: "pointer", fontSize: "13px" }}>
           Refresh Now
         </button>
@@ -163,124 +258,166 @@ export default function SequenceDashboard() {
       {/* Sequence selector */}
       <div style={{ marginBottom: "24px" }}>
         <label style={{ fontSize: "13px", fontWeight: "600", display: "block", marginBottom: "6px" }}>Sequence</label>
-        <select
-          value={selected}
-          onChange={e => setSelected(e.target.value)}
+        <select value={selected} onChange={e => setSelected(e.target.value)}
           style={{ padding: "8px 12px", border: "1px solid #ddd", borderRadius: "6px", fontSize: "14px", width: "100%", maxWidth: "500px" }}>
-          {sequences.map(s => (
-            <option key={s.id} value={s.id}>{s.name}</option>
-          ))}
+          {sequences.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
         </select>
       </div>
 
       {loading && <div style={{ color: "#666", fontSize: "14px" }}>Loading...</div>}
 
-      {!loading && stats && (
-        <>
-          {/* Stat cards */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gap: "12px", marginBottom: "28px" }}>
-            {[
-              { label: "Enrolled", value: stats.enrolled, sub: null },
-              { label: "Sent", value: stats.sent, sub: null },
-              { label: "Opens", value: stats.opens, sub: pct(stats.opens, stats.sent) },
-              { label: "Clicks", value: stats.clicks, sub: pct(stats.clicks, stats.sent) },
-              { label: "Replies", value: stats.replies, sub: pct(stats.replies, stats.sent) },
-              { label: "Unsubs", value: stats.unsubscribed, sub: pct(stats.unsubscribed, stats.sent) },
-            ].map(card => (
-              <div key={card.label} style={{
-                background: "#f9f9f9", border: "1px solid #e5e5e5", borderRadius: "10px",
-                padding: "16px", textAlign: "center"
-              }}>
-                <div style={{ fontSize: "28px", fontWeight: "700", lineHeight: 1 }}>{card.value}</div>
-                {card.sub && <div style={{ fontSize: "14px", color: "#059669", fontWeight: "600", marginTop: "4px" }}>{card.sub}</div>}
-                <div style={{ fontSize: "12px", color: "#888", marginTop: "6px", textTransform: "uppercase", letterSpacing: "0.05em" }}>{card.label}</div>
+      {!loading && stats && (<>
+
+        {/* Stat cards — clickable for opens/clicks/replies/unsubs */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gap: "12px", marginBottom: "28px" }}>
+          {cards.map(card => {
+            const isActive = drilldown === card.bucket && card.bucket !== null;
+            const isClickable = card.bucket !== null && (card.value as number) > 0;
+            return (
+              <div key={card.label}
+                onClick={() => isClickable && openDrilldown(card.bucket)}
+                style={{
+                  background: isActive ? "#1a1a1a" : "#f9f9f9",
+                  border: `1px solid ${isActive ? "#1a1a1a" : "#e5e5e5"}`,
+                  borderRadius: "10px", padding: "16px", textAlign: "center",
+                  cursor: isClickable ? "pointer" : "default",
+                  transition: "all 0.15s",
+                }}>
+                <div style={{ fontSize: "28px", fontWeight: "700", lineHeight: 1, color: isActive ? "#fff" : "#1a1a1a" }}>
+                  {card.value}
+                </div>
+                {card.sub && (
+                  <div style={{ fontSize: "14px", color: isActive ? "#86efac" : "#059669", fontWeight: "600", marginTop: "4px" }}>
+                    {card.sub}
+                  </div>
+                )}
+                <div style={{ fontSize: "12px", color: isActive ? "#aaa" : "#888", marginTop: "6px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                  {card.label}
+                </div>
+                {isClickable && (
+                  <div style={{ fontSize: "10px", color: isActive ? "#ccc" : "#bbb", marginTop: "4px" }}>
+                    {isActive ? "click to close" : "click to view"}
+                  </div>
+                )}
               </div>
-            ))}
-          </div>
+            );
+          })}
+        </div>
 
-          {/* Progress bar */}
-          <div style={{ marginBottom: "28px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", marginBottom: "6px" }}>
-              <span style={{ fontWeight: "600" }}>Send Progress</span>
-              <span style={{ color: "#666" }}>{stats.sent} / {stats.enrolled} ({pct(stats.sent, stats.enrolled)})</span>
+        {/* Drilldown panel */}
+        {drilldown && (
+          <div style={{ marginBottom: "28px", border: "1px solid #e5e5e5", borderRadius: "10px", overflow: "hidden" }}>
+            <div style={{ background: "#1a1a1a", color: "#fff", padding: "12px 16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span style={{ fontWeight: "600", fontSize: "14px" }}>{bucketLabel[drilldown]} — {drillContacts.length} contact{drillContacts.length !== 1 ? "s" : ""}</span>
+              <button onClick={() => setDrilldown(null)}
+                style={{ background: "none", border: "none", color: "#aaa", cursor: "pointer", fontSize: "18px", lineHeight: 1 }}>×</button>
             </div>
-            <div style={{ height: "10px", background: "#e5e5e5", borderRadius: "5px", overflow: "hidden" }}>
-              <div style={{
-                height: "100%", background: "#1a1a1a", borderRadius: "5px",
-                width: `${stats.enrolled > 0 ? (stats.sent / stats.enrolled) * 100 : 0}%`,
-                transition: "width 0.5s ease"
-              }} />
-            </div>
-          </div>
-
-          {/* Account breakdown */}
-          {accountBreakdown.length > 0 && (
-            <div style={{ marginBottom: "28px" }}>
-              <h2 style={{ fontSize: "16px", fontWeight: "700", margin: "0 0 12px" }}>By Account</h2>
-              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "14px" }}>
+            {drillLoading ? (
+              <div style={{ padding: "20px", color: "#666", fontSize: "14px" }}>Loading contacts...</div>
+            ) : drillContacts.length === 0 ? (
+              <div style={{ padding: "20px", color: "#888", fontSize: "14px" }}>No contacts in this bucket.</div>
+            ) : (
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
                 <thead>
                   <tr style={{ background: "#f5f5f5" }}>
-                    {["Account", "Sent", "Opens", "Open %", "Clicks", "Click %"].map(h => (
+                    {["Name", "Email", drilldown === "replies" ? "Replied" : drilldown === "opens" ? "Opened" : drilldown === "clicks" ? "Clicked" : "Status"].map(h => (
                       <th key={h} style={{ padding: "8px 12px", textAlign: "left", fontWeight: "600", fontSize: "12px", color: "#555", textTransform: "uppercase", letterSpacing: "0.04em" }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {accountBreakdown.map(row => (
-                    <tr key={row.account} style={{ borderBottom: "1px solid #eee" }}>
-                      <td style={{ padding: "10px 12px", fontFamily: "monospace", fontSize: "13px" }}>{row.account}</td>
-                      <td style={{ padding: "10px 12px" }}>{row.sent}</td>
-                      <td style={{ padding: "10px 12px" }}>{row.opens}</td>
-                      <td style={{ padding: "10px 12px", color: "#059669", fontWeight: "600" }}>{row.open_rate}</td>
-                      <td style={{ padding: "10px 12px" }}>{row.clicks}</td>
-                      <td style={{ padding: "10px 12px", color: "#059669", fontWeight: "600" }}>{row.click_rate}</td>
+                  {drillContacts.map((c, i) => (
+                    <tr key={i} style={{ borderBottom: "1px solid #eee" }}>
+                      <td style={{ padding: "10px 12px", fontWeight: "500" }}>{c.name}</td>
+                      <td style={{ padding: "10px 12px", color: "#555", fontFamily: "monospace", fontSize: "12px" }}>{c.email}</td>
+                      <td style={{ padding: "10px 12px", color: "#666" }}>
+                        {c.extra || (c.date ? fmt(c.date) : "—")}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-            </div>
-          )}
-
-          {/* Recent sends */}
-          <div>
-            <h2 style={{ fontSize: "16px", fontWeight: "700", margin: "0 0 12px" }}>Recent Sends</h2>
-            {recentEmails.length === 0
-              ? <p style={{ color: "#888", fontSize: "14px" }}>No emails sent yet. Processor runs every 5 minutes.</p>
-              : (
-                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
-                  <thead>
-                    <tr style={{ background: "#f5f5f5" }}>
-                      {["Recipient", "From", "Sent", "Opened", "Clicked"].map(h => (
-                        <th key={h} style={{ padding: "8px 12px", textAlign: "left", fontWeight: "600", fontSize: "12px", color: "#555", textTransform: "uppercase", letterSpacing: "0.04em" }}>{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {recentEmails.map(e => (
-                      <tr key={e.id} style={{ borderBottom: "1px solid #eee" }}>
-                        <td style={{ padding: "9px 12px" }}>{e.to_address}</td>
-                        <td style={{ padding: "9px 12px", fontFamily: "monospace", fontSize: "12px", color: "#666" }}>
-                          {e.account_email?.split("@")[0]}@...
-                        </td>
-                        <td style={{ padding: "9px 12px", color: "#666" }}>{fmt(e.sent_at)}</td>
-                        <td style={{ padding: "9px 12px" }}>
-                          {e.opened_at
-                            ? <span style={{ color: "#059669", fontWeight: "600" }}>✓ {fmt(e.opened_at)}</span>
-                            : <span style={{ color: "#ccc" }}>—</span>}
-                        </td>
-                        <td style={{ padding: "9px 12px" }}>
-                          {e.clicked_at
-                            ? <span style={{ color: "#2563eb", fontWeight: "600" }}>✓ {fmt(e.clicked_at)}</span>
-                            : <span style={{ color: "#ccc" }}>—</span>}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
+            )}
           </div>
-        </>
-      )}
+        )}
+
+        {/* Progress bar */}
+        <div style={{ marginBottom: "28px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", marginBottom: "6px" }}>
+            <span style={{ fontWeight: "600" }}>Send Progress</span>
+            <span style={{ color: "#666" }}>{stats.sent} / {stats.enrolled} ({pct(stats.sent, stats.enrolled)})</span>
+          </div>
+          <div style={{ height: "10px", background: "#e5e5e5", borderRadius: "5px", overflow: "hidden" }}>
+            <div style={{
+              height: "100%", background: "#1a1a1a", borderRadius: "5px",
+              width: `${stats.enrolled > 0 ? (stats.sent / stats.enrolled) * 100 : 0}%`,
+              transition: "width 0.5s ease"
+            }} />
+          </div>
+        </div>
+
+        {/* Account breakdown */}
+        {accountBreakdown.length > 0 && (
+          <div style={{ marginBottom: "28px" }}>
+            <h2 style={{ fontSize: "16px", fontWeight: "700", margin: "0 0 12px" }}>By Account</h2>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "14px" }}>
+              <thead>
+                <tr style={{ background: "#f5f5f5" }}>
+                  {["Account", "Sent", "Opens", "Open %", "Clicks", "Click %"].map(h => (
+                    <th key={h} style={{ padding: "8px 12px", textAlign: "left", fontWeight: "600", fontSize: "12px", color: "#555", textTransform: "uppercase", letterSpacing: "0.04em" }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {accountBreakdown.map(row => (
+                  <tr key={row.account} style={{ borderBottom: "1px solid #eee" }}>
+                    <td style={{ padding: "10px 12px", fontFamily: "monospace", fontSize: "13px" }}>{row.account}</td>
+                    <td style={{ padding: "10px 12px" }}>{row.sent}</td>
+                    <td style={{ padding: "10px 12px" }}>{row.opens}</td>
+                    <td style={{ padding: "10px 12px", color: "#059669", fontWeight: "600" }}>{row.open_rate}</td>
+                    <td style={{ padding: "10px 12px" }}>{row.clicks}</td>
+                    <td style={{ padding: "10px 12px", color: "#059669", fontWeight: "600" }}>{row.click_rate}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* Recent sends */}
+        <div>
+          <h2 style={{ fontSize: "16px", fontWeight: "700", margin: "0 0 12px" }}>Recent Sends</h2>
+          {recentEmails.length === 0
+            ? <p style={{ color: "#888", fontSize: "14px" }}>No emails sent yet.</p>
+            : (
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
+                <thead>
+                  <tr style={{ background: "#f5f5f5" }}>
+                    {["Recipient", "From", "Sent", "Opened", "Clicked"].map(h => (
+                      <th key={h} style={{ padding: "8px 12px", textAlign: "left", fontWeight: "600", fontSize: "12px", color: "#555", textTransform: "uppercase", letterSpacing: "0.04em" }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {recentEmails.map(e => (
+                    <tr key={e.id} style={{ borderBottom: "1px solid #eee" }}>
+                      <td style={{ padding: "9px 12px" }}>{e.to_address}</td>
+                      <td style={{ padding: "9px 12px", fontFamily: "monospace", fontSize: "12px", color: "#666" }}>{e.account_email?.split("@")[0]}@...</td>
+                      <td style={{ padding: "9px 12px", color: "#666" }}>{fmt(e.sent_at)}</td>
+                      <td style={{ padding: "9px 12px" }}>
+                        {e.opened_at ? <span style={{ color: "#059669", fontWeight: "600" }}>✓ {fmt(e.opened_at)}</span> : <span style={{ color: "#ccc" }}>—</span>}
+                      </td>
+                      <td style={{ padding: "9px 12px" }}>
+                        {e.clicked_at ? <span style={{ color: "#2563eb", fontWeight: "600" }}>✓ {fmt(e.clicked_at)}</span> : <span style={{ color: "#ccc" }}>—</span>}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+        </div>
+
+      </>)}
     </div>
   );
 }
