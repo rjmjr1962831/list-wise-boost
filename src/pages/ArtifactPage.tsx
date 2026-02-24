@@ -8,6 +8,7 @@ import { Shield, Check, Copy, ExternalLink, Calendar, MapPin, Star, Award } from
 import { toast } from "sonner";
 import { AgentSourcesBlock } from "@/components/AgentSourcesBlock";
 import { floorReviews } from "@/utils/floorDisplay";
+import { filterSpecialties } from "@/lib/utils";
 
 interface CertificationData {
   id: string;
@@ -351,18 +352,21 @@ export default function ArtifactPage() {
                 )}
               </div>
               
-              {data.specialty && data.specialty.length > 0 && (
-                <div className="mt-6">
-                  <h3 className="font-semibold text-sm text-muted-foreground mb-3">Specialties</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {data.specialty.map((spec: string) => (
-                      <span key={spec} className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">
-                        {spec}
-                      </span>
-                    ))}
+              {(() => {
+                const filtered = filterSpecialties(data.specialty || []);
+                return filtered.length > 0 ? (
+                  <div className="mt-6">
+                    <h3 className="font-semibold text-sm text-muted-foreground mb-3">Specialties</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {filtered.map((spec: string) => (
+                        <span key={spec} className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">
+                          {spec}
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                ) : null;
+              })()}
             </CardContent>
           </Card>
 

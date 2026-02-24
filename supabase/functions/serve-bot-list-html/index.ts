@@ -28,6 +28,15 @@ function fp(v: any): string | null { if (!v) return null; const n = Number(v); i
 function tl(t: string): string { const m: Record<string,string> = { underwritten:"Underwritten",accredited:"Audited",audited:"Audited",certified:"Certified" }; return m[t.toLowerCase()] || "Listed"; }
 function tb(t: string): string { const m: Record<string,string> = { underwritten:"underwritten",accredited:"audited",audited:"audited",certified:"certified" }; return m[t.toLowerCase()] || "listed"; }
 function ac(t: string): string | null { const m: Record<string,string> = { underwritten:"daily",accredited:"every two weeks",audited:"every two weeks",certified:"monthly" }; return m[t.toLowerCase()] || null; }
+/** Exclude generic "listing agent" / "buyer's agent" (and derivatives) from displayed specialties. */
+function filterSpecialties(specs: string[]): string[] {
+  return specs.filter((s: string) => {
+    const n = String(s).toLowerCase().replace(/'/g, "").replace(/\s+/g, "");
+    return n !== "listingagent" && n !== "listingagents" && n !== "listingsagent" &&
+      n !== "buyeragent" && n !== "buyersagent" && n !== "buyeragents" && n !== "buyersagents" &&
+      !n.startsWith("listingagent") && !n.startsWith("buyeragent") && !n.startsWith("buyersagent");
+  });
+}
 const TODAY = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
 
 const CSS = `
@@ -82,7 +91,7 @@ function renderAgent(a: any, si: any): string {
   const yrs = a.years_experience;
   const roles = jp(a.community_roles, []);
   const achs = jp(a.notable_achievements, []);
-  const specs = jp(a.specialty, []);
+  const specs = filterSpecialties(jp(a.specialty, []));
   const served = jp(a.served_cities, []);
   const ph = a.phone, em = a.email, ws = a.website;
 

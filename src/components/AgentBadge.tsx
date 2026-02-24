@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Star, ShieldCheck, ExternalLink, Award, Home, TrendingUp, Clock, BadgeCheck, Link as LinkIcon } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, filterSpecialties } from "@/lib/utils";
 import { Professional } from "@/types/professional";
 import { getValidImageUrl } from "@/utils/imageUrlValidator";
 
@@ -107,16 +107,18 @@ function parsePriceRange(
 }
 
 /**
- * Deduplicate and normalize specialties
+ * Deduplicate and normalize specialties (excludes generic listing/buyer agent labels).
  */
 function normalizeSpecialties(specialties: string[] | undefined | null): string[] {
   if (!specialties || specialties.length === 0) return [];
+  const filtered = filterSpecialties(specialties);
+  if (filtered.length === 0) return [];
   
   // Normalize to title case and deduplicate
   const seen = new Set<string>();
   const result: string[] = [];
   
-  for (const spec of specialties) {
+  for (const spec of filtered) {
     const normalized = spec.toLowerCase().replace(/[-_]/g, ' ');
     if (!seen.has(normalized)) {
       seen.add(normalized);

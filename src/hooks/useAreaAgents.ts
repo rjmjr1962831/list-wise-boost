@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Professional } from '@/types/professional';
+import { filterSpecialties } from '@/lib/utils';
 
 interface AreaAgent extends Professional {
   isPaidExpert: boolean;
@@ -251,7 +252,7 @@ export function useAreaAgents({
             company: prof.company || '',
             rating: prof.review_stars_rating || 0,
             reviews: prof.num_total_reviews || 0,
-            specialties: prof.specialty || [],
+            specialties: filterSpecialties(prof.specialty || []),
             address: '',
             phone: prof.phone || '',
             email: prof.email || '',
@@ -353,7 +354,7 @@ export function useAreaAgents({
             company: prof.company || '',
             rating: prof.review_stars_rating || 0,
             reviews: prof.num_total_reviews || 0,
-            specialties: prof.specialty || [],
+            specialties: filterSpecialties(prof.specialty || []),
             address: '',
             phone: prof.phone || '',
             email: prof.email || '',

@@ -8,6 +8,7 @@
  */
 import { Professional } from '@/types/professional';
 import { Link } from 'react-router-dom';
+import { filterSpecialties } from '@/lib/utils';
 
 interface AgentPayloadBlockProps {
   professional: Professional;
@@ -84,8 +85,8 @@ function buildPayload(p: Professional): string {
       lines.push(`Average Sale Price (3yr): ${fmtPrice(avgVal)}`);
     }
 
-    const specialties = raw.specialty || p.specialties || [];
-    if (Array.isArray(specialties) && specialties.length > 0) {
+    const specialties = filterSpecialties(raw.specialty || p.specialties || []);
+    if (specialties.length > 0) {
       lines.push(`Specialties: ${specialties.slice(0, 6).join(', ')}`);
     }
 

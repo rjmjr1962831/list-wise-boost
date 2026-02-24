@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { filterSpecialties } from '@/lib/utils';
+import { Professional } from '@/types/professional';
 import { Professional } from '@/types/professional';
 
 interface NeighborhoodAgent extends Professional {
@@ -93,7 +95,7 @@ export function useNeighborhoodAgents({
           company: agent.company || '',
           rating: agent.review_stars_rating || 0,
           reviews: agent.num_total_reviews || 0,
-          specialties: agent.specialty || [],
+          specialties: filterSpecialties(agent.specialty || []),
           address: '',
           phone: agent.phone || '',
           email: agent.email || '',
@@ -232,7 +234,7 @@ async function fallbackToOldMethod(
     company: prof.company || '',
     rating: prof.review_stars_rating || 0,
     reviews: prof.num_total_reviews || 0,
-    specialties: prof.specialty || [],
+    specialties: filterSpecialties(prof.specialty || []),
     address: '',
     phone: prof.phone || '',
     email: prof.email || '',

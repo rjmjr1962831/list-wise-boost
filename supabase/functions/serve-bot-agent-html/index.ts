@@ -68,6 +68,16 @@ function ac(t: string): string | null {
 }
 function tierOf(a: any): string { return a.current_tier || a.badge_tier || "listed"; }
 
+/** Exclude generic "listing agent" / "buyer's agent" (and derivatives) from displayed specialties. */
+function filterSpecialties(specs: string[]): string[] {
+  return specs.filter((s: string) => {
+    const n = String(s).toLowerCase().replace(/'/g, "").replace(/\s+/g, "");
+    return n !== "listingagent" && n !== "listingagents" && n !== "listingsagent" &&
+      n !== "buyeragent" && n !== "buyersagent" && n !== "buyeragents" && n !== "buyersagents" &&
+      !n.startsWith("listingagent") && !n.startsWith("buyeragent") && !n.startsWith("buyersagent");
+  });
+}
+
 // Extract press item fields regardless of which field names were used during enrichment
 function pressItem(p: any): { pub: string; title: string; url: string } {
   return {
@@ -200,7 +210,7 @@ serve(async (req) => {
     // Enriched data
     const roles  = jp(a.community_roles, []);
     const achs   = jp(a.notable_achievements, []);
-    const specs  = jp(a.specialty, []);
+    const specs  = filterSpecialties(jp(a.specialty, []));
     const served = jp(a.served_cities, []);
     const press  = jp(a.press_mentions, []);
     const certs  = jp(a.certifications_verified, []).length > 0

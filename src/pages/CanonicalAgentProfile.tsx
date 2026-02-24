@@ -10,6 +10,7 @@ import { generateVerifiedAgentSchema, generatePersonSchema, generateCitationText
 import { professionalToVerifiedAgent } from '@/utils/professionalToVerifiedAgent';
 import { VerifiedAgent } from '@/types/verifiedAgent';
 import { getValidImageUrl } from '@/utils/imageUrlValidator';
+import { filterSpecialties } from '@/lib/utils';
 import { getStateDRESource } from '@/config/dataSources';
 import type { PressMentionRow, AwardRow, VerificationSourceRow } from '@/components/AgentProfileDossier';
 
@@ -126,7 +127,7 @@ function convertToMemo23Agent(dbProf: DBProfessional): Memo23Agent {
     },
     getToKnowMe: {
       description: dbProf.get_to_know_me,
-      specialties: dbProf.specialty,
+      specialties: filterSpecialties(dbProf.specialty || []),
       websiteUrl: dbProf.website,
     },
   };
@@ -335,7 +336,7 @@ function convertToProfessional(dbProf: DBProfessional): Professional {
     company: dbProf.company || '',
     rating: rating,
     reviews: reviews,
-    specialties: dbProf.specialty || [],
+    specialties: filterSpecialties(dbProf.specialty || []),
     address: (dbProf as any).address || '',
     phone: dbProf.phone || undefined,
     email: dbProf.email || undefined,

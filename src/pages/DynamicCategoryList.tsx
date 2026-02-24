@@ -29,6 +29,7 @@ import { SourceAttributionSchema } from '@/components/seo/SourceAttributionSchem
 import { CitationAuthorityBlock } from '@/components/CitationAuthorityBlock';
 import { Info, Loader2 } from 'lucide-react';
 import { getValidImageUrl } from '@/utils/imageUrlValidator';
+import { filterSpecialties } from '@/lib/utils';
 import { DualSearchBox } from '@/components/DualSearchBox';
 import { MeritTransparencyBanner } from '@/components/MeritTransparencyBanner';
 import { useNeighborhoodWriteup } from '@/hooks/useNeighborhoodWriteup';
@@ -128,7 +129,7 @@ function convertToProfessional(dbProf: DBProfessional): Professional {
     company: dbProf.company || '',
     rating: rating,
     reviews: reviews,
-    specialties: dbProf.specialty || [],
+    specialties: filterSpecialties(dbProf.specialty || []),
     address: (dbProf as any).address || '',
     phone: dbProf.phone || undefined, // Don't show fake phone numbers
     email: dbProf.email || undefined, // Don't show fake emails
