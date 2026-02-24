@@ -83,6 +83,11 @@ function textToHtml(text: string): string {
   html = html.replace(/click here: (https?:\/\/[^\s]+)/g, '<a href="$1">click here</a>');
   // Convert remaining bare URLs to links
   html = html.replace(/(https?:\/\/[^\s<]+)(?![^<]*<\/a>)/g, '<a href="$1">$1</a>');
+  // Convert [[BLOCK]]...[[/BLOCK]] to styled box
+  html = html.replace(/\[\[BLOCK\]\]\n?([\s\S]*?)\n?\[\[\/BLOCK\]\]/g, (_match, content) => {
+    const inner = content.replace(/\n/g, "<br>");
+    return `<table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:16px 0;"><tr><td style="background:#f5f5f5;border:1px solid #ddd;border-radius:8px;padding:20px 24px;font-family:monospace;font-size:14px;line-height:1.6;color:#333;">${inner}<br><br><em style="font-family:sans-serif;font-size:12px;color:#888;">Copy the text above and paste it into any AI assistant.</em></td></tr></table>`;
+  });
   html = html.replace(/\n/g, "<br>");
   return html;
 }
@@ -94,9 +99,9 @@ function injectTracking(html: string, emailId: string): string {
   return tracked + `<img src="${TRACK_BASE}?t=o&eid=${encodeURIComponent(emailId)}" width="1" height="1" style="display:none" alt="">`;
 }
 
-function buildRawEmail(from: string, to: string, subject: string, bodyText: string, trackingId: string, unsubUrl?: string): string {
+function buildRawEmail(from: string, to: string, subject: string, bodyText: string, bodyRaw: string, trackingId: string, unsubUrl?: string): string {
   const boundary = `b_${Date.now()}_${Math.random().toString(36).slice(2)}`;
-  const baseHtml = textToHtml(bodyText.replace(/\n\n---\nUnsubscribe:.*$/, ""));
+  const baseHtml = textToHtml(bodyRaw);
   const unsubHtml = unsubUrl ? `<br><br><hr style="border:none;border-top:1px solid #ccc;margin-top:20px;"><p style="font-size:13px;color:#555;margin-top:12px;"><a href="${unsubUrl}" style="color:#555;text-decoration:underline;">Unsubscribe</a></p>` : "";
   const bodyHtml = injectTracking(baseHtml + unsubHtml, trackingId);
   const headers = [
@@ -191,7 +196,7 @@ serve(async (req) => {
 
       const { data: pro } = await supabase
         .from("professionals")
-        .select("email, name, magic_link, state_slug, verification_token")
+        .select("email, name, magic_link, state_slug, verification_token, business_city, zillow_search_city")
         .eq("id", enrollment.professional_id)
         .single();
 
@@ -219,24 +224,27 @@ serve(async (req) => {
       const firstName = enrollment.first_name || (pro.name || "").split(" ")[0] || "there";
       const magicLink = pro.magic_link || "https://www.top10lists.us";
       const stateName = (pro.state_slug || "your state").replace(/-/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase());
+      const cityName = pro.business_city || (pro.zillow_search_city || "").replace(/,.*$/, "") || "your area";
       const unsubUrl = pro.verification_token ? `${SUPABASE_URL}/functions/v1/unsubscribe?token=${pro.verification_token}` : "";
       const subject = (step.subject || "")
         .replace(/\{\{firstName\}\}/g, firstName)
         .replace(/\{\{magicLink\}\}/g, magicLink)
         .replace(/\{\{magic_link\}\}/g, magicLink)
-        .replace(/\{\{state\}\}/g, stateName);
+        .replace(/\{\{state\}\}/g, stateName)
+        .replace(/\{\{city\}\}/g, cityName);
       const bodyRaw = (step.body || "")
         .replace(/\{\{firstName\}\}/g, firstName)
         .replace(/\{\{magicLink\}\}/g, magicLink)
         .replace(/\{\{magic_link\}\}/g, magicLink)
-        .replace(/\{\{state\}\}/g, stateName);
-      const body = unsubUrl
+        .replace(/\{\{state\}\}/g, stateName)
+        .replace(/\{\{city\}\}/g, cityName);
+      const body = (unsubUrl
         ? bodyRaw + `\n\n---\nUnsubscribe: ${unsubUrl}`
-        : bodyRaw;
+        : bodyRaw).replace(/\[\[BLOCK\]\]\n?/g, "---\n").replace(/\n?\[\[\/BLOCK\]\]/g, "\n---");
 
       try {
         const trackingId = crypto.randomUUID();
-        const raw = buildRawEmail(account.email, pro.email, subject, body, trackingId, unsubUrl || undefined);
+        const raw = buildRawEmail(account.email, pro.email, subject, body, bodyRaw, trackingId, unsubUrl || undefined);
 
         const sendRes = await fetch("https://www.googleapis.com/gmail/v1/users/me/messages/send", {
           method: "POST",
