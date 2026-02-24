@@ -7,6 +7,7 @@ import { AgentBadge } from '@/components/AgentBadge';
 import { Button } from '@/components/ui/button';
 import { Users, ChevronLeft, ChevronRight, ArrowLeft, MapPin } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { VerificationDisclaimer } from '@/components/VerificationDisclaimer';
 
 const AGENTS_PER_PAGE = 10;
 const SEARCH_RADIUS_MILES = 1.5;
@@ -173,6 +174,10 @@ export default function AreaAgentsPage() {
               </p>
             )}
           </div>
+        </div>
+
+        <div className="container mx-auto px-4">
+          <VerificationDisclaimer />
         </div>
 
         {/* Agent Grid */}

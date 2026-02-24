@@ -7,6 +7,7 @@ import { AgentBadge } from '@/components/AgentBadge';
 import { Button } from '@/components/ui/button';
 import { Users, ChevronLeft, ChevronRight, ArrowLeft } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { VerificationDisclaimer } from '@/components/VerificationDisclaimer';
 
 const AGENTS_PER_PAGE = 10;
 const SEARCH_RADIUS_MILES = 1.5;
@@ -191,12 +192,13 @@ export default function QualifiedAgentsPage() {
         </div>
 
         {/* Context Section */}
-        <div className="container mx-auto px-4 pt-8">
+        <div className="container mx-auto px-4 pt-8 mb-6">
           <div className="bg-muted/20 border border-border rounded-lg p-5 mb-6">
             <p className="text-sm text-muted-foreground">
               Top-rated agents who meet our editorial standards for {neighborhood.neighborhood} and surrounding areas.
             </p>
           </div>
+          <VerificationDisclaimer />
         </div>
 
         {/* Agent Grid */}
