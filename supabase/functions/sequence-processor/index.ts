@@ -111,7 +111,6 @@ serve(async (req) => {
 
   const accounts = [
     "hello@toptenlists.us", "robert@toptenlists.us",
-    "hello@top10lists.us", "robert@top10lists.us",
   ];
 
   const { data: accountRecords } = await supabase
