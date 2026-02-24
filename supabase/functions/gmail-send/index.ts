@@ -132,7 +132,7 @@ serve(async (req) => {
     ? message_body + `\n\n---\nUnsubscribe: ${unsubUrl}`
     : message_body;
   const baseHtml = textToHtml(message_body);
-  const unsubHtml = unsubUrl ? `<br><br><hr style="border:none;border-top:1px solid #ccc;"><p style="font-size:12px;color:#888;"><a href="${unsubUrl}">Unsubscribe</a></p>` : "";
+  const unsubHtml = unsubUrl ? `<br><br><hr style="border:none;border-top:1px solid #ccc;margin-top:20px;"><p style="font-size:13px;color:#555;margin-top:12px;"><a href="${unsubUrl}" style="color:#555;text-decoration:underline;">Unsubscribe</a></p>` : "";
   const trackedHtml = injectTracking(baseHtml + unsubHtml, trackingId);
 
   const raw = buildRawEmail({
