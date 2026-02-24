@@ -46,6 +46,16 @@ function normNum(n: number): string {
   if (n >= 100)  return `${Math.floor(n / 100) * 100}+`;
   return `${Math.max(0, Math.floor((n - 10) / 10) * 10)}+`;
 }
+function normBioText(text: string): string {
+  if (!text) return text;
+  const floor = (n: number): number =>
+    Math.max(0, Math.floor((n - 10) / 10) * 10);
+  return text
+    .replace(/\b(\d{2,6})\s+(career\s+|total\s+|verified\s+)?(transactions?)\b/gi,
+      (_m: string, num: string, q: string, w: string) => `${floor(parseInt(num, 10))}+ ${q ?? ""}${w}`)
+    .replace(/\b([\d,]{2,9})\s+(verified\s+|client\s+)?(reviews?)\b/gi,
+      (_m: string, num: string, q: string, w: string) => `${floor(parseInt(num.replace(/,/g, ""), 10))}+ ${q ?? ""}${w}`);
+}
 function fp(v: any): string | null {
   if (!v) return null;
   const n = Number(v);
@@ -293,7 +303,7 @@ serve(async (req) => {
     // ---- Bio (certified and above) ----
     if (!isListed && bio) {
       o += `<section>\n  <h2>About ${nm}</h2>\n`;
-      o += `  <div class="bio-section">\n    ${bio}\n  </div>\n`;
+      o += `  <div class="bio-section">\n    ${normBioText(bio)}\n  </div>\n`;
       o += `</section>\n\n`;
     }
 
