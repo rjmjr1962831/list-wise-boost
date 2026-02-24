@@ -318,8 +318,8 @@ export default function ArtifactPage() {
                 ?? cert.justification_data?.selection_rationale
                 ?? null;
               if (rationale) jsonld["selectionRationale"] = rationale;
-              if (transactionsFloor != null) jsonld["numberOfTransactions"] = transactionsFloor;
-              if (transactionsLastYearFloor != null) jsonld["transactionsLast12Months"] = transactionsLastYearFloor;
+              if (transactionsFloor != null && transactionsFloor > 0) jsonld["numberOfTransactions"] = transactionsFloor;
+              if (transactionsLastYearFloor != null && transactionsLastYearFloor > 0) jsonld["transactionsLast12Months"] = transactionsLastYearFloor;
             }
 
             // Audited+ fields
