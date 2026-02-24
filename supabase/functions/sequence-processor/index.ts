@@ -86,12 +86,16 @@ function injectTracking(html: string, emailId: string): string {
   return tracked + `<img src="${TRACK_BASE}?t=o&eid=${encodeURIComponent(emailId)}" width="1" height="1" style="display:none" alt="">`;
 }
 
-function buildRawEmail(from: string, to: string, subject: string, bodyText: string, trackingId: string): string {
+function buildRawEmail(from: string, to: string, subject: string, bodyText: string, trackingId: string, unsubUrl?: string): string {
   const boundary = `b_${Date.now()}_${Math.random().toString(36).slice(2)}`;
   const bodyHtml = injectTracking(textToHtml(bodyText), trackingId);
-  const lines = [
+  const headers = [
     `From: Robert Maynard <${from}>`, `To: ${to}`, `Subject: ${subject}`,
     "MIME-Version: 1.0", `Content-Type: multipart/alternative; boundary="${boundary}"`,
+  ];
+  if (unsubUrl) headers.push(`List-Unsubscribe: <${unsubUrl}>`);
+  const lines = [
+    ...headers,
     "", `--${boundary}`, "Content-Type: text/plain; charset=utf-8", "Content-Transfer-Encoding: base64",
     "", btoa(unescape(encodeURIComponent(bodyText))),
     "", `--${boundary}`, "Content-Type: text/html; charset=utf-8", "Content-Transfer-Encoding: base64",
@@ -177,7 +181,7 @@ serve(async (req) => {
 
       const { data: pro } = await supabase
         .from("professionals")
-        .select("email, name, magic_link, state_slug")
+        .select("email, name, magic_link, state_slug, verification_token")
         .eq("id", enrollment.professional_id)
         .single();
 
@@ -205,20 +209,24 @@ serve(async (req) => {
       const firstName = enrollment.first_name || (pro.name || "").split(" ")[0] || "there";
       const magicLink = pro.magic_link || "https://www.top10lists.us";
       const stateName = (pro.state_slug || "your state").replace(/-/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase());
+      const unsubUrl = pro.verification_token ? `${SUPABASE_URL}/functions/v1/unsubscribe?token=${pro.verification_token}` : "";
       const subject = (step.subject || "")
         .replace(/\{\{firstName\}\}/g, firstName)
         .replace(/\{\{magicLink\}\}/g, magicLink)
         .replace(/\{\{magic_link\}\}/g, magicLink)
         .replace(/\{\{state\}\}/g, stateName);
-      const body = (step.body || "")
+      const bodyRaw = (step.body || "")
         .replace(/\{\{firstName\}\}/g, firstName)
         .replace(/\{\{magicLink\}\}/g, magicLink)
         .replace(/\{\{magic_link\}\}/g, magicLink)
         .replace(/\{\{state\}\}/g, stateName);
+      const body = unsubUrl
+        ? bodyRaw + `\n\n---\nIf you no longer wish to receive these emails, click here to unsubscribe: ${unsubUrl}`
+        : bodyRaw;
 
       try {
         const trackingId = crypto.randomUUID();
-        const raw = buildRawEmail(account.email, pro.email, subject, body, trackingId);
+        const raw = buildRawEmail(account.email, pro.email, subject, body, trackingId, unsubUrl || undefined);
 
         const sendRes = await fetch("https://www.googleapis.com/gmail/v1/users/me/messages/send", {
           method: "POST",
