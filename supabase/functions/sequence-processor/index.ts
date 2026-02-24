@@ -88,7 +88,9 @@ function injectTracking(html: string, emailId: string): string {
 
 function buildRawEmail(from: string, to: string, subject: string, bodyText: string, trackingId: string, unsubUrl?: string): string {
   const boundary = `b_${Date.now()}_${Math.random().toString(36).slice(2)}`;
-  const bodyHtml = injectTracking(textToHtml(bodyText), trackingId);
+  const baseHtml = textToHtml(bodyText.replace(/\n\n---\nUnsubscribe:.*$/, ""));
+  const unsubHtml = unsubUrl ? `<br><br><hr style="border:none;border-top:1px solid #ccc;"><p style="font-size:12px;color:#888;"><a href="${unsubUrl}">Unsubscribe</a></p>` : "";
+  const bodyHtml = injectTracking(baseHtml + unsubHtml, trackingId);
   const headers = [
     `From: Robert Maynard <${from}>`, `To: ${to}`, `Subject: ${subject}`,
     "MIME-Version: 1.0", `Content-Type: multipart/alternative; boundary="${boundary}"`,
@@ -221,7 +223,7 @@ serve(async (req) => {
         .replace(/\{\{magic_link\}\}/g, magicLink)
         .replace(/\{\{state\}\}/g, stateName);
       const body = unsubUrl
-        ? bodyRaw + `\n\n---\nIf you no longer wish to receive these emails, click here to unsubscribe: ${unsubUrl}`
+        ? bodyRaw + `\n\n---\nUnsubscribe: ${unsubUrl}`
         : bodyRaw;
 
       try {
