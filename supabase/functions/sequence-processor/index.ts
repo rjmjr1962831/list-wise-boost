@@ -260,7 +260,7 @@ serve(async (req) => {
       }
 
       const firstName = enrollment.first_name || (pro.name || "").split(" ")[0] || "there";
-      const lastName = (enrollment as any).last_name ?? (enrollment.metadata as any)?.last_name ?? (pro.name || "").split(" ").slice(1).join(" ") || "";
+      const lastName = ((enrollment as any).last_name ?? (enrollment.metadata as any)?.last_name ?? (pro.name || "").split(" ").slice(1).join(" ")) || "";
       const magicLink = pro.magic_link || "https://www.top10lists.us";
       const stateName = (pro.state_slug || "your state").replace(/-/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase());
       const cityName = pro.business_city || (pro.zillow_search_city || "").replace(/,.*$/, "") || "here";
