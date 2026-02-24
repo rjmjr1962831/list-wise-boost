@@ -304,11 +304,11 @@ export default function DynamicCategoryList({
         let profsError = null;
         
         // Single direct query: Get all qualified professionals for this city
+        // (No category_id filter — align with serve-bot-list-html; city pages show all qualified agents for the city.)
         const { data: allProfs, error: profsQueryError } = await supabase
           .from('professionals')
           .select('*')
           .eq('city_id', cityData.id)
-          .eq('category_id', categoryData.id)
           .eq('active', true)
           .gte('review_stars_rating', 4.8)
           .gte('num_total_reviews', 20)
@@ -364,7 +364,6 @@ export default function DynamicCategoryList({
             .from('professionals')
             .select('*')
             .eq('city_id', cityData.id)
-            .eq('category_id', categoryData.id)
             .eq('active', true)
             .gte('review_stars_rating', 4.8)
             .gte('num_total_reviews', 20)
@@ -599,8 +598,8 @@ export default function DynamicCategoryList({
           console.log('🟢 Realtime update received:', payload.new);
           const updatedProf = payload.new as DBProfessional;
           
-          // Process all updates for current category (enrichment status doesn't matter)
-          if (updatedProf.category_id === category.id) {
+          // Process all updates for this city (we show all qualified agents for city, not filtered by category)
+          if (updatedProf.city_id === city?.id) {
             const convertedProf = convertToProfessional(updatedProf);
             
             // Add new enriched agent or update existing
@@ -769,7 +768,6 @@ export default function DynamicCategoryList({
           .from('professionals')
           .select('*')
           .eq('city_id', city.id)
-          .eq('category_id', category.id)
           .eq('active', true)
           .order('rank');
 
