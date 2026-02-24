@@ -543,26 +543,57 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
           {/* EMAILS */}
           {activeTab === "emails" && (
             <div className="space-y-2">
-              {emails.length === 0 && <Card><CardContent className="py-6 text-center text-sm text-muted-foreground">No email correspondence</CardContent></Card>}
-              {emails.map(email => (
-                <Card key={email.id} className={email.direction === "inbound" ? "border-l-2 border-l-blue-400" : ""}>
-                  <CardContent className="py-3 px-4">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <Badge variant={email.direction === "outbound" ? "default" : "secondary"} className="text-xs shrink-0">
-                            {email.direction === "outbound" ? <Send className="h-2.5 w-2.5 mr-1" /> : <Mail className="h-2.5 w-2.5 mr-1" />}{email.direction}
-                          </Badge>
-                          <span className="text-sm font-medium truncate">{email.subject}</span>
+              {inboundEmails.length === 0 && <Card><CardContent className="py-6 text-center text-sm text-muted-foreground">No inbound emails</CardContent></Card>}
+              {(() => {
+                const threads: Record<string, any[]> = {};
+                emails.forEach(e => {
+                  const tid = e.gmail_thread_id || e.id;
+                  if (!threads[tid]) threads[tid] = [];
+                  threads[tid].push(e);
+                });
+                // Only show threads that have at least one inbound message
+                const inboundThreads = Object.values(threads)
+                  .filter(t => t.some(e => e.direction === "inbound"))
+                  .sort((a, b) => new Date(b[0].sent_at).getTime() - new Date(a[0].sent_at).getTime());
+
+                return inboundThreads.map(thread => {
+                  const latest = thread[0];
+                  const inbound = thread.filter(e => e.direction === "inbound");
+                  const outbound = thread.filter(e => e.direction === "outbound");
+                  return (
+                    <Card key={latest.gmail_thread_id || latest.id} className="border-l-2 border-l-blue-400">
+                      <CardContent className="py-3 px-4">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-medium truncate">{latest.subject}</span>
+                              <span className="text-xs text-muted-foreground shrink-0">
+                                {inbound.length} in{outbound.length > 0 ? ` / ${outbound.length} out` : ""}
+                              </span>
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-1">From: {inbound[0]?.from_address}</p>
+                            {inbound[0]?.body_text && <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{inbound[0].body_text.substring(0, 200)}</p>}
+                          </div>
+                          <span className="text-xs text-muted-foreground shrink-0">{format(new Date(latest.sent_at), "MMM d, h:mm a")}</span>
                         </div>
-                        <p className="text-xs text-muted-foreground mt-1">{email.direction === "outbound" ? `To: ${email.to_address}` : `From: ${email.from_address}`} via {email.account_email}</p>
-                        {email.body_text && <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{email.body_text.substring(0, 200)}</p>}
-                      </div>
-                      <span className="text-xs text-muted-foreground shrink-0">{format(new Date(email.sent_at), "MMM d, h:mm a")}</span>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                        {thread.length > 1 && (
+                          <div className="mt-2 pt-2 border-t border-muted/30 space-y-1.5">
+                            {thread.slice(1).map(e => (
+                              <div key={e.id} className="flex items-center gap-2 text-xs text-muted-foreground">
+                                <Badge variant={e.direction === "outbound" ? "default" : "secondary"} className="text-[10px] px-1.5 py-0">
+                                  {e.direction === "outbound" ? "out" : "in"}
+                                </Badge>
+                                <span className="truncate flex-1">{e.body_text?.substring(0, 80) || e.subject}</span>
+                                <span className="shrink-0">{format(new Date(e.sent_at), "MMM d")}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  );
+                });
+              })()}
             </div>
           )}
 
