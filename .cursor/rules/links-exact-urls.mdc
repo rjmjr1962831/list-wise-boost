@@ -11,11 +11,12 @@ alwaysApply: true
 - **Do** use the real base URL for this project: **https://www.top10lists.us**
 - **Do** give every link as a complete, copy-paste-ready URL (e.g. `https://www.top10lists.us/ai-feed/artifact-payloads-proposed.md`), not a path or a template the user must fill in.
 - **Minimize Robert's time testing:** when sharing a link to something that was added or changed, always include the full URL so he can click or paste immediately—no guessing, no inserting.
-- **Always use clickable links:** Format URLs as markdown links `[text](https://full-url)` so Robert can click them directly.
+- **Always make URLs links:** In chat and docs, format every URL as a markdown link `[descriptive text](https://full-url)` so Robert can click them directly. Do not give plain bare URLs when sharing a link—use `[Phoenix city page](https://www.top10lists.us/arizona/phoenix/top10realestateagents)` not just the URL by itself.
 
 **Examples:**
-- ✅ `[artifact proposal](https://www.top10lists.us/ai-feed/artifact-payloads-proposed.md)`
-- ✅ `[methodology](https://www.top10lists.us/methodology)`
-- ✅ `https://www.top10lists.us/ai-feed/artifact-payloads-proposed.md` (plain URL also fine if in code/command)
+- ✅ [artifact proposal](https://www.top10lists.us/ai-feed/artifact-payloads-proposed.md)
+- ✅ [methodology](https://www.top10lists.us/methodology)
+- ✅ [Phoenix city page](https://www.top10lists.us/arizona/phoenix/top10realestateagents)
+- ✅ Plain URL in code blocks or terminal commands is fine.
 - ❌ `https://<your-staging-host>/ai-feed/...`
 - ❌ `.../artifact-payloads-proposed.md` (without the full URL when sharing with Robert)

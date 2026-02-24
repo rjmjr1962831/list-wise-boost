@@ -25,11 +25,23 @@ export default async function handler(req, res) {
     return;
   }
 
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+  if (!supabaseKey) {
+    res.status(500).json({ error: 'Missing Supabase key (SUPABASE_SERVICE_ROLE_KEY or VITE_SUPABASE_PUBLISHABLE_KEY)' });
+    return;
+  }
+
   try {
     const token = req.query.token || '';
     const tokenParam = token ? `&token=${encodeURIComponent(token)}` : '';
-    const url = `${SUPABASE_URL}/${fn}?path=${encodeURIComponent(path)}${tokenParam}`;
-    const upstream = await fetch(url);
+    let url = `${SUPABASE_URL}/${fn}?path=${encodeURIComponent(path)}${tokenParam}`;
+    // Forward preview_tier (e.g. ?preview_tier=underwritten) for artifact-markdown
+    if (req.query.preview_tier) {
+      url += `&preview_tier=${encodeURIComponent(req.query.preview_tier)}`;
+    }
+    const upstream = await fetch(url, {
+      headers: { Authorization: `Bearer ${supabaseKey}` },
+    });
     const html = await upstream.text();
 
     // Pass through useful custom headers from the edge function

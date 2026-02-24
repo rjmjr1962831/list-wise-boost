@@ -395,7 +395,9 @@ serve(async(req)=>{
   if(req.method==="OPTIONS")return new Response(null,{status:204,headers:{"Access-Control-Allow-Origin":"*","Access-Control-Allow-Methods":"GET,HEAD,OPTIONS","Access-Control-Allow-Headers":"*"}});
   if(req.method!=="GET"&&req.method!=="HEAD")return new Response("Method not allowed",{status:405});
   const url=new URL(req.url);
-  const token=url.searchParams.get("token")||(url.pathname.split("/").pop()!=="artifact-markdown"?url.pathname.split("/").pop():null);
+  let token=url.searchParams.get("token")||(url.pathname.split("/").pop()!=="artifact-markdown"?url.pathname.split("/").pop():null);
+  const pathParam=url.searchParams.get("path");
+  if(!token&&pathParam){const parts=pathParam.replace(/^\/+|\/+$/g,"").split("/");if(parts.length>=2&&parts[0]==="artifact")token=parts[1];}
   if(!token)return new Response("Agent token required",{status:400,headers:{"Content-Type":"text/plain"}});
   const sb=createClient(Deno.env.get("SUPABASE_URL")??"",Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")??"");
   const isUuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(token);
@@ -403,7 +405,14 @@ serve(async(req)=>{
   const{data:byToken}=await sb.from("professionals").select(PRO_FIELDS).eq("verification_token",token).maybeSingle();
   if(byToken){pro=byToken;}
   else if(isUuid){const{data:byId}=await sb.from("professionals").select(PRO_FIELDS).eq("id",token).maybeSingle();pro=byId;}
+  else{
+    const{data:bySlug}=await sb.from("professionals").select(PRO_FIELDS).eq("canonical_slug",token).maybeSingle();
+    if(bySlug){pro=bySlug;}
+    else{const{data:bySlugAz}=await sb.from("professionals").select(PRO_FIELDS).eq("state_slug","arizona").eq("canonical_slug",token).maybeSingle();pro=bySlugAz;}
+    if(!pro){const{data:bySlugCa}=await sb.from("professionals").select(PRO_FIELDS).eq("state_slug","california").eq("canonical_slug",token).maybeSingle();pro=bySlugCa;}
+  }
   if(!pro)return new Response("Agent not found.",{status:404,headers:{"Content-Type":"text/plain"}});
+  const previewTier=url.searchParams.get("preview_tier")?.toLowerCase();
   const ss=pro.state_slug||"arizona";
   const state=STATES[ss]||ss;
   const displayToken=pro.verification_token||pro.id;
@@ -411,7 +420,8 @@ serve(async(req)=>{
   const{data:certRow}=await sb.from("certifications").select("certification_tier,certification_status,issued_at,last_verified_at,markets_covered,neighborhoods_covered,justification_data").eq("professional_id",pro.id).eq("certification_status","active").maybeSingle();
   const tier=(certRow?.certification_tier||pro.current_tier||pro.badge_tier||"listed").toLowerCase();
   const profileVerified=pro.funnel_status==="approved"||pro.funnel_completed_at!=null;
-  const effTier=(tier==="listed"||!certRow)&&profileVerified?"certified":tier;
+  let effTier=(tier==="listed"||!certRow)&&profileVerified?"certified":tier;
+  if(previewTier&&["listed","certified","audited","accredited","underwritten"].includes(previewTier))effTier=previewTier==="accredited"?"audited":previewTier;
   const ttl=CACHE[effTier]||86400;
   const effCert=certRow||{certification_tier:"certified",certification_status:"active",issued_at:pro.funnel_completed_at||new Date().toISOString(),last_verified_at:pro.funnel_completed_at||new Date().toISOString(),markets_covered:null,neighborhoods_covered:null,justification_data:null};
   const updated=iso(effCert.last_verified_at)||iso(effCert.issued_at)||new Date().toISOString().slice(0,10);
