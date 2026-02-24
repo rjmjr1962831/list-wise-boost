@@ -9,6 +9,7 @@
 import { Professional } from '@/types/professional';
 import { Link } from 'react-router-dom';
 import { filterSpecialties } from '@/lib/utils';
+import { normBioText } from '@/utils/normBioText';
 
 interface AgentPayloadBlockProps {
   professional: Professional;
@@ -141,7 +142,7 @@ function buildPayload(p: Professional): string {
   if (tierAtLeast(tier, 'underwritten')) {
     const bio = raw.synthesized_bio;
     if (bio) {
-      const cleanBio = bio.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+      const cleanBio = normBioText(bio).replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
       lines.push(`\nBio: ${cleanBio}`);
     }
 

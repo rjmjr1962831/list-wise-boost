@@ -697,12 +697,20 @@ serve(async (req) => {
       yearsExperience: confirmedYearsExperience,
       badges: professional.badges || [],
       specialty: professional.specialty || [],
-      reviewCount: professional.num_total_reviews,
+      reviewCount: (() => {
+        const n = professional.num_total_reviews;
+        if (!n || !Number.isFinite(n)) return 0;
+        return `${Math.max(0, Math.floor((Number(n) - 10) / 10) * 10)}+`;
+      })(),
       rating: professional.review_stars_rating,
       company: professional.company || professional.business_name,
       city: professional.zillow_search_city,
       // Additional unique identifiers for differentiation
-      totalSales: professional.total_sales,
+      totalSales: (() => {
+        const n = professional.total_sales;
+        if (!n || !Number.isFinite(n)) return null;
+        return `${Math.max(0, Math.floor((Number(n) - 10) / 10) * 10)}+`;
+      })(),
       currentListings: professional.current_listings,
       salesStats: professional.agent_sales_stats,
       certifications: professional.certifications || professional.certifications_verified,
