@@ -3,6 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+const TRACK_BASE = `${SUPABASE_URL}/functions/v1/email-track`;
 const GMAIL_CLIENT_ID = Deno.env.get("GMAIL_CLIENT_ID")!;
 const GMAIL_CLIENT_SECRET = Deno.env.get("GMAIL_CLIENT_SECRET")!;
 
@@ -40,15 +41,50 @@ async function getValidToken(account: any): Promise<string> {
   return account.access_token;
 }
 
-function buildRawEmail(from: string, to: string, subject: string, body: string): string {
+function textToHtml(text: string): string {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\n/g, "<br>")
+    .replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1">$1</a>');
+}
+
+function injectTracking(html: string, emailId: string): string {
+  const tracked = html.replace(
+    /href="(https?:\/\/[^"]+)"/g,
+    (_match: string, url: string) => {
+      const trackUrl = `${TRACK_BASE}?t=c&eid=${encodeURIComponent(emailId)}&url=${encodeURIComponent(url)}`;
+      return `href="${trackUrl}"`;
+    }
+  );
+  const pixel = `<img src="${TRACK_BASE}?t=o&eid=${encodeURIComponent(emailId)}" width="1" height="1" style="display:none" alt="">`;
+  return tracked + pixel;
+}
+
+function buildRawEmail(from: string, to: string, subject: string, bodyText: string, trackingId: string): string {
+  const boundary = `boundary_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+  const bodyHtml = injectTracking(textToHtml(bodyText), trackingId);
   const lines = [
     `From: Robert Maynard <${from}>`,
     `To: ${to}`,
     `Subject: ${subject}`,
     "MIME-Version: 1.0",
-    "Content-Type: text/plain; charset=utf-8",
+    `Content-Type: multipart/alternative; boundary="${boundary}"`,
     "",
-    body,
+    `--${boundary}`,
+    "Content-Type: text/plain; charset=utf-8",
+    "Content-Transfer-Encoding: base64",
+    "",
+    btoa(unescape(encodeURIComponent(bodyText))),
+    "",
+    `--${boundary}`,
+    "Content-Type: text/html; charset=utf-8",
+    "Content-Transfer-Encoding: base64",
+    "",
+    btoa(unescape(encodeURIComponent(bodyHtml))),
+    "",
+    `--${boundary}--`,
   ];
   const raw = lines.join("\r\n");
   return btoa(unescape(encodeURIComponent(raw)))
@@ -138,7 +174,8 @@ serve(async (req) => {
 
         // Send via Gmail API
         try {
-          const raw = buildRawEmail(account.email, pro.email, subject, body);
+          const trackingId = crypto.randomUUID();
+          const raw = buildRawEmail(account.email, pro.email, subject, body, trackingId);
           const sendRes = await fetch("https://www.googleapis.com/gmail/v1/users/me/messages/send", {
             method: "POST",
             headers: {
@@ -165,7 +202,7 @@ serve(async (req) => {
 
           // Log the sent email
           await supabase.from("crm_emails").insert({
-            gmail_message_id: sent.id,
+            gmail_message_id: trackingId,
             gmail_thread_id: sent.threadId || sent.id,
             account_email: account.email,
             direction: "outbound",
