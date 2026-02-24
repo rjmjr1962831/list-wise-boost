@@ -2,13 +2,14 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { LogOut, Users, ClipboardList, Mail, Zap } from "lucide-react";
+import { LogOut, Users, ClipboardList, Mail, Zap, BarChart2 } from "lucide-react";
 import { EmailManager } from "@/components/crm/EmailManager";
 import { toast } from "sonner";
 import { ContactsManager } from "@/components/crm/ContactsManager";
 import { TasksManager } from "@/components/crm/TasksManager";
+import SequenceDashboard from "@/pages/admin/crm/SequenceDashboard";
 
-type View = "contacts" | "tasks" | "email";
+type View = "contacts" | "tasks" | "email" | "sequences";
 
 interface InstantlySyncResult {
   stats?: { total: number; created: number; updated: number; errors: number };
@@ -78,9 +79,10 @@ const CRM = () => {
   if (!isAdmin) return null;
 
   const navItems: { id: View; label: string; icon: React.ReactNode; badge?: number }[] = [
-    { id: "contacts", label: "Contacts", icon: <Users className="h-5 w-5" /> },
-    { id: "tasks",    label: "Tasks",    icon: <ClipboardList className="h-5 w-5" />, badge: pendingTaskCount },
-    { id: "email",    label: "Email",    icon: <Mail className="h-5 w-5" /> },
+    { id: "contacts",  label: "Contacts",  icon: <Users className="h-5 w-5" /> },
+    { id: "tasks",     label: "Tasks",     icon: <ClipboardList className="h-5 w-5" />, badge: pendingTaskCount },
+    { id: "email",     label: "Email",     icon: <Mail className="h-5 w-5" /> },
+    { id: "sequences", label: "Sequences", icon: <BarChart2 className="h-5 w-5" /> },
   ];
 
   return (
@@ -140,6 +142,7 @@ const CRM = () => {
             <TasksManager onTaskResolved={fetchPendingCount} />
           )}
           {activeView === "email" && <EmailManager />}
+          {activeView === "sequences" && <SequenceDashboard />}
         </div>
       </main>
     </div>
