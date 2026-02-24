@@ -172,7 +172,7 @@ serve(async (req) => {
     from_address: from_account,
     to_address: to,
     subject,
-    body_text: message_body,
+    body_text: fullBody,
     contact_id: contact_id || null,
     sent_at: new Date().toISOString(),
   });
