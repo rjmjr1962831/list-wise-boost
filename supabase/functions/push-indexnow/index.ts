@@ -34,6 +34,22 @@ const KEY_URLS = [
   'https://www.top10lists.us/llms.txt',
   'https://www.top10lists.us/.well-known/ai-content-index.json',
   'https://www.top10lists.us/sitemap.xml',
+
+  // AI-feed static markdown (GEO-critical)
+  'https://www.top10lists.us/ai-feed/for-ai.md',
+  'https://www.top10lists.us/ai-feed/home.md',
+  'https://www.top10lists.us/ai-feed/about.md',
+  'https://www.top10lists.us/ai-feed/geo-performance.md',
+  'https://www.top10lists.us/ai-feed/vetting-standards.md',
+  'https://www.top10lists.us/ai-feed/certification-logic.md',
+  'https://www.top10lists.us/ai-feed/artifact-payload-structure.md',
+  'https://www.top10lists.us/ai-feed/artifact-payloads-proposed.md',
+  'https://www.top10lists.us/ai-feed/whitepaper-full.md',
+  'https://www.top10lists.us/ai-feed/founder.md',
+  'https://www.top10lists.us/ai-feed/tier-listed.md',
+  'https://www.top10lists.us/ai-feed/tier-certified.md',
+  'https://www.top10lists.us/ai-feed/tier-audited.md',
+  'https://www.top10lists.us/ai-feed/tier-underwritten.md',
   
   // Featured agent profiles - canonical URL format
   'https://www.top10lists.us/arizona/agents/amy-gilner-5479',
