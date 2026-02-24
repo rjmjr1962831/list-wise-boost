@@ -15,6 +15,7 @@ import {
   RefreshCw,
   Menu,
   X,
+  Shield,
 } from "lucide-react";
 import { OverviewSection } from "@/components/agent/OverviewSection";
 import { ProfileSection } from "@/components/agent/ProfileSection";
@@ -23,7 +24,7 @@ import { BillingSection } from "@/components/agent/BillingSection";
 import { getValidImageUrl } from "@/utils/imageUrlValidator";
 import { cn } from "@/lib/utils";
 
-type NavSection = "overview" | "profile" | "payload" | "billing";
+type NavSection = "overview" | "profile" | "payload" | "billing" | "badge";
 
 interface NavItem {
   id: NavSection;
@@ -35,6 +36,7 @@ const NAV_ITEMS: NavItem[] = [
   { id: "overview", label: "Overview", icon: LayoutDashboard },
   { id: "profile", label: "Profile", icon: User },
   { id: "payload", label: "Payload", icon: Bot },
+  { id: "badge", label: "Badge & sharing", icon: Shield },
   { id: "billing", label: "Billing", icon: CreditCard },
 ];
 
@@ -281,6 +283,12 @@ export default function AgentDashboard() {
   };
 
   const handleNavClick = (section: NavSection) => {
+    if (section === "badge") {
+      const token = professional?.verification_token || professional?.id;
+      navigate(`/badge-instructions${token ? `?token=${encodeURIComponent(token)}` : ""}`);
+      setMobileNavOpen(false);
+      return;
+    }
     setActiveSection(section);
     setMobileNavOpen(false);
     window.scrollTo(0, 0);
