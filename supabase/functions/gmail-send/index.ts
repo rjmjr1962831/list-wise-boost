@@ -46,6 +46,11 @@ function textToHtml(text: string): string {
   html = html.replace(/click here: (https?:\/\/[^\s]+)/g, '<a href="$1">click here</a>');
   // Convert remaining bare URLs to links
   html = html.replace(/(https?:\/\/[^\s<]+)(?![^<]*<\/a>)/g, '<a href="$1">$1</a>');
+  // Convert [[BLOCK]]...[[/BLOCK]] to styled box
+  html = html.replace(/\[\[BLOCK\]\]\n?([\s\S]*?)\n?\[\[\/BLOCK\]\]/g, (_match, content) => {
+    const inner = content.replace(/\n/g, "<br>");
+    return `<table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:16px 0;"><tr><td style="background:#f5f5f5;border:1px solid #ddd;border-radius:8px;padding:20px 24px;font-family:monospace;font-size:14px;line-height:1.6;color:#333;">${inner}<br><br><em style="font-family:sans-serif;font-size:12px;color:#888;">Copy the text above and paste it into any AI assistant.</em></td></tr></table>`;
+  });
   html = html.replace(/\n/g, "<br>");
   return html;
 }
@@ -132,9 +137,9 @@ serve(async (req) => {
   const trackingId = crypto.randomUUID();
 
   // Plain text gets URL, HTML gets clickable word
-  const fullBody = unsubUrl
+  const plainBody = (unsubUrl
     ? message_body + `\n\n---\nUnsubscribe: ${unsubUrl}`
-    : message_body;
+    : message_body).replace(/\[\[BLOCK\]\]\n?/g, "---\n").replace(/\n?\[\[\/BLOCK\]\]/g, "\n---");
   const baseHtml = textToHtml(message_body);
   const unsubHtml = unsubUrl ? `<br><br><hr style="border:none;border-top:1px solid #ccc;margin-top:20px;"><p style="font-size:13px;color:#555;margin-top:12px;"><a href="${unsubUrl}" style="color:#555;text-decoration:underline;">Unsubscribe</a></p>` : "";
   const trackedHtml = injectTracking(baseHtml + unsubHtml, trackingId);
@@ -142,7 +147,7 @@ serve(async (req) => {
   const raw = buildRawEmail({
     from: from_account,
     to, subject,
-    bodyText: fullBody,
+    bodyText: plainBody,
     bodyHtml: trackedHtml,
     inReplyTo: in_reply_to,
     references,
@@ -175,7 +180,7 @@ serve(async (req) => {
     from_address: from_account,
     to_address: to,
     subject,
-    body_text: fullBody,
+    body_text: plainBody,
     contact_id: contact_id || null,
     sent_at: new Date().toISOString(),
   });
