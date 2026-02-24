@@ -38,12 +38,16 @@ async function getValidToken(account: any): Promise<string> {
 }
 
 function textToHtml(text: string): string {
-  return text
+  let html = text
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/\n/g, "<br>")
-    .replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1">$1</a>');
+    .replace(/>/g, "&gt;");
+  // Convert "click here: URL" to linked "click here"
+  html = html.replace(/click here: (https?:\/\/[^\s]+)/g, '<a href="$1">click here</a>');
+  // Convert remaining bare URLs to links
+  html = html.replace(/(https?:\/\/[^\s<]+)(?![^<]*<\/a>)/g, '<a href="$1">$1</a>');
+  html = html.replace(/\n/g, "<br>");
+  return html;
 }
 
 function injectTracking(html: string, emailId: string): string {
