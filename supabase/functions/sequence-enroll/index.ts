@@ -6,9 +6,14 @@ const supabase = createClient(
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
 );
 
-const SENDING_ACCOUNTS = [
+const ALL_SENDING_ACCOUNTS = [
   "robert@top10lists.us",
   "hello@top10lists.us",
+  "robert@toptenlists.us",
+  "hello@toptenlists.us",
+];
+
+const TOPTENLISTS_ACCOUNTS = [
   "robert@toptenlists.us",
   "hello@toptenlists.us",
 ];
@@ -28,16 +33,22 @@ function getDayStart(dayOffset: number, baseDate: Date): Date {
 
 serve(async (req) => {
   try {
-    const { sequence_id, filters, dry_run = false, start_date } = await req.json();
+    const { sequence_id, filters, dry_run = false, start_date, accounts_override } = await req.json();
 
     if (!sequence_id) return new Response(JSON.stringify({ error: "sequence_id required" }), {
       status: 400, headers: { "Content-Type": "application/json" }
     });
 
+    // Determine which sending accounts to use
+    // accounts_override: "toptenlists" | "all" (default: "all")
+    const SENDING_ACCOUNTS = accounts_override === "toptenlists"
+      ? TOPTENLISTS_ACCOUNTS
+      : ALL_SENDING_ACCOUNTS;
+
     // Build agent query
     let query = supabase
       .from("professionals")
-      .select("id, name, email, verification_token, business_city, state_slug, current_tier")
+      .select("id, name, email, email_provider, verification_token, business_city, state_slug, current_tier")
       .eq("active", true)
       .eq("email_unsubscribed", false)
       .not("email", "is", null)
@@ -46,11 +57,13 @@ serve(async (req) => {
     if (filters?.state_slug) query = query.eq("state_slug", filters.state_slug);
     if (filters?.tier) query = query.eq("current_tier", filters.tier);
     if (filters?.city) query = query.eq("business_city", filters.city);
+    // email_provider filter: "private" excludes gmail/outlook agents
+    if (filters?.email_provider) query = query.eq("email_provider", filters.email_provider);
 
     const { data: agents, error } = await query.limit(10000);
     if (error) throw error;
 
-    // Filter out already enrolled
+    // Filter out already enrolled in THIS sequence
     const { data: alreadyEnrolled } = await supabase
       .from("crm_sequence_enrollments")
       .select("email")
@@ -68,15 +81,13 @@ serve(async (req) => {
         to_enroll: newAgents.length,
         per_day: perDay,
         days_to_complete: Math.ceil(newAgents.length / perDay),
+        sending_accounts: SENDING_ACCOUNTS,
       }), { headers: { "Content-Type": "application/json" } });
     }
 
-    // Base date -- provided or tomorrow 5am MST
+    // Base date -- provided or today at 5am MST
     const baseDate = start_date ? new Date(start_date) : getDayStart(0, new Date());
 
-    // Schedule: each slot = 5 min window, 4 accounts send in parallel per slot
-    // slot 0 = 05:00, slot 1 = 05:05 ... slot 24 = 07:00
-    // day 0: agents 0-99, day 1: agents 100-199, etc.
     const perDay = SENDING_ACCOUNTS.length * EMAILS_PER_ACCOUNT_PER_DAY;
 
     const enrollments: any[] = [];
@@ -134,7 +145,7 @@ serve(async (req) => {
       days_to_complete: Math.ceil(newAgents.length / perDay),
       first_send: firstSend,
       last_send: lastSend,
-      accounts: SENDING_ACCOUNTS,
+      sending_accounts: SENDING_ACCOUNTS,
     }), { headers: { "Content-Type": "application/json" } });
 
   } catch (e: any) {
