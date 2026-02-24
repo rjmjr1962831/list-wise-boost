@@ -6,14 +6,8 @@ const supabase = createClient(
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
 );
 
-const ALL_SENDING_ACCOUNTS = [
-  "robert@top10lists.us",
-  "hello@top10lists.us",
-  "robert@toptenlists.us",
-  "hello@toptenlists.us",
-];
-
-const TOPTENLISTS_ACCOUNTS = [
+// Must match sequence-processor: only these two accounts send.
+const SENDING_ACCOUNTS = [
   "robert@toptenlists.us",
   "hello@toptenlists.us",
 ];
@@ -33,17 +27,11 @@ function getDayStart(dayOffset: number, baseDate: Date): Date {
 
 serve(async (req) => {
   try {
-    const { sequence_id, filters, dry_run = false, start_date, accounts_override } = await req.json();
+    const { sequence_id, filters, dry_run = false, start_date } = await req.json();
 
     if (!sequence_id) return new Response(JSON.stringify({ error: "sequence_id required" }), {
       status: 400, headers: { "Content-Type": "application/json" }
     });
-
-    // Determine which sending accounts to use
-    // accounts_override: "toptenlists" | "all" (default: "all")
-    const SENDING_ACCOUNTS = accounts_override === "toptenlists"
-      ? TOPTENLISTS_ACCOUNTS
-      : ALL_SENDING_ACCOUNTS;
 
     // Build agent query
     let query = supabase

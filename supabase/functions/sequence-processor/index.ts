@@ -15,6 +15,13 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 // Campaign start date: Feb 25, 2026 (reset after emergency stop)
 const CAMPAIGN_START = new Date("2026-02-24T00:00:00Z");
 
+// PER-INVOCATION CAP: Do not remove or increase without explicit approval.
+// One email per account per run = 5-minute spacing; protects domain reputation.
+const MAX_SENDS_PER_ACCOUNT_PER_RUN = 1;
+
+// Stagger between accounts within one run (minute 0 = account1, minute 1 = account2).
+const STAGGER_MS_BETWEEN_ACCOUNTS = 60_000;
+
 function getDailyLimit(account: string): number {
   const now = new Date();
   const dayNum = Math.floor((now.getTime() - CAMPAIGN_START.getTime()) / 86400000) + 1;
@@ -157,7 +164,8 @@ serve(async (req) => {
       continue;
     }
 
-    // Get due enrollments, limited to remaining daily budget
+    // Get due enrollments: at most 1 per account per run (5-min gap between sends from same account).
+    const limitThisRun = Math.min(remaining, MAX_SENDS_PER_ACCOUNT_PER_RUN);
     const { data: enrollments } = await supabase
       .from("crm_sequence_enrollments")
       .select("*, crm_sequences(name)")
@@ -165,7 +173,7 @@ serve(async (req) => {
       .eq("status", "active")
       .lte("next_send_at", new Date().toISOString())
       .order("next_send_at", { ascending: true })
-      .limit(remaining);
+      .limit(limitThisRun);
 
     if (!enrollments?.length) {
       results.push({
@@ -304,14 +312,16 @@ serve(async (req) => {
         accountSent.push(pro.email);
         totalSent++;
 
-        // 5 second pause between sends
-        await new Promise(r => setTimeout(r, 5000));
-
       } catch (e) {
         console.error(`Exception sending to ${pro.email}:`, e);
         accountErrors++;
         totalErrors++;
       }
+    }
+
+    // Stagger: next account sends ~1 minute after this one (minute 0 = account1, minute 1 = account2).
+    if (accountSent.length > 0) {
+      await new Promise((r) => setTimeout(r, STAGGER_MS_BETWEEN_ACCOUNTS));
     }
 
     results.push({
