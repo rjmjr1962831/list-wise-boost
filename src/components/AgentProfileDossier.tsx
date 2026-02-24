@@ -1,6 +1,7 @@
 import React from "react";
 import { AgentSourcesBlock } from "@/components/AgentSourcesBlock";
 import { formatWithParagraphs } from "@/utils/formatParagraphs";
+import { normBioText } from "@/utils/normBioText";
 
 /* -------------------------------------------------
    Machine-Native Artifact Types
@@ -446,7 +447,7 @@ export default function AgentProfileDossier(props: AgentProfileDossierProps) {
               lineHeight: 1.6,
             }}
             className="[&>p]:mb-4 [&>p:last-child]:mb-0"
-            dangerouslySetInnerHTML={{ __html: synthesizedBio }}
+            dangerouslySetInnerHTML={{ __html: normBioText(synthesizedBio) }}
           />
         </section>
       )}
