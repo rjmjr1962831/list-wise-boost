@@ -25,9 +25,13 @@ export default async function handler(req, res) {
     return;
   }
 
-  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-  if (!supabaseKey) {
-    res.status(500).json({ error: 'Missing Supabase key (SUPABASE_SERVICE_ROLE_KEY or VITE_SUPABASE_PUBLISHABLE_KEY)' });
+  const supabaseKey =
+    process.env.SUPABASE_SERVICE_ROLE_KEY ||
+    process.env.SUPABASE_ANON_KEY ||
+    process.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!supabaseKey || !supabaseKey.trim()) {
+    res.status(500).json({ error: 'Missing Supabase key. Set SUPABASE_SERVICE_ROLE_KEY or SUPABASE_ANON_KEY in Vercel env.' });
     return;
   }
 
@@ -40,9 +44,20 @@ export default async function handler(req, res) {
       url += `&preview_tier=${encodeURIComponent(req.query.preview_tier)}`;
     }
     const upstream = await fetch(url, {
-      headers: { Authorization: `Bearer ${supabaseKey}` },
+      headers: {
+        Authorization: `Bearer ${supabaseKey.trim()}`,
+        apikey: supabaseKey.trim(),
+      },
     });
     const html = await upstream.text();
+
+    if (upstream.status === 401) {
+      res.status(401).setHeader('Content-Type', 'application/json').json({
+        error: 'Upstream 401',
+        message: html || 'Missing or invalid Supabase key. Set SUPABASE_SERVICE_ROLE_KEY or SUPABASE_ANON_KEY in Vercel (Settings > Environment Variables) and redeploy.',
+      });
+      return;
+    }
 
     // Pass through useful custom headers from the edge function
     const passHeaders = ['x-agents-count', 'x-cities-count', 'x-page-type', 'x-agent-name', 'x-agent-tier'];

@@ -1,5 +1,6 @@
 import { VerifiedAgent, LicenseInfo, AggregatedRating, PlatformReview, Certification, Award, PressMention, DataSourceLog, VerifiedField } from '@/types/verifiedAgent';
 import { getCertificationInfo, DATA_SOURCES, getStateDRESource } from '@/config/dataSources';
+import { filterSpecialties } from '@/lib/utils';
 
 /**
  * Transform a Professional database record to VerifiedAgent format
@@ -190,8 +191,8 @@ export function professionalToVerifiedAgent(
     ),
   };
 
-  // Build specialties
-  const specialties = professional.specialty || [];
+  // Build specialties (exclude generic listing/buyer agent labels)
+  const specialties = filterSpecialties(professional.specialty || []);
 
   // Construct the full VerifiedAgent
   const verifiedAgent: VerifiedAgent = {

@@ -28,6 +28,16 @@ const AGENCY: Record<string,string> = {
   arizona:"Arizona Department of Real Estate (AZDRE)",
   california:"California Department of Real Estate (DRE)",
 };
+
+/** Exclude generic "listing agent" / "buyer's agent" (and derivatives) from displayed specialties. */
+function filterSpecialties(specs: string[]): string[] {
+  return specs.filter((s: string) => {
+    const n = String(s).toLowerCase().replace(/'/g, "").replace(/\s+/g, "");
+    return n !== "listingagent" && n !== "listingagents" && n !== "listingsagent" &&
+      n !== "buyeragent" && n !== "buyersagent" && n !== "buyeragents" && n !== "buyersagents" &&
+      !n.startsWith("listingagent") && !n.startsWith("buyeragent") && !n.startsWith("buyersagent");
+  });
+}
 const LIC_URL: Record<string,string> = {
   arizona:"https://services.azre.gov/PdbWeb/IndividualLicense/SearchIndividualLicenses",
   california:"https://www2.dre.ca.gov/PublicASP/pplinfo.asp",
@@ -120,7 +130,7 @@ function schemaLD(pro:any,state:string,token:string):string{
     "address":{"@type":"PostalAddress","addressRegion":state,"addressCountry":"US"},
     "telephone":getPhones(pro)[0]||undefined,
     "aggregateRating":(pro.review_stars_rating&&pro.num_total_reviews)?{"@type":"AggregateRating","ratingValue":pro.review_stars_rating,"reviewCount":pro.num_total_reviews,"bestRating":5,"worstRating":1}:undefined,
-    "knowsAbout":Array.isArray(pro.specialty)?pro.specialty:undefined,
+    "knowsAbout":(Array.isArray(pro.specialty)&&filterSpecialties(pro.specialty).length>0)?filterSpecialties(pro.specialty):undefined,
   };
   return`<script type="application/ld+json">\n${JSON.stringify(JSON.parse(JSON.stringify(s)),null,2)}\n</script>`;
 }
@@ -237,7 +247,8 @@ function awards(list:any[]):string{
 
 function credentials(pro:any):string{
   let out="";
-  const specs=Array.isArray(pro.specialty)?pro.specialty:[];
+  const rawSpecs=Array.isArray(pro.specialty)?pro.specialty:[];
+  const specs=filterSpecialties(rawSpecs);
   if(specs.length>0)out+=`<h2>Specialties</h2><div class="tags">${specs.map((s:string)=>`<span class="tag">${esc(s)}</span>`).join("")}</div>`;
   let certs:any[]=[];
   if(Array.isArray(pro.certifications))certs=pro.certifications;

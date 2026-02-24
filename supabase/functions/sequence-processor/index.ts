@@ -224,7 +224,7 @@ serve(async (req) => {
       const firstName = enrollment.first_name || (pro.name || "").split(" ")[0] || "there";
       const magicLink = pro.magic_link || "https://www.top10lists.us";
       const stateName = (pro.state_slug || "your state").replace(/-/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase());
-      const cityName = pro.business_city || (pro.zillow_search_city || "").replace(/,.*$/, "") || "here";
+      const cityName = pro.business_city || (pro.zillow_search_city || "").replace(/,.*$/, "") || "your area";
       const unsubUrl = pro.verification_token ? `${SUPABASE_URL}/functions/v1/unsubscribe?token=${pro.verification_token}` : "";
       const subject = (step.subject || "")
         .replace(/\{\{firstName\}\}/g, firstName)

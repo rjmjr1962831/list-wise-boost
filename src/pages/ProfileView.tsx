@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 import { isValidImageUrl, getValidImageUrl } from "@/utils/imageUrlValidator";
 import { floorReviews } from "@/utils/floorDisplay";
+import { filterSpecialties } from "@/lib/utils";
 
 interface Professional {
   id: string;
@@ -244,20 +245,23 @@ export default function ProfileView() {
           )}
 
           {/* Specialties */}
-          {professional.specialty && professional.specialty.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Specialties</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-wrap gap-2">
-                  {professional.specialty.map((spec, idx) => (
-                    <Badge key={idx} variant="outline">{spec}</Badge>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
+          {(() => {
+            const filtered = filterSpecialties(professional.specialty || []);
+            return filtered.length > 0 ? (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Specialties</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-wrap gap-2">
+                    {filtered.map((spec, idx) => (
+                      <Badge key={idx} variant="outline">{spec}</Badge>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            ) : null;
+          })()}
 
           {/* Contact Card */}
           <Card>

@@ -25,6 +25,9 @@ verify_jwt = false
 [functions.daily-certification-update]
 verify_jwt = false
 
+[functions.badge-issue]
+verify_jwt = false
+
 [functions.og-image-proxy]
 verify_jwt = false
 

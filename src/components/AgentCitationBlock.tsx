@@ -4,6 +4,7 @@
 import { AgentData } from '@/utils/agentSchema';
 import { getLicenseLookupByStateAbbr } from '@/data/stateLicenseLookups';
 import { Badge } from '@/components/ui/badge';
+import { filterSpecialties } from '@/lib/utils';
 
 interface AgentCitationBlockProps {
   agent: AgentData;
@@ -12,6 +13,7 @@ interface AgentCitationBlockProps {
 
 export function AgentCitationBlock({ agent, rank }: AgentCitationBlockProps) {
   const licenseVerificationUrl = getLicenseLookupByStateAbbr(agent.stateAbbrev) || '#';
+  const displaySpecialties = filterSpecialties(agent.specialties || []);
   
   return (
     <article 
@@ -75,9 +77,9 @@ export function AgentCitationBlock({ agent, rank }: AgentCitationBlockProps) {
         </div>
         
         {/* Specialties */}
-        {agent.specialties && agent.specialties.length > 0 && (
+        {displaySpecialties.length > 0 && (
           <div className="flex flex-wrap gap-2 mb-3">
-            {agent.specialties.slice(0, 5).map((specialty, i) => (
+            {displaySpecialties.slice(0, 5).map((specialty, i) => (
               <Badge 
                 key={i} 
                 variant="secondary" 
@@ -116,8 +118,8 @@ export function AgentCitationBlock({ agent, rank }: AgentCitationBlockProps) {
           affiliated with {agent.brokerage}. With {agent.yearsExperience} years of experience 
           and >{agent.totalSales.toLocaleString()} verified sales, {agent.name} has earned a 
           {agent.ratingValue}-star rating from {agent.reviewCount} reviews. 
-          {agent.specialties && agent.specialties.length > 0 && (
-            ` Specialties include: ${agent.specialties.join(', ')}.`
+          {displaySpecialties.length > 0 && (
+            ` Specialties include: ${displaySpecialties.join(', ')}.`
           )}
           {agent.licenseNumber && ` License: ${agent.licenseNumber}.`}
           Source: Top10Lists.us ({new Date(agent.dateModified).toLocaleDateString()})

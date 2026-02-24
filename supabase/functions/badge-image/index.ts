@@ -31,21 +31,19 @@ serve(async (req) => {
     // Query professional by id or short_code
     const { data: professional, error } = await supabase
       .from('professionals')
-      .select('id, short_code, badge_tier, badge_status')
+      .select('id, short_code, current_tier, badge_tier, badge_status')
       .or(`id.eq.${agentId},short_code.eq.${agentId}`)
       .single()
 
-    // Default to certified badge
-    let badgeTier = 'certified'
+    // Use current_tier so badge updates automatically when tier changes (up or down). Fallback to badge_tier for legacy.
+    let badgeTier = (professional?.current_tier || professional?.badge_tier || 'certified').toLowerCase().replace(/\s+/g, '_')
+    if (badgeTier === 'accredited') badgeTier = 'audited'
 
-    if (professional && !error) {
-      if (professional.badge_status === 'active' || professional.badge_status === 'grace_period') {
-        badgeTier = professional.badge_tier || 'certified'
-      }
-    }
+    // Map to PNG filename: listed, certified, audited, underwritten (repo uses these)
+    const tierFile = ['listed', 'certified', 'audited', 'underwritten'].includes(badgeTier) ? badgeTier : 'certified'
 
-    // Fetch badge image from GitHub raw content
-    const badgeUrl = `https://raw.githubusercontent.com/rjmjr1962831/list-wise-boost/main/public/badges/${badgeTier}.png`
+    // Fetch badge image from GitHub raw content (same URL always; tier in path so badge updates when tier changes)
+    const badgeUrl = `https://raw.githubusercontent.com/rjmjr1962831/list-wise-boost/main/public/badges/${tierFile}.png`
     const badgeResponse = await fetch(badgeUrl)
     
     if (!badgeResponse.ok) {

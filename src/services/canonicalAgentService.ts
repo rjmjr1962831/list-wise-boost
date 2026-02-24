@@ -6,6 +6,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { Professional } from '@/types/professional';
 import { getValidImageUrl } from '@/utils/imageUrlValidator';
+import { filterSpecialties } from '@/lib/utils';
 
 interface CanonicalRanking {
   id: string;
@@ -254,7 +255,7 @@ function convertToProfessional(dbProf: any, rank: number): Professional {
     title: dbProf.title || '',
     rating: dbProf.review_stars_rating || 0,
     reviews: dbProf.num_total_reviews || 0,
-    specialties: dbProf.specialty || [],
+    specialties: filterSpecialties(dbProf.specialty || []),
     address: dbProf.address || 'NA',
     phone: dbProf.phone || 'NA',
     email: dbProf.email || 'NA',

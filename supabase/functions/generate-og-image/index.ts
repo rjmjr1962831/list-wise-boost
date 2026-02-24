@@ -69,8 +69,15 @@ serve(async (req) => {
     const totalSales = professional.total_sales || agentStats?.countAllTime || 0;
     const yearsExp = professional.years_experience || 0;
 
-    // Get specialties
-    const specialties = (professional.specialty || []).slice(0, 3);
+    /** Exclude generic "listing agent" / "buyer's agent" (and derivatives). */
+    const filterSpecialties = (specs: string[]): string[] =>
+      specs.filter((s: string) => {
+        const n = String(s).toLowerCase().replace(/'/g, "").replace(/\s+/g, "");
+        return n !== "listingagent" && n !== "listingagents" && n !== "listingsagent" &&
+          n !== "buyeragent" && n !== "buyersagent" && n !== "buyeragents" && n !== "buyersagents" &&
+          !n.startsWith("listingagent") && !n.startsWith("buyeragent") && !n.startsWith("buyersagent");
+      });
+    const specialties = filterSpecialties(Array.isArray(professional.specialty) ? professional.specialty : []).slice(0, 3);
 
     // Get location
     const cityName = (professional.cities as any)?.name || '';

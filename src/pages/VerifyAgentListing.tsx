@@ -12,6 +12,7 @@ import { Loader2, CheckCircle2, Phone, Mail, Globe, Award, Copy, ExternalLink } 
 import { SafeHead } from "@/components/SafeHead";
 import { toast as sonnerToast } from "sonner";
 import { isValidImageUrl, getValidImageUrl } from "@/utils/imageUrlValidator";
+import { filterSpecialties } from "@/lib/utils";
 
 interface Professional {
   id: string;
@@ -225,15 +226,18 @@ export default function VerifyAgentListing() {
                     <span>{professional.years_experience} years of experience</span>
                   </div>
                 )}
-                {professional.specialty && professional.specialty.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mt-3">
-                    {professional.specialty.map((spec, idx) => (
-                      <span key={idx} className="px-3 py-1 bg-secondary text-secondary-foreground rounded-full text-xs">
-                        {spec}
-                      </span>
-                    ))}
-                  </div>
-                )}
+                {(() => {
+                  const filtered = filterSpecialties(professional.specialty || []);
+                  return filtered.length > 0 ? (
+                    <div className="flex flex-wrap gap-2 mt-3">
+                      {filtered.map((spec, idx) => (
+                        <span key={idx} className="px-3 py-1 bg-secondary text-secondary-foreground rounded-full text-xs">
+                          {spec}
+                        </span>
+                      ))}
+                    </div>
+                  ) : null;
+                })()}
               </div>
             </div>
 

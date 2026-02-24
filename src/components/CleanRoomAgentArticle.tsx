@@ -4,6 +4,7 @@
  */
 import { Link } from 'react-router-dom';
 import { Professional } from '@/types/professional';
+import { filterSpecialties } from '@/lib/utils';
 
 interface CleanRoomAgentArticleProps {
   professional: Professional & {
@@ -72,7 +73,7 @@ export function CleanRoomAgentArticle({ professional, stateSlug, citySlug, index
   const rationale = raw.selection_rationale || professional.description || '';
   const communityRoles = raw.community_roles || [];
   const achievements = raw.notable_achievements || [];
-  const specialties = (raw.specialty || professional.specialties || []).slice(0, 10);
+  const specialties = filterSpecialties(raw.specialty || professional.specialties || []).slice(0, 10);
   const profileUrl = raw.canonical_slug ? `/${stateSlug}/agents/${raw.canonical_slug}` : undefined;
 
   const articleClass =

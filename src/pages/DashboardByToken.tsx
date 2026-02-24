@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Loader2, Check, Pencil, ExternalLink, Shield } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { floorReviews } from '@/utils/floorDisplay';
+import { filterSpecialties } from '@/lib/utils';
 
 const BASE_URL = 'https://www.top10lists.us';
 
@@ -225,11 +226,10 @@ export default function DashboardByToken() {
                 <div className="flex justify-between">
                   <dt className="text-muted-foreground">Specialties</dt>
                   <dd>
-                    {professional.specialty?.length
-                      ? Array.isArray(professional.specialty)
-                        ? (professional.specialty as string[]).join(', ')
-                        : String(professional.specialty)
-                      : '—'}
+                    {(() => {
+                      const filtered = filterSpecialties(professional.specialty);
+                      return filtered.length ? filtered.join(', ') : '—';
+                    })()}
                   </dd>
                 </div>
                 <div className="flex justify-between items-center">

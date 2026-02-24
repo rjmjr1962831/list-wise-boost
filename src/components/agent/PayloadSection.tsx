@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Bot, Lock, ChevronDown, ChevronUp, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { floorSales, floorReviews } from "@/utils/floorDisplay";
+import { filterSpecialties } from "@/lib/utils";
 
 interface PayloadSectionProps {
   professional: any;
@@ -193,7 +194,7 @@ function buildPayload(professional: any, tier: string) {
         rating: professional.review_stars_rating,
         review_count: professional.num_total_reviews != null ? (floorReviews(professional.num_total_reviews) ?? `${professional.num_total_reviews}+`) : null,
         license_number: professional.license_number,
-        specialties: professional.specialty || [],
+        specialties: filterSpecialties(professional.specialty || []),
       },
       markets: {
         cities_served: professional.service_areas || [],
@@ -222,7 +223,7 @@ function buildPayload(professional: any, tier: string) {
         years_experience: professional.years_experience,
         license_number: professional.license_number,
         total_transactions: professional.total_sales != null ? (floorSales(professional.total_sales) ?? "included_at_this_tier") : "included_at_this_tier",
-        specialties: professional.specialty || [],
+        specialties: filterSpecialties(professional.specialty || []),
       },
       markets: {
         company: professional.company || null,
@@ -266,7 +267,7 @@ function buildPayload(professional: any, tier: string) {
       years_experience: professional.years_experience,
       license_number: professional.license_number,
       total_transactions: professional.total_sales != null ? (floorSales(professional.total_sales) ?? "included_at_this_tier") : "included_at_this_tier",
-      specialties: professional.specialty || [],
+      specialties: filterSpecialties(professional.specialty || []),
       certifications: professional.certifications_verified || [],
     },
     markets: {

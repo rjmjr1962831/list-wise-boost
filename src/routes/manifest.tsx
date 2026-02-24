@@ -87,6 +87,7 @@ const Step7Pricing = lazy(() => import("@/pages/funnel/Step7Pricing"));
 const StepSuccess = lazy(() => import("@/pages/funnel/StepSuccess"));
 const PaymentSuccess = lazy(() => import("@/pages/PaymentSuccess"));
 const ArtifactPage = lazy(() => import("@/pages/ArtifactPage"));
+const BadgeInstructionsPage = lazy(() => import("@/pages/BadgeInstructionsPage"));
 const ClaimRedirect = lazy(() => import("@/pages/ClaimRedirect"));
 const ShortLinkRedirect = lazy(() => import("@/pages/ShortLinkRedirect"));
 const AzMagicLinkRedirect = lazy(() => import("@/pages/AzMagicLinkRedirect"));
@@ -170,6 +171,7 @@ export const routeManifest: RouteObject[] = [
   { path: "/test-visibility-components", element: wrapAdmin(React.createElement(TestVisibilityComponents, null)) },
   { path: "/badge-levels-preview", element: React.createElement(BadgeLevelsPreview, null) },
   { path: "/badge-demo", element: React.createElement(BadgeDemo, null) },
+  { path: "/badge-instructions", element: React.createElement(BadgeInstructionsPage, null) },
   { path: "/visibility", element: React.createElement(Navigate, { to: "/visibility/coverage", replace: true }) },
   { path: "/visibility/tiers", element: React.createElement(VisibilityTiersPage, null) },
   { path: "/visibility/coverage", element: React.createElement(VisibilityCoveragePage, null) },
