@@ -255,7 +255,13 @@ async function syncAccount(account: any) {
           .eq("email", fromLower)
           .limit(1)
           .maybeSingle();
-        if (!knownEnrollment && !knownContact) continue;
+        const { data: knownPro } = await supabase
+          .from("professionals")
+          .select("id")
+          .eq("email", fromLower)
+          .limit(1)
+          .maybeSingle();
+        if (!knownEnrollment && !knownContact && !knownPro) continue;
       }
     }
 
