@@ -3,6 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "engines": { "node": ">=20" },
   "scripts": {
     "dev": "vite",
     "build": "vite build && node scripts/post-build.mjs",
@@ -16,6 +17,8 @@
     "update": "tsx scripts/update-project-knowledge.ts",
     "takeaways": "tsx scripts/takeaways.ts",
     "takeaways:sync": "tsx scripts/sync-takeaways-to-docs.ts",
+    "email-provider:mx": "tsx scripts/resolve-email-provider-mx.ts",
+    "email-provider:mx:report": "tsx scripts/resolve-email-provider-mx.ts --report",
     "ai-feed:generate": "tsx scripts/generate-ai-feed.ts",
     "preview:mobile": "node scripts/preview-mobile.js",
     "preview:staging": "node scripts/preview-mobile.js https://staging.top10lists.us",
