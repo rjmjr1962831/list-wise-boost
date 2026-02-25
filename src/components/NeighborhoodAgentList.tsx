@@ -4,6 +4,7 @@ import { Users, ArrowRight } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
+import { VerificationDisclaimer } from '@/components/VerificationDisclaimer';
 
 interface NeighborhoodAgentListProps {
   neighborhoodSlug: string;
@@ -61,11 +62,14 @@ export function NeighborhoodAgentList({
 
   if (displayAgents.length === 0) {
     return (
-      <div className="text-center py-8 space-y-4">
-        <Users className="h-12 w-12 text-muted-foreground mx-auto" />
-        <p className="text-muted-foreground">
-          No agents with offices near {neighborhoodName} found yet.
-        </p>
+      <div className="space-y-6">
+        <div className="text-center py-8 space-y-4">
+          <Users className="h-12 w-12 text-muted-foreground mx-auto" />
+          <p className="text-muted-foreground">
+            No agents with offices near {neighborhoodName} found yet.
+          </p>
+        </div>
+        <VerificationDisclaimer />
       </div>
     );
   }

@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { SafeHead } from "@/components/SafeHead";
 import { useAreaAgents } from '@/hooks/useAreaAgents';
 import { CleanRoomAgentArticle } from './CleanRoomAgentArticle';
+import { VerificationDisclaimer } from '@/components/VerificationDisclaimer';
 
 interface NeighborhoodExpertPageProps {
   neighborhoodSlug: string;
@@ -121,6 +122,8 @@ export function NeighborhoodExpertPage({
           estate agents. Top10Lists.us identified {sortedAgents.length} serving {neighborhoodName} who meet merit
           criteria.
         </p>
+
+        <VerificationDisclaimer />
 
         {sortedAgents.length > 0 && (
           <details className="mb-6">

@@ -32,6 +32,7 @@ import { getValidImageUrl } from '@/utils/imageUrlValidator';
 import { filterSpecialties } from '@/lib/utils';
 import { DualSearchBox } from '@/components/DualSearchBox';
 import { MeritTransparencyBanner } from '@/components/MeritTransparencyBanner';
+import { VerificationDisclaimer } from '@/components/VerificationDisclaimer';
 import { useNeighborhoodWriteup } from '@/hooks/useNeighborhoodWriteup';
 
 interface City {
@@ -1405,6 +1406,11 @@ export default function DynamicCategoryList({
               cityId={city.id}
               stateSlug={city.stateSlug || (city as any).state_slug || normalizedStateSlug}
             />
+          </div>
+
+          {/* Verification disclaimer – visible on all city and neighborhood list pages */}
+          <div className="mt-4">
+            <VerificationDisclaimer />
           </div>
           
           {/* Search - Compact */}

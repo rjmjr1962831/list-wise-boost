@@ -7,6 +7,7 @@ import { generateCityPlaceGraph } from '@/utils/placeGraphSchema';
 import { useAgentCountForCity, useTotalAgentCount } from '@/hooks/useAgentCountByCity';
 import { useCityMarketContent } from '@/hooks/useCityMarketContent';
 import { formatArtifactBar } from '@/utils/artifactIdGenerator';
+import { VerificationDisclaimer } from '@/components/VerificationDisclaimer';
 
 interface CityMarketOverviewProps {
   citySlug: string;
@@ -278,6 +279,11 @@ export function CityMarketOverview({ citySlug, cityName, stateName, cityId, stat
           <blockquote style={{ margin: 0, padding: '1rem', border: '1px solid #000', fontSize: '12px', fontStyle: 'italic' }} dangerouslySetInnerHTML={{ __html: marketData.bestKeptSecret }} />
         </section>
       )}
+
+      {/* Verification disclaimer – city/neighborhood list context */}
+      <section style={{ marginBottom: '1.5rem' }}>
+        <VerificationDisclaimer />
+      </section>
 
       {/* CTA */}
       <footer style={{ marginTop: '2rem', paddingTop: '1rem', borderTop: '1px solid #000', fontSize: '10px' }}>
