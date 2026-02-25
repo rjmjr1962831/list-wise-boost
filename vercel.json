@@ -135,7 +135,7 @@
       "destination": "/api/serve-clean-html?fn=serve-bot-agent-html&path=/:state/agents/:slug"
     },
     {
-      "source": "/t",
+      "source": "/api/t",
       "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/email-track"
     },
     {
