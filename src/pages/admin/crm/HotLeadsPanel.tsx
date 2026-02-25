@@ -44,13 +44,19 @@ function getLastActivity(agentId: string, activity: any[]) {
   return activity.find(a => a.professional_id === agentId) ?? null;
 }
 
+function getPendingTasks(agentId: string, tasks: any[]) {
+  return tasks.filter(t => t.professional_id === agentId && t.status === "pending");
+}
+
 export default function HotLeadsPanel() {
   const [leads, setLeads] = useState<any[]>([]);
   const [activity, setActivity] = useState<any[]>([]);
   const [funnelEvents, setFunnelEvents] = useState<any[]>([]);
+  const [tasks, setTasks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [lastRefresh, setLastRefresh] = useState(new Date());
   const [filter, setFilter] = useState<"all" | "hot" | "warm">("all");
+  const [completingTask, setCompletingTask] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -71,7 +77,7 @@ export default function HotLeadsPanel() {
 
     const ids = pros.map((p: any) => p.id);
 
-    const [{ data: activityData }, { data: funnelData }] = await Promise.all([
+    const [{ data: activityData }, { data: funnelData }, { data: taskData }] = await Promise.all([
       supabase
         .from("crm_contact_activity")
         .select("professional_id, event_type, created_at, link_url, sequence_name")
@@ -82,14 +88,30 @@ export default function HotLeadsPanel() {
         .select("professional_id, event_name, created_at")
         .in("professional_id", ids)
         .order("created_at", { ascending: false }),
+      supabase
+        .from("crm_tasks")
+        .select("id, professional_id, task_type, title, description, status, priority, created_at")
+        .in("professional_id", ids)
+        .order("created_at", { ascending: false }),
     ]);
 
     setLeads(pros);
     setActivity(activityData ?? []);
     setFunnelEvents(funnelData ?? []);
+    setTasks(taskData ?? []);
     setLastRefresh(new Date());
     setLoading(false);
   }, []);
+
+  async function markTaskDone(taskId: string) {
+    setCompletingTask(taskId);
+    await supabase
+      .from("crm_tasks")
+      .update({ status: "completed", completed_at: new Date().toISOString() })
+      .eq("id", taskId);
+    setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: "completed" } : t));
+    setCompletingTask(null);
+  }
 
   useEffect(() => { load(); }, [load]);
   useEffect(() => {
@@ -100,6 +122,7 @@ export default function HotLeadsPanel() {
   const displayed = leads.filter(l => filter === "all" ? true : l.lead_status === filter);
   const hotCount  = leads.filter(l => l.lead_status === "hot").length;
   const warmCount = leads.filter(l => l.lead_status === "warm").length;
+  const pendingTaskCount = tasks.filter(t => t.status === "pending").length;
 
   const hotBadge = {
     display: "inline-block",
@@ -109,6 +132,12 @@ export default function HotLeadsPanel() {
     fontWeight: "700" as const,
     textTransform: "uppercase" as const,
     letterSpacing: "0.05em",
+  };
+
+  const taskTypeBadge: Record<string, { bg: string; label: string }> = {
+    email_clicked: { bg: "#ef4444", label: "Clicked" },
+    email_opened:  { bg: "#f59e0b", label: "Opened" },
+    email_bounced: { bg: "#6b7280", label: "Bounced" },
   };
 
   const filterBtn = (val: "all" | "hot" | "warm", label: string) => ({
@@ -124,12 +153,17 @@ export default function HotLeadsPanel() {
   });
 
   return (
-    <div style={{ fontFamily: "system-ui, sans-serif", padding: "24px", maxWidth: "1300px", margin: "0 auto", color: "#1a1a1a" }}>
+    <div style={{ fontFamily: "system-ui, sans-serif", padding: "24px", maxWidth: "1400px", margin: "0 auto", color: "#1a1a1a" }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "24px" }}>
         <div>
           <h1 style={{ fontSize: "22px", fontWeight: "700", margin: "0 0 4px" }}>Hot Leads</h1>
           <p style={{ margin: 0, fontSize: "13px", color: "#666" }}>
             Last refresh: {lastRefresh.toLocaleTimeString()} &middot; Auto-refreshes every 30s
+            {pendingTaskCount > 0 && (
+              <span style={{ marginLeft: "12px", background: "#ef4444", color: "#fff", borderRadius: "10px", padding: "1px 8px", fontSize: "11px", fontWeight: "700" }}>
+                {pendingTaskCount} pending task{pendingTaskCount !== 1 ? "s" : ""}
+              </span>
+            )}
           </p>
         </div>
         <button onClick={load}
@@ -158,17 +192,18 @@ export default function HotLeadsPanel() {
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
               <thead>
                 <tr style={{ background: "#f5f5f5" }}>
-                  {["Status", "Name", "Phone", "City", "Last Activity", "Funnel Progress", "Actions"].map(h => (
+                  {["Status", "Name", "Phone", "City", "Last Activity", "Tasks", "Funnel Progress", "Actions"].map(h => (
                     <th key={h} style={{ padding: "10px 14px", textAlign: "left", fontWeight: "600", fontSize: "11px", color: "#555", textTransform: "uppercase", letterSpacing: "0.05em" }}>{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {displayed.map((lead, i) => {
-                  const lastAct  = getLastActivity(lead.id, activity);
-                  const furthest = getFurthestStep(lead.id, funnelEvents);
-                  const isHot    = lead.lead_status === "hot";
-                  const profileUrl = lead.verification_token
+                  const lastAct     = getLastActivity(lead.id, activity);
+                  const furthest    = getFurthestStep(lead.id, funnelEvents);
+                  const pendingTasks = getPendingTasks(lead.id, tasks);
+                  const isHot       = lead.lead_status === "hot";
+                  const profileUrl  = lead.verification_token
                     ? `https://staging.top10lists.us/funnel/${lead.verification_token}`
                     : null;
 
@@ -198,6 +233,34 @@ export default function HotLeadsPanel() {
                             <div style={{ fontSize: "11px", color: "#888", marginTop: "2px" }}>{relativeTime(lastAct.created_at)}</div>
                           </>
                         ) : <span style={{ color: "#bbb" }}>No activity</span>}
+                      </td>
+                      <td style={{ padding: "12px 14px", minWidth: "200px" }}>
+                        {pendingTasks.length === 0 ? (
+                          <span style={{ color: "#bbb", fontSize: "12px" }}>No tasks</span>
+                        ) : (
+                          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                            {pendingTasks.map(task => {
+                              const badge = taskTypeBadge[task.task_type] ?? { bg: "#6366f1", label: task.task_type };
+                              return (
+                                <div key={task.id} style={{ display: "flex", alignItems: "flex-start", gap: "6px" }}>
+                                  <span style={{ background: badge.bg, color: "#fff", borderRadius: "4px", padding: "1px 6px", fontSize: "10px", fontWeight: "700", whiteSpace: "nowrap", marginTop: "1px" }}>
+                                    {badge.label}
+                                  </span>
+                                  <div style={{ flex: 1 }}>
+                                    <div style={{ fontSize: "12px", fontWeight: "500", lineHeight: "1.3" }}>{task.title.replace("Follow up: ", "")}</div>
+                                    <div style={{ fontSize: "10px", color: "#999", marginTop: "1px" }}>{relativeTime(task.created_at)}</div>
+                                  </div>
+                                  <button
+                                    onClick={() => markTaskDone(task.id)}
+                                    disabled={completingTask === task.id}
+                                    style={{ background: "none", border: "1px solid #ddd", borderRadius: "4px", cursor: "pointer", padding: "2px 6px", fontSize: "10px", color: "#059669", whiteSpace: "nowrap" }}>
+                                    {completingTask === task.id ? "..." : "Done"}
+                                  </button>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
                       </td>
                       <td style={{ padding: "12px 14px" }}>
                         {furthest ? (
