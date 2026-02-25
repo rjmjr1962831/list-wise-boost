@@ -54,7 +54,7 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
   const [showCompose, setShowCompose] = useState(false);
   const [composeSubject, setComposeSubject] = useState("");
   const [composeBody, setComposeBody] = useState("");
-  const [composeFrom, setComposeFrom] = useState("hello@top10lists.us");
+  const [composeFrom, setComposeFrom] = useState("hello@toptenlists.us");
   const [sending, setSending] = useState(false);
   const [accounts, setAccounts] = useState<any[]>([]);
 
@@ -134,13 +134,17 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
     setEnrollment(data);
   };
 
+  const SAFE_ACCOUNTS = ["robert@toptenlists.us", "hello@toptenlists.us"];
   const loadAccounts = async () => {
     const { data } = await supabase.from("crm_email_accounts").select("email, display_name");
-    setAccounts(data || []);
-    if (data?.length) setComposeFrom(data[0].email);
+    const safe = (data || []).filter((a: { email?: string }) => a.email && SAFE_ACCOUNTS.includes(a.email));
+    setAccounts(safe.length ? safe : SAFE_ACCOUNTS.map(email => ({ email, display_name: email })));
+    if (safe.length) setComposeFrom(safe[0].email);
+    else setComposeFrom(SAFE_ACCOUNTS[0]);
   };
 
   const formatPhone = (val: string) => {
+    if (val == null || typeof val !== "string") return "";
     const digits = val.replace(/\D/g, "");
     if (digits.length === 10) return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
     if (digits.length === 11 && digits[0] === "1") return `(${digits.slice(1, 4)}) ${digits.slice(4, 7)}-${digits.slice(7)}`;
@@ -216,7 +220,7 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
         "Company": "company", "Name": "name", "Reviews": "num_total_reviews",
         "Years of Experience": "years_experience", "Total Sales": "total_sales",
       };
-      const dbField = fieldMap[cr.field_name] || cr.field_name.toLowerCase().replace(/ /g, "_");
+      const dbField = fieldMap[cr.field_name] || (cr.field_name && String(cr.field_name).toLowerCase().replace(/ /g, "_")) || "";
       await supabase.from("professionals").update({ [dbField]: cr.proposed_value }).eq("id", professional.id);
     }
     await supabase.from("field_change_requests").update({
@@ -228,7 +232,7 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
       const body = action === "approved"
         ? `Hi ${firstName} -\n\nWe have reviewed your request to update your ${cr.field_name}. We have updated the information as you have requested.\n\nTo see the change, click here: ${pro.magic_link || "https://www.top10lists.us"}\n\nBest Regards,\n\nRobert Maynard\nFounder`
         : `Hi ${firstName} -\n\nWe are reviewing your request to update your ${cr.field_name}. Before we can approve it, we need more information.\n\nPlease provide a more detailed explanation justifying the change. Please include any links that will support your request.\n\nJust reply here with the information.\n\nRobert Maynard\nFounder`;
-      try { await supabase.functions.invoke("gmail-send", { body: { from_account: "hello@top10lists.us", to: pro.email, subject, message_body: body } }); } catch {}
+      try { await supabase.functions.invoke("gmail-send", { body: { from_account: "hello@toptenlists.us", to: pro.email, subject, message_body: body } }); } catch {}
     }
     toast.success(`Change request ${action} - notification sent`);
     loadChangeRequests(); loadEmails(); loadFullPro();
@@ -397,7 +401,7 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
                 <div className="bg-muted/30 rounded p-2 text-xs space-y-1 mt-2">
                   <div className="font-medium">Sequence: {(enrollment.crm_sequences as any)?.name}</div>
                   <div>Status: <strong>{enrollment.status}</strong> | Step {enrollment.current_step}</div>
-                  <div>Account: {enrollment.assigned_account?.split("@")[0]}</div>
+                  <div>Account: {(enrollment.assigned_account && String(enrollment.assigned_account).split("@")[0]) || "-"}</div>
                   {enrollment.replied_at && <div>Replied: {format(new Date(enrollment.replied_at), "MMM d, yyyy")}</div>}
                 </div>
               )}
@@ -434,7 +438,7 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
               {profileUrl && (
                 <div className="flex items-center gap-2">
                   <span className="text-muted-foreground w-20 shrink-0">Profile</span>
-                  <a href={profileUrl} target="_blank" rel="noopener" className="text-primary hover:underline truncate">{profileUrl.replace("https://www.top10lists.us", "")}</a>
+                  <a href={profileUrl} target="_blank" rel="noopener" className="text-primary hover:underline truncate">{(profileUrl || "").replace("https://www.top10lists.us", "")}</a>
                 </div>
               )}
               {pro.zillow_profile_url && (
@@ -452,13 +456,13 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
               {pro.website && (
                 <div className="flex items-center gap-2">
                   <span className="text-muted-foreground w-20 shrink-0">Website</span>
-                  <a href={pro.website.startsWith("http") ? pro.website : `https://${pro.website}`} target="_blank" rel="noopener" className="text-primary hover:underline truncate">{pro.website}</a>
+                  <a href={(typeof pro.website === "string" && pro.website.startsWith("http")) ? pro.website : `https://${pro.website}`} target="_blank" rel="noopener" className="text-primary hover:underline truncate">{pro.website}</a>
                 </div>
               )}
               {[["LinkedIn", pro.social_linkedin], ["Facebook", pro.social_facebook], ["Instagram", pro.social_instagram], ["Twitter", pro.social_twitter]].filter(([, v]) => v).map(([label, url]) => (
                 <div key={label as string} className="flex items-center gap-2">
                   <span className="text-muted-foreground w-20 shrink-0">{label}</span>
-                  <a href={url as string} target="_blank" rel="noopener" className="text-primary hover:underline truncate">{(url as string).replace(/https?:\/\/(www\.)?/, "").split("/").slice(0, 2).join("/")}</a>
+                  <a href={url as string} target="_blank" rel="noopener" className="text-primary hover:underline truncate">{typeof url === "string" ? url.replace(/https?:\/\/(www\.)?/, "").split("/").slice(0, 2).join("/") : ""}</a>
                 </div>
               ))}
             </CardContent>
@@ -565,7 +569,7 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
                   <CardContent className="px-4 pb-3 space-y-2">
                     {activities.slice(0, 5).map(event => (
                       <div key={event.id} className="flex items-center justify-between text-sm">
-                        <span className="truncate">{event.event_name.replace(/_/g, " ")}</span>
+                        <span className="truncate">{(event.event_name || "").replace(/_/g, " ")}</span>
                         <span className="text-xs text-muted-foreground shrink-0 ml-2">{format(new Date(event.created_at), "MMM d, h:mm a")}</span>
                       </div>
                     ))}
@@ -661,7 +665,7 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
                               {isClick && event.link_url && (
                                 <a href={event.link_url} target="_blank" rel="noopener noreferrer"
                                   className="text-xs text-blue-600 hover:underline truncate block max-w-xs mt-0.5">
-                                  {event.link_url.replace(/https?:\/\/[^/]+/, "") || event.link_url}
+                                  {(event.link_url && String(event.link_url).replace(/https?:\/\/[^/]+/, "")) || event.link_url || ""}
                                 </a>
                               )}
                               {event.from_account && (

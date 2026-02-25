@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
-import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { ContactDetail } from "@/components/crm/ContactDetail";
 
 const FUNNEL_STEPS: Record<string, { label: string; order: number }> = {
   funnel_started:         { label: "Opened funnel",         order: 1 },
@@ -59,6 +59,12 @@ export default function HotLeadsPanel() {
   const [lastRefresh, setLastRefresh] = useState(new Date());
   const [filter, setFilter]         = useState<"all" | "hot" | "warm">("all");
   const [completingTask, setCompletingTask] = useState<string | null>(null);
+  const [selectedContact, setSelectedContact] = useState<{
+    id: string; name: string; email: string; phone: string | null;
+    company: string | null; business_city: string | null; state_slug: string | null;
+    current_tier: string | null; review_stars_rating: number | null;
+    num_total_reviews: number | null; canonical_slug: string | null;
+  } | null>(null);
 
   // Send email modal state
   const [modal, setModal]           = useState<SendModal>({ lead: null, open: false });
@@ -207,6 +213,14 @@ export default function HotLeadsPanel() {
   return (
     <div style={{ fontFamily: "system-ui, sans-serif", padding: "24px", maxWidth: "1400px", margin: "0 auto", color: "#1a1a1a" }}>
 
+      {/* Contact Detail inline */}
+      {selectedContact && (
+        <ContactDetail
+          professional={selectedContact}
+          onBack={() => setSelectedContact(null)}
+        />
+      )}
+
       {/* Send Email Modal */}
       {modal.open && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -308,7 +322,7 @@ export default function HotLeadsPanel() {
         <div style={{ color: "#888", fontSize: "14px", padding: "40px 0", textAlign: "center" }}>No warm or hot leads yet.</div>
       )}
 
-      {!loading && leads.length > 0 && (
+      {!selectedContact && !loading && leads.length > 0 && (
         <>
           <div style={{ display: "flex", gap: "8px", marginBottom: "16px" }}>
             <button style={filterBtn("all")}  onClick={() => setFilter("all")}>All ({leads.length})</button>
@@ -344,16 +358,32 @@ export default function HotLeadsPanel() {
 
                       {/* Name */}
                       <td style={{ padding: "12px 14px" }}>
-                        <Link to={`/admin/crm/agents/${lead.id}`} style={{ fontWeight: "600", color: "#1a1a1a", textDecoration: "none" }}>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedContact({
+                            id: lead.id,
+                            name: lead.name ?? "",
+                            email: lead.email ?? "",
+                            phone: lead.phone ?? null,
+                            company: null,
+                            business_city: lead.business_city ?? null,
+                            state_slug: null,
+                            current_tier: lead.current_tier ?? null,
+                            review_stars_rating: null,
+                            num_total_reviews: null,
+                            canonical_slug: null,
+                          })}
+                          style={{ fontWeight: "600", color: "#1a1a1a", textDecoration: "none", background: "none", border: "none", cursor: "pointer", padding: 0, textAlign: "left" }}
+                        >
                           {lead.name}
-                        </Link>
+                        </button>
                         <div style={{ fontSize: "11px", color: "#888", marginTop: "2px" }}>{lead.email}</div>
                       </td>
 
-                      {/* Contact (phone + email) */}
+                      {/* Contact (phone plain text + email) */}
                       <td style={{ padding: "12px 14px" }}>
                         {lead.phone
-                          ? <a href={`tel:${lead.phone}`} style={{ display: "block", color: "#1a1a1a", textDecoration: "none", fontWeight: "600", fontSize: "13px" }}>{lead.phone}</a>
+                          ? <span style={{ display: "block", color: "#1a1a1a", fontWeight: "600", fontSize: "13px" }}>{lead.phone}</span>
                           : <span style={{ color: "#bbb", fontSize: "12px" }}>No phone</span>}
                         {lead.email && (
                           <button onClick={() => openSendModal(lead)}
@@ -392,7 +422,7 @@ export default function HotLeadsPanel() {
                                       {badge.label}
                                     </span>
                                     <div style={{ flex: 1 }}>
-                                      <div style={{ fontSize: "12px", fontWeight: "500", lineHeight: "1.3" }}>{task.title.replace("Follow up: ", "")}</div>
+                                      <div style={{ fontSize: "12px", fontWeight: "500", lineHeight: "1.3" }}>{(task.title || "").replace("Follow up: ", "")}</div>
                                       <div style={{ fontSize: "10px", color: "#999", marginTop: "1px" }}>{relativeTime(task.created_at)}</div>
                                     </div>
                                     <button onClick={() => markTaskDone(task.id)} disabled={completingTask === task.id}
@@ -418,7 +448,25 @@ export default function HotLeadsPanel() {
 
                       {/* Actions */}
                       <td style={{ padding: "12px 14px" }}>
-                        <Link to={`/admin/crm/agents/${lead.id}`} style={btnStyle("#1a1a1a")}>Contact</Link>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedContact({
+                            id: lead.id,
+                            name: lead.name ?? "",
+                            email: lead.email ?? "",
+                            phone: lead.phone ?? null,
+                            company: null,
+                            business_city: lead.business_city ?? null,
+                            state_slug: null,
+                            current_tier: lead.current_tier ?? null,
+                            review_stars_rating: null,
+                            num_total_reviews: null,
+                            canonical_slug: null,
+                          })}
+                          style={btnStyle("#1a1a1a")}
+                        >
+                          Contact
+                        </button>
                       </td>
 
                     </tr>
