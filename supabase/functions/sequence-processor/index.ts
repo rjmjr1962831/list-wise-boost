@@ -27,7 +27,7 @@ function getMSTDayStart(now: Date): Date {
 // One email per account per run = 5-minute spacing; protects domain reputation.
 const MAX_SENDS_PER_ACCOUNT_PER_RUN = 1;
 
-const STAGGER_MS = 150_000; // 2.5 minutes between account sends
+// No stagger - cron every 5 min provides natural spacing between runs
 
 function getDailyLimit(account: string): number {
   const now = new Date();
@@ -170,11 +170,6 @@ serve(async (req) => {
 
   const accountResults = await Promise.all(
     accountRecords.map(async (account, index) => {
-      // Stagger: account 0 fires immediately, account 1 waits 2.5 min
-      if (index > 0) {
-        await new Promise((r) => setTimeout(r, STAGGER_MS * index));
-      }
-
       const dailyLimit = getDailyLimit(account.email);
       const sentToday = await getSentTodayCount(account.email);
       const remaining = dailyLimit - sentToday;
