@@ -418,15 +418,7 @@ export default function HotLeadsPanel() {
 
                       {/* Actions */}
                       <td style={{ padding: "12px 14px" }}>
-                        <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
-                          {lead.phone && (
-                            <a href={`tel:${lead.phone}`} style={btnStyle("#059669")}>Call</a>
-                          )}
-                          <Link to={`/admin/crm/agents/${lead.id}`} style={btnStyle("#1a1a1a")}>Contact</Link>
-                          {lead.magic_link && (
-                            <a href={lead.magic_link} target="_blank" rel="noopener noreferrer" style={btnStyle("#6366f1")}>Funnel</a>
-                          )}
-                        </div>
+                        <Link to={`/admin/crm/agents/${lead.id}`} style={btnStyle("#1a1a1a")}>Contact</Link>
                       </td>
 
                     </tr>
