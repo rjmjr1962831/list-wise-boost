@@ -206,6 +206,7 @@ export default function HotLeadsPanel() {
                   const profileUrl  = lead.verification_token
                     ? `https://staging.top10lists.us/funnel/${lead.verification_token}`
                     : null;
+                  const agentDetailUrl = `/admin/crm/agents/${lead.id}`;
 
                   return (
                     <tr key={lead.id} style={{ borderBottom: i < displayed.length - 1 ? "1px solid #eee" : "none", background: isHot ? "#fffbf0" : "#fff" }}>
@@ -278,12 +279,10 @@ export default function HotLeadsPanel() {
                               Call
                             </a>
                           )}
-                          {profileUrl && (
-                            <a href={profileUrl} target="_blank" rel="noopener noreferrer"
+                          <a href={agentDetailUrl}
                               style={{ padding: "5px 10px", background: "#1a1a1a", color: "#fff", borderRadius: "5px", textDecoration: "none", fontSize: "12px", whiteSpace: "nowrap" }}>
                               Contact
                             </a>
-                          )}
                           {lead.magic_link && (
                             <a href={lead.magic_link} target="_blank" rel="noopener noreferrer"
                               style={{ padding: "5px 10px", background: "#6366f1", color: "#fff", borderRadius: "5px", textDecoration: "none", fontSize: "12px", whiteSpace: "nowrap" }}>
