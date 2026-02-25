@@ -57,6 +57,8 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
   const [composeFrom, setComposeFrom] = useState("hello@toptenlists.us");
   const [sending, setSending] = useState(false);
   const [accounts, setAccounts] = useState<any[]>([]);
+  const [templates, setTemplates] = useState<{ id: string; subject: string; body: string; label: string }[]>([]);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>("");
 
   useEffect(() => { loadAll(); }, [professional.id]);
 
@@ -65,9 +67,22 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
     await Promise.all([
       loadFullPro(), loadEmails(), loadActivities(), loadTasks(),
       loadChangeRequests(), loadPayments(), loadSubscriptions(), loadNotes(),
-      loadEnrollment(), loadAccounts()
+      loadEnrollment(), loadAccounts(), loadTemplates(),
     ]);
     setIsLoading(false);
+  };
+
+  const loadTemplates = async () => {
+    const { data } = await supabase
+      .from("crm_sequence_steps")
+      .select("id, step_number, subject, body, sequence_id, crm_sequences(name)")
+      .order("step_number");
+    setTemplates((data ?? []).map((s: any) => ({
+      id: s.id,
+      subject: s.subject,
+      body: s.body,
+      label: `${(s.crm_sequences as any)?.name ?? "Sequence"} — Step ${s.step_number}: ${s.subject}`,
+    })));
   };
 
   const loadFullPro = async () => {
@@ -176,6 +191,20 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
     loadNotes();
   };
 
+  const applyTemplate = (templateId: string) => {
+    setSelectedTemplateId(templateId);
+    if (!templateId) {
+      setComposeSubject("");
+      setComposeBody("");
+      return;
+    }
+    const tpl = templates.find(t => t.id === templateId);
+    if (!tpl) return;
+    const firstName = (pro?.name || "").split(" ")[0] || "";
+    setComposeSubject(tpl.subject.replace(/\{\{firstName\}\}/g, firstName));
+    setComposeBody(tpl.body.replace(/\{\{firstName\}\}/g, firstName));
+  };
+
   const sendEmail = async () => {
     if (!composeSubject || !composeBody) { toast.error("Subject and body required"); return; }
     setSending(true);
@@ -187,6 +216,7 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
       setShowCompose(false);
       setComposeSubject("");
       setComposeBody("");
+      setSelectedTemplateId("");
       loadEmails();
     } catch { toast.error("Failed to send"); }
     finally { setSending(false); }
@@ -331,10 +361,23 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
         </div>
       </div>
 
-      {/* Compose */}
+      {/* Compose — open/click tracking is applied automatically by gmail-send */}
       {showCompose && (
         <Card className="border-primary/30">
           <CardContent className="py-3 px-4 space-y-2">
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground w-12">Template</span>
+              <select
+                className="text-sm border rounded px-2 py-1 flex-1 bg-background"
+                value={selectedTemplateId}
+                onChange={e => applyTemplate(e.target.value)}
+              >
+                <option value="">— Choose a template —</option>
+                {templates.map(t => (
+                  <option key={t.id} value={t.id}>{t.label}</option>
+                ))}
+              </select>
+            </div>
             <div className="flex items-center gap-2">
               <span className="text-xs text-muted-foreground w-12">From</span>
               <select className="text-sm border rounded px-2 py-1 flex-1 bg-background" value={composeFrom} onChange={e => setComposeFrom(e.target.value)}>
@@ -348,7 +391,7 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
             <Input placeholder="Subject" className="text-sm h-8" value={composeSubject} onChange={e => setComposeSubject(e.target.value)} />
             <Textarea placeholder="Write your message..." className="text-sm min-h-[100px]" value={composeBody} onChange={e => setComposeBody(e.target.value)} />
             <div className="flex gap-2 justify-end">
-              <Button size="sm" variant="outline" onClick={() => setShowCompose(false)}>Cancel</Button>
+              <Button size="sm" variant="outline" onClick={() => { setShowCompose(false); setSelectedTemplateId(""); }}>Cancel</Button>
               <Button size="sm" onClick={sendEmail} disabled={sending}><Send className="h-3.5 w-3.5 mr-1" />{sending ? "Sending..." : "Send"}</Button>
             </div>
           </CardContent>
