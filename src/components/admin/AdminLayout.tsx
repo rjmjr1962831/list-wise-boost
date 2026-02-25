@@ -43,6 +43,12 @@ export default function AdminLayout() {
                   Agents
                 </Link>
                 <Link
+                  to="/admin/crm/hot-leads"
+                  className="border-transparent text-red-500 hover:border-red-300 hover:text-red-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                >
+                  Hot Leads
+                </Link>
+                <Link
                   to="/admin/crm/pipeline"
                   className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
                 >
