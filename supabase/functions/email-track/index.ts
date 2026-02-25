@@ -39,6 +39,9 @@ serve(async (req) => {
     .eq("gmail_message_id", emailId)
     .maybeSingle();
 
+  // Declare pro at outer scope so all blocks can access it
+  let pro: { id: string; name: string } | null = null;
+
   if (emailRow) {
     const isOpen  = type === "o";
     const isClick = type === "c";
@@ -55,11 +58,12 @@ serve(async (req) => {
 
     // ── Look up professional by email ─────────────────────────────────────────
     const recipientEmail = emailRow.to_address;
-    const { data: pro } = await supabase
+    const { data: proData } = await supabase
       .from("professionals")
       .select("id, name")
       .ilike("email", recipientEmail)
       .maybeSingle();
+    pro = proData;
 
     // ── Look up enrollment for sequence name ──────────────────────────────────
     let sequenceName: string | null = null;
@@ -75,10 +79,9 @@ serve(async (req) => {
     }
 
     // ── Write to crm_contact_activity ─────────────────────────────────────────
-    // Only record first open (skip duplicate open pings from email clients)
     const shouldRecord =
       (isOpen  && !emailRow.opened_at) ||
-      (isClick);   // record every click (different links matter)
+      (isClick);
 
     if (shouldRecord) {
       supabase.from("crm_contact_activity").insert({
@@ -96,50 +99,38 @@ serve(async (req) => {
         },
       }).then(() => {});
     }
-  }
 
-  // ── Update lead_status on professionals ──────────────────────────────────
-  if (emailRow && pro?.id) {
-    const isOpen  = type === "o";
-    const isClick = type === "c";
-    if (isClick) {
-      // Click = hot, always upgrade regardless of current status
-      await supabase
-        .from("professionals")
-        .update({ lead_status: "hot" })
-        .eq("id", pro.id);
-    } else if (isOpen && !emailRow.opened_at) {
-      // First open = warm, but never downgrade a hot lead
-      await supabase
-        .from("professionals")
-        .update({ lead_status: "warm" })
-        .eq("id", pro.id)
-        .neq("lead_status", "hot");
+    // ── Update lead_status on professionals ──────────────────────────────────
+    if (pro?.id) {
+      if (isClick) {
+        await supabase.from("professionals").update({ lead_status: "hot" }).eq("id", pro.id);
+      } else if (isOpen && !emailRow.opened_at) {
+        await supabase.from("professionals").update({ lead_status: "warm" })
+          .eq("id", pro.id).neq("lead_status", "hot");
+      }
     }
-  }
 
-  // ── Create follow-up task (once per event type per professional) ─────────
-  if (emailRow && pro?.id) {
-    const isOpen  = type === "o";
-    const isClick = type === "c";
-    if (isClick) {
-      await supabase.from("crm_tasks").upsert({
-        professional_id: pro.id,
-        task_type: "email_clicked",
-        title: `Follow up: ${pro.name} clicked your email`,
-        description: `Clicked link in "${emailRow.subject}". Go to their funnel or call them directly.`,
-        status: "pending",
-        priority: "high",
-      }, { onConflict: "professional_id,task_type", ignoreDuplicates: true });
-    } else if (isOpen && !emailRow.opened_at) {
-      await supabase.from("crm_tasks").upsert({
-        professional_id: pro.id,
-        task_type: "email_opened",
-        title: `Follow up: ${pro.name} opened your email`,
-        description: `Opened "${emailRow.subject}". Consider a phone call while the interest is fresh.`,
-        status: "pending",
-        priority: "normal",
-      }, { onConflict: "professional_id,task_type", ignoreDuplicates: true });
+    // ── Create follow-up task ─────────────────────────────────────────────────
+    if (pro?.id) {
+      if (isClick) {
+        await supabase.from("crm_tasks").upsert({
+          professional_id: pro.id,
+          task_type: "email_clicked",
+          title: `Follow up: ${pro.name} clicked your email`,
+          description: `Clicked link in "${emailRow.subject}". Go to their funnel or call them directly.`,
+          status: "pending",
+          priority: "high",
+        }, { onConflict: "professional_id,task_type", ignoreDuplicates: true });
+      } else if (isOpen && !emailRow.opened_at) {
+        await supabase.from("crm_tasks").upsert({
+          professional_id: pro.id,
+          task_type: "email_opened",
+          title: `Follow up: ${pro.name} opened your email`,
+          description: `Opened "${emailRow.subject}". Consider a phone call while the interest is fresh.`,
+          status: "pending",
+          priority: "normal",
+        }, { onConflict: "professional_id,task_type", ignoreDuplicates: true });
+      }
     }
   }
 
