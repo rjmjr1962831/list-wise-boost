@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+
 import { supabase } from "@/integrations/supabase/client";
+import { ContactDetail } from "./ContactDetail";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -55,6 +56,7 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
   const [rejectReasons, setRejectReasons] = useState<Record<string, string>>({});
   const [processing, setProcessing] = useState<string | null>(null);
   const [filter, setFilter] = useState<"pending" | "all">("pending");
+  const [selectedContact, setSelectedContact] = useState<{ id: string; name: string; email: string; phone: string | null; company: string | null; business_city: string | null; state_slug: string | null; current_tier: string | null; review_stars_rating: number | null; num_total_reviews: number | null; canonical_slug: string | null } | null>(null);
 
   // Send email modal
   const [emailModal, setEmailModal] = useState<{ task: EngagementTask | null; open: boolean }>({ task: null, open: false });
@@ -207,6 +209,14 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
   return (
     <div className="space-y-6">
 
+      {/* Contact Detail view */}
+      {selectedContact && (
+        <ContactDetail professional={selectedContact} onBack={() => setSelectedContact(null)} />
+      )}
+
+      {/* Everything else hidden when contact is open */}
+      {!selectedContact && (<>
+
       {/* Send Email Modal */}
       {emailModal.open && emailModal.task && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -327,10 +337,18 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
                         <Mail className="h-3.5 w-3.5" /> Send Email
                       </button>
                     )}
-                    <Link to={`/admin/crm/agents/${task.professional_id}`}
+                    <button onClick={() => setSelectedContact({
+                        id: task.professional_id,
+                        name: task.professional_name ?? "",
+                        email: task.professional_email ?? "",
+                        phone: task.professional_phone ?? null,
+                        company: null, business_city: null, state_slug: null,
+                        current_tier: null, review_stars_rating: null,
+                        num_total_reviews: null, canonical_slug: null,
+                      })}
                       className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-800 text-white text-sm rounded-md font-medium hover:bg-gray-900">
                       Contact
-                    </Link>
+                    </button>
                     {task.status === "pending" && (
                       <Button size="sm" variant="outline" disabled={processing === task.id}
                         onClick={() => resolveEngagementTask(task.id)}
@@ -393,6 +411,8 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
       {!isLoading && engagementTasks.length === 0 && tasks.length === 0 && (
         <Card><CardContent className="py-12 text-center text-muted-foreground">No {filter === "pending" ? "pending " : ""}tasks.</CardContent></Card>
       )}
+      </>)}
     </div>
   );
 };
+
