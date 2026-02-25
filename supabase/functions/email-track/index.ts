@@ -31,14 +31,120 @@ serve(async (req) => {
     user_agent: ua.substring(0, 500),
   }).then(() => {});
 
-  // Also update crm_emails with first open/click timestamps
-  if (type === "o") {
-    supabase.from("crm_emails").update({
-      opened_at: new Date().toISOString(),
-    }).eq("gmail_message_id", emailId).is("opened_at", null).then(() => {});
+  // ── Look up the crm_email record to get context ───────────────────────────
+  const { data: emailRow } = await supabase
+    .from("crm_emails")
+    .select("id, to_address, subject, from_address, account_email, opened_at, clicked_at")
+    .eq("gmail_message_id", emailId)
+    .maybeSingle();
+
+  let pro: { id: string; name: string } | null = null;
+  if (emailRow) {
+    const isOpen  = type === "o";
+    const isClick = type === "c";
+
+    // ── Update first-open / first-click timestamps on crm_emails ─────────────
+    if (isOpen && !emailRow.opened_at) {
+      supabase.from("crm_emails").update({ opened_at: new Date().toISOString() })
+        .eq("gmail_message_id", emailId).then(() => {});
+    }
+    if (isClick && !emailRow.clicked_at) {
+      supabase.from("crm_emails").update({ clicked_at: new Date().toISOString() })
+        .eq("gmail_message_id", emailId).then(() => {});
+    }
+
+    // ── Look up professional by email ─────────────────────────────────────────
+    const recipientEmail = emailRow.to_address;
+    const { data: proData } = await supabase
+      .from("professionals")
+      .select("id, name")
+      .ilike("email", recipientEmail)
+      .maybeSingle();
+    pro = proData;
+
+    // ── Look up enrollment for sequence name ──────────────────────────────────
+    let sequenceName: string | null = null;
+    if (pro?.id) {
+      const { data: enrollment } = await supabase
+        .from("crm_sequence_enrollments")
+        .select("sequence_id, crm_sequences(name)")
+        .eq("professional_id", pro.id)
+        .order("enrolled_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      sequenceName = (enrollment?.crm_sequences as any)?.name ?? null;
+    }
+
+    // ── Write to crm_contact_activity ─────────────────────────────────────────
+    // Only record first open (skip duplicate open pings from email clients)
+    const shouldRecord =
+      (isOpen  && !emailRow.opened_at) ||
+      (isClick);   // record every click (different links matter)
+
+    if (shouldRecord) {
+      supabase.from("crm_contact_activity").insert({
+        professional_id:    pro?.id ?? null,
+        professional_email: recipientEmail,
+        event_type:         isClick ? "email_click" : "email_open",
+        subject:            emailRow.subject,
+        email_id:           emailId,
+        link_url:           linkUrl || null,
+        from_account:       emailRow.account_email || emailRow.from_address,
+        sequence_name:      sequenceName,
+        metadata: {
+          ip:         ip.split(",")[0].trim(),
+          user_agent: ua.substring(0, 200),
+        },
+      }).then(() => {});
+    }
   }
 
-  // Click: redirect to target URL
+  // ── Update lead_status on professionals ──────────────────────────────────
+  if (emailRow && pro?.id) {
+    const isOpen  = type === "o";
+    const isClick = type === "c";
+    if (isClick) {
+      // Click = hot, always upgrade regardless of current status
+      await supabase
+        .from("professionals")
+        .update({ lead_status: "hot" })
+        .eq("id", pro.id);
+    } else if (isOpen && !emailRow.opened_at) {
+      // First open = warm, but never downgrade a hot lead
+      await supabase
+        .from("professionals")
+        .update({ lead_status: "warm" })
+        .eq("id", pro.id)
+        .neq("lead_status", "hot");
+    }
+  }
+
+  // ── Create follow-up task (once per event type per professional) ─────────
+  if (emailRow && pro?.id) {
+    const isOpen  = type === "o";
+    const isClick = type === "c";
+    if (isClick) {
+      await supabase.from("crm_tasks").upsert({
+        professional_id: pro.id,
+        task_type: "email_clicked",
+        title: `Follow up: ${pro.name} clicked your email`,
+        description: `Clicked link in "${emailRow.subject}". Go to their funnel or call them directly.`,
+        status: "pending",
+        priority: "high",
+      }, { onConflict: "professional_id,task_type", ignoreDuplicates: true });
+    } else if (isOpen && !emailRow.opened_at) {
+      await supabase.from("crm_tasks").upsert({
+        professional_id: pro.id,
+        task_type: "email_opened",
+        title: `Follow up: ${pro.name} opened your email`,
+        description: `Opened "${emailRow.subject}". Consider a phone call while the interest is fresh.`,
+        status: "pending",
+        priority: "normal",
+      }, { onConflict: "professional_id,task_type", ignoreDuplicates: true });
+    }
+  }
+
+  // ── Redirect clicks ───────────────────────────────────────────────────────
   if (type === "c" && linkUrl) {
     return new Response(null, {
       status: 302,

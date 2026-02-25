@@ -168,9 +168,16 @@ async function handleBounce(bodyText: string, bodyHtml: string, toAddress: strin
     .maybeSingle();
 
   if (pro) {
-    await supabase.from("professionals")
-      .update({ email: "pending@123.com" })
-      .eq("id", pro.id);
+    // Do NOT overwrite the email automatically.
+    // Create a task for Robert to research and update manually.
+    await supabase.from("crm_tasks").upsert({
+      professional_id: pro.id,
+      task_type: "email_bounced",
+      title: `Bounced email: ${pro.email}`,
+      description: `Hard bounce detected for ${pro.email}. Research correct email address and update manually. Do not send again until resolved.`,
+      status: "pending",
+      priority: "high",
+    }, { onConflict: "professional_id,task_type", ignoreDuplicates: true });
   }
 
   // Disable any active enrollment for this email

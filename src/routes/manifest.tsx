@@ -127,11 +127,14 @@ const OGPreview = lazy(() => import("@/pages/OGPreview"));
 const CRM = lazy(() => import("@/pages/CRM"));
 const TestVisibilityComponents = lazy(() => import("@/pages/TestVisibilityComponents"));
 const BadgeLevelsPreview = lazy(() => import("@/pages/staging/BadgeLevelsPreview"));
+const StagingIndex = lazy(() => import("@/pages/staging/StagingIndex"));
 const BadgeDemo = lazy(() => import("@/pages/BadgeDemo"));
 const CRMLogin = lazy(() => import("@/pages/admin/crm/CRMLogin"));
 const CRMDashboard = lazy(() => import("@/pages/admin/crm/CRMDashboard"));
 const CRMAgentList = lazy(() => import("@/pages/admin/crm/AgentList"));
 const CRMLeads = lazy(() => import("@/pages/admin/crm/Leads"));
+const SequenceDashboard = lazy(() => import("@/pages/admin/crm/SequenceDashboard"));
+const HotLeadsPanel = lazy(() => import("@/pages/admin/crm/HotLeadsPanel"));
 const CRMLayout = lazy(() => import("@/components/admin/AdminLayout"));
 
 const wrapAdmin = (el: React.ReactNode): React.ReactElement =>
@@ -158,6 +161,8 @@ export const routeManifest: RouteObject[] = [
       { path: "dashboard", element: React.createElement(CRMDashboard, null) },
       { path: "agents", element: React.createElement(CRMAgentList, null) },
       { path: "leads", element: React.createElement(CRMLeads, null) },
+      { path: "sequences", element: React.createElement(SequenceDashboard, null) },
+      { path: "hot-leads", element: React.createElement(HotLeadsPanel, null) },
     ],
   },
   { path: "/admin/mobile-preview", element: wrapAdmin(React.createElement(MobilePreview, null)) },
@@ -169,6 +174,7 @@ export const routeManifest: RouteObject[] = [
   { path: "/og-preview", element: wrapAdmin(React.createElement(OGPreview, null)) },
   { path: "/crm", element: wrapAdmin(React.createElement(CRM, null)) },
   { path: "/test-visibility-components", element: wrapAdmin(React.createElement(TestVisibilityComponents, null)) },
+  { path: "/staging", element: React.createElement(StagingIndex, null) },
   { path: "/badge-levels-preview", element: React.createElement(BadgeLevelsPreview, null) },
   { path: "/badge-demo", element: React.createElement(BadgeDemo, null) },
   { path: "/badge-instructions", element: React.createElement(BadgeInstructionsPage, null) },
