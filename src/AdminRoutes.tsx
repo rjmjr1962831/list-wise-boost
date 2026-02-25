@@ -25,6 +25,7 @@ const CRMPipeline = lazy(() => import("./pages/admin/crm/Pipeline"));
 const CRMRevenue = lazy(() => import("./pages/admin/crm/Revenue"));
 const CRMAuditLog = lazy(() => import("./pages/admin/crm/AuditLog"));
 const CRMSequences = lazy(() => import("./pages/admin/crm/SequenceDashboard"));
+const CRMAgentDetail = lazy(() => import("./pages/admin/crm/AgentDetail"));
 const CRMLayout = lazy(() => import("@/components/admin/AdminLayout"));
 
 export function AdminRoutes() {
@@ -42,6 +43,7 @@ export function AdminRoutes() {
         <Route path="revenue" element={<CRMRevenue />} />
         <Route path="audit" element={<CRMAuditLog />} />
         <Route path="sequences" element={<CRMSequences />} />
+        <Route path="agents/:agentId" element={<CRMAgentDetail />} />
       </Route>
       <Route path="/admin/mobile-preview" element={<AdminRouteGuard><MobilePreview /></AdminRouteGuard>} />
       <Route path="/admin/ingest-neighborhoods" element={<AdminRouteGuard><Navigate to="/404" replace /></AdminRouteGuard>} />
