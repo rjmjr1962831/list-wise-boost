@@ -300,6 +300,7 @@ serve(async (req) => {
             subject, body_text: body,
             sent_at: new Date().toISOString(),
             sequence_id: enrollment.sequence_id,
+            professional_id: enrollment.professional_id,
           });
 
           const { data: nextStep } = await supabase
