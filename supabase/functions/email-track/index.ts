@@ -118,6 +118,31 @@ serve(async (req) => {
     }
   }
 
+  // ── Create follow-up task (once per event type per professional) ─────────
+  if (emailRow && pro?.id) {
+    const isOpen  = type === "o";
+    const isClick = type === "c";
+    if (isClick) {
+      await supabase.from("crm_tasks").upsert({
+        professional_id: pro.id,
+        task_type: "email_clicked",
+        title: `Follow up: ${pro.name} clicked your email`,
+        description: `Clicked link in "${emailRow.subject}". Go to their funnel or call them directly.`,
+        status: "pending",
+        priority: "high",
+      }, { onConflict: "professional_id,task_type", ignoreDuplicates: true });
+    } else if (isOpen && !emailRow.opened_at) {
+      await supabase.from("crm_tasks").upsert({
+        professional_id: pro.id,
+        task_type: "email_opened",
+        title: `Follow up: ${pro.name} opened your email`,
+        description: `Opened "${emailRow.subject}". Consider a phone call while the interest is fresh.`,
+        status: "pending",
+        priority: "normal",
+      }, { onConflict: "professional_id,task_type", ignoreDuplicates: true });
+    }
+  }
+
   // ── Redirect clicks ───────────────────────────────────────────────────────
   if (type === "c" && linkUrl) {
     return new Response(null, {
