@@ -42,6 +42,8 @@ function textToHtml(text: string): string {
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
+  // Convert markdown-style links [text](url) to <a href>
+  html = html.replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g, '<a href="$2">$1</a>');
   // Convert "click here: URL" to linked "click here"
   html = html.replace(/click here: (https?:\/\/[^\s]+)/g, '<a href="$1">click here</a>');
   // Convert remaining bare URLs to links
