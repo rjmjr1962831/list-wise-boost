@@ -63,8 +63,11 @@ export default function HotLeadsPanel() {
   // Send email modal state
   const [modal, setModal]           = useState<SendModal>({ lead: null, open: false });
   const [selectedTemplate, setSelectedTemplate] = useState<string>("");
+  const [fromAccount, setFromAccount] = useState<string>("robert@toptenlists.us");
   const [sending, setSending]       = useState(false);
   const [sendResult, setSendResult] = useState<{ ok: boolean; msg: string } | null>(null);
+
+  const SAFE_ACCOUNTS = ["robert@toptenlists.us", "hello@toptenlists.us"];
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -126,6 +129,7 @@ export default function HotLeadsPanel() {
   function openSendModal(lead: any) {
     setModal({ lead, open: true });
     setSelectedTemplate("");
+    setFromAccount("robert@toptenlists.us");
     setSendResult(null);
   }
 
@@ -153,7 +157,7 @@ export default function HotLeadsPanel() {
           to: modal.lead.email,
           subject,
           body,
-          from_account: "robert@top10lists.us",
+          from_account: fromAccount,
         },
       });
       if (error) throw error;
@@ -215,6 +219,19 @@ export default function HotLeadsPanel() {
                 </p>
               </div>
               <button onClick={closeSendModal} style={{ background: "none", border: "none", fontSize: "20px", cursor: "pointer", color: "#999", lineHeight: 1 }}>x</button>
+            </div>
+
+            <div style={{ marginBottom: "16px" }}>
+              <label style={{ display: "block", fontSize: "12px", fontWeight: "600", color: "#555", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                From
+              </label>
+              <select
+                value={fromAccount}
+                onChange={e => setFromAccount(e.target.value)}
+                style={{ width: "100%", padding: "8px 12px", border: "1px solid #ddd", borderRadius: "6px", fontSize: "13px", background: "#fff" }}
+              >
+                {SAFE_ACCOUNTS.map(a => <option key={a} value={a}>{a}</option>)}
+              </select>
             </div>
 
             <div style={{ marginBottom: "16px" }}>
