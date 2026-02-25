@@ -75,14 +75,14 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
 
   const fetchTemplates = async () => {
     const { data } = await supabase
-      .from("crm_sequence_steps")
-      .select("id, step_number, subject, body, sequence_id, crm_sequences(name)")
-      .order("step_number");
-    setTemplates((data ?? []).map((s: any) => ({
-      id: s.id,
-      subject: s.subject,
-      body: s.body,
-      label: `${(s.crm_sequences as any)?.name ?? "Sequence"} — Step ${s.step_number}: ${s.subject}`,
+      .from("crm_email_templates")
+      .select("id, name, subject, body")
+      .order("name");
+    setTemplates((data ?? []).map((t: any) => ({
+      id: t.id,
+      subject: t.subject ?? "",
+      body: t.body ?? "",
+      label: t.name ?? t.subject ?? "Template",
     })));
   };
 
@@ -180,8 +180,9 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
     setSending(true);
     setSendResult(null);
     const firstName = task.professional_name?.split(" ")[0] ?? task.professional_name;
-    const subject = tpl.subject.replace(/\{\{firstName\}\}/g, firstName);
-    const body    = tpl.body.replace(/\{\{firstName\}\}/g, firstName);
+    const sub = (s: string) => s.replace(/\{\{firstName\}\}/g, firstName).replace(/\{\{first_name\}\}/g, firstName);
+    const subject = sub(tpl.subject);
+    const body    = sub(tpl.body);
     try {
       const { error } = await supabase.functions.invoke("gmail-send", {
         body: { to: task.professional_email, subject, body, from_account: fromAccount },
@@ -202,8 +203,9 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
 
   const totalPending = engagementTasks.filter(t => t.status === "pending").length + tasks.filter(t => t.status === "pending").length;
   const selectedTpl  = templates.find(t => t.id === selectedTemplate);
+  const firstForPreview = emailModal.task?.professional_name?.split(" ")[0] ?? "";
   const previewBody  = selectedTpl
-    ? selectedTpl.body.replace(/\{\{firstName\}\}/g, emailModal.task?.professional_name?.split(" ")[0] ?? "")
+    ? selectedTpl.body.replace(/\{\{firstName\}\}/g, firstForPreview).replace(/\{\{first_name\}\}/g, firstForPreview)
     : "";
 
   return (
@@ -253,7 +255,7 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
                 <div style={{ marginBottom: "12px" }}>
                   <label style={{ display: "block", fontSize: "12px", fontWeight: "600", color: "#555", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Subject</label>
                   <div style={{ padding: "8px 12px", background: "#f5f5f5", borderRadius: "6px", fontSize: "13px" }}>
-                    {selectedTpl.subject.replace(/\{\{firstName\}\}/g, emailModal.task.professional_name?.split(" ")[0] ?? "")}
+                    {selectedTpl.subject.replace(/\{\{firstName\}\}/g, firstForPreview).replace(/\{\{first_name\}\}/g, firstForPreview)}
                   </div>
                 </div>
                 <div style={{ marginBottom: "20px" }}>

@@ -74,14 +74,14 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
 
   const loadTemplates = async () => {
     const { data } = await supabase
-      .from("crm_sequence_steps")
-      .select("id, step_number, subject, body, sequence_id, crm_sequences(name)")
-      .order("step_number");
-    setTemplates((data ?? []).map((s: any) => ({
-      id: s.id,
-      subject: s.subject,
-      body: s.body,
-      label: `${(s.crm_sequences as any)?.name ?? "Sequence"} — Step ${s.step_number}: ${s.subject}`,
+      .from("crm_email_templates")
+      .select("id, name, subject, body")
+      .order("name");
+    setTemplates((data ?? []).map((t: any) => ({
+      id: t.id,
+      subject: t.subject ?? "",
+      body: t.body ?? "",
+      label: t.name ?? t.subject ?? "Template",
     })));
   };
 
@@ -201,8 +201,9 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
     const tpl = templates.find(t => t.id === templateId);
     if (!tpl) return;
     const firstName = (pro?.name || "").split(" ")[0] || "";
-    setComposeSubject(tpl.subject.replace(/\{\{firstName\}\}/g, firstName));
-    setComposeBody(tpl.body.replace(/\{\{firstName\}\}/g, firstName));
+    const sub = (s: string) => s.replace(/\{\{firstName\}\}/g, firstName).replace(/\{\{first_name\}\}/g, firstName);
+    setComposeSubject(sub(tpl.subject));
+    setComposeBody(sub(tpl.body));
   };
 
   const sendEmail = async () => {

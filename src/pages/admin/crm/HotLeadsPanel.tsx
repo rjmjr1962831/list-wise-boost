@@ -102,9 +102,9 @@ export default function HotLeadsPanel() {
       supabase.from("crm_tasks")
         .select("id, professional_id, task_type, title, description, status, priority, created_at")
         .in("professional_id", ids).order("created_at", { ascending: false }),
-      supabase.from("crm_sequence_steps")
-        .select("id, step_number, subject, body, sequence_id, crm_sequences(name)")
-        .order("step_number"),
+      supabase.from("crm_email_templates")
+        .select("id, name, subject, body")
+        .order("name"),
     ]);
 
     setLeads(pros);
@@ -112,11 +112,11 @@ export default function HotLeadsPanel() {
     setFunnelEvents(funnelData ?? []);
     setTasks(taskData ?? []);
 
-    const tpls: Template[] = (stepData ?? []).map((s: any) => ({
-      id: s.id,
-      subject: s.subject,
-      body: s.body,
-      label: `${(s.crm_sequences as any)?.name ?? "Sequence"} — Step ${s.step_number}: ${s.subject}`,
+    const tpls: Template[] = (stepData ?? []).map((t: any) => ({
+      id: t.id,
+      subject: t.subject ?? "",
+      body: t.body ?? "",
+      label: t.name ?? t.subject ?? "Template",
     }));
     setTemplates(tpls);
     setLastRefresh(new Date());
@@ -154,8 +154,9 @@ export default function HotLeadsPanel() {
     setSendResult(null);
 
     const firstName = modal.lead.name?.split(" ")[0] ?? modal.lead.name;
-    const subject = tpl.subject.replace(/\{\{firstName\}\}/g, firstName);
-    const body    = tpl.body.replace(/\{\{firstName\}\}/g, firstName);
+    const sub = (s: string) => s.replace(/\{\{firstName\}\}/g, firstName).replace(/\{\{first_name\}\}/g, firstName);
+    const subject = sub(tpl.subject);
+    const body    = sub(tpl.body);
 
     try {
       const { data, error } = await supabase.functions.invoke("gmail-send", {
@@ -206,8 +207,9 @@ export default function HotLeadsPanel() {
   });
 
   const selectedTpl = templates.find(t => t.id === selectedTemplate);
+  const firstForPreview = modal.lead?.name?.split(" ")[0] ?? "";
   const previewBody = selectedTpl
-    ? selectedTpl.body.replace(/\{\{firstName\}\}/g, modal.lead?.name?.split(" ")[0] ?? "")
+    ? selectedTpl.body.replace(/\{\{firstName\}\}/g, firstForPreview).replace(/\{\{first_name\}\}/g, firstForPreview)
     : "";
 
   return (
@@ -269,7 +271,7 @@ export default function HotLeadsPanel() {
                 <div style={{ marginBottom: "12px" }}>
                   <label style={{ display: "block", fontSize: "12px", fontWeight: "600", color: "#555", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Subject</label>
                   <div style={{ padding: "8px 12px", background: "#f5f5f5", borderRadius: "6px", fontSize: "13px" }}>
-                    {selectedTpl.subject.replace(/\{\{firstName\}\}/g, modal.lead?.name?.split(" ")[0] ?? "")}
+                    {selectedTpl.subject.replace(/\{\{firstName\}\}/g, firstForPreview).replace(/\{\{first_name\}\}/g, firstForPreview)}
                   </div>
                 </div>
                 <div style={{ marginBottom: "20px" }}>
