@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { CheckCircle, XCircle, Clock, Phone, Flame, Mail } from "lucide-react";
+import { CheckCircle, XCircle, Clock, Flame, Mail } from "lucide-react";
 
 interface ChangeRequest {
   id: string;
@@ -321,12 +321,6 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
                 <CardContent className="space-y-3">
                   {task.description && <p className="text-sm text-muted-foreground">{task.description}</p>}
                   <div className="flex flex-wrap gap-2 items-center">
-                    {task.professional_phone && (
-                      <a href={`tel:${task.professional_phone}`}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-600 text-white text-sm rounded-md font-medium hover:bg-green-700">
-                        <Phone className="h-3.5 w-3.5" />{task.professional_phone}
-                      </a>
-                    )}
                     {task.professional_email && (
                       <button onClick={() => openEmailModal(task)}
                         className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 text-white text-sm rounded-md font-medium hover:bg-indigo-700">
@@ -337,12 +331,6 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
                       className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-800 text-white text-sm rounded-md font-medium hover:bg-gray-900">
                       Contact
                     </Link>
-                    {task.magic_link && (
-                      <a href={task.magic_link} target="_blank" rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-violet-600 text-white text-sm rounded-md font-medium hover:bg-violet-700">
-                        Funnel
-                      </a>
-                    )}
                     {task.status === "pending" && (
                       <Button size="sm" variant="outline" disabled={processing === task.id}
                         onClick={() => resolveEngagementTask(task.id)}
