@@ -98,6 +98,26 @@ serve(async (req) => {
     }
   }
 
+  // ── Update lead_status on professionals ──────────────────────────────────
+  if (emailRow && pro?.id) {
+    const isOpen  = type === "o";
+    const isClick = type === "c";
+    if (isClick) {
+      // Click = hot, always upgrade regardless of current status
+      await supabase
+        .from("professionals")
+        .update({ lead_status: "hot" })
+        .eq("id", pro.id);
+    } else if (isOpen && !emailRow.opened_at) {
+      // First open = warm, but never downgrade a hot lead
+      await supabase
+        .from("professionals")
+        .update({ lead_status: "warm" })
+        .eq("id", pro.id)
+        .neq("lead_status", "hot");
+    }
+  }
+
   // ── Redirect clicks ───────────────────────────────────────────────────────
   if (type === "c" && linkUrl) {
     return new Response(null, {
