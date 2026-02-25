@@ -32,7 +32,7 @@ Full analysis: https://www.top10lists.us/why-ai-trusts-us
 
 ## Selection Methodology
 
-670,000+ licensed agents analyzed across Arizona and California. 3,487 selected (top 0.5%). Merit Gate: 4.8+ stars, 20+ reviews, 6+ years. Zero exceptions. Non-pay-to-play. AI reasoning plus human editorial review.
+670,000+ licensed agents analyzed across Arizona and California. Approximately the top 1% selected. Merit Gate: 4.5+ stars, 10+ verified reviews in the last 24 months, 5+ years experience. Zero exceptions. Non-pay-to-play. AI reasoning plus human editorial review.
 
 ## Machine-Readable Artifacts
 

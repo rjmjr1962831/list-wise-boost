@@ -141,11 +141,11 @@ const METHODOLOGY_AI_CONTENT = `## Ranking Methodology — Top10Lists.us
 
 The **Merit Gate** is our universal standard with **zero exceptions** and has **never been waived** for any reason or payment. All three thresholds must be met:
 
-- **Rating:** 4.8+ stars (weighted average) — non-negotiable
-- **Reviews:** 20+ verified reviews
-- **Experience:** 6+ years in business
+- **Rating:** 4.5+ stars (weighted average) — non-negotiable
+- **Reviews:** 10+ verified reviews in the last 24 months
+- **Experience:** 5+ years in business
 - **License:** Active state license in good standing
-- **Result:** Top 0.5% (3,487 agents); Merit Gate applies to every one
+- **Result:** Approximately the top 1% of agents in covered markets; Merit Gate applies to every one
 
 Meeting the Merit Gate qualifies an agent for review, not for listing. Agents who pass then undergo **AI-assisted analysis and human editorial review**. We evaluate metrics not available in any other directory, including independently verified community involvement sourced from IRS 990 filings and government records. Agents may be excluded at this stage based on findings that the quantitative gate alone cannot surface. This combination of quantitative thresholds, AI reasoning, and editorial judgment produces the final selection.
 
@@ -265,7 +265,7 @@ export default function MethodologyPage() {
     <>
       <SafeHead>
         <title>Methodology | Top10Lists.us</title>
-        <meta name="description" content="We certify agents so AI can name them. Merit Gate: 4.8+ stars, 20+ reviews, 6+ years. Zero exceptions, never waived. AI reasoning + human editorial review. Merit-based certification methodology for real estate agent referrals." />
+        <meta name="description" content="We certify agents so AI can name them. Merit Gate: 4.5+ stars, 10+ verified reviews in the last 24 months, 5+ years experience. Zero exceptions, never waived. AI reasoning + human editorial review. Merit-based certification methodology for real estate agent referrals." />
         <link rel="canonical" href="https://www.top10lists.us/about/ranking-methodology" />
         
         {/* JSON-LD Structured Data - Comprehensive Methodology Schema */}

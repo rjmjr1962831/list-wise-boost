@@ -1023,7 +1023,7 @@ export default function FullEnrichmentPipeline() {
               className="mt-2"
             />
             <p className="text-xs text-muted-foreground">
-              System will import until it reaches this many agents with 4.8★+ rating and 20+ reviews
+              System will import until it reaches this many agents with 4.5★+ rating and 10+ reviews (in the last 24 months)
             </p>
           </div>
         </div>

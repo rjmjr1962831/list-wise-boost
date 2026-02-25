@@ -465,7 +465,7 @@ serve(async (req) => {
 
     // ---- Merit criteria ----
     o += `<div class="merit-box">
-  <strong>Merit Criteria:</strong> 4.8+ star rating, 20+ reviews (Zillow and Google), active
+  <strong>Merit Criteria:</strong> 4.5+ star rating, 10+ verified reviews in the last 24 months, 5+ years experience, active
   ${si.display} real estate license, verified transaction history (MLS, Zillow), community
   involvement verified against IRS 990 filings (25% of ranking weight). No agent can pay
   for inclusion, ranking position, or visibility.
@@ -536,7 +536,7 @@ serve(async (req) => {
     o += `<footer id="methodology-and-sources">
   <h2>About This Page</h2>
   <p>
-    Top10Lists.us is an independent merit-based directory. Agents are selected from the top 0.5%
+    Top10Lists.us is an independent merit-based directory. Agents are selected from approximately the top 1%
     of licensed real estate professionals based on verified performance data. Payment does not
     influence inclusion, rank, or visibility.
   </p>

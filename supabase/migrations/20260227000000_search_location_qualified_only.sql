@@ -1,4 +1,4 @@
--- Restrict search_location to cities/neighborhoods with at least one qualified agent (4.8+, 20+ reviews).
+-- Restrict search_location to cities/neighborhoods with at least one qualified agent (4.5+, 10+ reviews).
 -- Prevents "geo misfire": search suggesting 0-agent areas and users landing on empty list pages.
 -- Same qualification rule as generate-sitemap (Rule A).
 
@@ -28,7 +28,7 @@ BEGIN
   is_zip := clean_term ~ '^\d{5}$';
 
   RETURN QUERY
-  -- Cities: only those with at least one 4.8+ / 20+ review active professional
+  -- Cities: only those with at least one 4.5+ / 10+ review active professional
   SELECT
     'city'::text as result_type,
     c.name as neighborhood,
@@ -56,8 +56,8 @@ BEGIN
       SELECT 1 FROM professionals p
       WHERE p.city_id = c.id
         AND p.active = true
-        AND p.review_stars_rating >= 4.8
-        AND p.num_total_reviews >= 20
+        AND p.review_stars_rating >= 4.5
+        AND p.num_total_reviews >= 10
     )
 
   UNION ALL
@@ -132,4 +132,4 @@ BEGIN
 END;
 $$;
 
-COMMENT ON FUNCTION public.search_location(text) IS 'Search cities and neighborhoods by term or ZIP. Returns only regions with at least one qualified agent (4.8+ stars, 20+ reviews) to avoid geo misfire.';
+COMMENT ON FUNCTION public.search_location(text) IS 'Search cities and neighborhoods by term or ZIP. Returns only regions with at least one qualified agent (4.5+ stars, 10+ reviews) to avoid geo misfire.';

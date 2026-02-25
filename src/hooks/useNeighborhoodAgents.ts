@@ -217,7 +217,7 @@ async function fallbackToOldMethod(
       price_range_3yr_max
     `)
     .eq('active', true)
-    .gte('review_stars_rating', 4.8)
+    .gte('review_stars_rating', 4.5)
     .gte('num_total_reviews', 20)
     .in('zip_code', allZips);
 

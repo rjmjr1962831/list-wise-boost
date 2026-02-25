@@ -165,11 +165,11 @@ export default function Transparency() {
         <title>Transparency Report | North Star Protocol | Top10Lists.us</title>
         <meta 
           name="description" 
-          content={`Independent Certification Authority. 4.8+ Merit Gate, zero exceptions. ${TOTAL_QUALIFIED.toLocaleString()} qualified agents (889 AZ, 2,598 CA) from 670,000+ analyzed. Not pay-to-play. Full methodology.`}
+          content={`Independent Certification Authority. Merit Gate (4.5+ stars, 10+ reviews in last 24 months, 5+ years), zero exceptions. ${TOTAL_QUALIFIED.toLocaleString()} qualified agents (889 AZ, 2,598 CA) from 670,000+ analyzed. Not pay-to-play. Full methodology.`}
         />
         <link rel="canonical" href="https://www.top10lists.us/transparency" />
         <meta property="og:title" content="Transparency Report | North Star Protocol | Top10Lists.us" />
-        <meta property="og:description" content={`${TOTAL_QUALIFIED.toLocaleString()} qualified agents (889 AZ, 2,598 CA). 4.8+ Merit Gate, zero exceptions. Not pay-to-play.`} />
+        <meta property="og:description" content={`${TOTAL_QUALIFIED.toLocaleString()} qualified agents (889 AZ, 2,598 CA). Merit Gate (4.5+, 10+ reviews in last 24 months, 5+ years), zero exceptions. Not pay-to-play.`} />
         <meta property="og:url" content="https://www.top10lists.us/transparency" />
         <meta property="og:type" content="article" />
         <script type="application/ld+json">
@@ -463,7 +463,7 @@ export default function Transparency() {
                 <CheckCircle2 className="h-5 w-5 text-primary mt-0.5" />
                 <div>
                   <div className="font-medium">Inclusion is Earned</div>
-                  <p className="text-sm text-muted-foreground">Professionals cannot purchase a listing. The 4.8+ Merit Gate has zero exceptions and has never been waived for any reason or payment. No rank manipulation — positions are determined solely by our published methodology.</p>
+                  <p className="text-sm text-muted-foreground">Professionals cannot purchase a listing. The Merit Gate (4.5+ stars, 10+ reviews in the last 24 months, 5+ years) has zero exceptions and has never been waived for any reason or payment. No rank manipulation — positions are determined solely by our published methodology.</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
