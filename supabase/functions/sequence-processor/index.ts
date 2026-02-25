@@ -27,8 +27,7 @@ function getMSTDayStart(now: Date): Date {
 // One email per account per run = 5-minute spacing; protects domain reputation.
 const MAX_SENDS_PER_ACCOUNT_PER_RUN = 1;
 
-// Stagger between accounts within one run (minute 0 = account1, minute 1 = account2).
-const STAGGER_MS_BETWEEN_ACCOUNTS = 60_000;
+const STAGGER_MS = 150_000; // 2.5 minutes between account sends
 
 function getDailyLimit(account: string): number {
   const now = new Date();
@@ -152,7 +151,6 @@ function buildRawEmail(from: string, to: string, subject: string, bodyText: stri
 // ============================================================
 serve(async (req) => {
   const startTime = Date.now();
-  const results: any[] = [];
 
   const accounts = [
     "hello@toptenlists.us", "robert@toptenlists.us",
@@ -170,211 +168,191 @@ serve(async (req) => {
   let totalSent = 0;
   let totalErrors = 0;
 
-  for (const account of accountRecords) {
-    const dailyLimit = getDailyLimit(account.email);
-    const sentToday = await getSentTodayCount(account.email);
-    const remaining = dailyLimit - sentToday;
-
-    if (remaining <= 0) {
-      results.push({
-        account: account.email, sent: 0,
-        message: `Daily limit reached (${sentToday}/${dailyLimit})`,
-      });
-      continue;
-    }
-
-    // Get due enrollments: at most 1 per account per run (5-min gap between sends from same account).
-    const limitThisRun = Math.min(remaining, MAX_SENDS_PER_ACCOUNT_PER_RUN);
-    const { data: rawEnrollments } = await supabase
-      .from("crm_sequence_enrollments")
-      .select("*, crm_sequences(name)")
-      .eq("assigned_account", account.email)
-      .eq("status", "active")
-      .lte("next_send_at", new Date().toISOString())
-      .order("next_send_at", { ascending: true })
-      .limit(limitThisRun);
-
-    // Exclude anyone we already sent to today (no second email same day).
-    const sentTodayRecipients = await getSentTodayRecipients(account.email);
-    const enrollments = (rawEnrollments ?? []).filter(
-      (e: any) => !sentTodayRecipients.has((e.email ?? "").toLowerCase())
-    );
-
-    if (!enrollments.length) {
-      results.push({
-        account: account.email, sent: 0,
-        message: `Nothing due (${sentToday}/${dailyLimit} sent today)`,
-      });
-      continue;
-    }
-
-    let token: string;
-    try {
-      token = await getValidToken(account);
-    } catch (e) {
-      results.push({ account: account.email, error: `Token error: ${e}` });
-      totalErrors++;
-      continue;
-    }
-
-    const accountSent: string[] = [];
-    let accountErrors = 0;
-
-    for (const enrollment of enrollments) {
-      // Double-check daily limit before each send
-      const currentSent = sentToday + accountSent.length;
-      if (currentSent >= dailyLimit) {
-        break;
+  const accountResults = await Promise.all(
+    accountRecords.map(async (account, index) => {
+      // Stagger: account 0 fires immediately, account 1 waits 2.5 min
+      if (index > 0) {
+        await new Promise((r) => setTimeout(r, STAGGER_MS * index));
       }
 
-      const { data: pro } = await supabase
-        .from("professionals")
-        .select("email, name, magic_link, state_slug, verification_token, business_city, zillow_search_city, current_tier")
-        .eq("id", enrollment.professional_id)
-        .single();
+      const dailyLimit = getDailyLimit(account.email);
+      const sentToday = await getSentTodayCount(account.email);
+      const remaining = dailyLimit - sentToday;
 
-      if (!pro?.email || pro.email === "pending@123.com") {
-        await supabase.from("crm_sequence_enrollments").update({
-          status: "disabled", metadata: { reason: "no_valid_email" },
-        }).eq("id", enrollment.id);
-        continue;
+      if (remaining <= 0) {
+        return { account: account.email, sent: 0, message: `Daily limit reached (${sentToday}/${dailyLimit})` };
       }
 
-    // Only send to listed tier.
-    if ((pro as any).current_tier !== "listed") {
-      const tomorrow = new Date();
-      tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
-      tomorrow.setUTCHours(12, 0, 0, 0);
-      await supabase.from("crm_sequence_enrollments").update({
-        next_send_at: tomorrow.toISOString(),
-      }).eq("id", enrollment.id);
-      continue;
-    }
+      const limitThisRun = Math.min(remaining, MAX_SENDS_PER_ACCOUNT_PER_RUN);
+      const { data: rawEnrollments } = await supabase
+        .from("crm_sequence_enrollments")
+        .select("*, crm_sequences(name)")
+        .eq("assigned_account", account.email)
+        .eq("status", "active")
+        .lte("next_send_at", new Date().toISOString())
+        .order("next_send_at", { ascending: true })
+        .limit(limitThisRun);
 
-      const { data: step } = await supabase
-        .from("crm_sequence_steps")
-        .select("*")
-        .eq("sequence_id", enrollment.sequence_id)
-        .eq("step_number", enrollment.current_step + 1)
-        .maybeSingle();
+      const sentTodayRecipients = await getSentTodayRecipients(account.email);
+      const enrollments = (rawEnrollments ?? []).filter(
+        (e: any) => !sentTodayRecipients.has((e.email ?? "").toLowerCase())
+      );
 
-      if (!step) {
-        await supabase.from("crm_sequence_enrollments").update({
-          status: "completed", completed_at: new Date().toISOString(),
-        }).eq("id", enrollment.id);
-        continue;
+      if (!enrollments.length) {
+        return { account: account.email, sent: 0, message: `Nothing due (${sentToday}/${dailyLimit} sent today)` };
       }
 
-      const firstName = enrollment.first_name || (pro.name || "").split(" ")[0] || "there";
-      const lastName = ((enrollment as any).last_name ?? (enrollment.metadata as any)?.last_name ?? (pro.name || "").split(" ").slice(1).join(" ")) || "";
-      const magicLink = pro.magic_link || "https://www.top10lists.us";
-      const stateName = (pro.state_slug || "your state").replace(/-/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase());
-      const cityName = pro.business_city || (pro.zillow_search_city || "").replace(/,.*$/, "") || "here";
-      const unsubUrl = pro.verification_token ? `${SUPABASE_URL}/functions/v1/unsubscribe?token=${pro.verification_token}` : "";
-      const subject = (step.subject || "")
-        .replace(/\{\{firstName\}\}/g, firstName)
-        .replace(/\{\{lastName\}\}/g, lastName)
-        .replace(/\{\{magicLink\}\}/g, magicLink)
-        .replace(/\{\{magic_link\}\}/g, magicLink)
-        .replace(/\{\{state\}\}/g, stateName)
-        .replace(/\{\{city\}\}/g, cityName);
-      const bodyRaw = (step.body || "")
-        .replace(/\{\{firstName\}\}/g, firstName)
-        .replace(/\{\{lastName\}\}/g, lastName)
-        .replace(/\{\{magicLink\}\}/g, magicLink)
-        .replace(/\{\{magic_link\}\}/g, magicLink)
-        .replace(/\{\{state\}\}/g, stateName)
-        .replace(/\{\{city\}\}/g, cityName);
-      const body = (unsubUrl
-        ? bodyRaw + `\n\n---\nUnsubscribe: ${unsubUrl}`
-        : bodyRaw).replace(/\[\[BLOCK\]\]\n?/g, "---\n").replace(/\n?\[\[\/BLOCK\]\]/g, "\n---");
-
+      let token: string;
       try {
-        const trackingId = crypto.randomUUID();
-        const raw = buildRawEmail(account.email, pro.email, subject, body, bodyRaw, trackingId, unsubUrl || undefined);
+        token = await getValidToken(account);
+      } catch (e) {
+        totalErrors++;
+        return { account: account.email, error: `Token error: ${e}` };
+      }
 
-        const sendRes = await fetch("https://www.googleapis.com/gmail/v1/users/me/messages/send", {
-          method: "POST",
-          headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-          body: JSON.stringify({ raw }),
-        });
+      const accountSent: string[] = [];
+      let accountErrors = 0;
 
-        const sent = await sendRes.json();
+      for (const enrollment of enrollments) {
+        const currentSent = sentToday + accountSent.length;
+        if (currentSent >= dailyLimit) break;
 
-        if (sent.error) {
-          console.error(`Send failed for ${pro.email}: ${sent.error.message}`);
-          accountErrors++;
-          totalErrors++;
-          if (sent.error.code === 401 || sent.error.code === 403) {
-            results.push({ account: account.email, error: `Auth error: ${sent.error.message}`, sent: accountSent.length });
-            break;
-          }
+        const { data: pro } = await supabase
+          .from("professionals")
+          .select("email, name, magic_link, state_slug, verification_token, business_city, zillow_search_city, current_tier")
+          .eq("id", enrollment.professional_id)
+          .single();
+
+        if (!pro?.email || pro.email === "pending@123.com") {
+          await supabase.from("crm_sequence_enrollments").update({
+            status: "disabled", metadata: { reason: "no_valid_email" },
+          }).eq("id", enrollment.id);
           continue;
         }
 
-        // Log email
-        await supabase.from("crm_emails").insert({
-          gmail_message_id: trackingId,
-          gmail_thread_id: sent.threadId || sent.id,
-          account_email: account.email,
-          direction: "outbound",
-          from_address: account.email,
-          to_address: pro.email,
-          subject, body_text: body,
-          sent_at: new Date().toISOString(),
-        });
-
-        // Advance enrollment
-        const { data: nextStep } = await supabase
-          .from("crm_sequence_steps")
-          .select("step_number, delay_days")
-          .eq("sequence_id", enrollment.sequence_id)
-          .eq("step_number", enrollment.current_step + 2)
-          .maybeSingle();
-
-        if (nextStep) {
-          const nextSend = new Date();
-          nextSend.setDate(nextSend.getDate() + (nextStep.delay_days || 1));
-          nextSend.setUTCHours(12, 0, 0, 0);
+        if ((pro as any).current_tier !== "listed") {
+          const tomorrow = new Date();
+          tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
+          tomorrow.setUTCHours(12, 0, 0, 0);
           await supabase.from("crm_sequence_enrollments").update({
-            current_step: enrollment.current_step + 1,
-            next_send_at: nextSend.toISOString(),
+            next_send_at: tomorrow.toISOString(),
           }).eq("id", enrollment.id);
-        } else {
-          await supabase.from("crm_sequence_enrollments").update({
-            current_step: enrollment.current_step + 1,
-            status: "completed",
-            completed_at: new Date().toISOString(),
-          }).eq("id", enrollment.id);
+          continue;
         }
 
-        accountSent.push(pro.email);
-        totalSent++;
+        const { data: step } = await supabase
+          .from("crm_sequence_steps")
+          .select("*")
+          .eq("sequence_id", enrollment.sequence_id)
+          .eq("step_number", enrollment.current_step + 1)
+          .maybeSingle();
 
-      } catch (e) {
-        console.error(`Exception sending to ${pro.email}:`, e);
-        accountErrors++;
-        totalErrors++;
+        if (!step) {
+          await supabase.from("crm_sequence_enrollments").update({
+            status: "completed", completed_at: new Date().toISOString(),
+          }).eq("id", enrollment.id);
+          continue;
+        }
+
+        const firstName = enrollment.first_name || (pro.name || "").split(" ")[0] || "there";
+        const lastName = ((enrollment as any).last_name ?? (enrollment.metadata as any)?.last_name ?? (pro.name || "").split(" ").slice(1).join(" ")) || "";
+        const magicLink = pro.magic_link || "https://www.top10lists.us";
+        const stateName = (pro.state_slug || "your state").replace(/-/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase());
+        const cityName = pro.business_city || (pro.zillow_search_city || "").replace(/,.*$/, "") || "here";
+        const unsubUrl = pro.verification_token ? `${SUPABASE_URL}/functions/v1/unsubscribe?token=${pro.verification_token}` : "";
+
+        const subject = (step.subject || "")
+          .replace(/\{\{firstName\}\}/g, firstName).replace(/\{\{lastName\}\}/g, lastName)
+          .replace(/\{\{magicLink\}\}/g, magicLink).replace(/\{\{magic_link\}\}/g, magicLink)
+          .replace(/\{\{state\}\}/g, stateName).replace(/\{\{city\}\}/g, cityName);
+        const bodyRaw = (step.body || "")
+          .replace(/\{\{firstName\}\}/g, firstName).replace(/\{\{lastName\}\}/g, lastName)
+          .replace(/\{\{magicLink\}\}/g, magicLink).replace(/\{\{magic_link\}\}/g, magicLink)
+          .replace(/\{\{state\}\}/g, stateName).replace(/\{\{city\}\}/g, cityName);
+        const body = (unsubUrl
+          ? bodyRaw + `\n\n---\nUnsubscribe: ${unsubUrl}`
+          : bodyRaw).replace(/\[\[BLOCK\]\]\n?/g, "---\n").replace(/\n?\[\[\/BLOCK\]\]/g, "\n---");
+
+        try {
+          const trackingId = crypto.randomUUID();
+          const raw = buildRawEmail(account.email, pro.email, subject, body, bodyRaw, trackingId, unsubUrl || undefined);
+
+          const sendRes = await fetch("https://www.googleapis.com/gmail/v1/users/me/messages/send", {
+            method: "POST",
+            headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+            body: JSON.stringify({ raw }),
+          });
+
+          const sent = await sendRes.json();
+
+          if (sent.error) {
+            console.error(`Send failed for ${pro.email}: ${sent.error.message}`);
+            accountErrors++;
+            totalErrors++;
+            if (sent.error.code === 401 || sent.error.code === 403) {
+              return { account: account.email, error: `Auth error: ${sent.error.message}`, sent: accountSent.length };
+            }
+            continue;
+          }
+
+          await supabase.from("crm_emails").insert({
+            gmail_message_id: trackingId,
+            gmail_thread_id: sent.threadId || sent.id,
+            account_email: account.email,
+            direction: "outbound",
+            from_address: account.email,
+            to_address: pro.email,
+            subject, body_text: body,
+            sent_at: new Date().toISOString(),
+            sequence_id: enrollment.sequence_id,
+          });
+
+          const { data: nextStep } = await supabase
+            .from("crm_sequence_steps")
+            .select("step_number, delay_days")
+            .eq("sequence_id", enrollment.sequence_id)
+            .eq("step_number", enrollment.current_step + 2)
+            .maybeSingle();
+
+          if (nextStep) {
+            const nextSend = new Date();
+            nextSend.setDate(nextSend.getDate() + (nextStep.delay_days || 1));
+            nextSend.setUTCHours(12, 0, 0, 0);
+            await supabase.from("crm_sequence_enrollments").update({
+              current_step: enrollment.current_step + 1,
+              next_send_at: nextSend.toISOString(),
+            }).eq("id", enrollment.id);
+          } else {
+            await supabase.from("crm_sequence_enrollments").update({
+              current_step: enrollment.current_step + 1,
+              status: "completed",
+              completed_at: new Date().toISOString(),
+            }).eq("id", enrollment.id);
+          }
+
+          accountSent.push(pro.email);
+          totalSent++;
+
+        } catch (e) {
+          console.error(`Exception sending to ${pro.email}:`, e);
+          accountErrors++;
+          totalErrors++;
+        }
       }
-    }
 
-    // Stagger: next account sends ~1 minute after this one (minute 0 = account1, minute 1 = account2).
-    if (accountSent.length > 0) {
-      await new Promise((r) => setTimeout(r, STAGGER_MS_BETWEEN_ACCOUNTS));
-    }
-
-    results.push({
-      account: account.email,
-      sent: accountSent.length,
-      errors: accountErrors,
-      dailyLimit,
-      sentToday: sentToday + accountSent.length,
-    });
-  }
+      return {
+        account: account.email,
+        sent: accountSent.length,
+        errors: accountErrors,
+        dailyLimit,
+        sentToday: sentToday + accountSent.length,
+      };
+    })
+  );
 
   return new Response(JSON.stringify({
     success: true, totalSent, totalErrors,
     elapsed_ms: Date.now() - startTime,
-    accounts: results,
+    accounts: accountResults,
   }), { headers: { "Content-Type": "application/json" } });
 });
