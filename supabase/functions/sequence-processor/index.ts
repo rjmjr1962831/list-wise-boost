@@ -124,13 +124,13 @@ function injectTracking(html: string, emailId: string): string {
   return tracked + `<img src="${TRACK_BASE}?t=o&eid=${encodeURIComponent(emailId)}" width="1" height="1" style="display:none" alt="">`;
 }
 
-function buildRawEmail(from: string, to: string, subject: string, bodyText: string, bodyRaw: string, trackingId: string, unsubUrl?: string): string {
+function buildRawEmail(from: string, to: string, recipientName: string, subject: string, bodyText: string, bodyRaw: string, trackingId: string, unsubUrl?: string): string {
   const boundary = `b_${Date.now()}_${Math.random().toString(36).slice(2)}`;
   const baseHtml = textToHtml(bodyRaw);
   const unsubHtml = unsubUrl ? `<br><br><hr style="border:none;border-top:1px solid #ccc;margin-top:20px;"><p style="font-size:13px;color:#555;margin-top:12px;"><a href="${unsubUrl}" style="color:#555;text-decoration:underline;">Unsubscribe</a></p>` : "";
   const bodyHtml = injectTracking(baseHtml + unsubHtml, trackingId);
   const headers = [
-    `From: Robert Maynard <${from}>`, `To: ${to}`, `Subject: ${subject}`,
+    `From: Robert Maynard <${from}>`, `To: ${recipientName} <${to}>`, `Subject: ${subject}`,
     "MIME-Version: 1.0", `Content-Type: multipart/alternative; boundary="${boundary}"`,
   ];
   if (unsubUrl) headers.push(`List-Unsubscribe: <${unsubUrl}>`);
@@ -270,7 +270,7 @@ serve(async (req) => {
 
         try {
           const trackingId = crypto.randomUUID();
-          const raw = buildRawEmail(account.email, pro.email, subject, body, bodyRaw, trackingId, unsubUrl || undefined);
+          const raw = buildRawEmail(account.email, pro.email, pro.name || firstName, subject, body, bodyRaw, trackingId, unsubUrl || undefined);
 
           const sendRes = await fetch("https://www.googleapis.com/gmail/v1/users/me/messages/send", {
             method: "POST",
