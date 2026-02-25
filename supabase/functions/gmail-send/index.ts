@@ -5,7 +5,7 @@ const CLIENT_ID = Deno.env.get("GMAIL_CLIENT_ID")!;
 const CLIENT_SECRET = Deno.env.get("GMAIL_CLIENT_SECRET")!;
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const TRACK_BASE = `https://www.top10lists.us/t`;
+const TRACK_BASE = `https://www.top10lists.us/api/t`;
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
