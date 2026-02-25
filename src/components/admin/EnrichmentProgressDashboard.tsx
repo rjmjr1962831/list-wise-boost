@@ -111,7 +111,7 @@ export function EnrichmentProgressDashboard() {
             }
           }
 
-          if (agent.review_stars_rating >= 4.8 && agent.num_total_reviews >= 20) {
+          if (agent.review_stars_rating >= 4.5 && agent.num_total_reviews >= 10) {
             stats.qualifying_agents++;
           }
 
@@ -286,7 +286,7 @@ export function EnrichmentProgressDashboard() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Qualifying (4.8+, 20+ reviews)
+              Qualifying (4.5+, 10+ reviews)
             </CardTitle>
           </CardHeader>
           <CardContent>

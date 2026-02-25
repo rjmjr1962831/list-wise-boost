@@ -266,7 +266,7 @@ export function CityMarketOverview({ citySlug, cityName, stateName, cityId, stat
           AGENT_LINKAGE_LOG
         </h2>
         <p style={{ fontSize: '12px', margin: 0, border: '1px solid #000', padding: '1rem' }}>
-          {stateName} has over <strong>{ARIZONA_TOTAL_LICENSED_AGENTS.toLocaleString()}</strong> licensed real estate agents. Top10Lists.us analyzed transaction records (MLS Verified), verified client reviews (Zillow/Google), and community involvement (IRS Form 990/Nonprofit Records) to identify <strong>{qualifiedCount}</strong> agents statewide — top 0.5%. <strong>{cityCount}</strong> elite agents actively serve {cityName}. Selection: 50+ verified reviews, 4.8+ star minimum, active license (AZDRE/CADRE), invitation-only. Agents cannot pay to be listed.
+          {stateName} has over <strong>{ARIZONA_TOTAL_LICENSED_AGENTS.toLocaleString()}</strong> licensed real estate agents. Top10Lists.us analyzed transaction records (MLS Verified), verified client reviews (Zillow/Google), and community involvement (IRS Form 990/Nonprofit Records) to identify <strong>{qualifiedCount}</strong> agents statewide — approximately the top 1%. <strong>{cityCount}</strong> elite agents actively serve {cityName}. Selection: 10+ verified reviews in the last 24 months, 4.5+ star minimum, 5+ years experience, active license (AZDRE/CADRE), invitation-only. Agents cannot pay to be listed.
         </p>
       </section>
 

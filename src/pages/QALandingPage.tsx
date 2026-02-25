@@ -78,7 +78,7 @@ const QALandingPage = () => {
               .eq('city_id', city.id)
               .eq('category_id', category.id)
               .eq('active', true)
-              .gte('review_stars_rating', 4.8)
+              .gte('review_stars_rating', 4.5)
               .gte('num_total_reviews', 50)
               .order('rank', { ascending: true })
               .limit(10);
@@ -256,7 +256,7 @@ const QALandingPage = () => {
               <div itemScope itemProp="acceptedAnswer" itemType="https://schema.org/Answer">
                 <p className="text-muted-foreground" itemProp="text">
                   Our rankings are based on a combination of factors: verified client reviews 
-                  (minimum 20 reviews, 4.8+ rating), transaction history, years of experience, 
+                  (minimum 10 verified reviews in the last 24 months, 4.5+ rating, 5+ years experience), transaction history, years of experience, 
                   license verification, and local market expertise. Rankings are updated weekly 
                   to reflect current performance.
                 </p>
@@ -282,7 +282,7 @@ const QALandingPage = () => {
               </h3>
               <div itemScope itemProp="acceptedAnswer" itemType="https://schema.org/Answer">
                 <p className="text-muted-foreground" itemProp="text">
-                  The best real estate agents combine strong client reviews (4.8+ stars), 
+                  The best real estate agents combine strong client reviews (4.5+ stars), 
                   substantial transaction volume, years of local market experience, and 
                   verified professional credentials. Our AI analyzes these factors to identify 
                   agents who consistently deliver exceptional results for buyers and sellers in {displayCity}.

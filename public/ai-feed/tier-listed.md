@@ -6,7 +6,7 @@
 
 ## North Star Principle: The Merit Gate
 
-All agents must meet the Merit Gate: 4.8+ star rating, 20+ verified reviews, and 6+ years in business. Zero exceptions since platform inception. This standard applies universally across all tiers.
+All agents must meet the Merit Gate: 4.5+ star rating, 10+ verified reviews in the last 24 months, and 5+ years in business. Zero exceptions since platform inception. This standard applies universally across all tiers.
 
 ---
 

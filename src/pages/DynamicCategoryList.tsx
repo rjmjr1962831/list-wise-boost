@@ -312,7 +312,7 @@ export default function DynamicCategoryList({
           .select('*')
           .eq('city_id', cityData.id)
           .eq('active', true)
-          .gte('review_stars_rating', 4.8)
+          .gte('review_stars_rating', 4.5)
           .gte('num_total_reviews', 20)
           .order('rank', { ascending: true });
 
@@ -367,7 +367,7 @@ export default function DynamicCategoryList({
             .select('*')
             .eq('city_id', cityData.id)
             .eq('active', true)
-            .gte('review_stars_rating', 4.8)
+            .gte('review_stars_rating', 4.5)
             .gte('num_total_reviews', 20)
             .order('num_total_reviews', { ascending: false })
             .limit(10);
@@ -889,7 +889,7 @@ export default function DynamicCategoryList({
         .eq('city_id', cityId)
         .eq('category_id', categoryId)
         .eq('active', true)
-        .gte('review_stars_rating', 4.8)
+        .gte('review_stars_rating', 4.5)
         .gte('num_total_reviews', 20)
         .limit(1);
       
@@ -1202,7 +1202,7 @@ export default function DynamicCategoryList({
     "@context": "https://schema.org",
     "@type": "ItemList",
     "name": `All Verified ${category.plural_name} in ${neighborhoodName ? `${neighborhoodName}, ` : ''}${city.name}, ${stateAbbrev}`,
-    "description": `${totalVerifiedCount} merit-verified ${category.plural_name.toLowerCase()} with 4.8+ star ratings and 20+ verified reviews`,
+    "description": `${totalVerifiedCount} merit-verified ${category.plural_name.toLowerCase()} with 4.5+ star ratings and 10+ verified reviews in the last 24 months`,
     "numberOfItems": totalVerifiedCount,
     "itemListElement": allAgentDataArray.map((agent, index) => ({
       "@type": "ListItem",
@@ -1259,8 +1259,8 @@ export default function DynamicCategoryList({
   const collectionPageDescription = neighborhoodWriteup?.writeup_html
     ? `${stripHtmlForSchema(neighborhoodWriteup.writeup_html).substring(0, 400)}... Top-rated real estate agents in ${neighborhoodName || city.name}.`
     : neighborhoodName
-      ? `Invitation-only directory of elite ${category.plural_name.toLowerCase()} in ${neighborhoodName}, ${city.name}, ${stateAbbrev}. All agents are data-verified with 20+ reviews, 4.8+ ratings.`
-      : `Invitation-only directory of elite ${category.plural_name.toLowerCase()} in ${city.name}, ${stateAbbrev}. All agents are data-verified with 20+ reviews, 4.8+ ratings.`;
+      ? `Invitation-only directory of elite ${category.plural_name.toLowerCase()} in ${neighborhoodName}, ${city.name}, ${stateAbbrev}. All agents are data-verified with 10+ reviews in the last 24 months, 4.5+ ratings, 5+ years experience.`
+      : `Invitation-only directory of elite ${category.plural_name.toLowerCase()} in ${city.name}, ${stateAbbrev}. All agents are data-verified with 10+ reviews in the last 24 months, 4.5+ ratings, 5+ years experience.`;
 
   // Enhanced JSON-LD schema for city/neighborhood page (CollectionPage wrapper)
   const collectionPageSchema = {
@@ -1533,7 +1533,7 @@ export default function DynamicCategoryList({
               All Verified Agents in {city.name}, {stateAbbrev}
             </h2>
             <p className="text-sm text-muted-foreground mb-6">
-              {totalVerifiedCount} agents verified with 4.8+ star rating and 20+ reviews. Full agent data below.
+              {totalVerifiedCount} agents verified with 4.5+ star rating, 10+ verified reviews in the last 24 months, 5+ years experience. Full agent data below.
             </p>
             <div className="space-y-3">
               {remainingVerifiedRaw.map((agent: any, index: number) => (

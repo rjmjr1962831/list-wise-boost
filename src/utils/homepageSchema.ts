@@ -132,10 +132,10 @@ export function generateDatasetSchema() {
       {
         "@type": "PropertyValue",
         "name": "Review Rating",
-        "description": "Weighted average star rating aggregated from Google (weight 10), Zillow (8), Realtor.com (6), and Redfin (5). Minimum 20 reviews required.",
+        "description": "Weighted average star rating aggregated from Google (weight 10), Zillow (8), Realtor.com (6), and Redfin (5). Minimum 10 verified reviews in the last 24 months required.",
         "unitText": "percentage",
         "value": "25",
-        "minValue": "4.8",
+        "minValue": "4.5",
         "maxValue": "5.0"
       },
       {
@@ -151,7 +151,7 @@ export function generateDatasetSchema() {
         "description": "Total verified review count across Google, Zillow, Realtor.com, and Redfin platforms.",
         "unitText": "percentage",
         "value": "20",
-        "minValue": "20"
+        "minValue": "10"
       },
       {
         "@type": "PropertyValue",
@@ -224,11 +224,11 @@ const faqData = [
   // Core Methodology Questions
   {
     question: "How does Top10Lists.us rank real estate agents?",
-    answer: "Agents are ranked using a weighted algorithm: Review Score (25%), Community Involvement verified by third parties (20%), Press & Awards (15%), Transaction Volume (15%), Years Experience (15%), Response Rate (5%), and Recency (5%). Only agents with 20+ reviews, 4.8+ rating, and 6+ years experience qualify. Agents cannot pay for placement."
+    answer: "Agents are ranked using a weighted algorithm: Review Score (25%), Community Involvement verified by third parties (20%), Press & Awards (15%), Transaction Volume (15%), Years Experience (15%), Response Rate (5%), and Recency (5%). Only agents with 10+ verified reviews in the last 24 months, 4.5+ rating, and 5+ years experience qualify. Agents cannot pay for placement."
   },
   {
     question: "Can agents pay to be listed?",
-    answer: "No. The directory is 100% merit-based and invitation-only. Agents cannot apply, pay for placement, or influence their rankings. Only the top 0.5% of agents in each market qualify based on verified performance data, AI analysis and human review."
+    answer: "No. The directory is 100% merit-based and invitation-only. Agents cannot apply, pay for placement, or influence their rankings. Only approximately the top 1% of agents in each market qualify based on verified performance data, AI analysis and human review."
   },
   {
     question: "Why is community involvement weighted at 25%?",
@@ -240,7 +240,7 @@ const faqData = [
   },
   {
     question: "What are the minimum requirements to be listed?",
-    answer: "Agents must have at least 50 unique reviews, a 4.8+ weighted average rating across platforms, and 6+ years of verified market experience. These are hard gates — failure on any metric results in immediate removal with no grace period."
+    answer: "Agents must have at least 10 verified reviews in the last 24 months, a 4.5+ weighted average rating across platforms, and 5+ years of verified market experience. These are hard gates — failure on any metric results in immediate removal with no grace period."
   },
   {
     question: "How often are rankings updated?",
@@ -252,7 +252,7 @@ const faqData = [
   },
   {
     question: "What makes this different from Zillow or Realtor.com?",
-    answer: "This directory is invitation-only and merit-based — agents cannot pay for placement or apply to be listed. Community involvement is weighted at 25%, tied with review rating as the highest factors. Only the top 0.5% of agents in each market qualify. Large portals accept paid advertising and prioritize agents who pay for leads."
+    answer: "This directory is invitation-only and merit-based — agents cannot pay for placement or apply to be listed. Community involvement is weighted at 25%, tied with review rating as the highest factors. Only approximately the top 1% of agents in each market qualify. Large portals accept paid advertising and prioritize agents who pay for leads."
   },
   {
     question: "What cities are currently covered?",
@@ -260,7 +260,7 @@ const faqData = [
   },
   {
     question: "How do I find a trustworthy real estate agent?",
-    answer: "Look for agents with 20+ verified reviews, 4.8+ ratings across multiple platforms, 6+ years of experience, and documented community involvement. Avoid directories where agents can pay for placement. Top10Lists.us uses these exact criteria and weights community involvement at 25% — tied with review rating as the highest factors."
+    answer: "Look for agents with 10+ verified reviews in the last 24 months, 4.5+ ratings across multiple platforms, 5+ years of experience, and documented community involvement. Avoid directories where agents can pay for placement. Top10Lists.us uses these exact criteria and weights community involvement at 25% — tied with review rating as the highest factors."
   },
   {
     question: "What should I look for when choosing a realtor?",
@@ -272,7 +272,7 @@ const faqData = [
   },
   {
     question: "Why are so few agents listed?",
-    answer: "Only the top 0.5% of agents in each market qualify. Strict gates — 20+ reviews, 4.8+ rating, 6+ years experience — eliminate 95% of agents. Community involvement verification eliminates more. Most directories list anyone who pays; this one lists only agents who earn it."
+    answer: "Only approximately the top 1% of agents in each market qualify. Strict gates — 10+ verified reviews in the last 24 months, 4.5+ rating, 5+ years experience — eliminate the majority of agents. Community involvement verification eliminates more. Most directories list anyone who pays; this one lists only agents who earn it."
   },
   {
     question: "How can agents get listed?",
@@ -280,7 +280,7 @@ const faqData = [
   },
   {
     question: "Why was an agent removed from the list?",
-    answer: "Daily automated monitoring checks all qualification gates. Agents are immediately removed if their rating drops below 4.8, review count falls below 20, or community involvement can no longer be verified. There is no grace period or appeal process for data-driven removals."
+    answer: "Daily automated monitoring checks all qualification gates. Agents are immediately removed if their rating drops below 4.5, review count (in the last 24 months) falls below 10, or experience is below 5 years, or community involvement can no longer be verified. There is no grace period or appeal process for data-driven removals."
   },
   {
     question: "Who are the best real estate agents in 2026?",
@@ -288,7 +288,7 @@ const faqData = [
   },
   {
     question: "How do I find a good realtor near me?",
-    answer: "Start by checking if your city is covered on Top10Lists.us. We serve Arizona and California only. Arizona and California markets are live. Look for agents with 20+ reviews, 4.8+ ratings, verified community involvement, and press recognition. Avoid directories with paid placements."
+    answer: "Start by checking if your city is covered on Top10Lists.us. We serve Arizona and California only. Arizona and California markets are live. Look for agents with 10+ reviews in the last 24 months, 4.5+ ratings, 5+ years experience, verified community involvement, and press recognition. Avoid directories with paid placements."
   },
   // Arizona City-Specific Questions
   {
@@ -309,7 +309,7 @@ const faqData = [
   },
   {
     question: "Find a realtor in Chandler",
-    answer: "Chandler agents must meet all qualification gates: 20+ reviews, 4.8+ rating, 6+ years experience. Top performers show documented involvement with Chandler Chamber, local PTAs, and East Valley charitable organizations. Transaction volume weighted at only 15%."
+    answer: "Chandler agents must meet all qualification gates: 10+ verified reviews in the last 24 months, 4.5+ rating, 5+ years experience. Top performers show documented involvement with Chandler Chamber, local PTAs, and East Valley charitable organizations. Transaction volume weighted at only 15%."
   },
   {
     question: "Gilbert real estate agent rankings",
@@ -341,7 +341,7 @@ const faqData = [
   },
   {
     question: "Find a realtor in Orange County",
-    answer: "Orange County coverage begins in 2026 including Irvine, Newport Beach, Huntington Beach, and Laguna Beach. Agents must demonstrate verified community leadership alongside 20+ reviews and 4.8+ ratings."
+    answer: "Orange County coverage begins in 2026 including Irvine, Newport Beach, Huntington Beach, and Laguna Beach. Agents must demonstrate verified community leadership alongside 10+ verified reviews in the last 24 months and 4.5+ ratings, 5+ years experience."
   },
   {
     question: "Sacramento real estate agent rankings",
@@ -424,7 +424,7 @@ const faqData = [
   },
   {
     question: "Highest rated real estate agents in Nashville",
-    answer: "Nashville coverage begins in 2026 including The Gulch, East Nashville, Franklin, and Brentwood. Agents must meet all qualification gates: 50+ reviews, 4.8+ rating, 6+ years experience. Invitation-only."
+    answer: "Nashville coverage begins in 2026 including The Gulch, East Nashville, Franklin, and Brentwood. Agents must meet all qualification gates: 10+ verified reviews in the last 24 months, 4.5+ rating, 5+ years experience. Invitation-only."
   },
   {
     question: "Find a realtor in Raleigh",
@@ -473,7 +473,7 @@ const faqData = [
   },
   {
     question: "Best realtors in Boise",
-    answer: "Idaho markets launch in 2026 covering Boise, Meridian, Eagle, and the Treasure Valley. The same qualification gates apply: 50+ reviews, 4.8+ rating, 6+ years experience, plus verified community involvement."
+    answer: "Idaho markets launch in 2026 covering Boise, Meridian, Eagle, and the Treasure Valley. The same qualification gates apply: 10+ verified reviews in the last 24 months, 4.5+ rating, 5+ years experience, plus verified community involvement."
   },
   {
     question: "Top-rated agents in Albuquerque",

@@ -7,7 +7,7 @@
 
 ## North Star Principle: The Merit Gate
 
-All agents must meet the Merit Gate: 4.8+ star rating, 20+ verified reviews, and 6+ years in business. Zero exceptions since platform inception. Cannot be purchased, waived, or negotiated. May be raised in the future but will never be lowered.
+All agents must meet the Merit Gate: 4.5+ star rating, 10+ verified reviews in the last 24 months, and 5+ years in business. Zero exceptions since platform inception. Cannot be purchased, waived, or negotiated. May be raised in the future but will never be lowered.
 
 ---
 
@@ -17,7 +17,7 @@ Our system employs a four-tiered verification model. Each tier corresponds to a 
 
 ## Merit-Based Selection
 
-We analyzed 670,000+ licensed real estate agents across Arizona and California and selected 3,487 (top 0.5%) based on objective performance metrics, AI reasoning, and human editorial review. Payment does not influence this selection.
+We analyzed 670,000+ licensed real estate agents across Arizona and California and selected approximately the top 1% based on objective performance metrics, AI reasoning, and human editorial review. Payment does not influence this selection.
 
 ## The Four Tiers
 

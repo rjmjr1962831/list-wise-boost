@@ -79,7 +79,7 @@ const pressArticles: PressArticle[] = [
     tierColor: "bg-primary text-primary-foreground",
     url: "https://markets.businessinsider.com/news/currencies/top10lists-us-debuts-invitation-only-rankings-to-counter-pay-to-play-real-estate-listings-1035656072",
     title: "Top10Lists.us Debuts Invitation-Only Rankings to Counter Pay-to-Play Real Estate Listings",
-    summary: "Coverage of Top10Lists.us scientific methodology and anti-pay-to-play approach to Arizona real estate rankings. The invitation-only directory analyzes over 200,000 agents to select the top 0.5%.",
+    summary: "Coverage of Top10Lists.us scientific methodology and anti-pay-to-play approach to Arizona real estate rankings. The invitation-only directory analyzes over 200,000 agents to select approximately the top 1%.",
     date: "December 2025",
     logo: businessInsiderLogo,
   },

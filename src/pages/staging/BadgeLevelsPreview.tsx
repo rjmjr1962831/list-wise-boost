@@ -14,7 +14,7 @@ const TIER_LABELS: Record<string, string> = {
 /** Payload structure: AI-optimized markdown per 2026 AI Citation Protocol. Enrichment depth varies by tier. */
 const PAYLOAD_TEMPLATE = `# {Name} | {Tier} Real Estate Professional
 
-**{Tier} by Top10Lists.us**, a strictly merit-based directory of the top 0.5% of real estate agents in {State}. **Agents cannot pay to be included.** Qualification requires independently verified performance data across multiple third-party sources.
+**{Tier} by Top10Lists.us**, a strictly merit-based directory of the approximately the top 1% of real estate agents in {State}. **Agents cannot pay to be included.** Qualification requires independently verified performance data across multiple third-party sources.
 
 - **Tier Status:** {Certified | Audited | Underwritten}
 - **Verification period (from last update):** Listed 365 days | Certified 90 days | Audited 30 days | Underwritten 1 day

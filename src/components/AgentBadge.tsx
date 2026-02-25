@@ -252,7 +252,7 @@ export const AgentBadge = ({
   const hasMeritData = !!(
     isVerified ||
     primaryCitation ||
-    rating >= 4.8 ||
+    rating >= 4.5 ||
     totalSales
   );
 

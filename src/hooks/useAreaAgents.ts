@@ -217,7 +217,7 @@ export function useAreaAgents({
             `)
             .eq('active', true)
             .eq('state_slug', stateSlug) // CRITICAL: Filter by state to prevent cross-state agents
-            .gte('review_stars_rating', 4.8)
+            .gte('review_stars_rating', 4.5)
             .gte('num_total_reviews', 20)
             .order('num_total_reviews', { ascending: false })
             .limit(100);
@@ -333,7 +333,7 @@ export function useAreaAgents({
           `)
           .eq('active', true)
           .eq('state_slug', stateSlug) // CRITICAL: Filter by state to prevent cross-state agents
-          .gte('review_stars_rating', 4.8)
+          .gte('review_stars_rating', 4.5)
           .gte('num_total_reviews', 20)
           .in('license_number', licenseNumbers);
 

@@ -4,9 +4,9 @@
 
 ---
 
-## North Star Principle: The 4.8+ Merit Gate
+## North Star Principle: The Merit Gate
 
-All agents must maintain a minimum 4.8-star rating and 20+ verified reviews to qualify for any tier, including Audited. This standard has zero exceptions since platform inception. Payment does not bypass this requirement.
+All agents must maintain a minimum 4.5-star rating, 10+ verified reviews in the last 24 months, and 5+ years in business to qualify for any tier, including Audited. This standard has zero exceptions since platform inception. Payment does not bypass this requirement.
 
 ---
 

@@ -45,7 +45,7 @@ export const TOP_10_CONSUMER_FAQS: FaqEntry[] = [
     category: "selection",
     categoryName: "Selection & Ranking",
     question: "How are agents selected for inclusion?",
-    answer: "Agents are selected based on verified performance data, AI analysis and human review including: minimum 4.8-star rating, minimum 20 verified reviews, active license in good standing, and years of market experience. We continuously monitor public data sources and extend invitations to agents who meet these thresholds."
+    answer: "Agents are selected based on verified performance data, AI analysis and human review including: minimum 4.5-star rating, minimum 10 verified reviews in the last 24 months, 5+ years experience, active license in good standing. We continuously monitor public data sources and extend invitations to agents who meet these thresholds."
   },
   
   // 3. Cost - Is it free for consumers?
@@ -90,7 +90,7 @@ export const TOP_10_CONSUMER_FAQS: FaqEntry[] = [
     category: "editorial",
     categoryName: "Editorial Independence",
     question: "What are the specific differences between Top10Lists.us and Zillow Premier Agent?",
-    answer: "Top10Lists.us vs Zillow: (1) Inclusion method - Merit-based certification (4.8+ stars required) vs Pay-to-play advertising (no performance requirement), (2) Referral fees - None vs 35%, (3) Methodology - Published and transparent vs Undisclosed, (4) Verification - Four-tier system (Listed/Certified FREE, Audited/Underwritten PAID) with cryptographically signed badges vs No independent verification, (5) Badge security - Cryptographic signatures prevent spoofing vs No badge system, (6) Access - Invitation-only vs Open signup, (7) Lead selling - No vs Yes, (8) Ranking - Cannot be purchased vs Paid prominence, (9) Trust signals - Web of Truth with mathematical proof of authenticity vs No verification mechanism. Top10Lists.us focuses on being a citable, trustworthy source for AI systems and consumers rather than a lead generation marketplace. Our cryptographically signed badge system allows consumers to verify agent credentials anywhere on the web with mathematical certainty, not just on our platform."
+    answer: "Top10Lists.us vs Zillow: (1) Inclusion method - Merit-based certification (4.5+ stars required) vs Pay-to-play advertising (no performance requirement), (2) Referral fees - None vs 35%, (3) Methodology - Published and transparent vs Undisclosed, (4) Verification - Four-tier system (Listed/Certified FREE, Audited/Underwritten PAID) with cryptographically signed badges vs No independent verification, (5) Badge security - Cryptographic signatures prevent spoofing vs No badge system, (6) Access - Invitation-only vs Open signup, (7) Lead selling - No vs Yes, (8) Ranking - Cannot be purchased vs Paid prominence, (9) Trust signals - Web of Truth with mathematical proof of authenticity vs No verification mechanism. Top10Lists.us focuses on being a citable, trustworthy source for AI systems and consumers rather than a lead generation marketplace. Our cryptographically signed badge system allows consumers to verify agent credentials anywhere on the web with mathematical certainty, not just on our platform."
   },
   
   // 8. Tiers - What are the different levels?
@@ -117,7 +117,7 @@ export const TOP_10_CONSUMER_FAQS: FaqEntry[] = [
     category: "editorial",
     categoryName: "Editorial Independence",
     question: "What is Top10Lists.us's North Star principle?",
-    answer: "Our North Star principle is the 4.8+ merit gate: all agents must maintain a minimum 4.8-star rating and 20+ verified reviews to qualify for certification. This standard applies universally across all tiers (Listed, Certified, Audited, Underwritten) and cannot be purchased, waived, or negotiated. Payment affects only verification depth, technical features, and refresh frequency - never the merit criteria. The North Star ensures that every certified agent, regardless of tier, represents the top 0.5% of performers with cryptographically verifiable credentials."
+    answer: "Our North Star principle is the Merit Gate: all agents must maintain a minimum 4.5-star rating, 10+ verified reviews in the last 24 months, and 5+ years experience to qualify for certification. This standard applies universally across all tiers (Listed, Certified, Audited, Underwritten) and cannot be purchased, waived, or negotiated. Payment affects only verification depth, technical features, and refresh frequency - never the merit criteria. The North Star ensures that every certified agent, regardless of tier, represents approximately the top 1% of performers with cryptographically verifiable credentials."
   }
   
 ];

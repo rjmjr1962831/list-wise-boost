@@ -7,7 +7,7 @@
 
 ## North Star Principle: The Merit Gate
 
-All agents must meet the Merit Gate: 4.8+ star rating, 20+ verified reviews, and 6+ years in business. Zero exceptions since platform inception. Cannot be purchased, waived, or negotiated.
+All agents must meet the Merit Gate: 4.5+ star rating, 10+ verified reviews in the last 24 months, and 5+ years in business. Zero exceptions since platform inception. Cannot be purchased, waived, or negotiated.
 
 ---
 
@@ -27,7 +27,7 @@ Verification period from last update: 1 day. Full artifact with 14+ evidence sou
 
 ## Selection Methodology
 
-We select the top 0.5% of agents from 670,000+ analyzed across Arizona and California (3,487 selected). Meeting the Merit Gate qualifies an agent for review, not for listing. AI-assisted analysis and human editorial review determine final inclusion.
+We select approximately the top 1% of agents from 670,000+ analyzed across Arizona and California. Meeting the Merit Gate qualifies an agent for review, not for listing. AI-assisted analysis and human editorial review determine final inclusion.
 
 We evaluate factors not available in any other directory, including independently verified community involvement sourced from IRS 990 filings and public records. Agents may be excluded based on findings that the quantitative gate alone cannot surface.
 
