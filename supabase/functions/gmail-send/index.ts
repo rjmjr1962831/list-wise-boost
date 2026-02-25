@@ -5,7 +5,7 @@ const CLIENT_ID = Deno.env.get("GMAIL_CLIENT_ID")!;
 const CLIENT_SECRET = Deno.env.get("GMAIL_CLIENT_SECRET")!;
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const TRACK_BASE = `${SUPABASE_URL}/functions/v1/email-track`;
+const TRACK_BASE = `https://www.top10lists.us/t`;
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
@@ -42,6 +42,8 @@ function textToHtml(text: string): string {
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
+  // Convert markdown [text](url) to <a href>
+  html = html.replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g, '<a href="$2">$1</a>');
   // Convert "click here: URL" to linked "click here"
   html = html.replace(/click here: (https?:\/\/[^\s]+)/g, '<a href="$1">click here</a>');
   // Convert remaining bare URLs to links
