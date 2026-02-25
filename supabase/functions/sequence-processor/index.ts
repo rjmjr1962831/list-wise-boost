@@ -257,12 +257,16 @@ serve(async (req) => {
         const unsubUrl = pro.verification_token ? `${SUPABASE_URL}/functions/v1/unsubscribe?token=${pro.verification_token}` : "";
 
         const subject = (step.subject || "")
-          .replace(/\{\{firstName\}\}/g, firstName).replace(/\{\{lastName\}\}/g, lastName)
+          .replace(/\{\{firstName\}\}/g, firstName).replace(/\{\{first_name\}\}/g, firstName)
+          .replace(/\{\{lastName\}\}/g, lastName).replace(/\{\{last_name\}\}/g, lastName)
           .replace(/\{\{magicLink\}\}/g, magicLink).replace(/\{\{magic_link\}\}/g, magicLink)
+          .replace(/\{\{profile_url\}\}/g, magicLink).replace(/\{\{profileUrl\}\}/g, magicLink)
           .replace(/\{\{state\}\}/g, stateName).replace(/\{\{city\}\}/g, cityName);
         const bodyRaw = (step.body || "")
-          .replace(/\{\{firstName\}\}/g, firstName).replace(/\{\{lastName\}\}/g, lastName)
+          .replace(/\{\{firstName\}\}/g, firstName).replace(/\{\{first_name\}\}/g, firstName)
+          .replace(/\{\{lastName\}\}/g, lastName).replace(/\{\{last_name\}\}/g, lastName)
           .replace(/\{\{magicLink\}\}/g, magicLink).replace(/\{\{magic_link\}\}/g, magicLink)
+          .replace(/\{\{profile_url\}\}/g, magicLink).replace(/\{\{profileUrl\}\}/g, magicLink)
           .replace(/\{\{state\}\}/g, stateName).replace(/\{\{city\}\}/g, cityName);
         const body = (unsubUrl
           ? bodyRaw + `\n\n---\nUnsubscribe: ${unsubUrl}`
