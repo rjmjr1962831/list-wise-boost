@@ -58,7 +58,7 @@ serve(async (req) => {
     const { data: pro } = await supabase
       .from("professionals")
       .select("id, name")
-      .eq("email", recipientEmail)
+      .ilike("email", recipientEmail)
       .maybeSingle();
 
     // ── Look up enrollment for sequence name ──────────────────────────────────
