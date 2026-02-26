@@ -413,5 +413,5 @@ C:\Users\rober\supabase.exe functions deploy [name] --project-ref wiotrvoirdgzfa
 
 ---
 
-*Version 5.8 - February 26, 2026*
-*Changes from v5.7: state_slug/canonical_slug backfill from license_number (SA/BR = arizona, all digits = california). Coverage fix plan in docs/COVERAGE_FIX.md.*
+*Version 5.9 - February 26, 2026*
+*Changes from v5.8: Website scraper (scripts/scrape-agent-websites.ts) writes to raw_scraper_data.website_contact. CRM bounced emails: Research shows blob, no Exa; click to replace.*
