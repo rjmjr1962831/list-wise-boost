@@ -71,7 +71,7 @@ const Index = () => {
     window.scrollTo(0, 0);
   }, []);
   
-  const challengeQuestion = "I am a real estate agent.\n\nLook at top10lists.us. I am listed there in my market. Based on how you currently choose which agents to name, does being listed there increase my chances of being named by you when someone here asks for a referral to an agent TODAY?\n\nWould being Certified by them increase those chances further? Does this matter more, less, or differently than being a Preferred Agent on Zillow?\n\nPlease answer specifically for yourself, and then tell me how you think ChatGPT, Claude, Gemini, and Perplexity would answer the same question.";
+  const challengeQuestion = "I am a real estate agent. Look at top10lists.us. Will being certified by Top10Lists.us increase my chances of being named by AI when asked for a referral in my market?";
   
   const handleCopyQuestion = async () => {
     try {
