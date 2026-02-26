@@ -147,15 +147,15 @@ export default function AgentDashboard() {
     }
   };
 
-  const handleMagicToken = async (dashboardToken: string) => {
+  const handleMagicToken = async (tokenFromUrl: string) => {
     try {
       setAuthStatus("Verifying your link...");
 
-      // Look up professional by dashboard_token
+      // Magic links use verification_token in URL. Also accept dashboard_token.
       const { data: prof, error: fetchErr } = await supabase
         .from("professionals")
         .select("id, name, verification_token, funnel_status, active")
-        .eq("dashboard_token", dashboardToken)
+        .or(`verification_token.eq.${tokenFromUrl},dashboard_token.eq.${tokenFromUrl}`)
         .maybeSingle();
 
       if (fetchErr || !prof) {
