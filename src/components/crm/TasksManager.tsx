@@ -70,9 +70,11 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
   const [filter, setFilter] = useState<"pending" | "all">("pending");
   const [selectedContact, setSelectedContact] = useState<{ id: string; name: string; email: string; phone: string | null; company: string | null; business_city: string | null; state_slug: string | null; current_tier: string | null; review_stars_rating: number | null; num_total_reviews: number | null; canonical_slug: string | null } | null>(null);
 
-  // Send email modal
+  // Send email modal: compose from scratch or use template
   const [emailModal, setEmailModal] = useState<{ task: EngagementTask | null; open: boolean }>({ task: null, open: false });
   const [selectedTemplate, setSelectedTemplate] = useState<string>("");
+  const [composeSubject, setComposeSubject] = useState<string>("");
+  const [composeBody, setComposeBody] = useState<string>("");
   const [fromAccount, setFromAccount] = useState<string>(SAFE_ACCOUNTS[0]);
   const [sending, setSending] = useState(false);
   const [sendResult, setSendResult] = useState<{ ok: boolean; msg: string } | null>(null);
@@ -248,8 +250,31 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
   function openEmailModal(task: EngagementTask) {
     setEmailModal({ task, open: true });
     setSelectedTemplate("");
+    setComposeSubject("");
+    setComposeBody("");
     setFromAccount(SAFE_ACCOUNTS[0]);
     setSendResult(null);
+  }
+
+  function applyTaskTemplate(templateId: string) {
+    setSelectedTemplate(templateId);
+    if (!templateId) {
+      setComposeSubject("");
+      setComposeBody("");
+      return;
+    }
+    const tpl = templates.find(t => t.id === templateId);
+    if (!tpl || !emailModal.task) return;
+    const firstName = emailModal.task.professional_name?.split(" ")[0] ?? "";
+    const fullName = emailModal.task.professional_name ?? "";
+    const profileUrl = emailModal.task.magic_link ?? (emailModal.task.verification_token ? `https://www.top10lists.us/dashboard/${emailModal.task.verification_token}` : "https://www.top10lists.us");
+    const sub = (s: string) => s
+      .replace(/\{\{firstName\}\}/g, firstName)
+      .replace(/\{\{first_name\}\}/g, firstName)
+      .replace(/\{\{agent_name\}\}/g, fullName)
+      .replace(/\{\{profile_url\}\}/g, profileUrl);
+    setComposeSubject(sub(tpl.subject));
+    setComposeBody(sub(tpl.body));
   }
 
   function closeEmailModal() {
@@ -293,23 +318,29 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
 
   async function sendEmail() {
     const task = emailModal.task;
-    if (!task || !selectedTemplate) return;
-    const tpl = templates.find(t => t.id === selectedTemplate);
-    if (!tpl || !task.professional_email) return;
+    if (!task || !task.professional_email) return;
+    const subject = (composeSubject || "").trim();
+    const body = (composeBody || "").trim();
+    if (!subject || !body) return;
     setSending(true);
     setSendResult(null);
-    const firstName = task.professional_name?.split(" ")[0] ?? task.professional_name;
-    const sub = (s: string) => s.replace(/\{\{firstName\}\}/g, firstName).replace(/\{\{first_name\}\}/g, firstName);
-    const subject = sub(tpl.subject);
-    const body    = sub(tpl.body);
     try {
       const { error } = await supabase.functions.invoke("gmail-send", {
-        body: { to: task.professional_email, subject, body, from_account: fromAccount },
+        body: {
+          to: task.professional_email,
+          subject,
+          message_body: body,
+          from_account: fromAccount,
+          professional_id: task.professional_id,
+        },
       });
       if (error) throw error;
       setSendResult({ ok: true, msg: `Sent to ${task.professional_email}` });
+      setComposeSubject("");
+      setComposeBody("");
+      setSelectedTemplate("");
     } catch (e: any) {
-      setSendResult({ ok: false, msg: e.message ?? "Send failed" });
+      setSendResult({ ok: false, msg: e?.message ?? "Send failed" });
     }
     setSending(false);
   }
@@ -321,11 +352,6 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
   };
 
   const totalPending = engagementTasks.filter(t => t.status === "pending").length + tasks.filter(t => t.status === "pending").length;
-  const selectedTpl  = templates.find(t => t.id === selectedTemplate);
-  const firstForPreview = emailModal.task?.professional_name?.split(" ")[0] ?? "";
-  const previewBody  = selectedTpl
-    ? selectedTpl.body.replace(/\{\{firstName\}\}/g, firstForPreview).replace(/\{\{first_name\}\}/g, firstForPreview)
-    : "";
 
   return (
     <div className="space-y-6">
@@ -338,53 +364,63 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
       {/* Everything else hidden when contact is open */}
       {!selectedContact && (<>
 
-      {/* Send Email Modal */}
+      {/* Send Email Modal: New Email with optional template and placeholders */}
       {emailModal.open && emailModal.task && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center" }}>
           <div style={{ background: "#fff", borderRadius: "12px", padding: "28px", width: "600px", maxWidth: "95vw", maxHeight: "85vh", overflowY: "auto", boxShadow: "0 20px 60px rgba(0,0,0,0.3)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "20px" }}>
               <div>
-                <h2 style={{ margin: 0, fontSize: "17px", fontWeight: "700" }}>Send Email</h2>
+                <h2 style={{ margin: 0, fontSize: "17px", fontWeight: "700" }}>New Email</h2>
                 <p style={{ margin: "4px 0 0", fontSize: "13px", color: "#666" }}>
                   To: {emailModal.task.professional_name} &lt;{emailModal.task.professional_email}&gt;
                 </p>
               </div>
-              <button onClick={closeEmailModal} style={{ background: "none", border: "none", fontSize: "20px", cursor: "pointer", color: "#999", lineHeight: 1 }}>x</button>
+              <button onClick={closeEmailModal} style={{ background: "none", border: "none", fontSize: "20px", cursor: "pointer", color: "#999", lineHeight: 1 }}>Cancel</button>
             </div>
 
-            <div style={{ marginBottom: "16px" }}>
-              <label style={{ display: "block", fontSize: "12px", fontWeight: "600", color: "#555", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.05em" }}>From</label>
+            <div style={{ marginBottom: "12px" }}>
+              <label style={{ display: "block", fontSize: "12px", fontWeight: "600", color: "#555", marginBottom: "6px" }}>Use template</label>
+              <select value={selectedTemplate} onChange={e => applyTaskTemplate(e.target.value)}
+                style={{ width: "100%", padding: "8px 12px", border: "1px solid #ddd", borderRadius: "6px", fontSize: "13px", background: "#fff" }}>
+                <option value="">Select a template...</option>
+                {templates.map(t => <option key={t.id} value={t.id}>{t.label}</option>)}
+              </select>
+            </div>
+
+            <div style={{ marginBottom: "12px" }}>
+              <label style={{ display: "block", fontSize: "12px", fontWeight: "600", color: "#555", marginBottom: "6px" }}>From</label>
               <select value={fromAccount} onChange={e => setFromAccount(e.target.value)}
                 style={{ width: "100%", padding: "8px 12px", border: "1px solid #ddd", borderRadius: "6px", fontSize: "13px", background: "#fff" }}>
                 {SAFE_ACCOUNTS.map(a => <option key={a} value={a}>{a}</option>)}
               </select>
             </div>
 
-            <div style={{ marginBottom: "16px" }}>
-              <label style={{ display: "block", fontSize: "12px", fontWeight: "600", color: "#555", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Template</label>
-              <select value={selectedTemplate} onChange={e => setSelectedTemplate(e.target.value)}
-                style={{ width: "100%", padding: "8px 12px", border: "1px solid #ddd", borderRadius: "6px", fontSize: "13px", background: "#fff" }}>
-                <option value="">-- Choose a template --</option>
-                {templates.map(t => <option key={t.id} value={t.id}>{t.label}</option>)}
-              </select>
+            <div style={{ marginBottom: "12px" }}>
+              <label style={{ display: "block", fontSize: "12px", fontWeight: "600", color: "#555", marginBottom: "6px" }}>To</label>
+              <div style={{ padding: "8px 12px", background: "#f5f5f5", borderRadius: "6px", fontSize: "13px" }}>{emailModal.task.professional_email}</div>
             </div>
 
-            {selectedTpl && (
-              <>
-                <div style={{ marginBottom: "12px" }}>
-                  <label style={{ display: "block", fontSize: "12px", fontWeight: "600", color: "#555", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Subject</label>
-                  <div style={{ padding: "8px 12px", background: "#f5f5f5", borderRadius: "6px", fontSize: "13px" }}>
-                    {selectedTpl.subject.replace(/\{\{firstName\}\}/g, firstForPreview).replace(/\{\{first_name\}\}/g, firstForPreview)}
-                  </div>
-                </div>
-                <div style={{ marginBottom: "20px" }}>
-                  <label style={{ display: "block", fontSize: "12px", fontWeight: "600", color: "#555", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Preview</label>
-                  <pre style={{ padding: "12px", background: "#f5f5f5", borderRadius: "6px", fontSize: "12px", whiteSpace: "pre-wrap", wordBreak: "break-word", margin: 0, maxHeight: "220px", overflowY: "auto", fontFamily: "system-ui" }}>
-                    {previewBody}
-                  </pre>
-                </div>
-              </>
-            )}
+            <div style={{ marginBottom: "12px" }}>
+              <label style={{ display: "block", fontSize: "12px", fontWeight: "600", color: "#555", marginBottom: "6px" }}>Subject</label>
+              <Input className="text-sm h-9" value={composeSubject} onChange={e => setComposeSubject(e.target.value)} placeholder="Subject" />
+            </div>
+
+            <div style={{ marginBottom: "16px" }}>
+              <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "6px", marginBottom: "6px" }}>
+                <span style={{ fontSize: "12px", fontWeight: "600", color: "#555" }}>Insert:</span>
+                {[
+                  { key: "{{first_name}}", label: "First Name" },
+                  { key: "{{agent_name}}", label: "Full Name" },
+                  { key: "{{profile_url}}", label: "Profile URL" },
+                ].map(v => (
+                  <button key={v.key} type="button" onClick={() => setComposeBody(b => b + v.key)}
+                    className="text-[10px] px-2 py-1 rounded border border-input hover:bg-muted transition-colors">
+                    {v.label}
+                  </button>
+                ))}
+              </div>
+              <Textarea className="min-h-[140px] text-sm font-mono resize-y" value={composeBody} onChange={e => setComposeBody(e.target.value)} placeholder="Write your message..." />
+            </div>
 
             {sendResult && (
               <div style={{ padding: "10px 14px", borderRadius: "6px", marginBottom: "16px", background: sendResult.ok ? "#f0fdf4" : "#fef2f2", color: sendResult.ok ? "#15803d" : "#dc2626", fontSize: "13px", fontWeight: "500" }}>
@@ -393,11 +429,10 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
             )}
 
             <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
-              <button onClick={closeEmailModal} style={{ padding: "7px 16px", background: "#888", color: "#fff", border: "none", borderRadius: "6px", cursor: "pointer", fontSize: "13px" }}>Cancel</button>
-              <button onClick={sendEmail} disabled={!selectedTemplate || sending || !!sendResult?.ok}
-                style={{ padding: "7px 16px", background: !selectedTemplate || sending || !!sendResult?.ok ? "#ccc" : "#1a1a1a", color: "#fff", border: "none", borderRadius: "6px", cursor: "pointer", fontSize: "13px" }}>
-                {sending ? "Sending..." : sendResult?.ok ? "Sent" : "Send"}
-              </button>
+              <Button variant="outline" onClick={closeEmailModal}>Cancel</Button>
+              <Button onClick={sendEmail} disabled={!composeSubject.trim() || !composeBody.trim() || sending || !!sendResult?.ok}>
+                <Mail className="h-3.5 w-3.5 mr-1" />{sending ? "Sending..." : sendResult?.ok ? "Sent" : "Send"}
+              </Button>
             </div>
           </div>
         </div>
@@ -511,10 +546,10 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
                       </Button>
                     )}
                     {task.professional_email && (
-                      <button onClick={() => openEmailModal(task)}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 text-white text-sm rounded-md font-medium hover:bg-indigo-700">
-                        <Mail className="h-3.5 w-3.5" /> Send Email
-                      </button>
+                      <Button size="sm" variant="default" onClick={() => openEmailModal(task)}
+                        className="inline-flex items-center gap-1.5">
+                        <Mail className="h-3.5 w-3.5" /> Email
+                      </Button>
                     )}
                     <button onClick={() => setSelectedContact({
                         id: task.professional_id,

@@ -92,11 +92,26 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
 
   const loadEmails = async () => {
     const email = professional.email;
-    if (!email || email === "pending@123.com") { setEmails([]); return; }
-    const { data } = await supabase.from("crm_emails").select("*")
+    // Load by professional_id (so emails sent from task card to any address appear) or by to/from match
+    const { data: byPro } = await supabase.from("crm_emails").select("*")
+      .eq("professional_id", professional.id)
+      .order("sent_at", { ascending: false }).limit(100);
+    if (!email || email === "pending@123.com") {
+      setEmails(byPro || []);
+      return;
+    }
+    const { data: byAddress } = await supabase.from("crm_emails").select("*")
       .or(`to_address.ilike.%${email}%,from_address.ilike.%${email}%`)
       .order("sent_at", { ascending: false }).limit(100);
-    setEmails(data || []);
+    const combined = [...(byPro || []), ...(byAddress || [])];
+    const seen = new Set<string>();
+    const deduped = combined.filter((r: any) => {
+      const id = r.id ?? r.gmail_message_id;
+      if (seen.has(id)) return false;
+      seen.add(id);
+      return true;
+    }).sort((a: any, b: any) => new Date(b.sent_at || 0).getTime() - new Date(a.sent_at || 0).getTime()).slice(0, 100);
+    setEmails(deduped);
   };
 
   const loadActivities = async () => {
@@ -191,6 +206,14 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
     loadNotes();
   };
 
+  const profileUrlForPro = () => {
+    if (!pro?.verification_token) return pro?.magic_link || "https://www.top10lists.us";
+    const tier = (pro?.current_tier || pro?.badge_tier || "listed")?.toLowerCase();
+    if (tier === "certified" || tier === "audited" || tier === "underwritten")
+      return pro?.magic_link?.includes("/dashboard/") ? pro.magic_link : `https://www.top10lists.us/dashboard/${pro.verification_token}`;
+    return `https://www.top10lists.us/funnel/${pro.verification_token}`;
+  };
+
   const applyTemplate = (templateId: string) => {
     setSelectedTemplateId(templateId);
     if (!templateId) {
@@ -201,17 +224,44 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
     const tpl = templates.find(t => t.id === templateId);
     if (!tpl) return;
     const firstName = (pro?.name || "").split(" ")[0] || "";
-    const sub = (s: string) => s.replace(/\{\{firstName\}\}/g, firstName).replace(/\{\{first_name\}\}/g, firstName);
+    const fullName = pro?.name ?? "";
+    const tier = pro?.current_tier || pro?.badge_tier || "";
+    const city = pro?.business_city ?? "";
+    const profileUrl = profileUrlForPro();
+    const aics = (pro as any)?.certified_projected_signal ?? (pro as any)?.signal_score ?? "";
+    const sub = (s: string) => s
+      .replace(/\{\{firstName\}\}/g, firstName)
+      .replace(/\{\{first_name\}\}/g, firstName)
+      .replace(/\{\{agent_name\}\}/g, fullName)
+      .replace(/\{\{tier\}\}/g, tier)
+      .replace(/\{\{city\}\}/g, city)
+      .replace(/\{\{profile_url\}\}/g, profileUrl)
+      .replace(/\{\{aics_score\}\}/g, String(aics));
     setComposeSubject(sub(tpl.subject));
     setComposeBody(sub(tpl.body));
   };
+
+  const COMPOSE_PLACEHOLDERS = [
+    { key: "{{first_name}}", label: "First Name" },
+    { key: "{{agent_name}}", label: "Full Name" },
+    { key: "{{tier}}", label: "Tier" },
+    { key: "{{city}}", label: "City" },
+    { key: "{{profile_url}}", label: "Profile URL" },
+    { key: "{{aics_score}}", label: "AICS Score" },
+  ];
 
   const sendEmail = async () => {
     if (!composeSubject || !composeBody) { toast.error("Subject and body required"); return; }
     setSending(true);
     try {
       await supabase.functions.invoke("gmail-send", {
-        body: { from_account: composeFrom, to: pro?.email, subject: composeSubject, message_body: composeBody },
+        body: {
+          from_account: composeFrom,
+          to: pro?.email,
+          subject: composeSubject,
+          message_body: composeBody,
+          professional_id: professional.id,
+        },
       });
       toast.success("Email sent");
       setShowCompose(false);
@@ -362,35 +412,53 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
         </div>
       </div>
 
-      {/* Compose — open/click tracking is applied automatically by gmail-send */}
+      {/* Compose — New Email with template and placeholders; outbound recorded to contact folder via professional_id */}
       {showCompose && (
         <Card className="border-primary/30">
           <CardContent className="py-3 px-4 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-semibold">New Email</span>
+              <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => { setShowCompose(false); setSelectedTemplateId(""); }}>Cancel</Button>
+            </div>
             <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground w-12">Template</span>
+              <span className="text-xs text-muted-foreground w-20 shrink-0">Use template</span>
               <select
                 className="text-sm border rounded px-2 py-1 flex-1 bg-background"
                 value={selectedTemplateId}
                 onChange={e => applyTemplate(e.target.value)}
               >
-                <option value="">— Choose a template —</option>
+                <option value="">Select a template...</option>
                 {templates.map(t => (
                   <option key={t.id} value={t.id}>{t.label}</option>
                 ))}
               </select>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground w-12">From</span>
+              <span className="text-xs text-muted-foreground w-20 shrink-0">From</span>
               <select className="text-sm border rounded px-2 py-1 flex-1 bg-background" value={composeFrom} onChange={e => setComposeFrom(e.target.value)}>
                 {accounts.map(a => <option key={a.email} value={a.email}>{a.display_name ? `${a.display_name} <${a.email}>` : a.email}</option>)}
               </select>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground w-12">To</span>
-              <span className="text-sm">{pro.email}</span>
+              <span className="text-xs text-muted-foreground w-20 shrink-0">To</span>
+              <span className="text-sm">{pro?.email}</span>
             </div>
-            <Input placeholder="Subject" className="text-sm h-8" value={composeSubject} onChange={e => setComposeSubject(e.target.value)} />
-            <Textarea placeholder="Write your message..." className="text-sm min-h-[100px]" value={composeBody} onChange={e => setComposeBody(e.target.value)} />
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground w-20 shrink-0">Subject</span>
+              <Input placeholder="Subject" className="text-sm h-8 flex-1" value={composeSubject} onChange={e => setComposeSubject(e.target.value)} />
+            </div>
+            <div>
+              <div className="flex flex-wrap items-center gap-1 mb-1">
+                <span className="text-xs text-muted-foreground mr-1">Insert:</span>
+                {COMPOSE_PLACEHOLDERS.map(v => (
+                  <button key={v.key} type="button" onClick={() => setComposeBody(b => b + v.key)}
+                    className="text-[10px] px-1.5 py-0.5 rounded border border-input hover:bg-muted transition-colors">
+                    {v.label}
+                  </button>
+                ))}
+              </div>
+              <Textarea placeholder="Write your message..." className="text-sm min-h-[100px]" value={composeBody} onChange={e => setComposeBody(e.target.value)} />
+            </div>
             <div className="flex gap-2 justify-end">
               <Button size="sm" variant="outline" onClick={() => { setShowCompose(false); setSelectedTemplateId(""); }}>Cancel</Button>
               <Button size="sm" onClick={sendEmail} disabled={sending}><Send className="h-3.5 w-3.5 mr-1" />{sending ? "Sending..." : "Send"}</Button>
@@ -408,9 +476,25 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
             <CardHeader className="py-3 px-4 pb-1"><CardTitle className="text-sm font-semibold flex items-center gap-1.5"><User className="h-3.5 w-3.5" />Contact</CardTitle></CardHeader>
             <CardContent className="px-4 pb-3 divide-y divide-muted/30">
               <EditableField field="email" label="Email" value={pro.email} />
+              {(pro.cell_phone?.trim() || pro.phone?.trim()) && (
+                <div className="flex items-center justify-between gap-2 py-1.5">
+                  <span className="text-muted-foreground text-xs shrink-0 w-28">Mobile or business phone</span>
+                  <a href={`tel:${(pro.cell_phone?.trim() || pro.phone?.trim() || "").replace(/\s/g, "")}`} className="text-primary hover:underline truncate text-right">
+                    {pro.cell_phone?.trim() || pro.phone || ""}
+                  </a>
+                </div>
+              )}
               <EditableField field="phone" label="Phone" value={pro.phone} />
               <EditableField field="cell_phone" label="Cell" value={pro.cell_phone} />
               <EditableField field="company" label="Company" value={pro.company} />
+              {pro.website != null && String(pro.website).trim() !== "" && (
+                <div className="flex items-center justify-between gap-2 py-1.5">
+                  <span className="text-muted-foreground text-xs shrink-0 w-28">Web address</span>
+                  <a href={(typeof pro.website === "string" && pro.website.startsWith("http")) ? pro.website : `https://${pro.website}`} target="_blank" rel="noopener" className="text-primary hover:underline truncate text-right">
+                    {typeof pro.website === "string" ? pro.website.replace(/^https?:\/\/(www\.)?/, "").split("/")[0] || pro.website : pro.website}
+                  </a>
+                </div>
+              )}
               <EditableField field="business_city" label="City" value={pro.business_city} />
               <EditableField field="business_state" label="State" value={pro.business_state || pro.state_slug} />
               <EditableField field="business_zip" label="Zip" value={pro.business_zip} />
