@@ -51,14 +51,26 @@ const TEMPLATE_VARS = [
   { key: "{{aics_score}}", label: "AICS Score" },
 ];
 
+const BASE_URL = "https://www.top10lists.us";
+function profileUrlForTier(professional: any | null): string {
+  if (!professional?.verification_token) return professional?.profile_link || professional?.magic_link || BASE_URL;
+  const tier = (professional?.current_tier || professional?.badge_tier || "listed").toLowerCase();
+  const token = professional.verification_token;
+  if (tier === "certified" || tier === "audited" || tier === "underwritten") {
+    return professional?.magic_link?.includes("/dashboard/") ? professional.magic_link : `${BASE_URL}/dashboard/${token}`;
+  }
+  return `${BASE_URL}/funnel/${token}`;
+}
+
 function applyTemplate(text: string, contact: Contact | null, professional: any | null): string {
   const firstName = contact?.full_name?.split(" ")[0] || "";
+  const profileUrl = profileUrlForTier(professional);
   return text
     .replace(/{{first_name}}/g, firstName)
     .replace(/{{agent_name}}/g, contact?.full_name || "")
     .replace(/{{tier}}/g, professional?.current_tier || professional?.badge_tier || "")
     .replace(/{{city}}/g, professional?.business_city || "")
-    .replace(/{{profile_url}}/g, professional?.profile_link || "")
+    .replace(/{{profile_url}}/g, profileUrl)
     .replace(/{{aics_score}}/g, professional?.certified_projected_signal || professional?.signal_score || "");
 }
 
@@ -93,6 +105,15 @@ export const EmailManager = () => {
   const [savingTpl, setSavingTpl] = useState(false);
 
   useEffect(() => { loadAll(); }, []);
+
+  useEffect(() => {
+    if (!composing || !toAddress || !toAddress.includes("@")) return;
+    const email = toAddress.trim().toLowerCase();
+    if (!email) return;
+    supabase.from("professionals").select("*").ilike("email", email).limit(1).maybeSingle().then(({ data }) => {
+      setProfessional(data || null);
+    });
+  }, [composing, toAddress]);
 
   const loadAll = async () => {
     setLoading(true);
@@ -201,7 +222,14 @@ export const EmailManager = () => {
       setSelectedTemplate("");
       await loadAll();
     } catch (e: any) {
-      toast.error("Failed to send: " + e.message);
+      let msg = e?.message ?? "Unknown error";
+      if (e?.context && typeof e.context.json === "function") {
+        try {
+          const body = await e.context.json();
+          if (body?.error) msg = body.error;
+        } catch (_) {}
+      }
+      toast.error("Failed to send: " + msg);
     } finally {
       setSending(false);
     }

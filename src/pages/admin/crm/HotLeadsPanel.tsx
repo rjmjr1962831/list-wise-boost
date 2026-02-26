@@ -212,6 +212,14 @@ export default function HotLeadsPanel() {
     ? selectedTpl.body.replace(/\{\{firstName\}\}/g, firstForPreview).replace(/\{\{first_name\}\}/g, firstForPreview)
     : "";
 
+  const latestActivityAt = (() => {
+    const activityTimes = (activity ?? []).map((a: any) => a.created_at).filter(Boolean);
+    const taskTimes = (tasks ?? []).map((t: any) => t.created_at).filter(Boolean);
+    const all = [...activityTimes, ...taskTimes];
+    if (all.length === 0) return null;
+    return all.reduce((latest: string, t: string) => (t > latest ? t : latest), all[0]);
+  })();
+
   return (
     <div style={{ fontFamily: "system-ui, sans-serif", padding: "24px", maxWidth: "1400px", margin: "0 auto", color: "#1a1a1a" }}>
 
@@ -308,7 +316,11 @@ export default function HotLeadsPanel() {
         <div>
           <h1 style={{ fontSize: "22px", fontWeight: "700", margin: "0 0 4px" }}>Hot Leads</h1>
           <p style={{ margin: 0, fontSize: "13px", color: "#666" }}>
-            Last refresh: {lastRefresh.toLocaleTimeString()} &middot; Auto-refreshes every 30s
+            Last refresh: {lastRefresh.toLocaleTimeString()}
+            {latestActivityAt != null && (
+              <span> &middot; Latest activity: {relativeTime(latestActivityAt)}</span>
+            )}
+            {" "}&middot; Auto-refreshes every 30s
             {pendingTaskCount > 0 && (
               <span style={{ marginLeft: "12px", background: "#ef4444", color: "#fff", borderRadius: "10px", padding: "1px 8px", fontSize: "11px", fontWeight: "700" }}>
                 {pendingTaskCount} pending task{pendingTaskCount !== 1 ? "s" : ""}

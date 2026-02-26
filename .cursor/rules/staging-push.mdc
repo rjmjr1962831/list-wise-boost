@@ -5,6 +5,8 @@ alwaysApply: true
 
 # REMEMBER
 
+**Canonical source:** See **MASTER_KNOWLEDGE_DOCUMENT_TODAY.MD** section 10 (Git / Branch Flow). Summary:
+
 - **Two branches, one Supabase.** We have `staging` and `main` (Git). There is one Supabase project. Both deploy to the same Supabase.
 - **Pushing to staging does NOT require Robert's approval.** Push to staging by default when you complete work. Do not ask. Approval is required only for `main` and for `supabase functions deploy`.
 

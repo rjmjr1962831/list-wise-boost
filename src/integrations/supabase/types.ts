@@ -2547,6 +2547,7 @@ export type Database = {
           data_sources_log: Json | null
           description: string | null
           email: string | null
+          email_provider: string | null
           email_verified_at: string | null
           encoded_zuid: string | null
           free_pool_position: number | null
@@ -2687,6 +2688,7 @@ export type Database = {
           data_sources_log?: Json | null
           description?: string | null
           email?: string | null
+          email_provider?: string | null
           email_verified_at?: string | null
           encoded_zuid?: string | null
           free_pool_position?: number | null
@@ -2827,6 +2829,7 @@ export type Database = {
           data_sources_log?: Json | null
           description?: string | null
           email?: string | null
+          email_provider?: string | null
           email_verified_at?: string | null
           encoded_zuid?: string | null
           free_pool_position?: number | null

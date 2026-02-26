@@ -120,6 +120,7 @@ serve(async (req) => {
 
       console.log('📝 Updating profile with SEO link:', profileLink);
 
+      const magicLinkUrl = `${appUrl}/dashboard/${token}`;
       const { error: updateError } = await supabase
         .from('professionals')
         .update({
@@ -127,6 +128,7 @@ serve(async (req) => {
           verification_token_expires_at: permanentExpiry.toISOString(),
           verification_started_at: new Date().toISOString(),
           profile_link: profileLink,
+          magic_link: magicLinkUrl,
           short_code: shortCode // Always keep short_code for legacy support
         })
         .eq('id', professional_id);

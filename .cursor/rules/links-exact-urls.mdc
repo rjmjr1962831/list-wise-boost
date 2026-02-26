@@ -5,6 +5,8 @@ alwaysApply: true
 
 # Links: Always Exact URLs
 
+**Canonical source:** See **MASTER_KNOWLEDGE_DOCUMENT_TODAY.MD** section 5 (URLs and Links). Summary:
+
 **Never give a link without the actual address.**
 
 - **Do not** say "your staging environment", "your host", or "once you deploy" without providing the **exact full URL** the user can open or copy.

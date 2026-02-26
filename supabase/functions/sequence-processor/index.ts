@@ -23,11 +23,8 @@ function getMSTDayStart(now: Date): Date {
   return d;
 }
 
-// PER-INVOCATION CAP: Do not remove or increase without explicit approval.
-// One email per account per run = 5-minute spacing; protects domain reputation.
+// PER-INVOCATION CAP: 1 email per account per run = 5-minute spacing between sends (cron runs every 5 min).
 const MAX_SENDS_PER_ACCOUNT_PER_RUN = 1;
-
-// No stagger - cron every 5 min provides natural spacing between runs
 
 function getDailyLimit(account: string): number {
   const now = new Date();
@@ -104,6 +101,8 @@ function textToHtml(text: string): string {
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
+  // Convert markdown [text](url) to styled link
+  html = html.replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g, '<a href="$2" style="color:#2563eb;text-decoration:underline">$1</a>');
   // Convert "click here: URL" to linked "click here"
   html = html.replace(/click here: (https?:\/\/[^\s]+)/g, '<a href="$1">click here</a>');
   // Convert remaining bare URLs to links
@@ -251,7 +250,9 @@ serve(async (req) => {
 
         const firstName = enrollment.first_name || (pro.name || "").split(" ")[0] || "there";
         const lastName = ((enrollment as any).last_name ?? (enrollment.metadata as any)?.last_name ?? (pro.name || "").split(" ").slice(1).join(" ")) || "";
-        const magicLink = pro.magic_link || "https://www.top10lists.us";
+        const magicLink = pro.verification_token
+          ? `https://www.top10lists.us/dashboard/${pro.verification_token}`
+          : (pro.magic_link || "https://www.top10lists.us");
         const stateName = (pro.state_slug || "your state").replace(/-/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase());
         const cityName = pro.business_city || (pro.zillow_search_city || "").replace(/,.*$/, "") || "here";
         const unsubUrl = pro.verification_token ? `${SUPABASE_URL}/functions/v1/unsubscribe?token=${pro.verification_token}` : "";
@@ -306,6 +307,25 @@ serve(async (req) => {
             sequence_id: enrollment.sequence_id,
             professional_id: enrollment.professional_id,
           });
+
+          const sequenceName = (enrollment.crm_sequences as any)?.name ?? null;
+          await supabase.from("crm_contact_activity").insert({
+            professional_id: enrollment.professional_id,
+            professional_email: pro.email,
+            event_type: "email_sent",
+            subject,
+            email_id: trackingId,
+            link_url: null,
+            from_account: account.email,
+            sequence_name: sequenceName,
+            metadata: {},
+          }).then(() => {});
+
+          if (enrollment.professional_id) {
+            await supabase.from("professionals").update({ lead_status: "warm" })
+              .eq("id", enrollment.professional_id)
+              .or("lead_status.is.null,lead_status.eq.cold");
+          }
 
           const { data: nextStep } = await supabase
             .from("crm_sequence_steps")
