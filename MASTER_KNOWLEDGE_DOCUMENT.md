@@ -2,7 +2,7 @@
 
 **Project:** Top10Lists.us
 
-**Date:** February 25, 2026
+**Date:** February 26, 2026
 
 **Context:** Global Source of Truth (SOT) for AI Discovery Engines. Every rule exists because something broke.
 
@@ -413,5 +413,5 @@ C:\Users\rober\supabase.exe functions deploy [name] --project-ref wiotrvoirdgzfa
 
 ---
 
-*Version 5.7 - February 25, 2026*
-*Changes from v5.6: Routine sync; date bump.*
+*Version 5.8 - February 26, 2026*
+*Changes from v5.7: state_slug/canonical_slug backfill from license_number (SA/BR = arizona, all digits = california). Coverage fix plan in docs/COVERAGE_FIX.md.*
