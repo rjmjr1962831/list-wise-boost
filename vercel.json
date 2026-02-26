@@ -1,5 +1,5 @@
 {
-    "buildCommand": "npm run build",
+    "buildCommand": "NODE_OPTIONS=--max-old-space-size=8192 npm run build",
     "redirects": [
         {
             "source": "/admin",
@@ -85,6 +85,10 @@
         {
             "source": "/robots.txt",
             "destination": "/api/robots"
+        },
+        {
+            "source": "/api/t",
+            "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/email-track"
         },
         {
             "source": "/api/v1/badge/:agentId",
