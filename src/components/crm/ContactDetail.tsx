@@ -54,9 +54,11 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
   const [showCompose, setShowCompose] = useState(false);
   const [composeSubject, setComposeSubject] = useState("");
   const [composeBody, setComposeBody] = useState("");
-  const [composeFrom, setComposeFrom] = useState("hello@top10lists.us");
+  const [composeFrom, setComposeFrom] = useState("hello@toptenlists.us");
   const [sending, setSending] = useState(false);
   const [accounts, setAccounts] = useState<any[]>([]);
+  const [templates, setTemplates] = useState<{ id: string; subject: string; body: string; label: string }[]>([]);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>("");
 
   useEffect(() => { loadAll(); }, [professional.id]);
 
@@ -65,9 +67,22 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
     await Promise.all([
       loadFullPro(), loadEmails(), loadActivities(), loadTasks(),
       loadChangeRequests(), loadPayments(), loadSubscriptions(), loadNotes(),
-      loadEnrollment(), loadAccounts()
+      loadEnrollment(), loadAccounts(), loadTemplates(),
     ]);
     setIsLoading(false);
+  };
+
+  const loadTemplates = async () => {
+    const { data } = await supabase
+      .from("crm_email_templates")
+      .select("id, name, subject, body")
+      .order("name");
+    setTemplates((data ?? []).map((t: any) => ({
+      id: t.id,
+      subject: t.subject ?? "",
+      body: t.body ?? "",
+      label: t.name ?? t.subject ?? "Template",
+    })));
   };
 
   const loadFullPro = async () => {
@@ -126,13 +141,17 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
     setEnrollment(data);
   };
 
+  const SAFE_ACCOUNTS = ["robert@toptenlists.us", "hello@toptenlists.us"];
   const loadAccounts = async () => {
     const { data } = await supabase.from("crm_email_accounts").select("email, display_name");
-    setAccounts(data || []);
-    if (data?.length) setComposeFrom(data[0].email);
+    const safe = (data || []).filter((a: { email?: string }) => a.email && SAFE_ACCOUNTS.includes(a.email));
+    setAccounts(safe.length ? safe : SAFE_ACCOUNTS.map(email => ({ email, display_name: email })));
+    if (safe.length) setComposeFrom(safe[0].email);
+    else setComposeFrom(SAFE_ACCOUNTS[0]);
   };
 
   const formatPhone = (val: string) => {
+    if (val == null || typeof val !== "string") return "";
     const digits = val.replace(/\D/g, "");
     if (digits.length === 10) return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
     if (digits.length === 11 && digits[0] === "1") return `(${digits.slice(1, 4)}) ${digits.slice(4, 7)}-${digits.slice(7)}`;
@@ -164,6 +183,21 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
     loadNotes();
   };
 
+  const applyTemplate = (templateId: string) => {
+    setSelectedTemplateId(templateId);
+    if (!templateId) {
+      setComposeSubject("");
+      setComposeBody("");
+      return;
+    }
+    const tpl = templates.find(t => t.id === templateId);
+    if (!tpl) return;
+    const firstName = (pro?.name || "").split(" ")[0] || "";
+    const sub = (s: string) => s.replace(/\{\{firstName\}\}/g, firstName).replace(/\{\{first_name\}\}/g, firstName);
+    setComposeSubject(sub(tpl.subject));
+    setComposeBody(sub(tpl.body));
+  };
+
   const sendEmail = async () => {
     if (!composeSubject || !composeBody) { toast.error("Subject and body required"); return; }
     setSending(true);
@@ -175,6 +209,7 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
       setShowCompose(false);
       setComposeSubject("");
       setComposeBody("");
+      setSelectedTemplateId("");
       loadEmails();
     } catch { toast.error("Failed to send"); }
     finally { setSending(false); }
@@ -208,7 +243,7 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
         "Company": "company", "Name": "name", "Reviews": "num_total_reviews",
         "Years of Experience": "years_experience", "Total Sales": "total_sales",
       };
-      const dbField = fieldMap[cr.field_name] || cr.field_name.toLowerCase().replace(/ /g, "_");
+      const dbField = fieldMap[cr.field_name] || (cr.field_name && String(cr.field_name).toLowerCase().replace(/ /g, "_")) || "";
       await supabase.from("professionals").update({ [dbField]: cr.proposed_value }).eq("id", professional.id);
     }
     await supabase.from("field_change_requests").update({
@@ -220,7 +255,7 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
       const body = action === "approved"
         ? `Hi ${firstName} -\n\nWe have reviewed your request to update your ${cr.field_name}. We have updated the information as you have requested.\n\nTo see the change, click here: ${pro.magic_link || "https://www.top10lists.us"}\n\nBest Regards,\n\nRobert Maynard\nFounder`
         : `Hi ${firstName} -\n\nWe are reviewing your request to update your ${cr.field_name}. Before we can approve it, we need more information.\n\nPlease provide a more detailed explanation justifying the change. Please include any links that will support your request.\n\nJust reply here with the information.\n\nRobert Maynard\nFounder`;
-      try { await supabase.functions.invoke("gmail-send", { body: { from_account: "hello@top10lists.us", to: pro.email, subject, message_body: body } }); } catch {}
+      try { await supabase.functions.invoke("gmail-send", { body: { from_account: "hello@toptenlists.us", to: pro.email, subject, message_body: body } }); } catch {}
     }
     toast.success(`Change request ${action} - notification sent`);
     loadChangeRequests(); loadEmails(); loadFullPro();
@@ -319,10 +354,23 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
         </div>
       </div>
 
-      {/* Compose */}
+      {/* Compose — open/click tracking is applied automatically by gmail-send */}
       {showCompose && (
         <Card className="border-primary/30">
           <CardContent className="py-3 px-4 space-y-2">
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground w-12">Template</span>
+              <select
+                className="text-sm border rounded px-2 py-1 flex-1 bg-background"
+                value={selectedTemplateId}
+                onChange={e => applyTemplate(e.target.value)}
+              >
+                <option value="">— Choose a template —</option>
+                {templates.map(t => (
+                  <option key={t.id} value={t.id}>{t.label}</option>
+                ))}
+              </select>
+            </div>
             <div className="flex items-center gap-2">
               <span className="text-xs text-muted-foreground w-12">From</span>
               <select className="text-sm border rounded px-2 py-1 flex-1 bg-background" value={composeFrom} onChange={e => setComposeFrom(e.target.value)}>
@@ -336,7 +384,7 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
             <Input placeholder="Subject" className="text-sm h-8" value={composeSubject} onChange={e => setComposeSubject(e.target.value)} />
             <Textarea placeholder="Write your message..." className="text-sm min-h-[100px]" value={composeBody} onChange={e => setComposeBody(e.target.value)} />
             <div className="flex gap-2 justify-end">
-              <Button size="sm" variant="outline" onClick={() => setShowCompose(false)}>Cancel</Button>
+              <Button size="sm" variant="outline" onClick={() => { setShowCompose(false); setSelectedTemplateId(""); }}>Cancel</Button>
               <Button size="sm" onClick={sendEmail} disabled={sending}><Send className="h-3.5 w-3.5 mr-1" />{sending ? "Sending..." : "Send"}</Button>
             </div>
           </CardContent>
@@ -389,7 +437,7 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
                 <div className="bg-muted/30 rounded p-2 text-xs space-y-1 mt-2">
                   <div className="font-medium">Sequence: {(enrollment.crm_sequences as any)?.name}</div>
                   <div>Status: <strong>{enrollment.status}</strong> | Step {enrollment.current_step}</div>
-                  <div>Account: {enrollment.assigned_account?.split("@")[0]}</div>
+                  <div>Account: {(enrollment.assigned_account && String(enrollment.assigned_account).split("@")[0]) || "-"}</div>
                   {enrollment.replied_at && <div>Replied: {format(new Date(enrollment.replied_at), "MMM d, yyyy")}</div>}
                 </div>
               )}
@@ -426,7 +474,7 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
               {profileUrl && (
                 <div className="flex items-center gap-2">
                   <span className="text-muted-foreground w-20 shrink-0">Profile</span>
-                  <a href={profileUrl} target="_blank" rel="noopener" className="text-primary hover:underline truncate">{profileUrl.replace("https://www.top10lists.us", "")}</a>
+                  <a href={profileUrl} target="_blank" rel="noopener" className="text-primary hover:underline truncate">{(profileUrl || "").replace("https://www.top10lists.us", "")}</a>
                 </div>
               )}
               {pro.zillow_profile_url && (
@@ -444,13 +492,13 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
               {pro.website && (
                 <div className="flex items-center gap-2">
                   <span className="text-muted-foreground w-20 shrink-0">Website</span>
-                  <a href={pro.website.startsWith("http") ? pro.website : `https://${pro.website}`} target="_blank" rel="noopener" className="text-primary hover:underline truncate">{pro.website}</a>
+                  <a href={(typeof pro.website === "string" && pro.website.startsWith("http")) ? pro.website : `https://${pro.website}`} target="_blank" rel="noopener" className="text-primary hover:underline truncate">{pro.website}</a>
                 </div>
               )}
               {[["LinkedIn", pro.social_linkedin], ["Facebook", pro.social_facebook], ["Instagram", pro.social_instagram], ["Twitter", pro.social_twitter]].filter(([, v]) => v).map(([label, url]) => (
                 <div key={label as string} className="flex items-center gap-2">
                   <span className="text-muted-foreground w-20 shrink-0">{label}</span>
-                  <a href={url as string} target="_blank" rel="noopener" className="text-primary hover:underline truncate">{(url as string).replace(/https?:\/\/(www\.)?/, "").split("/").slice(0, 2).join("/")}</a>
+                  <a href={url as string} target="_blank" rel="noopener" className="text-primary hover:underline truncate">{typeof url === "string" ? url.replace(/https?:\/\/(www\.)?/, "").split("/").slice(0, 2).join("/") : ""}</a>
                 </div>
               ))}
             </CardContent>
@@ -557,7 +605,7 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
                   <CardContent className="px-4 pb-3 space-y-2">
                     {activities.slice(0, 5).map(event => (
                       <div key={event.id} className="flex items-center justify-between text-sm">
-                        <span className="truncate">{event.event_name.replace(/_/g, " ")}</span>
+                        <span className="truncate">{(event.event_name || "").replace(/_/g, " ")}</span>
                         <span className="text-xs text-muted-foreground shrink-0 ml-2">{format(new Date(event.created_at), "MMM d, h:mm a")}</span>
                       </div>
                     ))}
@@ -631,20 +679,61 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
           {activeTab === "activity" && (
             <div className="space-y-2">
               {activities.length === 0 && <Card><CardContent className="py-6 text-center text-sm text-muted-foreground">No activity recorded</CardContent></Card>}
-              {activities.map(event => (
-                <Card key={event.id}>
-                  <CardContent className="py-3 px-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Activity className="h-3.5 w-3.5 text-muted-foreground" />
-                        <span className="text-sm font-medium">{event.event_name.replace(/_/g, " ")}</span>
-                        {event.event_data && Object.keys(event.event_data).length > 0 && <span className="text-xs text-muted-foreground">{JSON.stringify(event.event_data).substring(0, 80)}</span>}
+              {activities.map((event: any) => {
+                if (event._source === "email_engagement") {
+                  const isClick = event.event_type === "email_click";
+                  const isOpen  = event.event_type === "email_open";
+                  return (
+                    <Card key={event.id} className={isClick ? "border-blue-200" : "border-green-200"}>
+                      <CardContent className="py-3 px-4">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex items-start gap-2">
+                            <span className={`mt-0.5 text-base ${isClick ? "text-blue-500" : "text-green-500"}`}>
+                              {isClick ? "👆" : "👁"}
+                            </span>
+                            <div>
+                              <span className="text-sm font-semibold">
+                                {isClick ? "Clicked link" : "Opened email"}
+                              </span>
+                              {event.subject && (
+                                <p className="text-xs text-muted-foreground mt-0.5 font-medium">{event.subject}</p>
+                              )}
+                              {isClick && event.link_url && (
+                                <a href={event.link_url} target="_blank" rel="noopener noreferrer"
+                                  className="text-xs text-blue-600 hover:underline truncate block max-w-xs mt-0.5">
+                                  {(event.link_url && String(event.link_url).replace(/https?:\/\/[^/]+/, "")) || event.link_url || ""}
+                                </a>
+                              )}
+                              {event.from_account && (
+                                <p className="text-xs text-muted-foreground mt-0.5">
+                                  via {event.from_account}
+                                  {event.sequence_name && <span className="ml-1 text-muted-foreground/70">· {event.sequence_name}</span>}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                          <span className="text-xs text-muted-foreground shrink-0">{format(new Date(event.created_at), "MMM d, h:mm a")}</span>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                }
+                // Funnel events (existing)
+                return (
+                  <Card key={event.id}>
+                    <CardContent className="py-3 px-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Activity className="h-3.5 w-3.5 text-muted-foreground" />
+                          <span className="text-sm font-medium">{(event.event_name || event.event_type || "").replace(/_/g, " ")}</span>
+                          {event.event_data && Object.keys(event.event_data).length > 0 && <span className="text-xs text-muted-foreground">{JSON.stringify(event.event_data).substring(0, 80)}</span>}
+                        </div>
+                        <span className="text-xs text-muted-foreground shrink-0">{format(new Date(event.created_at), "MMM d, h:mm a")}</span>
                       </div>
-                      <span className="text-xs text-muted-foreground shrink-0">{format(new Date(event.created_at), "MMM d, h:mm a")}</span>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           )}
 
