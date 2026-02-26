@@ -329,6 +329,7 @@ Every URL in an artifact must be a live `<a href>`. Schema.org JSON-LD in `<head
 - **Sending domain:** Use `robert@toptenlists.us` or `hello@toptenlists.us` only. Never `top10lists.us` (deliverability compromised).
 - **Click tracking:** `/api/t` in vercel.json rewrites to Supabase `email-track`. gmail-send skips click-tracking for links to `top10lists.us` so magic links work on prod without going through `/api/t`.
 - **Template format:** `[[BLOCK]]` / `[[/BLOCK]]` renders as styled callout; `[your profile]({{profile_url}})` renders as hyperlink.
+- **Magic link:** `professionals.magic_link` = dashboard URL. Format: `https://www.top10lists.us/dashboard/{verification_token}`. Migration `20260229110000_fix_bombarded_template_and_magic_links.sql` backfilled so every row with `verification_token` has a working `magic_link`; it also fixed the "I know you're getting bombarded" template to use [[BLOCK]] and `[your profile]({{profile_url}})`.
 
 **UI pattern:** For admin/testing URLs, verification tokens, profile links, use `CopyableLink` / `CopyableText` from `@/components/ui/copyable-link` so users can one-click copy. Toast on copy. Not required for normal nav links.
 
@@ -392,5 +393,5 @@ C:\Users\rober\supabase.exe functions deploy [name] --project-ref wiotrvoirdgzfa
 
 ---
 
-*Version 6.1 – February 27, 2026*
+*Version 6.2 – February 29, 2026*
 *Consolidated from MASTER_KNOWLEDGE_DOCUMENT_TODAY.MD, .cursor/rules (project-knowledge.mdc, links-exact-urls.mdc, staging-push.mdc, verification-protocol.mdc, ui-patterns.md, supabase-pagination.md), docs/gemini-2-to-2.5-migration-plan.md, and docs/cursor-daily-updates.md. Conflicts resolved with most recent as truth; deprecated entries omitted or noted.*
