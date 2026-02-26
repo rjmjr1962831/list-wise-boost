@@ -63,11 +63,14 @@ function textToHtml(text: string): string {
   return html;
 }
 
+const OUR_DOMAIN = /^https?:\/\/(www\.)?top10lists\.us(\/|$)/i;
+
 function injectTracking(html: string, emailId: string): string {
-  // Rewrite links for click tracking
+  // Rewrite links for click tracking (skip our own domain - /api/t not on prod yet)
   const tracked = html.replace(
     /href="(https?:\/\/[^"]+)"/g,
     (_match, url) => {
+      if (OUR_DOMAIN.test(url)) return _match; // use raw URL so magic links work
       const trackUrl = `${TRACK_BASE}?t=c&eid=${encodeURIComponent(emailId)}&url=${encodeURIComponent(url)}`;
       return `href="${trackUrl}"`;
     }
