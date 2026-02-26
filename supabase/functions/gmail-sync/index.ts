@@ -159,25 +159,31 @@ async function handleBounce(bodyText: string, bodyHtml: string, toAddress: strin
   // Use first external email found as the bounced address
   const bouncedEmail = bouncedEmails[0].toLowerCase().trim();
 
-  // Update professional email to pending@123.com
   const { data: pro } = await supabase
     .from("professionals")
-    .select("id, email")
+    .select("id, email, name, company, business_name, business_city, state_slug")
     .ilike("email", bouncedEmail)
     .limit(1)
     .maybeSingle();
 
   if (pro) {
-    // Do NOT overwrite the email automatically.
-    // Create a task for Robert to research and update manually.
+    const baseDesc = `Hard bounce detected for ${pro.email}. Research correct email address and update manually. Do not send again until resolved.`;
     await supabase.from("crm_tasks").upsert({
       professional_id: pro.id,
       task_type: "email_bounced",
       title: `Bounced email: ${pro.email}`,
-      description: `Hard bounce detected for ${pro.email}. Research correct email address and update manually. Do not send again until resolved.`,
+      description: baseDesc,
       status: "pending",
       priority: "high",
     }, { onConflict: "professional_id,task_type", ignoreDuplicates: true });
+
+    // Exa search for suggested replacement email (fire-and-forget; we update task if we find any)
+    const exaKey = Deno.env.get("EXA_API_KEY");
+    if (exaKey && pro.name) {
+      searchBounceEmailWithExa(exaKey, pro, bouncedEmail, baseDesc).catch((e) =>
+        console.error("Exa bounce search failed:", e?.message ?? e)
+      );
+    }
   }
 
   // Disable any active enrollment for this email
@@ -185,6 +191,67 @@ async function handleBounce(bodyText: string, bodyHtml: string, toAddress: strin
     .update({ status: "bounced" })
     .eq("email", bouncedEmail)
     .eq("status", "active");
+}
+
+/** Call Exa to find possible contact emails for a bounced professional; append to task description. */
+async function searchBounceEmailWithExa(
+  exaApiKey: string,
+  pro: { id: string; email: string; name: string | null; company: string | null; business_name: string | null; business_city: string | null; state_slug: string | null },
+  bouncedEmail: string,
+  baseDesc: string,
+) {
+  const company = (pro.company || pro.business_name || "").trim();
+  const city = (pro.business_city || "").trim();
+  const state = (pro.state_slug || "").replace(/-/g, " ");
+  const query = [pro.name, "real estate agent", city, state, company]
+    .filter(Boolean)
+    .join(" ");
+  if (!query.trim()) return;
+
+  const res = await fetch("https://api.exa.ai/search", {
+    method: "POST",
+    headers: {
+      "x-api-key": exaApiKey,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      query: query + " contact email",
+      useAutoprompt: true,
+      numResults: 8,
+      type: "auto",
+      contents: { text: { maxCharacters: 2000 }, highlights: true },
+    }),
+  });
+  if (!res.ok) return;
+
+  const data = await res.json();
+  const results = data.results || [];
+  const emailRegex = /[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/g;
+  const ourDomains = ["top10lists.us", "toptenlists.us", "googlemail.com", "google.com", "gmail.com"];
+  const seen = new Set<string>([bouncedEmail.toLowerCase()]);
+  const suggested: string[] = [];
+
+  for (const r of results) {
+    const text = [r.text || "", (r.highlights || []).join(" ")].join(" ");
+    const matches = text.match(emailRegex) || [];
+    for (const email of matches) {
+      const lower = email.toLowerCase().trim();
+      if (seen.has(lower)) continue;
+      const domain = lower.split("@")[1] || "";
+      if (ourDomains.some((d) => domain === d || domain.endsWith("." + d))) continue;
+      seen.add(lower);
+      suggested.push(email);
+    }
+  }
+
+  if (suggested.length > 0) {
+    const extra = `\n\nExa suggested: ${[...new Set(suggested)].slice(0, 5).join(", ")}`;
+    await supabase
+      .from("crm_tasks")
+      .update({ description: baseDesc + extra })
+      .eq("professional_id", pro.id)
+      .eq("task_type", "email_bounced");
+  }
 }
 
 async function syncAccount(account: any) {

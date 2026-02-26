@@ -1,10 +1,12 @@
 /**
  * Clear all enrollments for the sequence, then rebuild the queue with:
- *   - Active agents in Arizona
- *   - Private email providers only (excludes gmail/outlook)
+ *   - Active agents in Arizona, private email only, listed tier only
+ *   - Excludes anyone we emailed today and people who unsubscribed
  *   - Fields: first_name, last_name, magic_link per enrollment
  *
- * Uses SEQUENCE_ID from env or default. Requires SUPABASE_SERVICE_ROLE_KEY in .env.
+ * Usage:
+ *   npx tsx scripts/sequence-clear-and-rebuild.ts           # clear + rebuild
+ *   npx tsx scripts/sequence-clear-and-rebuild.ts --dry-run # report only
  */
 import { createClient } from "@supabase/supabase-js";
 import { readFileSync, existsSync } from "fs";
@@ -40,6 +42,7 @@ if (!key) {
 }
 
 const supabase = createClient(base, key);
+const DRY_RUN = process.argv.includes("--dry-run");
 
 const SENDING_ACCOUNTS = ["robert@toptenlists.us", "hello@toptenlists.us"];
 const EMAILS_PER_ACCOUNT_PER_DAY = 25;
@@ -56,25 +59,27 @@ function getDayStart(dayOffset: number, baseDate: Date): Date {
 async function main() {
   const sequenceId = process.env.SEQUENCE_ID || "3bed1ae8-61d9-49d8-8349-610e738c47d2";
 
-  // 1) Clear queue for this sequence
-  const { count: beforeCount } = await supabase
-    .from("crm_sequence_enrollments")
-    .select("id", { count: "exact", head: true })
-    .eq("sequence_id", sequenceId);
+  if (!DRY_RUN) {
+    // 1) Clear queue for this sequence
+    const { count: beforeCount } = await supabase
+      .from("crm_sequence_enrollments")
+      .select("id", { count: "exact", head: true })
+      .eq("sequence_id", sequenceId);
 
-  const { error: deleteError } = await supabase
-    .from("crm_sequence_enrollments")
-    .delete()
-    .eq("sequence_id", sequenceId);
+    const { error: deleteError } = await supabase
+      .from("crm_sequence_enrollments")
+      .delete()
+      .eq("sequence_id", sequenceId);
 
-  if (deleteError) {
-    console.error("Failed to clear queue:", deleteError.message);
-    process.exit(1);
+    if (deleteError) {
+      console.error("Failed to clear queue:", deleteError.message);
+      process.exit(1);
+    }
+    console.log(`Cleared ${beforeCount ?? 0} enrollments for sequence ${sequenceId}.`);
   }
-  console.log(`Cleared ${beforeCount ?? 0} enrollments for sequence ${sequenceId}.`);
 
-  // 2) Build list: Arizona, active, private email only, listed tier only
-  const { data: agents, error: agentsError } = await supabase
+  // 2) Build list: Arizona, active, private, listed, not unsubscribed
+  const { data: agentsRaw, error: agentsError } = await supabase
     .from("professionals")
     .select("id, name, email, verification_token, business_city, state_slug, current_tier")
     .eq("active", true)
@@ -89,6 +94,54 @@ async function main() {
   if (agentsError) {
     console.error("Failed to fetch agents:", agentsError.message);
     process.exit(1);
+  }
+
+  // Exclude: emailed today (any outbound to their address today)
+  const todayStart = new Date();
+  todayStart.setUTCHours(0, 0, 0, 0);
+  const { data: sentToday } = await supabase
+    .from("crm_emails")
+    .select("to_address")
+    .eq("direction", "outbound")
+    .gte("sent_at", todayStart.toISOString());
+  const emailedTodaySet = new Set(
+    (sentToday ?? []).map((r: { to_address: string }) => (r.to_address ?? "").toLowerCase()).filter(Boolean)
+  );
+
+  // Exclude: unsubscribed in this sequence
+  const { data: unsubEnrollments } = await supabase
+    .from("crm_sequence_enrollments")
+    .select("email")
+    .eq("sequence_id", sequenceId)
+    .eq("status", "unsubscribed");
+  const unsubSet = new Set(
+    (unsubEnrollments ?? []).map((e: { email: string }) => (e.email ?? "").toLowerCase()).filter(Boolean)
+  );
+
+  const agents = (agentsRaw ?? []).filter(
+    (a) => !emailedTodaySet.has((a.email ?? "").toLowerCase()) && !unsubSet.has((a.email ?? "").toLowerCase())
+  );
+
+  if (DRY_RUN) {
+    const perDay = SENDING_ACCOUNTS.length * EMAILS_PER_ACCOUNT_PER_DAY;
+    const baseDate = new Date();
+    baseDate.setUTCDate(baseDate.getUTCDate() + 1);
+    baseDate.setUTCHours(DAILY_START_HOUR_UTC, 0, 0, 0);
+    const firstSend = getDayStart(0, baseDate);
+    const days = agents.length ? Math.ceil(agents.length / perDay) : 0;
+    const lastDayStart = days > 0 ? getDayStart(days - 1, baseDate) : null;
+    console.log("--- Dry run: clear + rebuild (Arizona, private, listed) ---");
+    console.log("Criteria: active, state_slug=arizona, email_provider=private, current_tier=listed, email_unsubscribed=false");
+    console.log(`Total matching: ${agentsRaw?.length ?? 0}`);
+    console.log(`Excluded (emailed today): ${(agentsRaw ?? []).filter((a) => emailedTodaySet.has((a.email ?? "").toLowerCase())).length}`);
+    console.log(`Excluded (unsubscribed this sequence): ${(agentsRaw ?? []).filter((a) => unsubSet.has((a.email ?? "").toLowerCase())).length}`);
+    console.log(`To enroll after exclusions: ${agents.length}`);
+    console.log(`Per day: ${perDay}, days to complete: ${days}`);
+    if (agents.length && lastDayStart) {
+      console.log(`First send: ${firstSend.toISOString()}, last day start: ${lastDayStart.toISOString()}`);
+    }
+    console.log("Sending accounts:", SENDING_ACCOUNTS.join(", "));
+    return;
   }
 
   if (!agents?.length) {

@@ -93,7 +93,7 @@ Full methodology: https://www.top10lists.us/methodology
 
 ---
 
-### Tier 3: Audited ($50/month)
+### Tier 3: Audited ($100/month)
 
 **Artifact issued. Badge issued.**
 
@@ -373,7 +373,7 @@ Both load from `https://www.top10lists.us/badge/{magic_link_token}` and resolve 
 |------|-------------|----------------|
 | Listed | $0 | Appears on city/state pages. No artifact, no badge. |
 | Certified | $0 | Artifact + badge. Agent has approved their profile. Annual updates. |
-| Audited | $50 | Everything in Certified + community involvement + cities. Monthly updates. |
+| Audited | $100 | Everything in Certified + community involvement + cities. Every two weeks updates. |
 | Underwritten | $150 | Everything in Audited + neighborhoods + specialties + daily updates. Maximum AI citation depth. |
 
 **Payment does not influence inclusion, rank, or visibility.** An agent must first qualify through the merit-based process (top 0.5%, verified 4.8+ rating). Payment controls only the depth of verification and frequency of updates in the artifact.

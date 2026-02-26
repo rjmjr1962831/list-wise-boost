@@ -9,7 +9,7 @@ serve(async (req) => {
   // Enable pg_cron extension
   await conn.queryObject(`CREATE EXTENSION IF NOT EXISTS pg_cron`);
 
-  // Schedule sequence-processor every 5 minutes
+  // Schedule sequence-processor every 5 min; first run 05:00 MST (12:00 UTC). 1 send per run = 5-min spacing.
   await conn.queryObject(`SELECT cron.unschedule('sequence-processor') WHERE EXISTS (SELECT 1 FROM cron.job WHERE jobname = 'sequence-processor')`).catch(() => {});
   
   await conn.queryObject(`

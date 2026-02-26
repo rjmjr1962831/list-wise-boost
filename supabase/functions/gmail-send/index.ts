@@ -48,8 +48,8 @@ function textToHtml(text: string): string {
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
-  // Convert markdown [text](url) to <a href>
-  html = html.replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g, '<a href="$2">$1</a>');
+  // Convert markdown [text](url) to styled <a href> (blue, underlined)
+  html = html.replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g, '<a href="$2" style="color:#2563eb;text-decoration:underline">$1</a>');
   // Convert "click here: URL" to linked "click here"
   html = html.replace(/click here: (https?:\/\/[^\s]+)/g, '<a href="$1">click here</a>');
   // Convert remaining bare URLs to links
@@ -63,11 +63,14 @@ function textToHtml(text: string): string {
   return html;
 }
 
+const OUR_DOMAIN = /^https?:\/\/(www\.)?top10lists\.us(\/|$)/i;
+
 function injectTracking(html: string, emailId: string): string {
-  // Rewrite links for click tracking
+  // Rewrite links for click tracking (skip our own domain - /api/t not on prod yet)
   const tracked = html.replace(
     /href="(https?:\/\/[^"]+)"/g,
     (_match, url) => {
+      if (OUR_DOMAIN.test(url)) return _match; // use raw URL so magic links work
       const trackUrl = `${TRACK_BASE}?t=c&eid=${encodeURIComponent(emailId)}&url=${encodeURIComponent(url)}`;
       return `href="${trackUrl}"`;
     }
@@ -140,11 +143,11 @@ serve(async (req) => {
 
     const token = await getValidToken(account);
 
-  // Look up professional's verification_token for unsubscribe link
+  // Look up professional for unsubscribe link and for CRM activity/lead_status
   const { data: proRecord } = await supabase
     .from("professionals")
-    .select("verification_token")
-    .eq("email", to)
+    .select("id, verification_token")
+    .ilike("email", to.trim())
     .maybeSingle();
   const unsubToken = proRecord?.verification_token || "";
   const unsubUrl = unsubToken ? `${SUPABASE_URL}/functions/v1/unsubscribe?token=${unsubToken}` : "";
@@ -198,8 +201,27 @@ serve(async (req) => {
     subject,
     body_text: plainBody,
     contact_id: contact_id || null,
+    professional_id: proRecord?.id ?? null,
     sent_at: new Date().toISOString(),
   });
+
+  if (proRecord?.id) {
+    supabase.from("crm_contact_activity").insert({
+      professional_id: proRecord.id,
+      professional_email: to,
+      event_type: "email_sent",
+      subject,
+      email_id: trackingId,
+      link_url: null,
+      from_account: from_account,
+      sequence_name: null,
+      metadata: {},
+    }).then(() => {});
+    supabase.from("professionals").update({ lead_status: "warm" })
+      .eq("id", proRecord.id)
+      .or("lead_status.is.null,lead_status.eq.cold")
+      .then(() => {});
+  }
 
     return new Response(JSON.stringify({ success: true, message_id: sent.id, tracking_id: trackingId }), {
       headers: { "Content-Type": "application/json" }
