@@ -18,6 +18,7 @@ Top10Lists.us is an **Independent Certification Authority** designed to serve as
 * **Accountable Person**: Robert Maynard (Founder) is linked in metadata to establish **EE-A-T**.
 * **Merit Gate**: Inclusion is strictly data-driven: Minimum **4.8 Stars** and **20 Verified Reviews**.
 * **Founder:** Robert Maynard (robert@top10lists.us) - Co-founder of LifeLock (acquired for $2.3B)
+* **Robert's Proton (test):** rjmjr1@proton.me
 * **Company:** Maynard Realty
 * **Core Numbers:** ~4,000 qualified professionals in AZ and CA; ~14,000 neighborhoods; 6 states (Arizona, California, Texas, Florida, New York, Colorado); Top 0.5% from 1.1M analyzed
 * **First Customer:** Eileen Taggart (Flagstaff)
@@ -364,8 +365,8 @@ Must return `text/html; charset=utf-8`.
 
 ## 22. SHORTHAND & COMMANDS
 
-- **ryt** = Update **this file only** (`MASTER_KNOWLEDGE_DOCUMENT_TODAY.MD`). Read it, integrate session knowledge, write back. Commit and push to staging. Do not update other knowledge files.
-- **takeaways** = Generate structured outcomes (Key Outcomes, Config Changes, Deprecated/New Patterns, Version Bump). Use `npm run takeaways` for template. Output to `docs/cursor-daily-updates.md` or per Robert's preference. Master doc name in template is MASTER_KNOWLEDGE_DOCUMENT_TODAY.MD.
+- **ryt** = Update **`Top10Lists_MASTER_BASELINE.md` only** (repo root). Read it, integrate session knowledge, write back. Commit and push to staging. Do not update other knowledge files.
+- **takeaways** = Generate structured outcomes (Key Outcomes, Config Changes, Deprecated/New Patterns, Version Bump). Use `npm run takeaways` for template. Output to `docs/cursor-daily-updates.md` or per Robert's preference. Master doc name in template is Top10Lists_MASTER_BASELINE.md.
 - **When Robert says "remember":** Add to `docs/cursor-daily-updates.md`.
 - **update** = Run `npm run update` or fetch from private repo, merge session takeaways, write new version per project workflow (master doc in repo; other sync per Robert).
 - **Command format:** All commands must be exact copy-paste ready. No placeholders in brackets.

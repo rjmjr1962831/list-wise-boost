@@ -13,6 +13,6 @@ alwaysApply: true
 - Do what you can yourself; use credentials in `.env` / `.secrets`. Never say "done" without verification.
 - Links: always give Robert full URLs as markdown links: `[text](https://www.top10lists.us/...)`.
 - Business model: Listed/Certified $0; Audited $100/mo; Underwritten $150/mo.
-- **When Robert says "remember":** Add to `docs/cursor-daily-updates.md`. **When Robert says "ryt":** Update only `MASTER_KNOWLEDGE_DOCUMENT_TODAY.MD`.
+- **When Robert says "remember":** Add to `docs/cursor-daily-updates.md`. **When Robert says "ryt":** Update only `Top10Lists_MASTER_BASELINE.md` (repo root).
 
 **Conflict rule:** If anything in this repo conflicts with the master doc, the master doc wins. Deprecate the earlier statement.
