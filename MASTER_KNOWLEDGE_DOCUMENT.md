@@ -413,5 +413,5 @@ C:\Users\rober\supabase.exe functions deploy [name] --project-ref wiotrvoirdgzfa
 
 ---
 
-*Version 5.9 - February 26, 2026*
-*Changes from v5.8: Website scraper (scripts/scrape-agent-websites.ts) writes to raw_scraper_data.website_contact. CRM bounced emails: Research shows blob, no Exa; click to replace.*
+*Version 5.10 - February 26, 2026*
+*Changes from v5.9: CRM bounced-email Research uses blob (raw_scraper_data.website_contact) only; Exa flow removed. ContactDetail shows alternate email from scrape plus mobile/phone display.*

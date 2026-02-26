@@ -8,3 +8,5 @@ docs/cursor-daily-updates.md
 docs/daily-logs/
 docs/takeaways/
 PENDING_UPDATES.md
+docs/MIGRATION_DOCUMENT.md
+Top10Lists_MASTER_BASELINE.md

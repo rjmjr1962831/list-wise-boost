@@ -5,6 +5,7 @@ import { ContactDetail } from "./ContactDetail";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Popover,
@@ -13,7 +14,7 @@ import {
 } from "@/components/ui/popover";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { CheckCircle, XCircle, Clock, Flame, Mail, Search } from "lucide-react";
+import { CheckCircle, XCircle, Clock, Flame, Mail, Phone, Search } from "lucide-react";
 
 interface ChangeRequest {
   id: string;
@@ -38,6 +39,8 @@ interface EngagementTask {
   priority: string;
   created_at: string;
   resolved_at: string | null;
+  due_at?: string | null;
+  notes?: string | null;
   professional_name?: string;
   professional_phone?: string;
   professional_email?: string;
@@ -64,14 +67,21 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
   const [filter, setFilter] = useState<"pending" | "all">("pending");
   const [selectedContact, setSelectedContact] = useState<{ id: string; name: string; email: string; phone: string | null; company: string | null; business_city: string | null; state_slug: string | null; current_tier: string | null; review_stars_rating: number | null; num_total_reviews: number | null; canonical_slug: string | null } | null>(null);
 
-  // Send email modal
+  // Send email modal: compose from scratch or use template
   const [emailModal, setEmailModal] = useState<{ task: EngagementTask | null; open: boolean }>({ task: null, open: false });
   const [selectedTemplate, setSelectedTemplate] = useState<string>("");
+  const [composeSubject, setComposeSubject] = useState<string>("");
+  const [composeBody, setComposeBody] = useState<string>("");
   const [fromAccount, setFromAccount] = useState<string>(SAFE_ACCOUNTS[0]);
   const [sending, setSending] = useState(false);
   const [sendResult, setSendResult] = useState<{ ok: boolean; msg: string } | null>(null);
 
   const [researchOpenTaskId, setResearchOpenTaskId] = useState<string | null>(null);
+
+  // Mark Done + notes + N-day follow-up modal
+  const [markDoneTask, setMarkDoneTask] = useState<EngagementTask | null>(null);
+  const [markDoneNotes, setMarkDoneNotes] = useState<string>("");
+  const [followUpDays, setFollowUpDays] = useState<string>("");
 
   useEffect(() => { fetchAll(); }, [filter]);
 
@@ -118,15 +128,23 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
     if (filter === "pending") query = query.eq("status", "pending");
     const { data } = await query;
     if (!data?.length) { setEngagementTasks([]); return; }
-    const ids = [...new Set(data.map((t: any) => t.professional_id).filter(Boolean))];
+    // Pending: only show tasks that are due (no due_at, or due_at <= now)
+    const now = new Date();
+    const eligible = filter === "pending"
+      ? (data as any[]).filter((t: any) => !t.due_at || new Date(t.due_at) <= now)
+      : (data as any[]);
+    if (!eligible.length) { setEngagementTasks([]); return; }
+    const ids = [...new Set(eligible.map((t: any) => t.professional_id).filter(Boolean))];
     const { data: pros } = await supabase
-      .from("professionals").select("id, name, phone, email, verification_token, magic_link, raw_scraper_data").in("id", ids);
+      .from("professionals").select("id, name, phone, cell_phone, email, verification_token, magic_link, raw_scraper_data").in("id", ids);
     const proMap: Record<string, any> = {};
     (pros ?? []).forEach((p: any) => { proMap[p.id] = p; });
-    setEngagementTasks(data.map((t: any) => ({
+    // Prefer mobile (cell_phone) or business (phone); do not use Zillow number
+    const pickDisplayPhone = (p: any) => (p?.cell_phone && p.cell_phone.trim() !== "") ? p.cell_phone : (p?.phone && p.phone.trim() !== "" ? p.phone : null);
+    setEngagementTasks(eligible.map((t: any) => ({
       ...t,
       professional_name:  proMap[t.professional_id]?.name  ?? "Unknown",
-      professional_phone: proMap[t.professional_id]?.phone ?? null,
+      professional_phone: pickDisplayPhone(proMap[t.professional_id]) ?? null,
       professional_email: proMap[t.professional_id]?.email ?? null,
       verification_token: proMap[t.professional_id]?.verification_token ?? null,
       magic_link:         proMap[t.professional_id]?.magic_link ?? null,
@@ -146,19 +164,72 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
     setTasks(enriched);
   };
 
-  const resolveEngagementTask = async (taskId: string) => {
-    setProcessing(taskId);
+  function openMarkDoneModal(task: EngagementTask) {
+    setMarkDoneTask(task);
+    setMarkDoneNotes("");
+    setFollowUpDays("");
+  }
+
+  function closeMarkDoneModal() {
+    setMarkDoneTask(null);
+    setMarkDoneNotes("");
+    setFollowUpDays("");
+  }
+
+  const confirmMarkDone = async () => {
+    const task = markDoneTask;
+    if (!task) return;
+    setProcessing(task.id);
     try {
-      const { error } = await supabase.from("crm_tasks").update({ status: "completed", completed_at: new Date().toISOString() }).eq("id", taskId);
-      if (error) {
-        toast.error("Failed to resolve task: " + (error.message ?? "unknown"));
+      const notesTrimmed = markDoneNotes.trim();
+      // 1. Complete current task and save notes
+      const { error: updateErr } = await supabase
+        .from("crm_tasks")
+        .update({
+          status: "completed",
+          completed_at: new Date().toISOString(),
+          ...(notesTrimmed ? { notes: notesTrimmed } : {}),
+        })
+        .eq("id", task.id);
+      if (updateErr) {
+        toast.error("Failed to mark done: " + (updateErr.message ?? "unknown"));
         return;
       }
-      toast.success("Task marked done.");
+      const n = parseInt(followUpDays.trim(), 10);
+      if (n > 0) {
+        const dueAt = new Date();
+        dueAt.setDate(dueAt.getDate() + n);
+        dueAt.setHours(9, 0, 0, 0);
+        await supabase.from("crm_tasks").delete().eq("professional_id", task.professional_id).eq("task_type", "follow_up");
+        const followUpDesc = notesTrimmed
+          ? `Notes: ${notesTrimmed}\n\nDue in ${n} day(s). Original: ${task.title}`
+          : `Due in ${n} day(s). Original: ${task.title}`;
+        const { error: insertErr } = await supabase.from("crm_tasks").insert({
+          professional_id: task.professional_id,
+          task_type: "follow_up",
+          title: `Follow up: ${task.professional_name ?? "Contact"}`,
+          description: followUpDesc,
+          status: "pending",
+          priority: task.priority || "normal",
+          due_at: dueAt.toISOString(),
+          ...(notesTrimmed ? { notes: notesTrimmed } : {}),
+        });
+        if (insertErr) {
+          toast.error("Follow-up create failed: " + (insertErr.message ?? "unknown"));
+        } else {
+          toast.success(`Task done. Follow-up in ${n} day(s).`);
+        }
+      } else {
+        toast.success("Task marked done.");
+      }
+      closeMarkDoneModal();
       await fetchAll();
       onTaskResolved();
-    } catch (e: any) { toast.error("Failed to resolve task: " + (e?.message ?? "unknown")); }
-    finally { setProcessing(null); }
+    } catch (e: any) {
+      toast.error("Failed: " + (e?.message ?? "unknown"));
+    } finally {
+      setProcessing(null);
+    }
   };
 
   const handleAccept = async (task: ChangeRequest) => {
@@ -194,8 +265,31 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
   function openEmailModal(task: EngagementTask) {
     setEmailModal({ task, open: true });
     setSelectedTemplate("");
+    setComposeSubject("");
+    setComposeBody("");
     setFromAccount(SAFE_ACCOUNTS[0]);
     setSendResult(null);
+  }
+
+  function applyTaskTemplate(templateId: string) {
+    setSelectedTemplate(templateId);
+    if (!templateId) {
+      setComposeSubject("");
+      setComposeBody("");
+      return;
+    }
+    const tpl = templates.find(t => t.id === templateId);
+    if (!tpl || !emailModal.task) return;
+    const firstName = emailModal.task.professional_name?.split(" ")[0] ?? "";
+    const fullName = emailModal.task.professional_name ?? "";
+    const profileUrl = emailModal.task.magic_link ?? (emailModal.task.verification_token ? `https://www.top10lists.us/dashboard/${emailModal.task.verification_token}` : "https://www.top10lists.us");
+    const sub = (s: string) => s
+      .replace(/\{\{firstName\}\}/g, firstName)
+      .replace(/\{\{first_name\}\}/g, firstName)
+      .replace(/\{\{agent_name\}\}/g, fullName)
+      .replace(/\{\{profile_url\}\}/g, profileUrl);
+    setComposeSubject(sub(tpl.subject));
+    setComposeBody(sub(tpl.body));
   }
 
   function closeEmailModal() {
@@ -206,23 +300,29 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
 
   async function sendEmail() {
     const task = emailModal.task;
-    if (!task || !selectedTemplate) return;
-    const tpl = templates.find(t => t.id === selectedTemplate);
-    if (!tpl || !task.professional_email) return;
+    if (!task || !task.professional_email) return;
+    const subject = (composeSubject || "").trim();
+    const body = (composeBody || "").trim();
+    if (!subject || !body) return;
     setSending(true);
     setSendResult(null);
-    const firstName = task.professional_name?.split(" ")[0] ?? task.professional_name;
-    const sub = (s: string) => s.replace(/\{\{firstName\}\}/g, firstName).replace(/\{\{first_name\}\}/g, firstName);
-    const subject = sub(tpl.subject);
-    const body    = sub(tpl.body);
     try {
       const { error } = await supabase.functions.invoke("gmail-send", {
-        body: { to: task.professional_email, subject, body, from_account: fromAccount },
+        body: {
+          to: task.professional_email,
+          subject,
+          message_body: body,
+          from_account: fromAccount,
+          professional_id: task.professional_id,
+        },
       });
       if (error) throw error;
       setSendResult({ ok: true, msg: `Sent to ${task.professional_email}` });
+      setComposeSubject("");
+      setComposeBody("");
+      setSelectedTemplate("");
     } catch (e: any) {
-      setSendResult({ ok: false, msg: e.message ?? "Send failed" });
+      setSendResult({ ok: false, msg: e?.message ?? "Send failed" });
     }
     setSending(false);
   }
@@ -234,11 +334,6 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
   };
 
   const totalPending = engagementTasks.filter(t => t.status === "pending").length + tasks.filter(t => t.status === "pending").length;
-  const selectedTpl  = templates.find(t => t.id === selectedTemplate);
-  const firstForPreview = emailModal.task?.professional_name?.split(" ")[0] ?? "";
-  const previewBody  = selectedTpl
-    ? selectedTpl.body.replace(/\{\{firstName\}\}/g, firstForPreview).replace(/\{\{first_name\}\}/g, firstForPreview)
-    : "";
 
   return (
     <div className="space-y-6">
@@ -251,53 +346,63 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
       {/* Everything else hidden when contact is open */}
       {!selectedContact && (<>
 
-      {/* Send Email Modal */}
+      {/* Send Email Modal: New Email with optional template and placeholders */}
       {emailModal.open && emailModal.task && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center" }}>
           <div style={{ background: "#fff", borderRadius: "12px", padding: "28px", width: "600px", maxWidth: "95vw", maxHeight: "85vh", overflowY: "auto", boxShadow: "0 20px 60px rgba(0,0,0,0.3)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "20px" }}>
               <div>
-                <h2 style={{ margin: 0, fontSize: "17px", fontWeight: "700" }}>Send Email</h2>
+                <h2 style={{ margin: 0, fontSize: "17px", fontWeight: "700" }}>New Email</h2>
                 <p style={{ margin: "4px 0 0", fontSize: "13px", color: "#666" }}>
                   To: {emailModal.task.professional_name} &lt;{emailModal.task.professional_email}&gt;
                 </p>
               </div>
-              <button onClick={closeEmailModal} style={{ background: "none", border: "none", fontSize: "20px", cursor: "pointer", color: "#999", lineHeight: 1 }}>x</button>
+              <button onClick={closeEmailModal} style={{ background: "none", border: "none", fontSize: "20px", cursor: "pointer", color: "#999", lineHeight: 1 }}>Cancel</button>
             </div>
 
-            <div style={{ marginBottom: "16px" }}>
-              <label style={{ display: "block", fontSize: "12px", fontWeight: "600", color: "#555", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.05em" }}>From</label>
+            <div style={{ marginBottom: "12px" }}>
+              <label style={{ display: "block", fontSize: "12px", fontWeight: "600", color: "#555", marginBottom: "6px" }}>Use template</label>
+              <select value={selectedTemplate} onChange={e => applyTaskTemplate(e.target.value)}
+                style={{ width: "100%", padding: "8px 12px", border: "1px solid #ddd", borderRadius: "6px", fontSize: "13px", background: "#fff" }}>
+                <option value="">Select a template...</option>
+                {templates.map(t => <option key={t.id} value={t.id}>{t.label}</option>)}
+              </select>
+            </div>
+
+            <div style={{ marginBottom: "12px" }}>
+              <label style={{ display: "block", fontSize: "12px", fontWeight: "600", color: "#555", marginBottom: "6px" }}>From</label>
               <select value={fromAccount} onChange={e => setFromAccount(e.target.value)}
                 style={{ width: "100%", padding: "8px 12px", border: "1px solid #ddd", borderRadius: "6px", fontSize: "13px", background: "#fff" }}>
                 {SAFE_ACCOUNTS.map(a => <option key={a} value={a}>{a}</option>)}
               </select>
             </div>
 
-            <div style={{ marginBottom: "16px" }}>
-              <label style={{ display: "block", fontSize: "12px", fontWeight: "600", color: "#555", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Template</label>
-              <select value={selectedTemplate} onChange={e => setSelectedTemplate(e.target.value)}
-                style={{ width: "100%", padding: "8px 12px", border: "1px solid #ddd", borderRadius: "6px", fontSize: "13px", background: "#fff" }}>
-                <option value="">-- Choose a template --</option>
-                {templates.map(t => <option key={t.id} value={t.id}>{t.label}</option>)}
-              </select>
+            <div style={{ marginBottom: "12px" }}>
+              <label style={{ display: "block", fontSize: "12px", fontWeight: "600", color: "#555", marginBottom: "6px" }}>To</label>
+              <div style={{ padding: "8px 12px", background: "#f5f5f5", borderRadius: "6px", fontSize: "13px" }}>{emailModal.task.professional_email}</div>
             </div>
 
-            {selectedTpl && (
-              <>
-                <div style={{ marginBottom: "12px" }}>
-                  <label style={{ display: "block", fontSize: "12px", fontWeight: "600", color: "#555", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Subject</label>
-                  <div style={{ padding: "8px 12px", background: "#f5f5f5", borderRadius: "6px", fontSize: "13px" }}>
-                    {selectedTpl.subject.replace(/\{\{firstName\}\}/g, firstForPreview).replace(/\{\{first_name\}\}/g, firstForPreview)}
-                  </div>
-                </div>
-                <div style={{ marginBottom: "20px" }}>
-                  <label style={{ display: "block", fontSize: "12px", fontWeight: "600", color: "#555", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Preview</label>
-                  <pre style={{ padding: "12px", background: "#f5f5f5", borderRadius: "6px", fontSize: "12px", whiteSpace: "pre-wrap", wordBreak: "break-word", margin: 0, maxHeight: "220px", overflowY: "auto", fontFamily: "system-ui" }}>
-                    {previewBody}
-                  </pre>
-                </div>
-              </>
-            )}
+            <div style={{ marginBottom: "12px" }}>
+              <label style={{ display: "block", fontSize: "12px", fontWeight: "600", color: "#555", marginBottom: "6px" }}>Subject</label>
+              <Input className="text-sm h-9" value={composeSubject} onChange={e => setComposeSubject(e.target.value)} placeholder="Subject" />
+            </div>
+
+            <div style={{ marginBottom: "16px" }}>
+              <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "6px", marginBottom: "6px" }}>
+                <span style={{ fontSize: "12px", fontWeight: "600", color: "#555" }}>Insert:</span>
+                {[
+                  { key: "{{first_name}}", label: "First Name" },
+                  { key: "{{agent_name}}", label: "Full Name" },
+                  { key: "{{profile_url}}", label: "Profile URL" },
+                ].map(v => (
+                  <button key={v.key} type="button" onClick={() => setComposeBody(b => b + v.key)}
+                    className="text-[10px] px-2 py-1 rounded border border-input hover:bg-muted transition-colors">
+                    {v.label}
+                  </button>
+                ))}
+              </div>
+              <Textarea className="min-h-[140px] text-sm font-mono resize-y" value={composeBody} onChange={e => setComposeBody(e.target.value)} placeholder="Write your message..." />
+            </div>
 
             {sendResult && (
               <div style={{ padding: "10px 14px", borderRadius: "6px", marginBottom: "16px", background: sendResult.ok ? "#f0fdf4" : "#fef2f2", color: sendResult.ok ? "#15803d" : "#dc2626", fontSize: "13px", fontWeight: "500" }}>
@@ -306,11 +411,42 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
             )}
 
             <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
-              <button onClick={closeEmailModal} style={{ padding: "7px 16px", background: "#888", color: "#fff", border: "none", borderRadius: "6px", cursor: "pointer", fontSize: "13px" }}>Cancel</button>
-              <button onClick={sendEmail} disabled={!selectedTemplate || sending || !!sendResult?.ok}
-                style={{ padding: "7px 16px", background: !selectedTemplate || sending || !!sendResult?.ok ? "#ccc" : "#1a1a1a", color: "#fff", border: "none", borderRadius: "6px", cursor: "pointer", fontSize: "13px" }}>
-                {sending ? "Sending..." : sendResult?.ok ? "Sent" : "Send"}
-              </button>
+              <Button variant="outline" onClick={closeEmailModal}>Cancel</Button>
+              <Button onClick={sendEmail} disabled={!composeSubject.trim() || !composeBody.trim() || sending || !!sendResult?.ok}>
+                <Mail className="h-3.5 w-3.5 mr-1" />{sending ? "Sending..." : sendResult?.ok ? "Sent" : "Send"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Mark Done: notes → follow-up → schedule */}
+      {markDoneTask && (
+        <div className="fixed inset-0 bg-black/50 z-[1000] flex items-center justify-center" onClick={closeMarkDoneModal}>
+          <div className="bg-background rounded-xl shadow-xl p-6 w-[420px] max-w-[95vw]" onClick={e => e.stopPropagation()}>
+            <h3 className="text-lg font-semibold mb-1">Task completed</h3>
+            <p className="text-sm text-muted-foreground mb-4">{markDoneTask.professional_name} — {markDoneTask.title}</p>
+            <label className="block text-sm font-medium text-muted-foreground mb-2">Notes</label>
+            <Textarea
+              placeholder="Enter notes (shown when follow-up appears)"
+              value={markDoneNotes}
+              onChange={e => setMarkDoneNotes(e.target.value)}
+              className="mb-4 min-h-[80px] resize-y"
+            />
+            <label className="block text-sm font-medium text-muted-foreground mb-2">Follow up in (days)</label>
+            <Input
+              type="number"
+              min={0}
+              placeholder="0 = no follow-up"
+              value={followUpDays}
+              onChange={e => setFollowUpDays(e.target.value)}
+              className="mb-4"
+            />
+            <div className="flex gap-2 justify-end">
+              <Button variant="outline" onClick={closeMarkDoneModal}>Cancel</Button>
+              <Button onClick={confirmMarkDone} disabled={processing === markDoneTask.id}>
+                {processing === markDoneTask.id ? "Saving…" : "Schedule"}
+              </Button>
             </div>
           </div>
         </div>
@@ -363,7 +499,21 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-3">
+                  {task.notes && (
+                    <div className="rounded-md bg-muted/50 border border-muted px-3 py-2">
+                      <p className="text-xs font-medium text-muted-foreground mb-1">Notes</p>
+                      <p className="text-sm whitespace-pre-wrap">{task.notes}</p>
+                    </div>
+                  )}
                   {task.description && <p className="text-sm text-muted-foreground">{task.description}</p>}
+                  {task.professional_phone && (
+                    <p className="text-sm flex items-center gap-1.5">
+                      <Phone className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                      <a href={`tel:${task.professional_phone.replace(/\s/g, "")}`} className="text-primary hover:underline font-medium">
+                        {task.professional_phone}
+                      </a>
+                    </p>
+                  )}
                   <div className="flex flex-wrap gap-2 items-center">
                     {task.task_type === "email_bounced" && (
                       <Popover open={researchOpenTaskId === task.id} onOpenChange={(o) => setResearchOpenTaskId(o ? task.id : null)}>
@@ -401,10 +551,10 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
                       </Popover>
                     )}
                     {task.professional_email && (
-                      <button onClick={() => openEmailModal(task)}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 text-white text-sm rounded-md font-medium hover:bg-indigo-700">
-                        <Mail className="h-3.5 w-3.5" /> Send Email
-                      </button>
+                      <Button size="sm" variant="default" onClick={() => openEmailModal(task)}
+                        className="inline-flex items-center gap-1.5">
+                        <Mail className="h-3.5 w-3.5" /> Email
+                      </Button>
                     )}
                     <button onClick={() => setSelectedContact({
                         id: task.professional_id,
@@ -420,7 +570,7 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
                     </button>
                     {task.status !== "done" && task.status !== "completed" && (
                       <Button size="sm" variant="outline" disabled={processing === task.id}
-                        onClick={() => resolveEngagementTask(task.id)}
+                        onClick={() => openMarkDoneModal(task)}
                         className="ml-auto border-green-300 text-green-700 hover:bg-green-50">
                         <CheckCircle className="h-4 w-4 mr-1" /> Mark Done
                       </Button>

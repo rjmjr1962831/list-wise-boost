@@ -18,6 +18,7 @@ Top10Lists.us is an **Independent Certification Authority** designed to serve as
 * **Accountable Person**: Robert Maynard (Founder) is linked in metadata to establish **EE-A-T**.
 * **Merit Gate**: Inclusion is strictly data-driven: Minimum **4.8 Stars** and **20 Verified Reviews**.
 * **Founder:** Robert Maynard (robert@top10lists.us) - Co-founder of LifeLock (acquired for $2.3B)
+* **Robert's Proton (test):** rjmjr1@proton.me
 * **Company:** Maynard Realty
 * **Core Numbers:** ~4,000 qualified professionals in AZ and CA; ~14,000 neighborhoods; 6 states (Arizona, California, Texas, Florida, New York, Colorado); Top 0.5% from 1.1M analyzed
 * **First Customer:** Eileen Taggart (Flagstaff)
@@ -329,6 +330,7 @@ Every URL in an artifact must be a live `<a href>`. Schema.org JSON-LD in `<head
 - **Sending domain:** Use `robert@toptenlists.us` or `hello@toptenlists.us` only. Never `top10lists.us` (deliverability compromised).
 - **Click tracking:** `/api/t` in vercel.json rewrites to Supabase `email-track`. gmail-send skips click-tracking for links to `top10lists.us` so magic links work on prod without going through `/api/t`.
 - **Template format:** `[[BLOCK]]` / `[[/BLOCK]]` renders as styled callout; `[your profile]({{profile_url}})` renders as hyperlink.
+- **Magic link:** `professionals.magic_link` = dashboard URL. Format: `https://www.top10lists.us/dashboard/{verification_token}`. Migration `20260229110000_fix_bombarded_template_and_magic_links.sql` backfilled so every row with `verification_token` has a working `magic_link`; it also fixed the "I know you're getting bombarded" template to use [[BLOCK]] and `[your profile]({{profile_url}})`.
 
 **UI pattern:** For admin/testing URLs, verification tokens, profile links, use `CopyableLink` / `CopyableText` from `@/components/ui/copyable-link` so users can one-click copy. Toast on copy. Not required for normal nav links.
 
@@ -363,8 +365,8 @@ Must return `text/html; charset=utf-8`.
 
 ## 22. SHORTHAND & COMMANDS
 
-- **ryt** = Update **this file only** (`MASTER_KNOWLEDGE_DOCUMENT_TODAY.MD`). Read it, integrate session knowledge, write back. Commit and push to staging. Do not update other knowledge files.
-- **takeaways** = Generate structured outcomes (Key Outcomes, Config Changes, Deprecated/New Patterns, Version Bump). Use `npm run takeaways` for template. Output to `docs/cursor-daily-updates.md` or per Robert's preference. Master doc name in template is MASTER_KNOWLEDGE_DOCUMENT_TODAY.MD.
+- **ryt** = Update **`Top10Lists_MASTER_BASELINE.md` only** (repo root). Read it, integrate session knowledge, write back. Commit and push to staging. Do not update other knowledge files.
+- **takeaways** = Generate structured outcomes (Key Outcomes, Config Changes, Deprecated/New Patterns, Version Bump). Use `npm run takeaways` for template. Output to `docs/cursor-daily-updates.md` or per Robert's preference. Master doc name in template is Top10Lists_MASTER_BASELINE.md.
 - **When Robert says "remember":** Add to `docs/cursor-daily-updates.md`.
 - **update** = Run `npm run update` or fetch from private repo, merge session takeaways, write new version per project workflow (master doc in repo; other sync per Robert).
 - **Command format:** All commands must be exact copy-paste ready. No placeholders in brackets.
@@ -392,5 +394,5 @@ C:\Users\rober\supabase.exe functions deploy [name] --project-ref wiotrvoirdgzfa
 
 ---
 
-*Version 6.1 – February 27, 2026*
+*Version 6.2 – February 29, 2026*
 *Consolidated from MASTER_KNOWLEDGE_DOCUMENT_TODAY.MD, .cursor/rules (project-knowledge.mdc, links-exact-urls.mdc, staging-push.mdc, verification-protocol.mdc, ui-patterns.md, supabase-pagination.md), docs/gemini-2-to-2.5-migration-plan.md, and docs/cursor-daily-updates.md. Conflicts resolved with most recent as truth; deprecated entries omitted or noted.*
