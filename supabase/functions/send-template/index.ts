@@ -54,7 +54,11 @@ serve(async (req) => {
   const lastName = (pro.name || "").split(" ").slice(1).join(" ") || "";
   const city = pro.business_city || "";
   const state = (pro.state_slug || "").replace(/-/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase());
-  const magicLink = pro.magic_link || `https://www.top10lists.us/dashboard/${pro.verification_token}` || "https://www.top10lists.us";
+  // Always derive dashboard URL from verification_token so emails never get a broken link
+  const dashboardUrl = pro.verification_token
+    ? `https://www.top10lists.us/dashboard/${pro.verification_token}`
+    : "https://www.top10lists.us";
+  const magicLink = dashboardUrl;
   const profileUrl = pro.canonical_slug
     ? `https://www.top10lists.us/${pro.state_slug}/agents/${pro.canonical_slug}`
     : magicLink;
@@ -64,7 +68,7 @@ serve(async (req) => {
     lastName, last_name: lastName,
     city, state,
     magicLink, magic_link: magicLink,
-    profile_url: magicLink,   // profile_url = personalized entry point (dashboard or funnel)
+    profile_url: magicLink,   // always dashboard URL from verification_token
     profileUrl: magicLink,
     public_profile_url: profileUrl,
     tier: pro.current_tier || "listed",

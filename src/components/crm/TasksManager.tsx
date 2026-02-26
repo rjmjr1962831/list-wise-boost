@@ -121,11 +121,15 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
   const resolveEngagementTask = async (taskId: string) => {
     setProcessing(taskId);
     try {
-      await supabase.from("crm_tasks").update({ status: "done", resolved_at: new Date().toISOString() }).eq("id", taskId);
+      const { error } = await supabase.from("crm_tasks").update({ status: "completed", completed_at: new Date().toISOString() }).eq("id", taskId);
+      if (error) {
+        toast.error("Failed to resolve task: " + (error.message ?? "unknown"));
+        return;
+      }
       toast.success("Task marked done.");
       await fetchAll();
       onTaskResolved();
-    } catch { toast.error("Failed to resolve task"); }
+    } catch (e: any) { toast.error("Failed to resolve task: " + (e?.message ?? "unknown")); }
     finally { setProcessing(null); }
   };
 
@@ -324,7 +328,7 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
                         {format(new Date(task.created_at), "MMM d, yyyy h:mm a")}
                       </p>
                     </div>
-                    {task.status === "done"
+                    {(task.status === "done" || task.status === "completed")
                       ? <Badge variant="outline" className="text-green-600 border-green-400 shrink-0"><CheckCircle className="h-3 w-3 mr-1" />Done</Badge>
                       : <Badge variant="outline" className="text-yellow-600 border-yellow-400 shrink-0"><Clock className="h-3 w-3 mr-1" />Action needed</Badge>
                     }
@@ -351,7 +355,7 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
                       className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-800 text-white text-sm rounded-md font-medium hover:bg-gray-900">
                       Contact
                     </button>
-                    {task.status === "pending" && (
+                    {task.status !== "done" && task.status !== "completed" && (
                       <Button size="sm" variant="outline" disabled={processing === task.id}
                         onClick={() => resolveEngagementTask(task.id)}
                         className="ml-auto border-green-300 text-green-700 hover:bg-green-50">

@@ -22,6 +22,7 @@ const CRM = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [activeView, setActiveView] = useState<View>("contacts");
   const [pendingTaskCount, setPendingTaskCount] = useState(0);
+  const [dbConnectionError, setDbConnectionError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -29,8 +30,37 @@ const CRM = () => {
   }, []);
 
   useEffect(() => {
-    if (isAdmin) fetchPendingCount();
+    if (isAdmin) {
+      fetchPendingCount();
+      checkDbConnection();
+    }
   }, [isAdmin]);
+
+  const checkDbConnection = async () => {
+    setDbConnectionError(null);
+    try {
+      const url = import.meta.env.VITE_SUPABASE_URL || "";
+      const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || "";
+      if (!url || !key || url.includes("placeholder")) {
+        setDbConnectionError("Missing Supabase env. In Vercel, set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY for this project.");
+        return;
+      }
+      const [tasksRes, emailsRes] = await Promise.all([
+        supabase.from("field_change_requests").select("id").limit(1),
+        supabase.from("crm_emails").select("id").limit(1),
+      ]);
+      if (tasksRes.error || emailsRes.error) {
+        const msg = tasksRes.error?.message || emailsRes.error?.message || "Database request failed";
+        setDbConnectionError(`Database error: ${msg}. Check that CRM tables exist and RLS allows your role.`);
+      }
+    } catch (e: any) {
+      setDbConnectionError(
+        e?.message?.includes("fetch") || e?.message?.includes("network")
+          ? "Cannot reach Supabase. Check VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY in Vercel (or .env locally)."
+          : `Connection check failed: ${e?.message || "Unknown error"}`
+      );
+    }
+  };
 
   const checkAdminAccess = async () => {
     try {
@@ -137,6 +167,15 @@ const CRM = () => {
 
       {/* Main content */}
       <main className="flex-1 overflow-auto">
+        {dbConnectionError && (
+          <div className="mx-8 mt-6 p-4 rounded-lg bg-destructive/15 border border-destructive/40 text-destructive">
+            <p className="font-semibold">CRM disconnected from database</p>
+            <p className="text-sm mt-1">{dbConnectionError}</p>
+            <Button variant="outline" size="sm" className="mt-3" onClick={checkDbConnection}>
+              Retry connection
+            </Button>
+          </div>
+        )}
         <div className="px-8 py-8">
           <h1 className="text-2xl font-bold mb-6 capitalize">{activeView}</h1>
           {activeView === "contacts" && <ContactsManager />}

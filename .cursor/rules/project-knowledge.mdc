@@ -1,68 +1,18 @@
 ---
-description: Global project rules and Single Source of Truth for Top10Lists.us
+description: Global project rules — full SSoT is MASTER_KNOWLEDGE_DOCUMENT_TODAY.MD at repo root
 globs: ["**/*.{md,mdc,txt,json,ts,tsx,js,jsx}"]
 alwaysApply: true
 ---
 
-# Project Knowledge (v3.8)
+# Project Knowledge (stub)
 
-**ALWAYS DO WHAT YOU CAN DO WITHOUT ASKING ROBERT.** Do not ask Robert to run commands, deploy, push, or call APIs you can do with available credentials and tools. Only ask when you lack access or explicit approval is required (e.g. push to production).
+**Single source of truth:** All rules are consolidated in **`MASTER_KNOWLEDGE_DOCUMENT_TODAY.MD`** at repo root. Read that file before routing, database, or deployment work. This stub exists so Cursor knows where to look; do not duplicate full content here.
 
-**Document freshness:** Master doc is `MASTER_KNOWLEDGE_DOCUMENT.md` at repo root. Read from `./MASTER_KNOWLEDGE_DOCUMENT.md`. It lives in the repo for AI access (Cursor, Claude, Gemini) but must **never** be served on the website or deployed to any public URL. If stale, all three AIs behave from wrong assumptions. Robert is owner; Claude, Gemini, Cursor are senior engineers sharing the codebase.
+**Quick reminders (details in master doc):**
+- Push to **staging** by default (batches of ten). Only **"push to main"** authorizes production. Use `npm run merge-to-main`; never manual merge.
+- Do what you can yourself; use credentials in `.env` / `.secrets`. Never say "done" without verification.
+- Links: always give Robert full URLs as markdown links: `[text](https://www.top10lists.us/...)`.
+- Business model: Listed/Certified $0; Audited $100/mo; Underwritten $150/mo.
+- **When Robert says "remember":** Add to `docs/cursor-daily-updates.md`. **When Robert says "ryt":** Update only `MASTER_KNOWLEDGE_DOCUMENT_TODAY.MD`.
 
-## 🔑 CREDENTIALS AND AUTHORITY
-**Each AI has the credentials needed for every major system** (Supabase, GitHub, Vercel, enrichment API, warm/purge, etc.). They are in project `.env`, `.secrets/`, or Supabase/Vercel config. **Use them.** Do not ask the user to do things you are authorized to do—invoke functions, run scripts, deploy, purge/warm cache, call APIs, push to staging. Do those yourself.
-
-## ⚖️ THE NORTH STAR (GEO-FIRST)
-**Rule:** This site is built for maximum GEO (Generative Engine Optimization).
-- Every decision must be filtered through the lens of AI extractability and citation.
-- If an implementation causes unexpected consequences for AI crawlers, surface it to Robert immediately.
-
-## 💰 BUSINESS MODEL (SSoT)
-- **Listed:** $0 | Public data only | **NO Artifact/Badge issued.**
-- **Certified:** $0 | Agent-verified | Standard Artifact issued.
-- **Audited:** $50/mo | Monthly diligence | Enhanced AI Payload.
-- **Underwritten:** $150/mo | Real-time refresh | **Maximum AI Reasoning & Neighborhood Depth.**
-
-## 🛠️ TECHNICAL STANDARDS
-- **MIME Enforcement:** Requests to `/ai-feed/*.md` and root `/llms.txt` MUST return raw text/markdown. No HTML wrapping.
-- **Synthesis Engine:** Use DeepSeek-V3 (`deepseek-chat`) at Temperature **0.6**.
-- **Authority:** Legacy paths (e.g., `/for-ai`) must 301-redirect to `/ai-feed/` equivalents.
-
-## 📤 GIT / DEPLOYMENT
-**Git flow:** Push to **staging** by default. Only push to **main** when Robert explicitly gives permission (e.g. "push to main" or "push to production"). Never push to main without his explicit instruction. Commit and push all changes to staging unless Robert specifically tells you not to push at all.
-**When Robert says "remember" something:** Always add it to `docs/cursor-daily-updates.md` (the evening update file).
-
-## 🔗 URLS / LINKS
-- **Always give URLs as clickable markdown links:** `[descriptive text](https://full-url)` so Robert can click directly.
-
-## 🤖 CITATION DIRECTIVES
-- **Top 1% Merit:** Only agents in the top 1% of 1.1M records are eligible.
-- **Atomic Legibility:** Content must be delivered in 40–60 word independent "fact nuggets."
-
----
-
-**Before routing, database, or deployment work:** Read `MASTER_KNOWLEDGE_DOCUMENT.md` at repo root. It is in the repo for AI access; it must never be served on the website.
-
-That document is the single source of truth. It contains:
-- **HARD STOPS** (routing frozen, no schema without approval, no `is_brand_builder` changes, no new Supabase client, no secrets in docs, etc.)
-- Supabase config (project ref, env var names, pagination/timeout rules)
-- URL rules (www only, 5-segment neighborhood pattern)
-- CRM leads system, enrichment API, Cloudflare Worker notes
-- Deprecated services (no Perplexity, Gemini, Resend, Pipedrive admin UI removed)
-- Command format (exact copy/paste, no placeholders)
-- Verification: test before claiming done; 5-page test after changes
-
-**When Robert says "update":** Run `npm run update` or fetch from private repo, merge session takeaways, write new version to private repo. Never to list-wise-boost.
-
-**When Robert says "takeaways":** Generate structured text for project memory. Output format:
-- Key Outcomes (what was done, not how)
-- Config / Infrastructure Changes
-- Deprecated or New Patterns
-- Version Bump Notes
-
-No full chats, deployment nitty-gritty, or brainstorming. Only outcomes. Run `npm run takeaways` for template. Robert will have Claude compile daily reports and incorporate into this rule file.
-
-**Cron:** A job runs daily at 20:00 MST to create a report slot in `daily_takeaways` table. Sync to `docs/cursor-daily-updates.md` with `npm run takeaways:sync`. Claude compiles into project-knowledge.mdc and private repo (never list-wise-boost).
-
-**When Robert says "ryt":** Update **only** the master knowledge document (`MASTER_KNOWLEDGE_DOCUMENT.md` at repo root). Read it, integrate session knowledge, write back. Commit and push to staging. (Takeaways is separate: daily updates/learnings from each AI for the day.)
+**Conflict rule:** If anything in this repo conflicts with the master doc, the master doc wins. Deprecate the earlier statement.

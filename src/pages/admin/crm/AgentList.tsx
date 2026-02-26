@@ -8,6 +8,10 @@ interface Agent {
   email: string | null
   phone: string | null
   state_slug: string | null
+  active: boolean
+  license_number: string | null
+  review_stars_rating: number | null
+  num_total_reviews: number | null
   funnel_status: string
   subscription_status: string
   monthly_revenue_cents: number
@@ -24,6 +28,7 @@ export default function AgentList() {
   const [stateFilter, setStateFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [funnelFilter, setFunnelFilter] = useState('')
+  const [activeFilter, setActiveFilter] = useState<'all' | 'active' | 'inactive'>('all')
 
   useEffect(() => {
     loadAgents()
@@ -35,12 +40,18 @@ export default function AgentList() {
     
     let query = supabase
       .from('professionals')
-      .select('id, name, email, phone, state_slug, funnel_status, subscription_status, monthly_revenue_cents, last_payment_at, cities_subscribed, selection_rationale, updated_at')
+      .select('id, name, email, phone, state_slug, active, license_number, review_stars_rating, num_total_reviews, funnel_status, subscription_status, monthly_revenue_cents, last_payment_at, cities_subscribed, selection_rationale, updated_at')
       .order('updated_at', { ascending: false })
-      .limit(100)
+      .limit(activeFilter === 'inactive' ? 500 : 200)
 
     if (search) {
       query = query.or(`name.ilike.%${search}%,email.ilike.%${search}%`)
+    }
+
+    if (activeFilter === 'active') {
+      query = query.eq('active', true)
+    } else if (activeFilter === 'inactive') {
+      query = query.eq('active', false)
     }
 
     if (stateFilter) {
@@ -71,7 +82,7 @@ export default function AgentList() {
       loadAgents()
     }, 300)
     return () => clearTimeout(debounce)
-  }, [search, stateFilter, statusFilter, funnelFilter])
+  }, [search, stateFilter, statusFilter, funnelFilter, activeFilter])
 
   function formatMRR(cents: number) {
     return new Intl.NumberFormat('en-US', {
@@ -94,14 +105,17 @@ export default function AgentList() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Agents</h1>
           <p className="mt-1 text-sm text-gray-500">
-            {agents.length} agents • Total MRR: {formatMRR(totalMRR)}
+            {agents.length} agents
+            {activeFilter === 'all' && ` (${agents.filter(a => a.active).length} active, ${agents.filter(a => !a.active).length} inactive)`}
+            {activeFilter === 'inactive' && ' inactive • License/state/rating = pre-qualification data'}
+            • Total MRR: {formatMRR(totalMRR)}
           </p>
         </div>
       </div>
 
       {/* Filters */}
       <div className="bg-white shadow rounded-lg p-4">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
           <input
             type="text"
             placeholder="Search by name or email..."
@@ -109,6 +123,16 @@ export default function AgentList() {
             onChange={(e) => setSearch(e.target.value)}
             className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
+
+          <select
+            value={activeFilter}
+            onChange={(e) => setActiveFilter(e.target.value as 'all' | 'active' | 'inactive')}
+            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="all">All (Active + Inactive)</option>
+            <option value="active">Active only</option>
+            <option value="inactive">Inactive only</option>
+          </select>
           
           <select
             value={stateFilter}
@@ -167,7 +191,16 @@ export default function AgentList() {
                   Agent
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   State
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  License
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Rating
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Funnel
@@ -193,8 +226,20 @@ export default function AgentList() {
                     <div className="text-sm font-medium text-gray-900">{agent.name}</div>
                     <div className="text-sm text-gray-500">{agent.email || 'No email'}</div>
                   </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${agent.active ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'}`}>
+                      {agent.active ? 'Active' : 'Inactive'}
+                    </span>
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {agent.state_slug || 'N/A'}
+                    {agent.state_slug || '—'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 font-mono">
+                    {agent.license_number || '—'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                    {agent.review_stars_rating != null ? `${agent.review_stars_rating}★` : '—'}
+                    {agent.num_total_reviews != null && ` (${agent.num_total_reviews})`}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">

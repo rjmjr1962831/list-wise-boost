@@ -5,6 +5,8 @@ alwaysApply: true
 
 # Verification Protocol
 
+**Canonical source:** See **MASTER_KNOWLEDGE_DOCUMENT_TODAY.MD** section 9 (Verification Protocol). Summary:
+
 **You are not done until you confirm the change actually worked.**
 
 ## Before Saying "Done"
