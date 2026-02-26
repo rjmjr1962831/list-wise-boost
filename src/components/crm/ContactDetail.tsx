@@ -408,6 +408,24 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
             <CardHeader className="py-3 px-4 pb-1"><CardTitle className="text-sm font-semibold flex items-center gap-1.5"><User className="h-3.5 w-3.5" />Contact</CardTitle></CardHeader>
             <CardContent className="px-4 pb-3 divide-y divide-muted/30">
               <EditableField field="email" label="Email" value={pro.email} />
+              {pro.raw_scraper_data?.website_contact?.email && (
+                <div className="py-2">
+                  <span className="text-xs text-muted-foreground block mb-1">Alternate email (from website scrape)</span>
+                  <button
+                    onClick={async () => {
+                      const email = (pro.raw_scraper_data as any)?.website_contact?.email;
+                      if (!email) return;
+                      const { error } = await supabase.from("professionals").update({ email }).eq("id", pro.id);
+                      if (error) toast.error(error.message);
+                      else { toast.success(`Email updated to ${email}`); loadFullPro(); }
+                    }}
+                    className="text-sm text-primary hover:underline truncate block w-full text-left"
+                  >
+                    {(pro.raw_scraper_data as any)?.website_contact?.email}
+                  </button>
+                  <span className="text-xs text-muted-foreground">Click to replace bounced email</span>
+                </div>
+              )}
               <EditableField field="phone" label="Phone" value={pro.phone} />
               <EditableField field="cell_phone" label="Cell" value={pro.cell_phone} />
               <EditableField field="company" label="Company" value={pro.company} />
