@@ -9,12 +9,12 @@
 
 > Cursor: append your daily summary here, then keep the rest of the file unchanged.
 
-- **Date:** YYYY‑MM‑DD  
-- **Summary of work:**  
-- **Files touched:**  
-- **Commands run:**  
-- **Tests/E2E executed and results:**  
-- **Open questions for Robert:**  
+- **Date:** 2026‑02‑26  
+- **Summary of work:** ryt target corrected to Top10Lists_MASTER_BASELINE.md (not MASTER_KNOWLEDGE_DOCUMENT). scripts/update-project-knowledge.ts now fetches/writes Top10Lists_MASTER_BASELINE.md. Ingested session knowledge into baseline.  
+- **Files touched:** scripts/update-project-knowledge.ts, MASTER_KNOWLEDGE_DOCUMENT.md, Top10Lists_MASTER_BASELINE.md  
+- **Commands run:** none  
+- **Tests/E2E executed and results:** n/a  
+- **Open questions for Robert:** none  
 
 ***
 
@@ -171,7 +171,9 @@ Key tables:
 
 - `crm_email_accounts`, `crm_email_templates`, `crm_emails`  
 - `crm_sequences`, `crm_sequence_steps`, `crm_sequence_enrollments`  
-- `crm_tasks` (follow‑up tasks keyed to opens/clicks/bounces)  
+- `crm_tasks` (follow‑up tasks keyed to opens/clicks/bounces)
+
+**Bounced-email Research:** Uses `raw_scraper_data.website_contact` (from website scraper) only; no Exa. TasksManager Research button opens Popover with alternate emails from blob; click to replace. ContactDetail shows alternate email from scrape plus mobile/phone display.  
 
 Edge functions (CRM/email):
 
@@ -218,4 +220,5 @@ If any of those cannot be done (e.g., no inbox access), the agent must state exa
 
 ***
 
-*Version 1.0 — February 26, 2026*
+*Version 1.1 — February 26, 2026*  
+*Changes from 1.0: ryt target = Top10Lists_MASTER_BASELINE.md. update-project-knowledge.ts now uses baseline. CRM bounced-email Research uses blob only (no Exa); click to replace.*

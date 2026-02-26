@@ -389,7 +389,7 @@ All commands must be exact copy/paste ready. No placeholders in brackets.
 
 ## 20. SHORTHAND & COMMANDS
 
-- **ryt** = Update MASTER_KNOWLEDGE_DOCUMENT.md with session knowledge
+- **ryt** = Update Top10Lists_MASTER_BASELINE.md with session knowledge
 - **takeaways** = Write daily log to `docs/takeaways/CLAUDE_TAKEAWAYS_DD-MM-YY.md` in private repo
 
 ### Supabase CLI (Robert's Machine)
