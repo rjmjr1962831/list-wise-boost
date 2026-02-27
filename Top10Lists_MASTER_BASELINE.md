@@ -1,4 +1,4 @@
-# Top10Lists.us – Master Baseline (2026‑02‑26)
+# Top10Lists.us – Master Baseline (2026‑02‑27)
 
 > Single source of truth for AI agents (Cursor, Claude, Gemini, Perplexity).  
 > On conflict with older docs, **this file wins**.
@@ -8,6 +8,15 @@
 ## 0. Daily Cursor Report (prepend each day)
 
 > Cursor: append your daily summary here, then keep the rest of the file unchanged.
+
+- **Date:** 2026‑02‑27  
+- **Summary of work:** ryt run: baseline synced with master doc; date and version updated. No other session work this run.  
+- **Files touched:** `Top10Lists_MASTER_BASELINE.md` only.  
+- **Commands run:** None.  
+- **Tests/E2E executed and results:** N/A.  
+- **Open questions for Robert:** None.  
+
+***
 
 - **Date:** 2026‑02‑26  
 - **Summary of work:** "Getting Bombarded" CRM template set as correct body (hot topic / bombarded, Perplexity callouts, [your profile]({{magic_link}}), guarantee copy, Founder + (602) 758‑9600). Unsubscribe in template made a link: [Unsubscribe]({{unsubscribe_url}}). send-template Edge Function: added `unsubscribe_url`, `firstname` to vars; deployed. Sequencer re‑enabled via migration `20260305000000_reschedule_sequence_processor_at_0500.sql`: one‑time cron at 05:00 UTC runs, schedules sequence‑processor every 5 min, then unschedules itself. Sequence queue from DB (see §9).  
@@ -142,6 +151,11 @@ Tables that **must** be paginated: `professionals`, `neighborhood_catalog`, and 
 
 ## 8. Hard Stops & Safety Rules
 
+**"You run it" / Do it yourself (DO NOT BREAK):**  
+When Robert says "you run it" or when a task involves something the agent can do (e.g. `npm run …`, `npx tsx scripts/…`, `git push origin staging`, applying a migration via a script, calling an API the agent has credentials for), the agent **must run it**. Do **not** respond with "run this command" or "you can run …" — run the command yourself. Hand off only when explicit approval is required (e.g. push to main, `supabase functions deploy`). This is already in credentials/authority; restating here because it is broken too often.
+
+**When Robert specifies when to start something:** Start it at that time only. Do not start it earlier (e.g. if he says "tomorrow at 0500", do not run it now instead).
+
 You must **not** do any of the following without explicit approval:
 
 - Push to `main` or run `supabase functions deploy` without "push to main".
@@ -237,4 +251,4 @@ If any of those cannot be done (e.g., no inbox access), the agent must state exa
 
 ***
 
-*Version 1.0 — February 26, 2026*
+*Version 1.1 — February 27, 2026*
