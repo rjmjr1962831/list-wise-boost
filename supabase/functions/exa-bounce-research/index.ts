@@ -1,8 +1,8 @@
 /**
- * Bounce research: returns suggested emails from the agent's data blobs.
- * Exa API DEPRECATED – extracts emails from raw_scraper_data, professional_information, professional_data.
+ * Bounce research: returns alternate emails from the agent's blob only (no Exa search).
+ * Extracts from raw_scraper_data (including website_contact from website scrape), professional_information, professional_data.
  * POST body: { professional_id: string }
- * Returns: { results: [], suggestedEmails: string[], query: string }
+ * Returns: { suggestedEmails: string[] }
  */
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -36,6 +36,7 @@ function extractEmailsFromBlobs(pro: any, bouncedEmail: string): string[] {
 
   const raw = pro.raw_scraper_data as any;
   if (raw) {
+    if (raw.website_contact?.email) add(raw.website_contact.email);
     if (Array.isArray(raw.emails)) raw.emails.forEach((e: string) => add(e));
     else if (raw.email) add(raw.email);
     if (raw.getToKnowMe?.email) add(raw.getToKnowMe.email);

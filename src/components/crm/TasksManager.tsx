@@ -77,6 +77,8 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
   const [sendResult, setSendResult] = useState<{ ok: boolean; msg: string } | null>(null);
 
   const [researchOpenTaskId, setResearchOpenTaskId] = useState<string | null>(null);
+  const [researchEmails, setResearchEmails] = useState<Record<string, string[]>>({});
+  const [researchLoading, setResearchLoading] = useState<string | null>(null);
 
   // Mark Done + notes + N-day follow-up modal
   const [markDoneTask, setMarkDoneTask] = useState<EngagementTask | null>(null);
@@ -516,7 +518,28 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
                   )}
                   <div className="flex flex-wrap gap-2 items-center">
                     {task.task_type === "email_bounced" && (
-                      <Popover open={researchOpenTaskId === task.id} onOpenChange={(o) => setResearchOpenTaskId(o ? task.id : null)}>
+                      <Popover
+                        open={researchOpenTaskId === task.id}
+                        onOpenChange={async (open) => {
+                          setResearchOpenTaskId(open ? task.id : null);
+                          if (open && task.professional_id) {
+                            setResearchLoading(task.id);
+                            setResearchEmails((prev) => ({ ...prev, [task.id]: [] }));
+                            try {
+                              const { data, error } = await supabase.functions.invoke("exa-bounce-research", {
+                                body: { professional_id: task.professional_id },
+                              });
+                              if (error) throw error;
+                              const list = (data?.suggestedEmails ?? []).filter((e: string) => typeof e === "string" && e.trim());
+                              setResearchEmails((prev) => ({ ...prev, [task.id]: list }));
+                            } catch (_) {
+                              setResearchEmails((prev) => ({ ...prev, [task.id]: [] }));
+                            } finally {
+                              setResearchLoading(null);
+                            }
+                          }
+                        }}
+                      >
                         <PopoverTrigger asChild>
                           <Button size="sm" variant="outline" disabled={processing === task.id} className="gap-1.5">
                             <Search className="h-3.5 w-3.5" /> Research
@@ -524,28 +547,24 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
                         </PopoverTrigger>
                         <PopoverContent className="w-80" align="start">
                           <div className="space-y-2">
-                            <p className="text-sm font-medium">Alternate emails (from website scrape)</p>
-                            {(() => {
-                              const wc = (task as EngagementTask).professional_raw_scraper_data?.website_contact;
-                              const email = wc?.email;
-                              if (!email || typeof email !== "string" || !email.trim()) {
-                                return <p className="text-xs text-muted-foreground">No alternate email found in blob.</p>;
-                              }
-                              const emails = [email.trim()];
-                              return (
-                                <div className="space-y-1">
-                                  {emails.map((e) => (
-                                    <button
-                                      key={e}
-                                      onClick={() => replaceEmailFromBlob(task, e)}
-                                      className="block w-full text-left px-3 py-2 text-sm rounded-md hover:bg-muted truncate"
-                                    >
-                                      {e}
-                                    </button>
-                                  ))}
-                                </div>
-                              );
-                            })()}
+                            <p className="text-sm font-medium">Alternate emails (from agent&apos;s blob)</p>
+                            {researchLoading === task.id ? (
+                              <p className="text-xs text-muted-foreground">Loading…</p>
+                            ) : (researchEmails[task.id]?.length ?? 0) > 0 ? (
+                              <div className="space-y-1">
+                                {researchEmails[task.id].map((e) => (
+                                  <button
+                                    key={e}
+                                    onClick={() => replaceEmailFromBlob(task, e)}
+                                    className="block w-full text-left px-3 py-2 text-sm rounded-md hover:bg-muted truncate"
+                                  >
+                                    {e}
+                                  </button>
+                                ))}
+                              </div>
+                            ) : (
+                              <p className="text-xs text-muted-foreground">No alternate emails found in agent&apos;s blob.</p>
+                            )}
                           </div>
                         </PopoverContent>
                       </Popover>
