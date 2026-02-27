@@ -91,18 +91,6 @@
             "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/email-track"
         },
         {
-            "source": "/api/v1/badge/:agentId",
-            "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/artifact-payload/:agentId"
-        },
-        {
-            "source": "/api/v1/badge/:agentId/verify",
-            "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/artifact-verify/:agentId"
-        },
-        {
-            "source": "/api/v1/badge/:agentId/image",
-            "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/badge-image/:agentId"
-        },
-        {
             "source": "/artifact/:token",
             "destination": "/api/serve-clean-html?fn=artifact-markdown&path=/artifact/:token&token=:token"
         },
