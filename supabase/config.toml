@@ -603,3 +603,6 @@ verify_jwt = false
 
 [functions.serve-bot-static-html]
 verify_jwt = false
+
+[functions.artifact-markdown]
+verify_jwt = false

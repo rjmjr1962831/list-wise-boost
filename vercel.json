@@ -92,7 +92,7 @@
         },
         {
             "source": "/artifact/:token",
-            "destination": "/api/serve-clean-html?fn=artifact-markdown&path=/artifact/:token&token=:token"
+            "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/artifact-markdown?token=:token&path=/artifact/:token"
         },
         {
             "source": "/api/v1/agents/search",
