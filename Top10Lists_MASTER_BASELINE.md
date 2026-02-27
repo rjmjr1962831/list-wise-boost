@@ -10,8 +10,8 @@
 > Cursor: append your daily summary here, then keep the rest of the file unchanged.
 
 - **Date:** 2026‑02‑26  
-- **Summary of work:** ryt target corrected to Top10Lists_MASTER_BASELINE.md (not MASTER_KNOWLEDGE_DOCUMENT). scripts/update-project-knowledge.ts now fetches/writes Top10Lists_MASTER_BASELINE.md. Ingested session knowledge into baseline.  
-- **Files touched:** scripts/update-project-knowledge.ts, MASTER_KNOWLEDGE_DOCUMENT.md, Top10Lists_MASTER_BASELINE.md  
+- **Summary of work:** Link Integrity System executed: api/health.js, api/_lib/requireEnv.js, src/lib/urls.ts (URL registry + builders), scripts/smoke-test.ts, npm run smoke-test. Badge API uses requireSupabaseAdmin(); artifact-payload and artifact-verify path fix (last segment) + slug support in artifact-payload. Robert confirmed Vercel has SUPABASE_SERVICE_ROLE_KEY and SUPABASE_URL for all environments.  
+- **Files touched:** api/health.js, api/_lib/requireEnv.js, api/badge/[agentId].js, src/lib/urls.ts, supabase/functions/artifact-payload/index.ts, supabase/functions/artifact-verify/index.ts, scripts/smoke-test.ts, package.json, docs/BADGE-API-AUDIT-REVIEW-AND-REMEDIATION.md  
 - **Commands run:** none  
 - **Tests/E2E executed and results:** n/a  
 - **Open questions for Robert:** none  
@@ -85,6 +85,8 @@ Potential future (documented but **not implemented** unless clearly re‑approve
   - `/artifact/:token`  
 
 - Artifacts: `/artifact/:token` responds with **clean HTML** (`text/html; charset=utf‑8`), live `<a>` links, Schema.org JSON‑LD (`Person`, `RealEstateAgent`). Not markdown.
+
+**Link Integrity (in place):** All generated URLs MUST use `src/lib/urls.ts` builders. `/api/health` returns env diagnostic (no secrets); hit after every deploy. Run `npm run smoke-test` after deploy; red = stop. API routes that need Supabase admin use `requireSupabaseAdmin()` from `api/_lib/requireEnv.js`. Edge Functions `artifact-payload` and `artifact-verify` read agent id from the **last path segment**; `artifact-payload` accepts UUID or `canonical_slug`. Full spec: Link Integrity System addendum and `docs/BADGE-API-AUDIT-REVIEW-AND-REMEDIATION.md`.
 
 ***
 
@@ -220,5 +222,5 @@ If any of those cannot be done (e.g., no inbox access), the agent must state exa
 
 ***
 
-*Version 1.1 — February 26, 2026*  
-*Changes from 1.0: ryt target = Top10Lists_MASTER_BASELINE.md. update-project-knowledge.ts now uses baseline. CRM bounced-email Research uses blob only (no Exa); click to replace.*
+*Version 1.2 — February 26, 2026*  
+*Changes from 1.1: Link Integrity System implemented (api/health, requireEnv, src/lib/urls.ts, smoke-test). Badge API uses requireSupabaseAdmin(); Edge Functions path fix + slug support in artifact-payload. Vercel env vars confirmed for all environments.*
