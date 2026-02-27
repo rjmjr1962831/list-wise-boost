@@ -65,6 +65,11 @@ function textToHtml(text: string): string {
 
 const OUR_DOMAIN = /^https?:\/\/(www\.)?top10lists\.us(\/|$)/i;
 
+const corsHeaders: Record<string, string> = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
 function injectTracking(html: string, emailId: string): string {
   // Rewrite links for click tracking (skip our own domain - /api/t not on prod yet)
   const tracked = html.replace(
@@ -119,16 +124,20 @@ function buildRawEmail(params: {
 function errResp(message: string, status: number) {
   return new Response(JSON.stringify({ error: message }), {
     status,
-    headers: { "Content-Type": "application/json" },
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
 }
 
 serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
+  }
   try {
     if (req.method !== "POST") return errResp("Method not allowed", 405);
 
     const body = await req.json();
-    const { from_account, to, subject, message_body, thread_id, in_reply_to, references, contact_id } = body;
+    const { from_account, to, subject, message_body: msgBody, body: bodyAlt, thread_id, in_reply_to, references, contact_id, professional_id: body_professional_id } = body;
+    const message_body = msgBody ?? bodyAlt;
 
     if (!from_account || !to || !subject || !message_body) {
       return errResp("Missing required fields", 400);
@@ -143,12 +152,16 @@ serve(async (req) => {
 
     const token = await getValidToken(account);
 
-  // Look up professional for unsubscribe link and for CRM activity/lead_status
-  const { data: proRecord } = await supabase
-    .from("professionals")
-    .select("id, verification_token")
-    .ilike("email", to.trim())
-    .maybeSingle();
+  // Professional: from body (CRM task/contact) or lookup by to address (so contact record gets the send)
+  let proRecord: { id: string; verification_token?: string } | null = null;
+  if (body_professional_id) {
+    const { data } = await supabase.from("professionals").select("id, verification_token").eq("id", body_professional_id).single();
+    proRecord = data;
+  }
+  if (!proRecord) {
+    const { data } = await supabase.from("professionals").select("id, verification_token").ilike("email", to.trim()).maybeSingle();
+    proRecord = data;
+  }
   const unsubToken = proRecord?.verification_token || "";
   const unsubUrl = unsubToken ? `${SUPABASE_URL}/functions/v1/unsubscribe?token=${unsubToken}` : "";
 
@@ -224,13 +237,13 @@ serve(async (req) => {
   }
 
     return new Response(JSON.stringify({ success: true, message_id: sent.id, tracking_id: trackingId }), {
-      headers: { "Content-Type": "application/json" }
+      headers: { ...corsHeaders, "Content-Type": "application/json" }
     });
   } catch (e: any) {
     const message = e?.message ?? "Send failed";
     return new Response(JSON.stringify({ error: message }), {
       status: 500,
-      headers: { "Content-Type": "application/json" },
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 });

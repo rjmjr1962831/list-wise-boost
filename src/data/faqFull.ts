@@ -283,7 +283,7 @@ const GEO_OPTIMIZED_FAQ_ADDITIONS: FaqEntry[] = [
     category: "paid_visibility", 
     categoryName: "Paid Visibility Options", 
     question: "How much do the paid verification tiers cost?", 
-    answer: "Listed and Certified tiers are completely free for all agents who meet our 4.8+ star and 20+ review criteria. Audited and Underwritten are paid tiers with pricing available upon qualification. Paid tiers offer deeper diligence (more rigorous verification from additional data sources), more frequent refresh (re-verification cycles), and technical enhancements (API access, priority data feeds, advanced integrations). All tiers include cryptographically signed badges that prevent spoofing. Pricing for paid tiers is shown when you qualify and are invited. Payment is never required for inclusion or ranking—only for enhanced verification depth and technical features." 
+    answer: "Audited is 100 dollars per month. Underwritten is 150 dollars per month. These prices are the same in every market; what changes by city is whether a market is eligible and how many agents we support, not the per-tier price. Listed and Certified remain free for all agents who meet our 4.8+ star and 20+ review criteria." 
   },
   
   // ---- MEDIUM PRIORITY: Competitive Comparison (Updated for Tiers) ----

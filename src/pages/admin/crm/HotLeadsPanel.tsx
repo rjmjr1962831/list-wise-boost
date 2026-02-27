@@ -163,8 +163,9 @@ export default function HotLeadsPanel() {
         body: {
           to: modal.lead.email,
           subject,
-          body,
+          message_body: body,
           from_account: fromAccount,
+          professional_id: modal.lead.id,
         },
       });
       if (error) throw error;
