@@ -9,12 +9,12 @@
 
 > Cursor: append your daily summary here, then keep the rest of the file unchanged.
 
-- **Date:** YYYY‑MM‑DD  
-- **Summary of work:**  
-- **Files touched:**  
-- **Commands run:**  
-- **Tests/E2E executed and results:**  
-- **Open questions for Robert:**  
+- **Date:** 2026‑02‑26  
+- **Summary of work:** "Getting Bombarded" CRM template set as correct body (hot topic / bombarded, Perplexity callouts, [your profile]({{magic_link}}), guarantee copy, Founder + (602) 758‑9600). Unsubscribe in template made a link: [Unsubscribe]({{unsubscribe_url}}). send-template Edge Function: added `unsubscribe_url`, `firstname` to vars; deployed. Sequencer re‑enabled via migration `20260305000000_reschedule_sequence_processor_at_0500.sql`: one‑time cron at 05:00 UTC runs, schedules sequence‑processor every 5 min, then unschedules itself. Sequence queue from DB (see §9).  
+- **Files touched:** `supabase/functions/send-template/index.ts`, `scripts/ensure-getting-bombarded-template.ts`, `supabase/migrations/20260304000000_getting_bombarded_template.sql`, `supabase/migrations/20260305000000_reschedule_sequence_processor_at_0500.sql`, `scripts/send-test-both-addresses.ts`.  
+- **Commands run:** `npx tsx scripts/send-test-both-addresses.ts`, `npx tsx scripts/ensure-getting-bombarded-template.ts`, `npx tsx scripts/check-sequence-queues.ts`, `supabase functions deploy send-template`.  
+- **Tests/E2E executed and results:** Test emails sent from robert@ and hello@ to rjmjr1@proton.me using "Getting Bombarded" template; both succeeded.  
+- **Open questions for Robert:** None.  
 
 ***
 
@@ -177,9 +177,20 @@ Edge functions (CRM/email):
 
 - `gmail-send` – sends via Gmail API and records `crm_emails`.  
 - `gmail-oauth-callback` – OAuth for Gmail.  
-- `sequence-processor` – runs every 5 minutes, enforces ramp and per‑account caps.  
+- `send-template` – looks up template by name, substitutes vars (`first_name`, `firstname`, `magic_link`, `unsubscribe_url`, etc.), calls gmail-send.  
+- `sequence-processor` – runs every 5 minutes (when scheduled), enforces ramp and per‑account caps.  
 - `sequence-enroll` – enrolls agents into sequences and assigns sending account.  
 - `email-track` – open/click tracking.
+
+Sequence body template:
+
+- **"Getting Bombarded"** – canonical body for "Getting Named by AI" sequence: hot topic / bombarded, Perplexity callouts in `[[BLOCK]]`, [your profile]({{magic_link}}), [Unsubscribe]({{unsubscribe_url}}). Subject override in sequence step: "Getting named by AI."  
+- Template and ensure script: `scripts/ensure-getting-bombarded-template.ts`; migration: `20260304000000_getting_bombarded_template.sql`.
+
+Sequencer schedule:
+
+- Re‑enable: migration `20260305000000_reschedule_sequence_processor_at_0500.sql` adds a one‑time cron at **05:00 UTC** that schedules `sequence-processor` every 5 min and unschedules itself. For 05:00 Arizona (MST) use cron `0 12 * * *` instead of `0 5 * * *`.  
+- Until that 05:00 run, sequence-processor is unscheduled (no sends).
 
 Sequence ramp & per‑run behavior (goal state):
 
@@ -187,11 +198,19 @@ Sequence ramp & per‑run behavior (goal state):
 - Daily ramp per account with max daily cap; per invocation, `sequence-processor` sends at most **1 email per account per run**, with a 5‑minute interval between cron runs.  
 - `SENDING_ACCOUNTS` limited to `["robert@toptenlists.us","hello@toptenlists.us"]`.  
 
+**Sequence queue (from DB 2026‑02‑26):**
+
+- `robert@toptenlists.us`: 462 active, 134 due now (next_send_at ≤ now); 14 disabled, 3 bounced, 1 completed.  
+- `hello@toptenlists.us`: 445 active, 89 due now; 13 disabled, 21 completed, 1 paused, 1 bounced, 1 replied.  
+- Orphaned (will not be sent until reassigned): `robert@top10lists.us`, `hello@top10lists.us` (19+15 disabled, 3+1 bounced, 1 unsubscribed). Reassign in SQL: `UPDATE crm_sequence_enrollments SET assigned_account = 'robert@toptenlists.us' WHERE assigned_account = 'robert@top10lists.us';` and same for hello@.  
+- Check anytime: `npx tsx scripts/check-sequence-queues.ts`.
+
 **Magic links:**
 
 - All magic links in CRM templates (dashboard, verification, artifact, unsubscribe) must:  
   - Resolve to **production** `https://www.top10lists.us/...`, even when triggered from staging for tests.  
-  - Work end‑to‑end from a received email (click → correct page, correct token/agent).
+  - Work end‑to‑end from a received email (click → correct page, correct token/agent).  
+- `send-template` substitutes `{{magic_link}}` (dashboard URL) and `{{unsubscribe_url}}` (unsubscribe Edge Function URL with token).
 
 ***
 
