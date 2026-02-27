@@ -308,11 +308,47 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
         },
       }));
       setExaExpanded((prev) => ({ ...prev, [task.id]: true }));
-      toast.success("Exa research loaded.");
+      toast.success("Research loaded.");
     } catch (e: any) {
       const msg = e?.message ?? "Research failed";
       setExaResearch((prev) => ({ ...prev, [task.id]: { status: "error", error: msg } }));
       toast.error(msg);
+    }
+  }
+
+  async function handleUseSuggestedEmail(task: EngagementTask, newEmail: string) {
+    setProcessing(task.id);
+    try {
+      const { error: updateErr } = await supabase
+        .from("professionals")
+        .update({ email: newEmail })
+        .eq("id", task.professional_id);
+      if (updateErr) throw updateErr;
+
+      const { data, error } = await supabase.functions.invoke("send-template", {
+        body: {
+          template_name: "I know you're getting bombarded",
+          professional_id: task.professional_id,
+          from_account: SAFE_ACCOUNTS[0],
+          to_override: newEmail,
+        },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      await supabase
+        .from("crm_tasks")
+        .update({ status: "completed", completed_at: new Date().toISOString() })
+        .eq("id", task.id);
+
+      toast.success(`Updated email and resent to ${newEmail}`);
+      setExaResearch((prev) => ({ ...prev, [task.id]: { ...prev[task.id], status: "done" as const } }));
+      fetchAll();
+      onTaskResolved();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Failed to update and resend");
+    } finally {
+      setProcessing(null);
     }
   }
 
@@ -608,10 +644,17 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
                             <>
                               {exaResearch[task.id].suggestedEmails && exaResearch[task.id].suggestedEmails!.length > 0 && (
                                 <div>
-                                  <p className="font-medium text-muted-foreground mb-1">Suggested emails</p>
-                                  <ul className="list-disc list-inside space-y-0.5">
+                                  <p className="font-medium text-muted-foreground mb-1">Suggested emails — use & resend</p>
+                                  <ul className="space-y-2">
                                     {exaResearch[task.id].suggestedEmails!.map((e, i) => (
-                                      <li key={i}><a href={`mailto:${e}`} className="text-primary hover:underline">{e}</a></li>
+                                      <li key={i} className="flex items-center gap-2">
+                                        <span className="text-sm font-mono flex-1">{e}</span>
+                                        <Button size="sm" variant="default" disabled={processing === task.id}
+                                          onClick={() => handleUseSuggestedEmail(task, e)}
+                                          className="shrink-0">
+                                          {processing === task.id ? "Sending…" : "Use & Resend"}
+                                        </Button>
+                                      </li>
                                     ))}
                                   </ul>
                                 </div>

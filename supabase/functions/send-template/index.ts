@@ -90,7 +90,7 @@ serve(async (req) => {
       "Content-Type": "application/json",
       "Authorization": req.headers.get("Authorization") || "",
     },
-    body: JSON.stringify({ from_account: sender, to, subject, message_body }),
+    body: JSON.stringify({ from_account: sender, to, subject, message_body, professional_id: professional_id }),
   });
 
   const result = await sendRes.json();
