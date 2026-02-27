@@ -20,7 +20,7 @@ serve(async (req) => {
   try {
     const url = new URL(req.url);
     const pathParts = url.pathname.split("/").filter((p) => p);
-    const agentId = pathParts[1];
+    const agentId = pathParts[pathParts.length - 1]; // last segment (rewrite: .../artifact-payload/:id)
 
     if (!agentId) {
       return new Response("Agent ID required", {
@@ -34,12 +34,17 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    const { data, error } = await supabase
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(agentId);
+    const query = supabase
       .from("professionals")
       .select("id, verification_token, certifications!inner(certification_status)")
-      .eq("id", agentId)
-      .eq("certifications.certification_status", "active")
-      .single();
+      .eq("certifications.certification_status", "active");
+    if (isUuid) {
+      query.eq("id", agentId);
+    } else {
+      query.eq("canonical_slug", agentId);
+    }
+    const { data, error } = await query.single();
 
     if (error || !data) {
       return new Response("Certification not found", {
