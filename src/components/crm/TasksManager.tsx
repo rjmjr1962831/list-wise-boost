@@ -7,10 +7,14 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { CheckCircle, XCircle, Clock, Flame, Mail, Phone, Search, ChevronDown, ChevronRight, ExternalLink } from "lucide-react";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { CheckCircle, XCircle, Clock, Flame, Mail, Phone, Search } from "lucide-react";
 
 interface ChangeRequest {
   id: string;
@@ -42,17 +46,10 @@ interface EngagementTask {
   professional_email?: string;
   verification_token?: string;
   magic_link?: string;
+  professional_raw_scraper_data?: { website_contact?: { email?: string | null } } | null;
 }
 
 interface Template { id: string; subject: string; body: string; label: string; }
-
-interface ExaResearchState {
-  status: "idle" | "loading" | "done" | "error";
-  results?: { url: string; title?: string; text?: string; highlights?: string[] }[];
-  suggestedEmails?: string[];
-  query?: string;
-  error?: string;
-}
 
 interface TasksManagerProps {
   onTaskResolved: () => void;
@@ -79,9 +76,7 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
   const [sending, setSending] = useState(false);
   const [sendResult, setSendResult] = useState<{ ok: boolean; msg: string } | null>(null);
 
-  // Exa research for bounced-email tasks: taskId -> { status, results?, suggestedEmails?, error? }
-  const [exaResearch, setExaResearch] = useState<Record<string, ExaResearchState>>({});
-  const [exaExpanded, setExaExpanded] = useState<Record<string, boolean>>({});
+  const [researchOpenTaskId, setResearchOpenTaskId] = useState<string | null>(null);
 
   // Mark Done + notes + N-day follow-up modal
   const [markDoneTask, setMarkDoneTask] = useState<EngagementTask | null>(null);
@@ -89,6 +84,25 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
   const [followUpDays, setFollowUpDays] = useState<string>("");
 
   useEffect(() => { fetchAll(); }, [filter]);
+
+  const replaceEmailFromBlob = async (task: EngagementTask, newEmail: string) => {
+    setProcessing(task.id);
+    try {
+      const { error } = await supabase
+        .from("professionals")
+        .update({ email: newEmail })
+        .eq("id", task.professional_id);
+      if (error) throw error;
+      toast.success(`Email updated to ${newEmail}`);
+      setResearchOpenTaskId(null);
+      await fetchAll();
+      onTaskResolved();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Failed to update email");
+    } finally {
+      setProcessing(null);
+    }
+  };
 
   const fetchAll = async () => {
     setIsLoading(true);
@@ -122,7 +136,7 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
     if (!eligible.length) { setEngagementTasks([]); return; }
     const ids = [...new Set(eligible.map((t: any) => t.professional_id).filter(Boolean))];
     const { data: pros } = await supabase
-      .from("professionals").select("id, name, phone, cell_phone, email, verification_token, magic_link").in("id", ids);
+      .from("professionals").select("id, name, phone, cell_phone, email, verification_token, magic_link, raw_scraper_data").in("id", ids);
     const proMap: Record<string, any> = {};
     (pros ?? []).forEach((p: any) => { proMap[p.id] = p; });
     // Prefer mobile (cell_phone) or business (phone); do not use Zillow number
@@ -134,6 +148,7 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
       professional_email: proMap[t.professional_id]?.email ?? null,
       verification_token: proMap[t.professional_id]?.verification_token ?? null,
       magic_link:         proMap[t.professional_id]?.magic_link ?? null,
+      professional_raw_scraper_data: proMap[t.professional_id]?.raw_scraper_data ?? null,
     })));
   };
 
@@ -281,75 +296,6 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
     setEmailModal({ task: null, open: false });
     setSendResult(null);
     setSending(false);
-  }
-
-  async function runExaResearch(task: EngagementTask) {
-    setExaResearch((prev) => ({ ...prev, [task.id]: { status: "loading" } }));
-    try {
-      const { data, error } = await supabase.functions.invoke("exa-bounce-research", {
-        body: { professional_id: task.professional_id },
-      });
-      if (error) throw error;
-      if (data?.error) {
-        setExaResearch((prev) => ({
-          ...prev,
-          [task.id]: { status: "error", error: data.error },
-        }));
-        toast.error(data.error);
-        return;
-      }
-      setExaResearch((prev) => ({
-        ...prev,
-        [task.id]: {
-          status: "done",
-          results: data?.results ?? [],
-          suggestedEmails: data?.suggestedEmails ?? [],
-          query: data?.query,
-        },
-      }));
-      setExaExpanded((prev) => ({ ...prev, [task.id]: true }));
-      toast.success("Research loaded.");
-    } catch (e: any) {
-      const msg = e?.message ?? "Research failed";
-      setExaResearch((prev) => ({ ...prev, [task.id]: { status: "error", error: msg } }));
-      toast.error(msg);
-    }
-  }
-
-  async function handleUseSuggestedEmail(task: EngagementTask, newEmail: string) {
-    setProcessing(task.id);
-    try {
-      const { error: updateErr } = await supabase
-        .from("professionals")
-        .update({ email: newEmail })
-        .eq("id", task.professional_id);
-      if (updateErr) throw updateErr;
-
-      const { data, error } = await supabase.functions.invoke("send-template", {
-        body: {
-          template_name: "I know you're getting bombarded",
-          professional_id: task.professional_id,
-          from_account: SAFE_ACCOUNTS[0],
-          to_override: newEmail,
-        },
-      });
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
-
-      await supabase
-        .from("crm_tasks")
-        .update({ status: "completed", completed_at: new Date().toISOString() })
-        .eq("id", task.id);
-
-      toast.success(`Updated email and resent to ${newEmail}`);
-      setExaResearch((prev) => ({ ...prev, [task.id]: { ...prev[task.id], status: "done" as const } }));
-      fetchAll();
-      onTaskResolved();
-    } catch (e: any) {
-      toast.error(e?.message ?? "Failed to update and resend");
-    } finally {
-      setProcessing(null);
-    }
   }
 
   async function sendEmail() {
@@ -570,16 +516,39 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
                   )}
                   <div className="flex flex-wrap gap-2 items-center">
                     {task.task_type === "email_bounced" && (
-                      <Button size="sm" variant="outline"
-                        disabled={exaResearch[task.id]?.status === "loading"}
-                        onClick={() => runExaResearch(task)}
-                        className="border-violet-300 text-violet-700 hover:bg-violet-50">
-                        {exaResearch[task.id]?.status === "loading" ? (
-                          <span className="animate-pulse">Loading…</span>
-                        ) : (
-                          <><Search className="h-3.5 w-3.5 mr-1" /> Research</>
-                        )}
-                      </Button>
+                      <Popover open={researchOpenTaskId === task.id} onOpenChange={(o) => setResearchOpenTaskId(o ? task.id : null)}>
+                        <PopoverTrigger asChild>
+                          <Button size="sm" variant="outline" disabled={processing === task.id} className="gap-1.5">
+                            <Search className="h-3.5 w-3.5" /> Research
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-80" align="start">
+                          <div className="space-y-2">
+                            <p className="text-sm font-medium">Alternate emails (from website scrape)</p>
+                            {(() => {
+                              const wc = (task as EngagementTask).professional_raw_scraper_data?.website_contact;
+                              const email = wc?.email;
+                              if (!email || typeof email !== "string" || !email.trim()) {
+                                return <p className="text-xs text-muted-foreground">No alternate email found in blob.</p>;
+                              }
+                              const emails = [email.trim()];
+                              return (
+                                <div className="space-y-1">
+                                  {emails.map((e) => (
+                                    <button
+                                      key={e}
+                                      onClick={() => replaceEmailFromBlob(task, e)}
+                                      className="block w-full text-left px-3 py-2 text-sm rounded-md hover:bg-muted truncate"
+                                    >
+                                      {e}
+                                    </button>
+                                  ))}
+                                </div>
+                              );
+                            })()}
+                          </div>
+                        </PopoverContent>
+                      </Popover>
                     )}
                     {task.professional_email && (
                       <Button size="sm" variant="default" onClick={() => openEmailModal(task)}
@@ -607,82 +576,6 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
                       </Button>
                     )}
                   </div>
-                  {exaResearch[task.id] && (
-                    <Collapsible
-                      open={exaExpanded[task.id] ?? exaResearch[task.id].status === "loading"}
-                      onOpenChange={(open) => setExaExpanded((prev) => ({ ...prev, [task.id]: open }))}
-                      className="mt-3 border rounded-md border-muted bg-muted/30"
-                    >
-                      <CollapsibleTrigger asChild>
-                        <button className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm font-medium text-muted-foreground hover:text-foreground">
-                          {exaResearch[task.id].status === "loading" ? (
-                            <span className="animate-pulse">Exa research…</span>
-                          ) : (
-                            <>
-                              {exaResearch[task.id].status === "done" ? (
-                                <ChevronDown className="h-4 w-4 shrink-0" />
-                              ) : (
-                                <ChevronRight className="h-4 w-4 shrink-0" />
-                              )}
-                              Exa results
-                              {exaResearch[task.id].status === "done" && exaResearch[task.id].results?.length != null && (
-                                <span className="text-xs">({exaResearch[task.id].results!.length} links)</span>
-                              )}
-                            </>
-                          )}
-                        </button>
-                      </CollapsibleTrigger>
-                      <CollapsibleContent>
-                        <div className="px-3 pb-3 pt-0 space-y-3 text-sm">
-                          {exaResearch[task.id].status === "loading" && (
-                            <p className="text-muted-foreground">Loading Exa results…</p>
-                          )}
-                          {exaResearch[task.id].status === "error" && (
-                            <p className="text-red-600">{exaResearch[task.id].error}</p>
-                          )}
-                          {exaResearch[task.id].status === "done" && (
-                            <>
-                              {exaResearch[task.id].suggestedEmails && exaResearch[task.id].suggestedEmails!.length > 0 && (
-                                <div>
-                                  <p className="font-medium text-muted-foreground mb-1">Suggested emails — use & resend</p>
-                                  <ul className="space-y-2">
-                                    {exaResearch[task.id].suggestedEmails!.map((e, i) => (
-                                      <li key={i} className="flex items-center gap-2">
-                                        <span className="text-sm font-mono flex-1">{e}</span>
-                                        <Button size="sm" variant="default" disabled={processing === task.id}
-                                          onClick={() => handleUseSuggestedEmail(task, e)}
-                                          className="shrink-0">
-                                          {processing === task.id ? "Sending…" : "Use & Resend"}
-                                        </Button>
-                                      </li>
-                                    ))}
-                                  </ul>
-                                </div>
-                              )}
-                              <div>
-                                <p className="font-medium text-muted-foreground mb-1">Sources</p>
-                                <ul className="space-y-2">
-                                  {(exaResearch[task.id].results ?? []).map((r, i) => {
-                                    let host = "";
-                                    try { host = r.url ? new URL(r.url).hostname : ""; } catch { host = r.url || ""; }
-                                    return (
-                                      <li key={i} className="border-l-2 border-muted pl-2">
-                                        <a href={r.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline inline-flex items-center gap-1">
-                                          {r.title || host || "Link"}
-                                          <ExternalLink className="h-3 w-3" />
-                                        </a>
-                                        {r.text && <p className="text-muted-foreground text-xs mt-0.5 line-clamp-2">{r.text}</p>}
-                                      </li>
-                                    );
-                                  })}
-                                </ul>
-                              </div>
-                            </>
-                          )}
-                        </div>
-                      </CollapsibleContent>
-                    </Collapsible>
-                  )}
                 </CardContent>
               </Card>
             );

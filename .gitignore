@@ -31,3 +31,6 @@ dist-ssr
 # Mobile preview screenshots
 screenshots/
 
+# Scraper output (CSV/JSON from scrape-agent-websites.ts)
+scripts/output/
+

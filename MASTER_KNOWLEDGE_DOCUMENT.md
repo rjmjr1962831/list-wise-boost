@@ -389,7 +389,7 @@ All commands must be exact copy/paste ready. No placeholders in brackets.
 
 ## 20. SHORTHAND & COMMANDS
 
-- **ryt** = Update MASTER_KNOWLEDGE_DOCUMENT.md with session knowledge
+- **ryt** = Update Top10Lists_MASTER_BASELINE.md with session knowledge
 - **takeaways** = Write daily log to `docs/takeaways/CLAUDE_TAKEAWAYS_DD-MM-YY.md` in private repo
 
 ### Supabase CLI (Robert's Machine)
@@ -413,5 +413,5 @@ C:\Users\rober\supabase.exe functions deploy [name] --project-ref wiotrvoirdgzfa
 
 ---
 
-*Version 5.8 - February 26, 2026*
-*Changes from v5.7: state_slug/canonical_slug backfill from license_number (SA/BR = arizona, all digits = california). Coverage fix plan in docs/COVERAGE_FIX.md.*
+*Version 5.10 - February 26, 2026*
+*Changes from v5.9: CRM bounced-email Research uses blob (raw_scraper_data.website_contact) only; Exa flow removed. ContactDetail shows alternate email from scrape plus mobile/phone display.*

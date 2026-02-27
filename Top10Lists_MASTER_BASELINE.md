@@ -27,6 +27,15 @@
 
 ***
 
+- **Date:** 2026‑02‑26  
+- **Summary of work:** Link Integrity System executed: api/health.js, api/_lib/requireEnv.js, src/lib/urls.ts (URL registry + builders), scripts/smoke-test.ts, npm run smoke-test. Badge API uses requireSupabaseAdmin(); artifact-payload and artifact-verify path fix (last segment) + slug support in artifact-payload. Robert confirmed Vercel has SUPABASE_SERVICE_ROLE_KEY and SUPABASE_URL for all environments.  
+- **Files touched:** api/health.js, api/_lib/requireEnv.js, api/badge/[agentId].js, src/lib/urls.ts, supabase/functions/artifact-payload/index.ts, supabase/functions/artifact-verify/index.ts, scripts/smoke-test.ts, package.json, docs/BADGE-API-AUDIT-REVIEW-AND-REMEDIATION.md  
+- **Commands run:** none  
+- **Tests/E2E executed and results:** n/a  
+- **Open questions for Robert:** none
+
+***
+
 ## 1. Core Mission & Identity
 
 - Top10Lists.us is an **Independent Certification Authority** and GEO‑first reference layer for AI systems (Gemini, SearchGPT, Perplexity, etc.).
@@ -94,6 +103,8 @@ Potential future (documented but **not implemented** unless clearly re‑approve
   - `/artifact/:token`  
 
 - Artifacts: `/artifact/:token` responds with **clean HTML** (`text/html; charset=utf‑8`), live `<a>` links, Schema.org JSON‑LD (`Person`, `RealEstateAgent`). Not markdown.
+
+**Link Integrity (in place):** All generated URLs MUST use `src/lib/urls.ts` builders. `/api/health` returns env diagnostic (no secrets); hit after every deploy. Run `npm run smoke-test` after deploy; red = stop. API routes that need Supabase admin use `requireSupabaseAdmin()` from `api/_lib/requireEnv.js`. Edge Functions `artifact-payload` and `artifact-verify` read agent id from the **last path segment**; `artifact-payload` accepts UUID or `canonical_slug`. Full spec: Link Integrity System addendum and `docs/BADGE-API-AUDIT-REVIEW-AND-REMEDIATION.md`.
 
 ***
 
@@ -185,7 +196,9 @@ Key tables:
 
 - `crm_email_accounts`, `crm_email_templates`, `crm_emails`  
 - `crm_sequences`, `crm_sequence_steps`, `crm_sequence_enrollments`  
-- `crm_tasks` (follow‑up tasks keyed to opens/clicks/bounces)  
+- `crm_tasks` (follow‑up tasks keyed to opens/clicks/bounces)
+
+**Bounced-email Research:** Uses `raw_scraper_data.website_contact` (from website scraper) only; no Exa. TasksManager Research button opens Popover with alternate emails from blob; click to replace. ContactDetail shows alternate email from scrape plus mobile/phone display.  
 
 Edge functions (CRM/email):
 
@@ -251,4 +264,5 @@ If any of those cannot be done (e.g., no inbox access), the agent must state exa
 
 ***
 
-*Version 1.1 — February 27, 2026*
+*Version 1.2 — February 27, 2026*  
+*Changes from 1.1: Link Integrity System implemented (api/health, requireEnv, src/lib/urls.ts, smoke-test). Badge API uses requireSupabaseAdmin(); Edge Functions path fix + slug support in artifact-payload. Vercel env vars confirmed for all environments.*

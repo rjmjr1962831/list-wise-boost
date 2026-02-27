@@ -3,9 +3,9 @@
  *
  * 1. Optionally runs npm run takeaways:sync to pull from daily_takeaways (--sync)
  * 2. Reads takeaways from docs/cursor-daily-updates.md if present
- * 3. Fetches latest MASTER_KNOWLEDGE_DOCUMENT.md from GitHub
+ * 3. Fetches latest Top10Lists_MASTER_BASELINE.md from GitHub
  * 4. Merges takeaways (from docs, --takeaways, or SESSION_TAKEAWAYS)
- * 5. Writes to MASTER_KNOWLEDGE_DOCUMENT.md (repo root)
+ * 5. Writes to Top10Lists_MASTER_BASELINE.md (repo root)
  *
  * Run: npm run update
  *      npm run update -- --takeaways "Pipedrive removed from admin"
@@ -15,8 +15,8 @@ import fs from 'fs';
 import path from 'path';
 
 const KNOWLEDGE_URL =
-  'https://raw.githubusercontent.com/rjmjr1962831/list-wise-boost/main/MASTER_KNOWLEDGE_DOCUMENT.md';
-const OUTPUT_PATH = 'MASTER_KNOWLEDGE_DOCUMENT.md';
+  'https://raw.githubusercontent.com/rjmjr1962831/list-wise-boost/main/Top10Lists_MASTER_BASELINE.md';
+const OUTPUT_PATH = 'Top10Lists_MASTER_BASELINE.md';
 const TAKEAWAYS_FILE = 'docs/cursor-daily-updates.md';
 
 // Edit this with session takeaways before running, or pass via --takeaways
