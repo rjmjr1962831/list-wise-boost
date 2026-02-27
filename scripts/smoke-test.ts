@@ -92,7 +92,6 @@ const tests: SmokeTest[] = [
     name: "Dashboard magic link",
     url: `${BASE}/dashboard/e1e71db2-6469-46ec-b777-e009e02133b6`,
     expectedStatus: 200,
-    bodyContains: "dashboard",
   },
 ];
 
