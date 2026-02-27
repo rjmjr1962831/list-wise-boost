@@ -79,14 +79,19 @@ export default async function handler(req, res) {
     return;
   }
 
-  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!supabaseKey) {
+  const supabaseKey =
+    process.env.SUPABASE_SERVICE_ROLE_KEY ||
+    process.env.SUPABASE_SERVICE_KEY ||
+    process.env.SUPABASE_ANON_KEY ||
+    process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+  const key = supabaseKey ? String(supabaseKey).trim() : '';
+  if (!key) {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.status(500).json({ agent: null, error: 'config_error' });
     return;
   }
 
-  const supabase = createClient(SUPABASE_URL, supabaseKey);
+  const supabase = createClient(SUPABASE_URL, key);
 
   const { data: pro, error } = await supabase
     .from('professionals')

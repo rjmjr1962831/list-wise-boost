@@ -85,6 +85,12 @@ verify_jwt = false
 [functions.send-contact-email]
 verify_jwt = false
 
+[functions.gmail-send]
+verify_jwt = false
+
+[functions.send-template]
+verify_jwt = false
+
 [functions.scrape-html]
 verify_jwt = false
 

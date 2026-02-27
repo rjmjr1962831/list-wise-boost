@@ -27,10 +27,12 @@ export default async function handler(req, res) {
 
   const supabaseKey =
     process.env.SUPABASE_SERVICE_ROLE_KEY ||
+    process.env.SUPABASE_SERVICE_KEY ||
     process.env.SUPABASE_ANON_KEY ||
     process.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!supabaseKey || !supabaseKey.trim()) {
+  const key = supabaseKey ? String(supabaseKey).trim() : '';
+  if (!key) {
     res.status(500).json({ error: 'Missing Supabase key. Set SUPABASE_SERVICE_ROLE_KEY or SUPABASE_ANON_KEY in Vercel env.' });
     return;
   }
@@ -45,8 +47,8 @@ export default async function handler(req, res) {
     }
     const upstream = await fetch(url, {
       headers: {
-        Authorization: `Bearer ${supabaseKey.trim()}`,
-        apikey: supabaseKey.trim(),
+        Authorization: `Bearer ${key}`,
+        apikey: key,
       },
     });
     const html = await upstream.text();
