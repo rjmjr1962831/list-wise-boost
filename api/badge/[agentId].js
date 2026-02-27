@@ -4,8 +4,7 @@
  * Only certified, audited, underwritten agents. Listed agents return not_found.
  */
 import { createClient } from '@supabase/supabase-js';
-
-const SUPABASE_URL = 'https://wiotrvoirdgzfacuuiem.supabase.co';
+import { requireSupabaseAdmin } from '../_lib/requireEnv.js';
 const CACHE_HEADERS = {
   'Content-Type': 'application/json',
   'Cache-Control': 'public, max-age=300, stale-while-revalidate=3600',
@@ -79,14 +78,19 @@ export default async function handler(req, res) {
     return;
   }
 
-  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!supabaseKey) {
+  let supabaseUrl;
+  let supabaseKey;
+  try {
+    const env = requireSupabaseAdmin();
+    supabaseUrl = env.supabaseUrl;
+    supabaseKey = env.serviceRoleKey;
+  } catch (e) {
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.status(500).json({ agent: null, error: 'config_error' });
+    res.status(500).json({ agent: null, error: 'config_error', message: e.message });
     return;
   }
 
-  const supabase = createClient(SUPABASE_URL, supabaseKey);
+  const supabase = createClient(supabaseUrl, supabaseKey);
 
   const { data: pro, error } = await supabase
     .from('professionals')

@@ -21,10 +21,10 @@ serve(async (req) => {
   }
 
   try {
-    // Extract agent ID from URL path
+    // Extract agent ID from URL path (last segment: .../artifact-verify/:agentId)
     const url = new URL(req.url);
     const pathParts = url.pathname.split('/').filter(p => p);
-    const agentId = pathParts[1]; // Second part is the agent ID
+    const agentId = pathParts[pathParts.length - 1];
 
     if (!agentId) {
       return new Response(
