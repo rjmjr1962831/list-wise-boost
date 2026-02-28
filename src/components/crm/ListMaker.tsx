@@ -13,9 +13,9 @@ import { toast } from "sonner";
 import { Loader2, Download, RefreshCw, Link2 } from "lucide-react";
 
 export interface ListMakerCriteria {
-  active?: boolean;
-  state_slug?: string;
-  current_tier?: string;
+  active?: boolean | "all"; // true=active only, false=inactive only, "all"=both
+  state_slugs?: string[];
+  current_tiers?: string[];
   min_rating?: number;
   email_verified?: boolean;
   has_license?: boolean;
@@ -27,21 +27,15 @@ const OUTPUT_FIELDS: { key: string; label: string }[] = [
   { key: "email", label: "Email" },
   { key: "phone", label: "Phone" },
   { key: "website", label: "Website" },
-  { key: "company", label: "Company" },
-  { key: "business_name", label: "Business Name" },
-  { key: "title", label: "Title" },
+  { key: "company", label: "Company / Brokerage" },
   { key: "canonical_slug", label: "Canonical Slug" },
   { key: "state_slug", label: "State Slug" },
   { key: "current_tier", label: "Current Tier" },
-  { key: "badge_tier", label: "Badge Tier" },
-  { key: "review_stars_rating", label: "Review Rating" },
-  { key: "num_total_reviews", label: "Review Count" },
-  { key: "license_number", label: "License Number" },
-  { key: "license_status", label: "License Status" },
+  { key: "magic_link", label: "Magic Link" },
+  { key: "date_first_listed", label: "Date First Listed" },
+  { key: "date_last_updated", label: "Date Last Updated" },
   { key: "zillow_profile_url", label: "Zillow URL" },
-  { key: "verification_token", label: "Verification Token" },
   { key: "city_name", label: "City Name" },
-  { key: "city_slug", label: "City Slug" },
   { key: "created_at", label: "Created At" },
   { key: "updated_at", label: "Updated At" },
 ];
@@ -67,13 +61,13 @@ const TIERS = [
 export function ListMaker() {
   const [criteria, setCriteria] = useState<ListMakerCriteria>({
     active: true,
-    state_slug: "",
-    current_tier: "",
+    state_slugs: [],
+    current_tiers: [],
     min_rating: 0,
     email_verified: false,
     has_license: false,
   });
-  const [outputFields, setOutputFields] = useState<string[]>(["id", "name", "email", "phone", "state_slug"]);
+  const [outputFields, setOutputFields] = useState<string[]>(["id", "name", "email", "magic_link", "date_first_listed", "current_tier"]);
   const [count, setCount] = useState<number | null>(null);
   const [loadingCount, setLoadingCount] = useState(false);
   const [exporting, setExporting] = useState(false);
@@ -82,8 +76,11 @@ export function ListMaker() {
   const buildQuery = useCallback(() => {
     let q = supabase.from("professionals").select("id", { count: "exact", head: true });
     if (criteria.active === true) q = q.eq("active", true);
-    if (criteria.state_slug) q = q.eq("state_slug", criteria.state_slug);
-    if (criteria.current_tier) q = q.eq("current_tier", criteria.current_tier);
+    if (criteria.active === false) q = q.eq("active", false);
+    if (Array.isArray(criteria.state_slugs) && criteria.state_slugs.length > 0)
+      q = q.in("state_slug", criteria.state_slugs);
+    if (Array.isArray(criteria.current_tiers) && criteria.current_tiers.length > 0)
+      q = q.in("current_tier", criteria.current_tiers);
     if (criteria.min_rating != null && criteria.min_rating > 0)
       q = q.gte("review_stars_rating", criteria.min_rating);
     if (criteria.email_verified) q = q.not("email_verified_at", "is", null);
@@ -153,55 +150,68 @@ export function ListMaker() {
           <CardDescription>Filter agents by these conditions</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex flex-wrap gap-4">
-            <label className="flex items-center gap-2">
-              <Checkbox
-                checked={!!criteria.active}
-                onCheckedChange={(c) =>
-                  setCriteria((prev) => ({ ...prev, active: !!c }))
-                }
-              />
-              <span className="text-sm">Active only</span>
-            </label>
-
+          <div className="flex flex-wrap gap-4 items-center">
             <div className="flex items-center gap-2">
-              <Label className="text-sm whitespace-nowrap">State</Label>
+              <Label className="text-sm whitespace-nowrap">Active</Label>
               <select
                 className="h-9 rounded-md border bg-background px-3 text-sm"
-                value={criteria.state_slug || ""}
-                onChange={(e) =>
+                value={criteria.active === true ? "active" : criteria.active === false ? "inactive" : "all"}
+                onChange={(e) => {
+                  const v = e.target.value;
                   setCriteria((prev) => ({
                     ...prev,
-                    state_slug: e.target.value || undefined,
-                  }))
-                }
+                    active: v === "active" ? true : v === "inactive" ? false : "all",
+                  }));
+                }}
               >
-                {STATES.map((s) => (
-                  <option key={s.value || "all"} value={s.value}>
-                    {s.label}
-                  </option>
-                ))}
+                <option value="active">Active only</option>
+                <option value="inactive">Inactive only</option>
+                <option value="all">All</option>
               </select>
             </div>
 
-            <div className="flex items-center gap-2">
-              <Label className="text-sm whitespace-nowrap">Tier</Label>
-              <select
-                className="h-9 rounded-md border bg-background px-3 text-sm"
-                value={criteria.current_tier || ""}
-                onChange={(e) =>
-                  setCriteria((prev) => ({
-                    ...prev,
-                    current_tier: e.target.value || undefined,
-                  }))
-                }
-              >
-                {TIERS.map((t) => (
-                  <option key={t.value || "all"} value={t.value}>
-                    {t.label}
-                  </option>
+            <div className="flex flex-col gap-1">
+              <Label className="text-sm">States (multi-select)</Label>
+              <div className="flex flex-wrap gap-1">
+                {STATES.filter((s) => s.value).map((s) => (
+                  <label key={s.value} className="flex items-center gap-1.5 text-sm cursor-pointer">
+                    <Checkbox
+                      checked={criteria.state_slugs?.includes(s.value) ?? false}
+                      onCheckedChange={(c) =>
+                        setCriteria((prev) => ({
+                          ...prev,
+                          state_slugs: c
+                            ? [...(prev.state_slugs || []), s.value]
+                            : (prev.state_slugs || []).filter((x) => x !== s.value),
+                        }))
+                      }
+                    />
+                    <span>{s.label}</span>
+                  </label>
                 ))}
-              </select>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <Label className="text-sm">Tiers (multi-select)</Label>
+              <div className="flex flex-wrap gap-1">
+                {TIERS.filter((t) => t.value).map((t) => (
+                  <label key={t.value} className="flex items-center gap-1.5 text-sm cursor-pointer">
+                    <Checkbox
+                      checked={criteria.current_tiers?.includes(t.value) ?? false}
+                      onCheckedChange={(c) =>
+                        setCriteria((prev) => ({
+                          ...prev,
+                          current_tiers: c
+                            ? [...(prev.current_tiers || []), t.value]
+                            : (prev.current_tiers || []).filter((x) => x !== t.value),
+                        }))
+                      }
+                    />
+                    <span>{t.label}</span>
+                  </label>
+                ))}
+              </div>
             </div>
 
             <div className="flex items-center gap-2">

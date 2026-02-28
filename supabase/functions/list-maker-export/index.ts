@@ -24,24 +24,23 @@ serve(async (req) => {
       outputFields?: string[];
     };
     const criteria = body.criteria || {};
-    const outputFields = (body.outputFields || ["id", "name", "email", "phone"]).filter(Boolean);
+    const outputFields = (body.outputFields || ["id", "name", "email", "magic_link", "date_first_listed", "current_tier"]).filter(Boolean);
 
-    // Select superset of common fields + cities for city_name/city_slug
+    const baseUrl = "https://www.top10lists.us";
+
+    // Select fields needed for output (company/business_name coalesced as Company / Brokerage)
     const selectStr =
-      "id,name,email,phone,website,company,business_name,title,canonical_slug,state_slug,current_tier,badge_tier,review_stars_rating,num_total_reviews,license_number,license_status,zillow_profile_url,verification_token,created_at,updated_at,city_id,cities(name,slug)";
+      "id,name,email,phone,website,company,business_name,canonical_slug,state_slug,current_tier,card_created_at,created_at,updated_at,verification_token,zillow_profile_url,city_id,cities(name)";
 
     let query = supabase.from("professionals").select(selectStr, { count: "exact" });
 
     // Apply criteria
     if (criteria.active === true) query = query.eq("active", true);
-    if (typeof criteria.state_slug === "string" && criteria.state_slug)
-      query = query.eq("state_slug", criteria.state_slug);
-    if (typeof criteria.current_tier === "string" && criteria.current_tier)
-      query = query.eq("current_tier", criteria.current_tier);
-    if (typeof criteria.category_id === "string" && criteria.category_id)
-      query = query.eq("category_id", criteria.category_id);
-    if (typeof criteria.city_id === "string" && criteria.city_id)
-      query = query.eq("city_id", criteria.city_id);
+    if (criteria.active === false) query = query.eq("active", false);
+    if (Array.isArray(criteria.state_slugs) && criteria.state_slugs.length > 0)
+      query = query.in("state_slug", criteria.state_slugs);
+    if (Array.isArray(criteria.current_tiers) && criteria.current_tiers.length > 0)
+      query = query.in("current_tier", criteria.current_tiers);
     if (typeof criteria.min_rating === "number")
       query = query.gte("review_stars_rating", criteria.min_rating);
     if (criteria.email_verified === true)
@@ -64,10 +63,14 @@ serve(async (req) => {
     const csvRows: string[] = [headers.join(",")];
 
     for (const r of rows || []) {
+      const row = r as Record<string, unknown> & { cities?: { name?: string }; verification_token?: string; card_created_at?: string; created_at?: string; updated_at?: string; company?: string; business_name?: string };
       const cells = outputFields.map((f) => {
-        if (f === "city_name") return escape((r.cities as any)?.name);
-        if (f === "city_slug") return escape((r.cities as any)?.slug);
-        return escape((r as any)[f]);
+        if (f === "magic_link") return escape(row.verification_token ? `${baseUrl}/dashboard/${row.verification_token}` : "");
+        if (f === "date_first_listed") return escape(row.card_created_at || row.created_at);
+        if (f === "date_last_updated") return escape(row.updated_at);
+        if (f === "city_name") return escape(row.cities?.name);
+        if (f === "company") return escape(row.company || row.business_name || "");
+        return escape(row[f]);
       });
       csvRows.push(cells.join(","));
     }
