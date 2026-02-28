@@ -5,10 +5,21 @@ alwaysApply: true
 
 # REMEMBER
 
-**Canonical source:** See **MASTER_KNOWLEDGE_DOCUMENT_TODAY.MD** section 10 (Git / Branch Flow). Summary:
+**Staging / main push rule**
 
-- **Two branches, one Supabase.** We have `staging` and `main` (Git). There is one Supabase project. Both deploy to the same Supabase.
-- **Pushing to staging does NOT require Robert's approval.** Push to staging by default when you complete work. Do not ask. Approval is required only for `main` and for `supabase functions deploy`.
+**DO NOT push to staging unless:**
+1. Robert says **pts** (push to staging), or
+2. Robert says "push to staging", or
+3. You make more than 10 updates in a session.
+
+Otherwise: commit locally only. No push. (Vercel build fees.)
+
+---
+
+# Shorthands
+
+- **pts** = Push to staging. When Robert says "pts", stage, commit, and run `git push origin staging`.
+- **ptm** = Push to main. When Robert says "ptm", run `npm run merge-to-main` (merge staging → main, exclude internal docs, push main). Do not push to main unless Robert says ptm or "push to main".
 
 ---
 
@@ -18,8 +29,6 @@ alwaysApply: true
 
 - **Allowed:** `staging` → `main` (merge or deploy from staging to production).
 - **Forbidden:** Never merge or deploy `main` into `staging`. Never bring main back into staging.
-
-When preparing a release, merge staging into main and push main. Never do the reverse.
 
 **Internal documents are excluded from main.** Run `npm run merge-to-main` (not a manual merge). This script merges staging into main, then removes all paths listed in `scripts/internal-documents.txt` from main. Those files remain on staging only and never appear on the public production branch.
 
@@ -31,35 +40,10 @@ When preparing a release, merge staging into main and push main. Never do the re
 
 - **Vercel:** `vercel.json` redirects `/admin` and `/admin/:path*` to `/404` when host is `www.top10lists.us` or `top10lists.us` (production only).
 - **React:** `AdminRouteGuard` blocks production hosts so admin UI never renders there.
-- When merging staging → main, admin code may be in the repo but must never be served on production; the redirects and guard enforce that.
 
 ---
 
-# What "Push" Means
+# How to push
 
-- **When Robert says "push":** Push to **staging** (and any other non-production branches). **Never** push to `main` or deploy to production.
-- **Pushing to main:** You **must** receive this exact command from Robert: **"push to main"**. No other phrase authorizes touching `main`. Run `npm run merge-to-main` (which merges staging, excludes internal documents, and pushes). Do not manually merge and push.
-
----
-
-# Staging Push Workflow
-
-**After making code changes:** Always commit and push new code to `origin/staging` **without asking Robert**. Do not prompt for permission; push to staging as part of completing the work.
-
-**Batching:** Push to staging only in batches of ten changes. Accumulate commits and push together; do not push after every single change.
-
-This lets Robert see what's going on and test on the staging environment before production.
-
-### Steps
-
-1. Stage the modified files (exclude `.env` and other secrets)
-2. Commit with a clear message
-3. `git push origin staging`
-
-### Example
-
-```bash
-git add path/to/changed/files
-git commit -m "Brief description of change"
-git push origin staging
-```
+**When you push to staging:** `git add ...`, `git commit -m "message"`, `git push origin staging`  
+**When you push to main:** `npm run merge-to-main` only; no manual merge.
