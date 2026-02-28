@@ -94,9 +94,13 @@ serve(async (req) => {
       { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
     );
   } catch (err: any) {
+    const msg = err?.message || String(err);
+    const hint = msg.includes("Bucket") || msg.includes("bucket") || msg.includes("not found")
+      ? " Ensure migration 20260303000000_list_maker_exports_bucket.sql has been run."
+      : "";
     console.error("list-maker-export error:", err);
     return new Response(
-      JSON.stringify({ error: err.message }),
+      JSON.stringify({ error: msg + hint }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 }
     );
   }

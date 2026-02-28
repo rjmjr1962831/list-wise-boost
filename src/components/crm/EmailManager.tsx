@@ -325,9 +325,12 @@ export const EmailManager = () => {
                 </button>
               ))}
             </div>
-            <Input placeholder="Template name" value={newTplName} onChange={e => setNewTplName(e.target.value)} />
-            <Input placeholder="Subject line" value={newTplSubject} onChange={e => setNewTplSubject(e.target.value)} />
-            <Textarea placeholder="Email body" className="min-h-[160px] font-mono text-sm" value={newTplBody} onChange={e => setNewTplBody(e.target.value)} />
+            <label htmlFor="tpl-name" className="sr-only">Template name</label>
+            <Input id="tpl-name" name="template_name" placeholder="Template name" value={newTplName} onChange={e => setNewTplName(e.target.value)} />
+            <label htmlFor="tpl-subject" className="sr-only">Subject line</label>
+            <Input id="tpl-subject" name="template_subject" placeholder="Subject line" value={newTplSubject} onChange={e => setNewTplSubject(e.target.value)} />
+            <label htmlFor="tpl-body" className="sr-only">Email body</label>
+            <Textarea id="tpl-body" name="template_body" placeholder="Email body" className="min-h-[160px] font-mono text-sm" value={newTplBody} onChange={e => setNewTplBody(e.target.value)} />
             <div className="flex gap-2">
               {editTemplate && <Button variant="outline" size="sm" onClick={() => { setEditTemplate(null); setNewTplName(""); setNewTplSubject(""); setNewTplBody(""); }}>Cancel</Button>}
               <Button size="sm" onClick={handleSaveTemplate} disabled={savingTpl}>
@@ -373,7 +376,8 @@ export const EmailManager = () => {
 
       {/* Filters */}
       <div className="flex items-center gap-2">
-        <Input placeholder="Search..." value={search} onChange={e => setSearch(e.target.value)} className="max-w-xs text-sm h-8" />
+        <label htmlFor="email-search" className="sr-only">Search emails</label>
+        <Input id="email-search" name="search" placeholder="Search..." value={search} onChange={e => setSearch(e.target.value)} className="max-w-xs text-sm h-8" />
         {(["all", "inbound", "outbound"] as const).map(f => (
           <button key={f} onClick={() => setFilter(f)}
             className={`text-xs px-3 py-1.5 rounded-md font-medium transition-colors capitalize ${filter === f ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"}`}>
@@ -474,8 +478,8 @@ export const EmailManager = () => {
                   {/* Template selector */}
                   {templates.length > 0 && (
                     <div>
-                      <label className="text-xs text-muted-foreground mb-1 block">Use template</label>
-                      <select className="w-full text-sm border rounded-md px-2 py-1.5 bg-background"
+                      <label htmlFor="reply-template" className="text-xs text-muted-foreground mb-1 block">Use template</label>
+                      <select id="reply-template" name="template" className="w-full text-sm border rounded-md px-2 py-1.5 bg-background"
                         value={selectedTemplate} onChange={e => handleTemplateSelect(e.target.value)}>
                         <option value="">Select a template...</option>
                         {templates.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
@@ -483,23 +487,23 @@ export const EmailManager = () => {
                     </div>
                   )}
                   <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">From</label>
-                    <select className="w-full text-sm border rounded-md px-2 py-1.5 bg-background"
+                    <label htmlFor="reply-from" className="text-xs text-muted-foreground mb-1 block">From</label>
+                    <select id="reply-from" name="from" className="w-full text-sm border rounded-md px-2 py-1.5 bg-background"
                       value={fromAccount} onChange={e => setFromAccount(e.target.value)}>
                       {accounts.map(a => <option key={a.email} value={a.email}>{a.display_name ? `${a.display_name} <${a.email}>` : a.email}</option>)}
                     </select>
                   </div>
                   <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">To</label>
-                    <Input className="text-sm h-8" value={toAddress} onChange={e => setToAddress(e.target.value)} />
+                    <label htmlFor="reply-to" className="text-xs text-muted-foreground mb-1 block">To</label>
+                    <Input id="reply-to" name="to" className="text-sm h-8" value={toAddress} onChange={e => setToAddress(e.target.value)} />
                   </div>
                   <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">Subject</label>
-                    <Input className="text-sm h-8" value={subject} onChange={e => setSubject(e.target.value)} />
+                    <label htmlFor="reply-subject" className="text-xs text-muted-foreground mb-1 block">Subject</label>
+                    <Input id="reply-subject" name="subject" className="text-sm h-8" value={subject} onChange={e => setSubject(e.target.value)} />
                   </div>
                   <div>
                     <div className="flex items-center justify-between mb-1">
-                      <label className="text-xs text-muted-foreground">Message</label>
+                      <label htmlFor="reply-message" className="text-xs text-muted-foreground">Message</label>
                       <div className="flex flex-wrap gap-1">
                         {TEMPLATE_VARS.map(v => (
                           <button key={v.key} onClick={() => setMessageBody(b => b + v.key)}
@@ -509,7 +513,7 @@ export const EmailManager = () => {
                         ))}
                       </div>
                     </div>
-                    <Textarea className="min-h-[120px] text-sm font-mono" value={messageBody} onChange={e => setMessageBody(e.target.value)} placeholder="Write your reply..." />
+                    <Textarea id="reply-message" name="message" className="min-h-[120px] text-sm font-mono" value={messageBody} onChange={e => setMessageBody(e.target.value)} placeholder="Write your reply..." />
                   </div>
                   <Button className="w-full" onClick={handleSend} disabled={sending}>
                     <Send className="h-4 w-4 mr-2" />{sending ? "Sending..." : "Send"}
@@ -532,8 +536,8 @@ export const EmailManager = () => {
             <CardContent className="space-y-2">
               {templates.length > 0 && (
                 <div>
-                  <label className="text-xs text-muted-foreground mb-1 block">Use template</label>
-                  <select className="w-full text-sm border rounded-md px-2 py-1.5 bg-background"
+                  <label htmlFor="new-template" className="text-xs text-muted-foreground mb-1 block">Use template</label>
+                  <select id="new-template" name="template" className="w-full text-sm border rounded-md px-2 py-1.5 bg-background"
                     value={selectedTemplate} onChange={e => handleTemplateSelect(e.target.value)}>
                     <option value="">Select a template...</option>
                     {templates.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
@@ -541,16 +545,23 @@ export const EmailManager = () => {
                 </div>
               )}
               <div>
-                <label className="text-xs text-muted-foreground mb-1 block">From</label>
-                <select className="w-full text-sm border rounded-md px-2 py-1.5 bg-background"
+                <label htmlFor="new-from" className="text-xs text-muted-foreground mb-1 block">From</label>
+                <select id="new-from" name="from" className="w-full text-sm border rounded-md px-2 py-1.5 bg-background"
                   value={fromAccount} onChange={e => setFromAccount(e.target.value)}>
                   {accounts.map(a => <option key={a.email} value={a.email}>{a.display_name ? `${a.display_name} <${a.email}>` : a.email}</option>)}
                 </select>
               </div>
-              <Input placeholder="To" className="text-sm h-8" value={toAddress} onChange={e => setToAddress(e.target.value)} />
-              <Input placeholder="Subject" className="text-sm h-8" value={subject} onChange={e => setSubject(e.target.value)} />
               <div>
-                <div className="flex flex-wrap gap-1 mb-1">
+                <label htmlFor="new-to" className="text-xs text-muted-foreground mb-1 block">To</label>
+                <Input id="new-to" name="to" placeholder="To" className="text-sm h-8" value={toAddress} onChange={e => setToAddress(e.target.value)} />
+              </div>
+              <div>
+                <label htmlFor="new-subject" className="text-xs text-muted-foreground mb-1 block">Subject</label>
+                <Input id="new-subject" name="subject" placeholder="Subject" className="text-sm h-8" value={subject} onChange={e => setSubject(e.target.value)} />
+              </div>
+              <div>
+                <div className="flex flex-wrap items-center gap-1 mb-1">
+                  <label htmlFor="new-message" className="text-xs text-muted-foreground">Message</label>
                   {TEMPLATE_VARS.map(v => (
                     <button key={v.key} onClick={() => setMessageBody(b => b + v.key)}
                       className="text-[10px] px-1.5 py-0.5 rounded border hover:bg-muted transition-colors">
@@ -558,7 +569,7 @@ export const EmailManager = () => {
                     </button>
                   ))}
                 </div>
-                <Textarea className="min-h-[140px] text-sm font-mono" value={messageBody} onChange={e => setMessageBody(e.target.value)} placeholder="Write your message..." />
+                <Textarea id="new-message" name="message" className="min-h-[140px] text-sm font-mono" value={messageBody} onChange={e => setMessageBody(e.target.value)} placeholder="Write your message..." />
               </div>
               <Button className="w-full" onClick={handleSend} disabled={sending}>
                 <Send className="h-4 w-4 mr-2" />{sending ? "Sending..." : "Send"}

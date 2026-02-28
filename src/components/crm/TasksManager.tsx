@@ -363,8 +363,8 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
             </div>
 
             <div style={{ marginBottom: "12px" }}>
-              <label style={{ display: "block", fontSize: "12px", fontWeight: "600", color: "#555", marginBottom: "6px" }}>Use template</label>
-              <select value={selectedTemplate} onChange={e => applyTaskTemplate(e.target.value)}
+              <label htmlFor="task-use-template" style={{ display: "block", fontSize: "12px", fontWeight: "600", color: "#555", marginBottom: "6px" }}>Use template</label>
+              <select id="task-use-template" name="template" value={selectedTemplate} onChange={e => applyTaskTemplate(e.target.value)}
                 style={{ width: "100%", padding: "8px 12px", border: "1px solid #ddd", borderRadius: "6px", fontSize: "13px", background: "#fff" }}>
                 <option value="">Select a template...</option>
                 {templates.map(t => <option key={t.id} value={t.id}>{t.label}</option>)}
@@ -372,8 +372,8 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
             </div>
 
             <div style={{ marginBottom: "12px" }}>
-              <label style={{ display: "block", fontSize: "12px", fontWeight: "600", color: "#555", marginBottom: "6px" }}>From</label>
-              <select value={fromAccount} onChange={e => setFromAccount(e.target.value)}
+              <label htmlFor="task-from-account" style={{ display: "block", fontSize: "12px", fontWeight: "600", color: "#555", marginBottom: "6px" }}>From</label>
+              <select id="task-from-account" name="from" value={fromAccount} onChange={e => setFromAccount(e.target.value)}
                 style={{ width: "100%", padding: "8px 12px", border: "1px solid #ddd", borderRadius: "6px", fontSize: "13px", background: "#fff" }}>
                 {SAFE_ACCOUNTS.map(a => <option key={a} value={a}>{a}</option>)}
               </select>
@@ -385,8 +385,8 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
             </div>
 
             <div style={{ marginBottom: "12px" }}>
-              <label style={{ display: "block", fontSize: "12px", fontWeight: "600", color: "#555", marginBottom: "6px" }}>Subject</label>
-              <Input className="text-sm h-9" value={composeSubject} onChange={e => setComposeSubject(e.target.value)} placeholder="Subject" />
+              <label htmlFor="task-compose-subject" style={{ display: "block", fontSize: "12px", fontWeight: "600", color: "#555", marginBottom: "6px" }}>Subject</label>
+              <Input id="task-compose-subject" name="subject" className="text-sm h-9" value={composeSubject} onChange={e => setComposeSubject(e.target.value)} placeholder="Subject" />
             </div>
 
             <div style={{ marginBottom: "16px" }}>
@@ -403,7 +403,8 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
                   </button>
                 ))}
               </div>
-              <Textarea className="min-h-[140px] text-sm font-mono resize-y" value={composeBody} onChange={e => setComposeBody(e.target.value)} placeholder="Write your message..." />
+              <label htmlFor="task-compose-body" className="sr-only">Message</label>
+              <Textarea id="task-compose-body" name="message" className="min-h-[140px] text-sm font-mono resize-y" value={composeBody} onChange={e => setComposeBody(e.target.value)} placeholder="Write your message..." />
             </div>
 
             {sendResult && (
@@ -428,15 +429,19 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
           <div className="bg-background rounded-xl shadow-xl p-6 w-[420px] max-w-[95vw]" onClick={e => e.stopPropagation()}>
             <h3 className="text-lg font-semibold mb-1">Task completed</h3>
             <p className="text-sm text-muted-foreground mb-4">{markDoneTask.professional_name} — {markDoneTask.title}</p>
-            <label className="block text-sm font-medium text-muted-foreground mb-2">Notes</label>
+            <label htmlFor="mark-done-notes" className="block text-sm font-medium text-muted-foreground mb-2">Notes</label>
             <Textarea
+              id="mark-done-notes"
+              name="mark-done-notes"
               placeholder="Enter notes (shown when follow-up appears)"
               value={markDoneNotes}
               onChange={e => setMarkDoneNotes(e.target.value)}
               className="mb-4 min-h-[80px] resize-y"
             />
-            <label className="block text-sm font-medium text-muted-foreground mb-2">Follow up in (days)</label>
+            <label htmlFor="mark-done-follow-up-days" className="block text-sm font-medium text-muted-foreground mb-2">Follow up in (days)</label>
             <Input
+              id="mark-done-follow-up-days"
+              name="follow-up-days"
               type="number"
               min={0}
               placeholder="0 = no follow-up"

@@ -123,8 +123,9 @@ export function ListMaker() {
       const { data, error } = await supabase.functions.invoke("list-maker-export", {
         body: { criteria, outputFields },
       });
-      if (error) throw error;
+      // Prefer server error message (data.error) over generic "Non 2XX"
       if (data?.error) throw new Error(data.error);
+      if (error) throw error;
       const url = data?.url;
       if (!url) throw new Error("No URL returned");
       setLastCsvUrl(url);
@@ -215,8 +216,10 @@ export function ListMaker() {
             </div>
 
             <div className="flex items-center gap-2">
-              <Label className="text-sm whitespace-nowrap">Min rating</Label>
+              <Label htmlFor="list-maker-min-rating" className="text-sm whitespace-nowrap">Min rating</Label>
               <Input
+                id="list-maker-min-rating"
+                name="min_rating"
                 type="number"
                 min={0}
                 max={5}

@@ -341,8 +341,8 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
       <span className="text-xs text-muted-foreground w-28 shrink-0">{label}</span>
       {editingField === field ? (
         <div className="flex items-center gap-1 flex-1">
-          <Input className="h-7 text-xs" value={editValue} onChange={e => setEditValue(e.target.value)}
-            onKeyDown={e => { if (e.key === "Enter") saveField(field, editValue); if (e.key === "Escape") setEditingField(null); }} autoFocus />
+          <Input id={`edit-${field}`} name={field} className="h-7 text-xs" value={editValue} onChange={e => setEditValue(e.target.value)}
+            onKeyDown={e => { if (e.key === "Enter") saveField(field, editValue); if (e.key === "Escape") setEditingField(null); }} autoFocus aria-label={label} />
           <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => saveField(field, editValue)}><Check className="h-3 w-3" /></Button>
           <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => setEditingField(null)}><X className="h-3 w-3" /></Button>
         </div>
@@ -413,8 +413,10 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
               <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => { setShowCompose(false); setSelectedTemplateId(""); }}>Cancel</Button>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground w-20 shrink-0">Use template</span>
+              <label htmlFor="contact-compose-template" className="text-xs text-muted-foreground w-20 shrink-0">Use template</label>
               <select
+                id="contact-compose-template"
+                name="template"
                 className="text-sm border rounded px-2 py-1 flex-1 bg-background"
                 value={selectedTemplateId}
                 onChange={e => applyTemplate(e.target.value)}
@@ -426,8 +428,8 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
               </select>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground w-20 shrink-0">From</span>
-              <select className="text-sm border rounded px-2 py-1 flex-1 bg-background" value={composeFrom} onChange={e => setComposeFrom(e.target.value)}>
+              <label htmlFor="contact-compose-from" className="text-xs text-muted-foreground w-20 shrink-0">From</label>
+              <select id="contact-compose-from" name="from" className="text-sm border rounded px-2 py-1 flex-1 bg-background" value={composeFrom} onChange={e => setComposeFrom(e.target.value)}>
                 {accounts.map(a => <option key={a.email} value={a.email}>{a.display_name ? `${a.display_name} <${a.email}>` : a.email}</option>)}
               </select>
             </div>
@@ -436,8 +438,8 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
               <span className="text-sm">{pro?.email}</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground w-20 shrink-0">Subject</span>
-              <Input placeholder="Subject" className="text-sm h-8 flex-1" value={composeSubject} onChange={e => setComposeSubject(e.target.value)} />
+              <label htmlFor="contact-compose-subject" className="text-xs text-muted-foreground w-20 shrink-0">Subject</label>
+              <Input id="contact-compose-subject" name="subject" placeholder="Subject" className="text-sm h-8 flex-1" value={composeSubject} onChange={e => setComposeSubject(e.target.value)} />
             </div>
             <div>
               <div className="flex flex-wrap items-center gap-1 mb-1">
@@ -449,7 +451,8 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
                   </button>
                 ))}
               </div>
-              <Textarea placeholder="Write your message..." className="text-sm min-h-[100px]" value={composeBody} onChange={e => setComposeBody(e.target.value)} />
+              <label htmlFor="contact-compose-body" className="sr-only">Message</label>
+              <Textarea id="contact-compose-body" name="message" placeholder="Write your message..." className="text-sm min-h-[100px]" value={composeBody} onChange={e => setComposeBody(e.target.value)} />
             </div>
             <div className="flex gap-2 justify-end">
               <Button size="sm" variant="outline" onClick={() => { setShowCompose(false); setSelectedTemplateId(""); }}>Cancel</Button>
@@ -669,7 +672,8 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
                 <CardHeader className="py-3 px-4 pb-2"><CardTitle className="text-sm font-semibold flex items-center gap-1.5"><StickyNote className="h-3.5 w-3.5" />Notes</CardTitle></CardHeader>
                 <CardContent className="px-4 pb-3 space-y-3">
                   <div className="flex gap-2">
-                    <Textarea placeholder="Add a note..." className="text-sm min-h-[60px]" value={newNote} onChange={e => setNewNote(e.target.value)} />
+                    <label htmlFor="contact-add-note" className="sr-only">Add a note</label>
+                    <Textarea id="contact-add-note" name="note" placeholder="Add a note..." className="text-sm min-h-[60px]" value={newNote} onChange={e => setNewNote(e.target.value)} />
                     <Button size="sm" onClick={addNote} disabled={!newNote.trim()} className="self-end shrink-0"><Plus className="h-3.5 w-3.5 mr-1" />Add</Button>
                   </div>
                   {notes.length === 0 && <p className="text-xs text-muted-foreground text-center py-2">No notes yet</p>}
@@ -884,10 +888,13 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
                 </div>
                 {showAddTask && (
                   <Card><CardContent className="py-3 px-4 space-y-2">
-                    <Input placeholder="Task title..." value={newTaskTitle} onChange={e => setNewTaskTitle(e.target.value)} />
+                    <label htmlFor="new-task-title" className="sr-only">Task title</label>
+                    <Input id="new-task-title" name="task_title" placeholder="Task title..." value={newTaskTitle} onChange={e => setNewTaskTitle(e.target.value)} />
                     <div className="flex gap-2">
-                      <Input type="date" value={newTaskDue} onChange={e => setNewTaskDue(e.target.value)} className="w-40" />
-                      <select value={newTaskPriority} onChange={e => setNewTaskPriority(e.target.value)} className="border rounded px-2 py-1 text-sm bg-background">
+                      <label htmlFor="new-task-due" className="sr-only">Due date</label>
+                      <Input id="new-task-due" name="task_due" type="date" value={newTaskDue} onChange={e => setNewTaskDue(e.target.value)} className="w-40" />
+                      <label htmlFor="new-task-priority" className="sr-only">Priority</label>
+                      <select id="new-task-priority" name="task_priority" value={newTaskPriority} onChange={e => setNewTaskPriority(e.target.value)} className="border rounded px-2 py-1 text-sm bg-background">
                         <option value="low">Low</option><option value="normal">Normal</option><option value="high">High</option><option value="urgent">Urgent</option>
                       </select>
                       <Button size="sm" onClick={addTask}>Save</Button>
