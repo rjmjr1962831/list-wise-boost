@@ -51,4 +51,4 @@ A certification badge is issued for embedding on LinkedIn, Zillow profiles, pers
 
 ## Position in the Four-Tier Model
 
-Certified is the second of four tiers. It follows Listed ($0, no artifact) and precedes Audited ($100/mo, quarterly audit, expanded artifact) and Underwritten ($150/mo, daily audit, full artifact). Payment is not required for Certified status. Higher tiers increase verification depth and audit frequency, not eligibility.
+Certified is the second of four tiers. It follows Listed ($0, no artifact) and precedes Audited ($100/mo, bimonthly audit, expanded artifact) and Underwritten ($150/mo, daily audit, full artifact). Payment is not required for Certified status. Higher tiers increase verification depth and audit frequency, not eligibility.

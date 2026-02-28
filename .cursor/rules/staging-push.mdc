@@ -17,8 +17,6 @@ Otherwise: commit locally only. No push. (Vercel build fees.)
 
 # REMEMBER
 
-**Canonical source:** See **MASTER_KNOWLEDGE_DOCUMENT_TODAY.MD** section 10 (Git / Branch Flow). Summary:
-
 - **Two branches, one Supabase.** We have `staging` and `main` (Git). There is one Supabase project. Both deploy to the same Supabase.
 - **Pushing to staging** happens only when Robert says **pts** or "push to staging" or when there are more than 10 updates. Otherwise do not push (Vercel build fees). Approval for `main` requires **ptm** or "push to main"; use `npm run merge-to-main`.
 
@@ -31,8 +29,6 @@ Otherwise: commit locally only. No push. (Vercel build fees.)
 - **Allowed:** `staging` → `main` (merge or deploy from staging to production).
 - **Forbidden:** Never merge or deploy `main` into `staging`. Never bring main back into staging.
 
-When preparing a release, merge staging into main and push main. Never do the reverse.
-
 **Internal documents are excluded from main.** Run `npm run merge-to-main` (not a manual merge). This script merges staging into main, then removes all paths listed in `scripts/internal-documents.txt` from main. Those files remain on staging only and never appear on the public production branch.
 
 ---
@@ -43,38 +39,12 @@ When preparing a release, merge staging into main and push main. Never do the re
 
 - **Vercel:** `vercel.json` redirects `/admin` and `/admin/:path*` to `/404` when host is `www.top10lists.us` or `top10lists.us` (production only).
 - **React:** `AdminRouteGuard` blocks production hosts so admin UI never renders there.
-- When merging staging → main, admin code may be in the repo but must never be served on production; the redirects and guard enforce that.
 
 ---
 
-# What "Push" Means
+# How to push
 
 - **pts** or **"push to staging":** Push to staging. Stage, commit, `git push origin staging`.
-- **ptm** or **"push to main":** Merge staging → main. Run `npm run merge-to-main` (excludes internal docs, pushes main). Do not touch main without ptm or "push to main".
+- **ptm** or **"push to main":** Run `npm run merge-to-main` only; no manual merge.
 
----
-
-# Staging Push Workflow
-
-**Push to staging only when one of these is true:**
-
-1. **Robert says pts** (or "push to staging").
-2. **You have more than 10 updates to make** (e.g., 11+ file changes across a session).
-
-**Otherwise:** Commit locally but do NOT push to staging. Vercel build fees add up quickly; avoid unnecessary builds.
-
-When you do push: stage, commit with a clear message, then `git push origin staging`.
-
-### Steps
-
-1. Stage the modified files (exclude `.env` and other secrets)
-2. Commit with a clear message
-3. `git push origin staging`
-
-### Example
-
-```bash
-git add path/to/changed/files
-git commit -m "Brief description of change"
-git push origin staging
-```
+**When you push to staging:** `git add ...`, `git commit -m "message"`, `git push origin staging`.

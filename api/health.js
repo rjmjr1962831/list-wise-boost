@@ -1,12 +1,18 @@
 /**
- * HEALTH ENDPOINT — hit this after every deploy
- * Returns non-sensitive diagnostic info.
- * If any key shows false, fix env vars in Vercel dashboard, redeploy, hit /api/health again.
+ * Health check for monitoring and smoke tests.
+ * GET /api/health → 200 { ok: true, ... }
  */
-export default function handler(_req, res) {
+export default function handler(req, res) {
+  if (req.method === 'OPTIONS') {
+    res.status(204).end();
+    return;
+  }
+  res.setHeader('Content-Type', 'application/json');
+  res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Cache-Control', 'no-store');
   res.status(200).json({
     ok: true,
+    service: 'top10lists-api',
     timestamp: new Date().toISOString(),
     env: {
       hasSupabaseServiceRoleKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,

@@ -115,17 +115,9 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
   };
 
   const loadActivities = async () => {
-    const [{ data: funnelEvents }, { data: contactActivity }] = await Promise.all([
-      supabase.from("funnel_events").select("*")
-        .eq("professional_id", professional.id).order("created_at", { ascending: false }).limit(50),
-      (supabase.from as any)("crm_contact_activity").select("*")
-        .eq("professional_id", professional.id).order("created_at", { ascending: false }).limit(100),
-    ]);
-    const merged = [
-      ...(funnelEvents || []).map((e: any) => ({ ...e, _source: "funnel" })),
-      ...(contactActivity || []).map((e: any) => ({ ...e, _source: "email_engagement" })),
-    ].sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-    setActivities(merged);
+    const { data } = await supabase.from("funnel_events").select("*")
+      .eq("professional_id", professional.id).order("created_at", { ascending: false }).limit(50);
+    setActivities(data || []);
   };
 
   const loadTasks = async () => {

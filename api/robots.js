@@ -89,10 +89,13 @@ Allow: /
 User-agent: DotBot
 Allow: /
 
-# Sitemaps - 10,000+ verified pages
+# Sitemaps - 15,730 verified pages
 Sitemap: https://www.top10lists.us/sitemap.xml
+Sitemap: https://www.top10lists.us/sitemap-pages.xml
+Sitemap: https://www.top10lists.us/sitemap-states.xml
 Sitemap: https://www.top10lists.us/sitemap-cities.xml
 Sitemap: https://www.top10lists.us/sitemap-neighborhoods.xml
+Sitemap: https://www.top10lists.us/sitemap-agents.xml
 `;
 
 function isProduction(host) {
