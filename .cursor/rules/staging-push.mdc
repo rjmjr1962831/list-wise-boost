@@ -3,12 +3,24 @@ description: Staging/main branch flow and push workflow — never main to stagin
 alwaysApply: true
 ---
 
+# DO NOT PUSH TO STAGING UNLESS
+1. Robert says **pts** (push to staging), OR
+2. Robert says "push to staging", OR
+3. You have more than 10 updates to make in a session.
+Otherwise: commit locally only. No push. (Vercel build fees.)
+
+# SHORTHANDS
+- **pts** = Push to staging. When Robert says "pts", commit and push to `origin/staging`.
+- **ptm** = Push to main. When Robert says "ptm", run `npm run merge-to-main` (merge staging → main, exclude internal docs, push main). Do not touch main without ptm.
+
+---
+
 # REMEMBER
 
 **Canonical source:** See **MASTER_KNOWLEDGE_DOCUMENT_TODAY.MD** section 10 (Git / Branch Flow). Summary:
 
 - **Two branches, one Supabase.** We have `staging` and `main` (Git). There is one Supabase project. Both deploy to the same Supabase.
-- **Pushing to staging does NOT require Robert's approval.** Push to staging by default when you complete work. Do not ask. Approval is required only for `main` and for `supabase functions deploy`.
+- **Pushing to staging** happens only when Robert says **pts** or "push to staging" or when there are more than 10 updates. Otherwise do not push (Vercel build fees). Approval for `main` requires **ptm** or "push to main"; use `npm run merge-to-main`.
 
 ---
 
@@ -37,18 +49,21 @@ When preparing a release, merge staging into main and push main. Never do the re
 
 # What "Push" Means
 
-- **When Robert says "push":** Push to **staging** (and any other non-production branches). **Never** push to `main` or deploy to production.
-- **Pushing to main:** You **must** receive this exact command from Robert: **"push to main"**. No other phrase authorizes touching `main`. Run `npm run merge-to-main` (which merges staging, excludes internal documents, and pushes). Do not manually merge and push.
+- **pts** or **"push to staging":** Push to staging. Stage, commit, `git push origin staging`.
+- **ptm** or **"push to main":** Merge staging → main. Run `npm run merge-to-main` (excludes internal docs, pushes main). Do not touch main without ptm or "push to main".
 
 ---
 
 # Staging Push Workflow
 
-**After making code changes:** Always commit and push new code to `origin/staging` **without asking Robert**. Do not prompt for permission; push to staging as part of completing the work.
+**Push to staging only when one of these is true:**
 
-**Batching:** Push to staging only in batches of ten changes. Accumulate commits and push together; do not push after every single change.
+1. **Robert says pts** (or "push to staging").
+2. **You have more than 10 updates to make** (e.g., 11+ file changes across a session).
 
-This lets Robert see what's going on and test on the staging environment before production.
+**Otherwise:** Commit locally but do NOT push to staging. Vercel build fees add up quickly; avoid unnecessary builds.
+
+When you do push: stage, commit with a clear message, then `git push origin staging`.
 
 ### Steps
 

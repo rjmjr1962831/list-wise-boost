@@ -9,7 +9,7 @@ alwaysApply: true
 **Single source of truth:** All rules are consolidated in **`MASTER_KNOWLEDGE_DOCUMENT_TODAY.MD`** at repo root. Read that file before routing, database, or deployment work. This stub exists so Cursor knows where to look; do not duplicate full content here.
 
 **Quick reminders (details in master doc):**
-- Push to **staging** by default (batches of ten). Only **"push to main"** authorizes production. Use `npm run merge-to-main`; never manual merge.
+- Push to **staging** only when Robert says "push to staging" or when there are 10+ updates. Only **"push to main"** authorizes production. Use `npm run merge-to-main`; never manual merge.
 - Do what you can yourself; use credentials in `.env` / `.secrets`. Never say "done" without verification.
 - Links: always give Robert full URLs as markdown links: `[text](https://www.top10lists.us/...)`.
 - Business model: Listed/Certified $0; Audited $100/mo; Underwritten $150/mo.

@@ -59,11 +59,12 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
   const baseScore = professional.signal_score ?? professional.certified_projected_signal ?? null;
 
   const getAICS = (tierId: string): number | null => {
+    if (tierId === "listed") return 10;
     if (tierId === "certified")
-      return professional.certified_projected_signal ?? professional.signal_score ?? estimateAICS(baseScore, currentTier, "certified");
+      return professional.certified_projected_signal ?? professional.signal_score ?? 25;
     if (tierId === "audited")
-      return professional.audited_projected_signal ?? 79;
-    if (tierId === "underwritten") return 98;
+      return professional.audited_projected_signal ?? 65;
+    if (tierId === "underwritten") return 95;
     return null;
   };
 

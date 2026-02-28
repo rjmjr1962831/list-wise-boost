@@ -122,10 +122,9 @@ When an AI names a specific professional, it assumes **recommendation risk**. To
 ## 10. GIT / BRANCH FLOW (STAGING → MAIN)
 
 - **Two branches, one Supabase.** `staging` and `main`. One Supabase project. Both deploy to it.
-- **Pushing to staging does NOT require Robert's approval.** Push to staging by default when you complete work. Do not ask.
-- **Staging push batching:** Push in **batches of ten** changes. Accumulate commits and push together; do not push after every single change.
+- **Push to staging only when:** (1) Robert explicitly says "push to staging", or (2) you have more than 10 updates to make in a session. Otherwise commit locally but do NOT push (to avoid Vercel build fees).
 - **Branch direction (locked):** Only **staging → main**. Never merge or deploy **main** into **staging**.
-- **Main / production:** Touch only when Robert says exactly **"push to main"**. Run `npm run merge-to-main` (script merges staging, excludes internal docs, pushes main). Do not manually merge and push.
+- **Main / production:** Touch only when Robert says **ptm** or exactly **"push to main"**. Run `npm run merge-to-main` (script merges staging, excludes internal docs, pushes main). Do not manually merge and push.
 - **Internal documents** (this file, PENDING_UPDATES.md, docs/cursor-daily-updates.md, etc.) are excluded from main via `scripts/internal-documents.txt`. They remain on staging only.
 - **Admin / CRM:** Admin login and `/admin/*` must not be reachable on production. `vercel.json` redirects and `AdminRouteGuard` enforce this. **Nothing in `src/pages/admin/` or CRM/admin folders must be pushed to main.** Admin and CRM code is staging-only. When merging staging to main, do not include admin/crm changes. (Note: Full exclusion requires build restructuring so production does not import admin routes.)
 
@@ -365,7 +364,9 @@ Must return `text/html; charset=utf-8`.
 
 ## 22. SHORTHAND & COMMANDS
 
-- **ryt** = Update **`Top10Lists_MASTER_BASELINE.md` only** (repo root). Read it, integrate session knowledge, write back. Commit and push to staging. Do not update other knowledge files.
+- **ryt** = Update **`Top10Lists_MASTER_BASELINE.md` only** (repo root). Read it, integrate session knowledge, write back. Commit locally; do not push unless pts or 10+ updates.
+- **pts** = Push to staging. When Robert says "pts", commit and push to `origin/staging`.
+- **ptm** = Push to main. When Robert says "ptm", run `npm run merge-to-main`. Do not touch main without ptm.
 - **takeaways** = Generate structured outcomes (Key Outcomes, Config Changes, Deprecated/New Patterns, Version Bump). Use `npm run takeaways` for template. Output to `docs/cursor-daily-updates.md` or per Robert's preference. Master doc name in template is Top10Lists_MASTER_BASELINE.md.
 - **When Robert says "remember":** Add to `docs/cursor-daily-updates.md`.
 - **update** = Run `npm run update` or fetch from private repo, merge session takeaways, write new version per project workflow (master doc in repo; other sync per Robert).
@@ -387,7 +388,7 @@ C:\Users\rober\supabase.exe functions deploy [name] --project-ref wiotrvoirdgzfa
 2. **Enforce logic:** Signal Strength logarithmic (Listed 10–25, Certified 26–45, Audited 46–75, Underwritten 76–100).
 3. **Artifact format:** Clean HTML with live links. Not markdown.
 4. **Pre-flight:** Before merge to main, run `VITE_IS_PRODUCTION=1 npm run build` and confirm `npm run preview` loads.
-5. **Main lock:** Never push to `main` or run `supabase functions deploy` unless Robert says exactly "push to main." Default: push to `staging` only, in batches of ten.
+5. **Main lock:** Never push to `main` or run `supabase functions deploy` unless Robert says exactly "push to main." Push to `staging` only when Robert says "push to staging" or when there are 10+ updates; otherwise commit locally only.
 6. **Verification:** Done = deployed + verified. Never say "done" without testing when you can.
 7. **Links:** When sharing with Robert, use full URLs as markdown links: [text](https://www.top10lists.us/...).
 8. **Conflicts:** If a rule elsewhere conflicts with this document, this document wins. Deprecate the earlier conflicting statement.
