@@ -154,7 +154,7 @@ export default function AgentDashboard() {
       // Magic links use verification_token in URL. Also accept dashboard_token.
       const { data: prof, error: fetchErr } = await supabase
         .from("professionals")
-        .select("id, name, verification_token, funnel_status, active")
+        .select("id, name, verification_token, funnel_status, current_tier, active")
         .or(`verification_token.eq.${tokenFromUrl},dashboard_token.eq.${tokenFromUrl}`)
         .maybeSingle();
 
@@ -170,8 +170,11 @@ export default function AgentDashboard() {
         return;
       }
 
-      // Not approved? Send to funnel.
-      if (prof.funnel_status !== "approved") {
+      const tier = (prof.current_tier || "").toLowerCase();
+      const hasPaidTier = ["certified", "audited", "underwritten"].includes(tier);
+
+      // Certified, audited, or underwritten go to dashboard. Others need funnel_status approved. Not approved? Send to funnel.
+      if (!hasPaidTier && prof.funnel_status !== "approved") {
         const funnelToken = prof.verification_token || prof.id;
         window.location.href = `/funnel/${funnelToken}`;
         return;

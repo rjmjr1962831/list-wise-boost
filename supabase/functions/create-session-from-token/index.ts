@@ -48,7 +48,7 @@ serve(async (req) => {
       // Try by ID first
       const { data: byId } = await supabase
         .from("professionals")
-        .select("id, name, email, active, funnel_status")
+        .select("id, name, email, active, funnel_status, current_tier")
         .eq("id", token)
         .maybeSingle();
       
@@ -58,7 +58,7 @@ serve(async (req) => {
         // Try by verification_token
         const { data: byToken } = await supabase
           .from("professionals")
-          .select("id, name, email, active, funnel_status")
+          .select("id, name, email, active, funnel_status, current_tier")
           .eq("verification_token", token)
           .maybeSingle();
         
@@ -68,7 +68,7 @@ serve(async (req) => {
       // Fuzzy match on verification_token
       const { data: byTokenFuzzy } = await supabase
         .from("professionals")
-        .select("id, name, email, active, funnel_status")
+        .select("id, name, email, active, funnel_status, current_tier")
         .ilike("verification_token", `%${token}%`)
         .maybeSingle();
       
@@ -121,9 +121,13 @@ serve(async (req) => {
       }
     }
 
-    // Only create session for approved agents (unless admin bypass)
-    if (!adminBypass && professional.funnel_status !== 'approved') {
-      console.log(`[create-session-from-token] Funnel status is '${professional.funnel_status}', not 'approved'`);
+    // Allow: admin bypass, funnel_status approved, or certified/audited/underwritten
+    const tier = (professional.current_tier || "").toLowerCase();
+    const hasPaidTier = ["certified", "audited", "underwritten"].includes(tier);
+    const isApproved = professional.funnel_status === "approved";
+
+    if (!adminBypass && !isApproved && !hasPaidTier) {
+      console.log(`[create-session-from-token] Funnel status is '${professional.funnel_status}', tier '${tier}' - not approved`);
       return new Response(
         JSON.stringify({ success: false, error: "Profile not approved", funnel_status: professional.funnel_status }),
         { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
