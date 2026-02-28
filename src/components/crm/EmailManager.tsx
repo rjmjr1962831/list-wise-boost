@@ -79,7 +79,6 @@ export const EmailManager = () => {
   const [templates, setTemplates] = useState<Template[]>([]);
   const [accounts, setAccounts] = useState<ConnectedAccount[]>([]);
   const [loading, setLoading] = useState(true);
-  const [nameMap, setNameMap] = useState<Record<string, string>>({});
   const [syncing, setSyncing] = useState(false);
   const [selectedThread, setSelectedThread] = useState<string | null>(null);
   const [threadEmails, setThreadEmails] = useState<Email[]>([]);
@@ -123,21 +122,10 @@ export const EmailManager = () => {
       supabase.from("crm_email_templates").select("*").order("name"),
       supabase.from("crm_email_accounts").select("email, display_name"),
     ]);
-    const emailList = emailsRes.data || [];
-    setEmails(emailList);
+    setEmails(emailsRes.data || []);
     setTemplates(templatesRes.data || []);
     setAccounts(accountsRes.data || []);
     if (accountsRes.data?.length) setFromAccount(accountsRes.data[0].email);
-
-    // Build email -> name map from professionals
-    const addresses = [...new Set(emailList.map(e => e.direction === "inbound" ? e.from_address : e.to_address)
-      .map(a => a?.match(/<(.+)>/)?.[1] || a).filter(Boolean))];
-    if (addresses.length > 0) {
-      const { data: pros } = await supabase.from("professionals").select("email, name").in("email", addresses);
-      const map: Record<string, string> = {};
-      (pros || []).forEach((p: any) => { if (p.email && p.name) map[p.email.toLowerCase()] = p.name; });
-      setNameMap(map);
-    }
     setLoading(false);
   };
 
@@ -421,15 +409,7 @@ export const EmailManager = () => {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-0.5">
                         <p className="text-sm font-medium truncate">
-                          {(() => {
-                            const addr = email.direction === "inbound"
-                              ? (email.from_address?.match(/<(.+)>/)?.[1] || email.from_address)
-                              : email.to_address;
-                            const name = nameMap[addr?.toLowerCase()];
-                            return email.direction === "inbound"
-                              ? (name || email.from_address)
-                              : `To: ${name || email.to_address}`;
-                          })()}
+                          {email.direction === "inbound" ? email.from_address : `To: ${email.to_address}`}
                         </p>
                         {threadCount > 1 && <span className="text-xs text-muted-foreground shrink-0">({threadCount})</span>}
                       </div>

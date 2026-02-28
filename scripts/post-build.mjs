@@ -6,10 +6,11 @@
  * Solution: Save SPA entry as _spa.html, put pre-rendered homepage at index.html.
  * Vercel catch-all rewrite points to /_spa.html for client-side routes.
  *
- * IMPORTANT: _home.html has hardcoded asset paths that go stale each build.
- * We must inject the current build's script/link tags from _spa.html so CSS and JS load.
+ * CRITICAL: _home.html has hardcoded asset paths that go stale on every build.
+ * We extract the current CSS/JS hashes from the freshly built SPA entry and
+ * inject them into _home.html so the homepage always references valid assets.
  */
-import { copyFileSync, existsSync, readFileSync, writeFileSync } from 'fs';
+import { copyFileSync, readFileSync, writeFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
 const dist = 'dist';
@@ -23,35 +24,27 @@ if (existsSync(spaEntry)) {
   console.log('[post-build] Saved SPA entry -> _spa.html');
 }
 
-// 2. Replace index.html with static homepage, but inject current asset paths
-if (existsSync(staticHome) && existsSync(spaTarget)) {
-  const spaHtml = readFileSync(spaTarget, 'utf8');
-  let homeHtml = readFileSync(staticHome, 'utf8');
+// 2. Replace with static homepage, injecting current asset hashes
+if (existsSync(staticHome)) {
+  const spaHtml = readFileSync(spaEntry, 'utf-8');
+  let homeHtml = readFileSync(staticHome, 'utf-8');
 
-  // Extract script and link from _spa.html (current build's hashed assets)
-  const scriptMatch = spaHtml.match(/<script type="module"[^>]*src="(\/assets\/[^"]+)"[^>]*><\/script>/);
-  const linkMatch = spaHtml.match(/<link rel="stylesheet"[^>]*href="(\/assets\/[^"]+)"[^>]*>/);
+  // Extract current asset paths from SPA entry
+  const cssMatch = spaHtml.match(/\/assets\/index-[^"]*\.css/);
+  const jsMatch = spaHtml.match(/\/assets\/index-[^"]*\.js/);
 
-  if (scriptMatch && linkMatch) {
-    const scriptTag = scriptMatch[0];
-    const linkTag = linkMatch[0];
-
-    // Replace stale asset refs in _home.html with current build's refs
-    homeHtml = homeHtml.replace(
-      /<script type="module"[^>]*src="\/assets\/[^"]*"[^>]*><\/script>/,
-      scriptTag
-    );
-    homeHtml = homeHtml.replace(
-      /<link rel="stylesheet"[^>]*href="\/assets\/[^"]*"[^>]*>/,
-      linkTag
-    );
+  // Replace old asset paths in _home.html with current ones
+  if (cssMatch) {
+    homeHtml = homeHtml.replace(/\/assets\/index-[^"]*\.css/, cssMatch[0]);
+    console.log(`[post-build] Injected CSS: ${cssMatch[0]}`);
+  }
+  if (jsMatch) {
+    homeHtml = homeHtml.replace(/\/assets\/index-[^"]*\.js/, jsMatch[0]);
+    console.log(`[post-build] Injected JS: ${jsMatch[0]}`);
   }
 
   writeFileSync(spaEntry, homeHtml);
-  console.log('[post-build] Static homepage -> index.html (assets injected)');
-} else if (existsSync(staticHome)) {
-  copyFileSync(staticHome, spaEntry);
-  console.log('[post-build] Static homepage -> index.html (no SPA to inject assets from)');
+  console.log('[post-build] Static homepage -> index.html (with current asset hashes)');
 } else {
   console.warn('[post-build] WARNING: _home.html not found, homepage will be SPA shell');
 }
