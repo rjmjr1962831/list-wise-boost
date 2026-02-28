@@ -82,7 +82,6 @@ export default function AgentDashboard() {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-
     if (magicToken) {
       // Magic link flow: create session from dashboard_token
       handleMagicToken(magicToken);
@@ -94,6 +93,12 @@ export default function AgentDashboard() {
       validateSessionAndLoad();
     }
   }, []);
+
+  useEffect(() => {
+    if (!loading && professional) {
+      window.scrollTo(0, 0);
+    }
+  }, [loading, professional]);
 
   const handleAdminOpenDashboard = async (professionalId: string) => {
     try {
@@ -264,6 +269,7 @@ export default function AgentDashboard() {
       setSubscriptions(data.subscriptions || []);
       setPendingRequests(data.pendingRequests || []);
       setHasStripeSubscription(data.hasStripeSubscription || false);
+      window.scrollTo(0, 0);
     } catch (error) {
       console.error("[AgentDashboard] Error:", error);
       toast.error("Failed to load profile");

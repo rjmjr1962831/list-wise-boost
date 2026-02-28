@@ -35,15 +35,47 @@ export default function Step1Intro() {
     }
 
     try {
-      const { data, error: fetchError } = await supabase
-        .from('professionals')
-        .select('id, name, email, phone, company, verification_token')
-        .eq('verification_token', token)
-        .single();
+      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(token);
+      let data: any = null;
+      let fetchError: any = null;
+
+      if (isUUID) {
+        const byId = await supabase
+          .from('professionals')
+          .select('id, name, email, phone, company, verification_token, current_tier')
+          .eq('id', token)
+          .maybeSingle();
+        if (byId.data) {
+          data = byId.data;
+        } else {
+          const byToken = await supabase
+            .from('professionals')
+            .select('id, name, email, phone, company, verification_token, current_tier')
+            .eq('verification_token', token)
+            .maybeSingle();
+          data = byToken.data;
+          fetchError = byToken.error;
+        }
+      } else {
+        const res = await supabase
+          .from('professionals')
+          .select('id, name, email, phone, company, verification_token, current_tier')
+          .eq('verification_token', token)
+          .single();
+        data = res.data;
+        fetchError = res.error;
+      }
 
       if (fetchError || !data) {
         setError('Invalid or expired link');
         setLoading(false);
+        return;
+      }
+
+      const tier = (data.current_tier || '').toLowerCase();
+      if (['certified', 'audited', 'underwritten'].includes(tier)) {
+        const dashToken = data.verification_token || data.id;
+        navigate(`/dashboard/${dashToken}`, { replace: true });
         return;
       }
 
