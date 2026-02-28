@@ -217,7 +217,7 @@
     },
     "supportedCrawlers": [
       "Googlebot", "Bingbot", "GPTBot", "ChatGPT-User", "ClaudeBot",
-      "Anthropic-AI", "PerplexityBot", "Applebot", "AhrefsBot", "SemrushBot"
+      "Anthropic-AI", "PerplexityBot", "Gemini-AI", "Grok", "Applebot", "AhrefsBot", "SemrushBot"
     ]
   }
 }

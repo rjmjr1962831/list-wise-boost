@@ -326,6 +326,8 @@ All major AI crawlers are explicitly allowed in robots.txt:
 - GPTBot (OpenAI/ChatGPT)
 - ClaudeBot (Anthropic)
 - PerplexityBot
+- Gemini-AI (Google)
+- Grok (xAI)
 - Google-Extended
 - Anthropic-AI
 - Cohere-AI

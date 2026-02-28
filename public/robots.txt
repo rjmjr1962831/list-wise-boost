@@ -51,6 +51,14 @@ Allow: /
 User-agent: PerplexityBot
 Allow: /
 
+# Google Gemini
+User-agent: Gemini-AI
+Allow: /
+
+# xAI Grok
+User-agent: Grok
+Allow: /
+
 # Apple
 User-agent: Applebot
 Allow: /
@@ -113,4 +121,5 @@ Sitemap: https://www.top10lists.us/sitemap-agents.xml
 # - https://www.top10lists.us/artifact/{token} (agent artifacts, text/markdown)
 #
 # All pages serve pre-rendered HTML to bot user-agents.
+# Allowed AI crawlers: GPTBot, ClaudeBot, PerplexityBot, Gemini-AI, Grok, Google-Extended, Applebot, others (see above).
 # Verify with: curl -A "GPTBot" https://www.top10lists.us/...
