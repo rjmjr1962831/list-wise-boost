@@ -127,7 +127,7 @@ const CRM = () => {
           <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">CRM</p>
         </div>
 
-        <nav className="flex-1 px-3 py-4 space-y-1">
+        <nav className="flex-1 overflow-y-auto min-h-0 px-3 py-4 space-y-1">
           {navItems.map(item => (
             <button
               key={item.id}
