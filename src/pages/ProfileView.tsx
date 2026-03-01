@@ -115,8 +115,6 @@ export default function ProfileView() {
     );
   }
 
-  const bio = professional.synthesized_bio || professional.description;
-
   return (
     <>
       <SafeHead>
@@ -231,18 +229,6 @@ export default function ProfileView() {
               </div>
             </CardContent>
           </Card>
-
-          {/* Bio Card */}
-          {bio && (
-            <Card>
-              <CardHeader>
-                <CardTitle>About</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground whitespace-pre-line leading-relaxed">{bio}</p>
-              </CardContent>
-            </Card>
-          )}
 
           {/* Specialties */}
           {(() => {
