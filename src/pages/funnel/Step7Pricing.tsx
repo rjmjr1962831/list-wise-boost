@@ -320,6 +320,11 @@ export default function Step7Pricing() {
                         isMostPopular ? 'pt-6' : ''
                       } ${isCurrent ? 'border-primary ring-2 ring-primary/20' : 'border-border'}`}
                     >
+                      <img
+                        src={`/badges/${tier}.png`}
+                        alt={`Top10Lists ${meta.name} badge`}
+                        className="absolute top-3 right-3 h-12 w-auto object-contain"
+                      />
                       {isMostPopular && (
                         <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                           <span className="bg-primary text-primary-foreground text-xs font-semibold px-3 py-1 rounded-full">
