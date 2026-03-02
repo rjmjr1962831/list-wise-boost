@@ -16,8 +16,8 @@ serve(async (req) => {
       .from('professionals')
       .select('id, name, zillow_profile_url')
       .gte('review_stars_rating', 4.0)
-      .lt('review_stars_rating', 4.8)
-      .gte('num_total_reviews', 20)
+      .lt('review_stars_rating', 4.5)
+      .gte('num_total_reviews', 10)
       .is('zillow_data_fetched_at', null)
       .limit(5) // Process 5 concurrently
 

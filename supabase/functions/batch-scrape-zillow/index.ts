@@ -14,8 +14,8 @@ interface BatchRequest {
 }
 
 // Prequalification minimums per custom knowledge
-const MIN_RATING = 4.8;
-const MIN_REVIEWS = 20;
+const MIN_RATING = 4.5;
+const MIN_REVIEWS = 10;
 
 // Helper to parse "$207K" or "$2M" or "$200,000" to integer
 function parsePrice(priceStr: string): number {

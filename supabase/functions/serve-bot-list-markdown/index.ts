@@ -152,8 +152,8 @@ serve(async (req) => {
       .eq("city_id", city.id)
       .eq("category_id", category.id)
       .eq("active", true)
-      .gte("review_stars_rating", 4.8)
-      .gte("num_total_reviews", 20)
+      .gte("review_stars_rating", 4.5)
+      .gte("num_total_reviews", 10)
       .order("is_brand_builder", { ascending: false })
       .order("rank", { ascending: true })
       .limit(30);
@@ -189,7 +189,7 @@ serve(async (req) => {
 
   let markdown = `# ${title}\n\n`;
   markdown += `${description}\n\n`;
-  markdown += `Merit-based selection. Agents cannot pay for placement. 4.8+ rating, 20+ verified reviews.\n\n`;
+  markdown += `Merit-based selection. Agents cannot pay for placement. 4.5+ rating, 10+ recent reviews, 5 years in business.\n\n`;
   markdown += `- **Page:** ${pageUrl}\n`;
   markdown += `- **Methodology:** ${BASE}/about/ranking-methodology\n\n`;
   markdown += `## Certified Agents\n\n`;

@@ -7,8 +7,8 @@ const corsHeaders = {
 };
 
 // Minimum qualification thresholds
-const MIN_RATING = 4.8;
-const MIN_REVIEWS = 20;
+const MIN_RATING = 4.5;
+const MIN_REVIEWS = 10;
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {

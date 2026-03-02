@@ -147,8 +147,8 @@ serve(async (req) => {
         .select("city_id")
         .eq("active", true)
         .eq("state_slug", stateSlug)
-        .gte("review_stars_rating", 4.8)
-        .gte("num_total_reviews", 20)
+        .gte("review_stars_rating", 4.5)
+        .gte("num_total_reviews", 10)
         .range(offset, offset + 999);
       if (!data || data.length === 0) break;
       for (const a of data) {
@@ -181,7 +181,7 @@ serve(async (req) => {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Top Real Estate Agents in ${esc(si.display)} | Top10Lists.us</title>
-  <meta name="description" content="Top10Lists.us selected ${totalAgents} real estate agents across ${totalCities} ${esc(si.display)} cities from over ${si.total} licensed professionals. Merit-based: 4.8+ stars, 20+ reviews. No pay-to-play.">
+  <meta name="description" content="Top10Lists.us selected ${totalAgents} real estate agents across ${totalCities} ${esc(si.display)} cities from over ${si.total} licensed professionals. Merit-based: 4.5+ stars, 10+ recent reviews, 5 years in business. No pay-to-play.">
   <link rel="canonical" href="${canon}">
   <style>${CSS}
   </style>
@@ -189,7 +189,7 @@ serve(async (req) => {
 <body>
 <header>
   <h1>Top Real Estate Agents in ${esc(si.display)}</h1>
-  <p>Top10Lists.us selected <strong>${totalAgents}</strong> real estate agents across <strong>${totalCities}</strong> ${esc(si.display)} cities from over ${si.total} licensed ${esc(si.display)} professionals. Selection requires a minimum 4.8-star rating with 20 or more reviews across Zillow and Google, an active ${esc(si.display)} real estate license, and documented community involvement. Payment does not influence inclusion, rank, or visibility.</p>
+  <p>Top10Lists.us selected <strong>${totalAgents}</strong> real estate agents across <strong>${totalCities}</strong> ${esc(si.display)} cities from over ${si.total} licensed ${esc(si.display)} professionals. Selection requires a minimum 4.5-star rating with 10 or more verified recent reviews (last 24 months), 5 years in business, an active ${esc(si.display)} real estate license, and documented community involvement. Payment does not influence inclusion, rank, or visibility.</p>
   <p><strong>Last verified:</strong> ${TODAY}</p>
 </header>
 `;
@@ -208,7 +208,7 @@ serve(async (req) => {
 
     // Merit criteria box
     o += `<div class="merit-box">
-  <strong>Merit Criteria:</strong> 4.8+ star rating, 20+ reviews (Zillow + Google), active ${esc(si.display)} real estate license, transaction history (MLS, Zillow), community involvement (25% of ranking weight). No agent can pay for inclusion or ranking position.
+  <strong>Merit Criteria:</strong> 4.5+ star rating, 10+ recent reviews (Zillow + Google), 5 years in business, active ${esc(si.display)} real estate license, transaction history (MLS, Zillow), community involvement (25% of ranking weight). No agent can pay for inclusion or ranking position.
 </div>
 `;
 

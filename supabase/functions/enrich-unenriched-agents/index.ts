@@ -33,8 +33,8 @@ serve(async (req) => {
       `)
       .eq("cities.state", state)
       .eq("active", true)
-      .gte("review_stars_rating", 4.8)
-      .gte("num_total_reviews", 20)
+      .gte("review_stars_rating", 4.5)
+      .gte("num_total_reviews", 10)
       .is("synthesized_bio", null)
       .not("zillow_profile_url", "is", null)
       .order("num_total_reviews", { ascending: false })
@@ -200,8 +200,8 @@ serve(async (req) => {
       .from("professionals")
       .select("id", { count: "exact", head: true })
       .eq("active", true)
-      .gte("review_stars_rating", 4.8)
-      .gte("num_total_reviews", 20)
+      .gte("review_stars_rating", 4.5)
+      .gte("num_total_reviews", 10)
       .is("synthesized_bio", null)
       .not("zillow_profile_url", "is", null);
 

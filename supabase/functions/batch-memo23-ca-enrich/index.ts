@@ -143,9 +143,9 @@ async function enrichAgent(
 
     console.log(`   ${agent.name}: ${rating}⭐ (${reviewCount} reviews)`);
 
-    // Prequalification check: 4.8+ rating AND 20+ reviews
+    // Prequalification check: 4.5+ rating AND 10+ recent reviews
     // Store data but only create professional record if qualified
-    if (rating < 4.8 || reviewCount < 20) {
+    if (rating < 4.5 || reviewCount < 10) {
       await supabase.from('state_licenses').update({
         zillow_scraped_at: new Date().toISOString(),
         memo23_status: 'not_qualified',

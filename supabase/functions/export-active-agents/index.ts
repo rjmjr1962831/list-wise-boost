@@ -47,7 +47,7 @@ serve(async (req) => {
         .eq('active', true);
 
       if (filter !== 'active') {
-        query = query.gte('review_stars_rating', 4.8).gte('num_total_reviews', 20);
+        query = query.gte('review_stars_rating', 4.5).gte('num_total_reviews', 10);
       }
 
       if (filter === 'pipedrive_ready') {

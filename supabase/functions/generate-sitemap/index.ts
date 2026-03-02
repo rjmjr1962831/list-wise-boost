@@ -13,9 +13,9 @@ const stateSlugMap: Record<string, string> = {
   'California': 'california',
 };
 
-// North Star: 4.8+ threshold (CORE_RULES / governance.mdc)
-const MIN_RATING = 4.8;
-const MIN_REVIEWS = 20;
+// North Star: 4.5+ threshold (CORE_RULES / governance.mdc)
+const MIN_RATING = 4.5;
+const MIN_REVIEWS = 10;
 
 function getTodayDate(): string {
   return new Date().toISOString().split('T')[0];
@@ -86,7 +86,7 @@ Deno.serve(async (req) => {
 
     console.log(`[generate-sitemap] Request type: ${type}`);
 
-    // Rule A (4.8+ Filter): Only include regions with at least one qualified agent
+    // Rule A (4.5+ Filter): Only include regions with at least one qualified agent
     const { data: qualifiedCityIds } = await supabase
       .from('professionals')
       .select('city_id')
@@ -96,7 +96,7 @@ Deno.serve(async (req) => {
       .not('city_id', 'is', null);
 
     const qualifiedCityIdSet = new Set((qualifiedCityIds || []).map((r: { city_id: string }) => r.city_id));
-    console.log(`[generate-sitemap] Cities with 4.8+ agents: ${qualifiedCityIdSet.size}`);
+    console.log(`[generate-sitemap] Cities with 4.5+ agents: ${qualifiedCityIdSet.size}`);
 
     // Fetch cities with minimal fields, then filter to only those with qualified agents
     const allCities = await fetchAllPaginated(
@@ -111,13 +111,13 @@ Deno.serve(async (req) => {
     );
     const cities = allCities.filter((c: { id: string }) => qualifiedCityIdSet.has(c.id));
 
-    // Rule A (neighborhoods): only include neighborhoods with at least one 4.8+ qualified agent
+    // Rule A (neighborhoods): only include neighborhoods with at least one 4.5+ qualified agent
     const { data: qualifiedNeighborhoodRows, error: rpcError } = await supabase.rpc('get_neighborhood_ids_with_qualified_agents', {});
     const qualifiedNeighborhoodIdSet = new Set((qualifiedNeighborhoodRows || []).map((r: { id: string }) => r.id));
     if (rpcError) {
       console.warn('[generate-sitemap] get_neighborhood_ids_with_qualified_agents RPC failed, including all neighborhoods:', rpcError.message);
     } else {
-      console.log(`[generate-sitemap] Neighborhoods with 4.8+ agents: ${qualifiedNeighborhoodIdSet.size}`);
+      console.log(`[generate-sitemap] Neighborhoods with 4.5+ agents: ${qualifiedNeighborhoodIdSet.size}`);
     }
 
     const allNeighborhoods = await fetchAllPaginated(
@@ -135,7 +135,7 @@ Deno.serve(async (req) => {
       ? allNeighborhoods.filter((n: { id: string }) => qualifiedNeighborhoodIdSet.has(n.id))
       : allNeighborhoods;
 
-    console.log(`[generate-sitemap] Found ${cities.length} cities (4.8+ filtered) and ${neighborhoods.length} neighborhoods`);
+    console.log(`[generate-sitemap] Found ${cities.length} cities (4.5+ filtered) and ${neighborhoods.length} neighborhoods`);
 
     // Count by state
     const azCities = cities.filter(c => c.state_slug === 'arizona');
@@ -270,7 +270,7 @@ Deno.serve(async (req) => {
       xml += `  <url>\n    <loc>${a.loc}</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>${a.changefreq}</changefreq>\n    <priority>${a.priority}</priority>\n  </url>\n`;
     }
 
-    // Add city pages (only those with 4.8+ qualified agents; priority 0.8)
+    // Add city pages (only those with 4.5+ qualified agents; priority 0.8)
     for (const city of cities) {
       if (!city.slug || city.slug.trim() === '') continue;
       xml += `  <url>\n    <loc>${baseUrl}/${city.state_slug}/${city.slug}/top10realestateagents</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.8</priority>\n  </url>\n`;

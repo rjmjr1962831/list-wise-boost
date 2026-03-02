@@ -20,8 +20,8 @@ Deno.serve(async (req) => {
     const zip = params.get('zip')
     const neighborhood = params.get('neighborhood')
     const specialty = params.get('specialty')
-    const minRating = parseFloat(params.get('min_rating') || '4.8')
-    const minReviews = parseInt(params.get('min_reviews') || '20')
+    const minRating = parseFloat(params.get('min_rating') || '4.5')
+    const minReviews = parseInt(params.get('min_reviews') || '10')
     const hasCertification = params.get('has_certification') === 'true'
     const limit = Math.min(parseInt(params.get('limit') || '10'), 50)
     const offset = parseInt(params.get('offset') || '0')

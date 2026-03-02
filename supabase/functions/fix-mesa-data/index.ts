@@ -104,7 +104,7 @@ serve(async (req) => {
       .select('id, name')
       .eq('city_id', city.id)
       .eq('active', true)
-      .gte('review_stars_rating', 4.8)
+      .gte('review_stars_rating', 4.5)
       .gte('num_total_reviews', 50)
       .not('professional_information', 'is', null)
       .order('rank')

@@ -135,8 +135,8 @@ serve(async (req) => {
         .from("professionals")
         .select("id", { count: "exact", head: true })
         .eq("active", true)
-        .gte("review_stars_rating", 4.8)
-        .gte("num_total_reviews", 20)
+        .gte("review_stars_rating", 4.5)
+        .gte("num_total_reviews", 10)
         .is("synthesized_bio", null);
 
       if (countError) {
@@ -149,8 +149,8 @@ serve(async (req) => {
         .from("professionals")
         .select("id, name")
         .eq("active", true)
-        .gte("review_stars_rating", 4.8)
-        .gte("num_total_reviews", 20)
+        .gte("review_stars_rating", 4.5)
+        .gte("num_total_reviews", 10)
         .is("synthesized_bio", null)
         .order("updated_at", { ascending: false })
         .range(offsetSafe, offsetSafe + limitSafe - 1);

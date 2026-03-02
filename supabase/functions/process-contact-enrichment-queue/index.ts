@@ -408,7 +408,7 @@ serve(async (req) => {
       skipRecentlyEnriched = true,
       skipGenericBios = true,
       skipIfNoPress = false,
-      minReviews = 20,
+      minReviews = 10,
       minExperience = null
     } = await req.json().catch(() => ({
       batchSize: 100, 
@@ -417,7 +417,7 @@ serve(async (req) => {
       skipRecentlyEnriched: true,
       skipGenericBios: true,
       skipIfNoPress: false,
-      minReviews: 20,
+      minReviews: 10,
       minExperience: null
     }));
     
