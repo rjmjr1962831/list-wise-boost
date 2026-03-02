@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { LogOut, Briefcase, CreditCard, LayoutDashboard, MailCheck, BarChart3, Smartphone, TestTube2, Download } from "lucide-react";
+import { LogOut, Briefcase, CreditCard, LayoutDashboard, MailCheck, BarChart3, Smartphone, TestTube2, Presentation } from "lucide-react";
 import { toast } from "sonner";
 
 const AdminDashboard = () => {
@@ -79,6 +79,12 @@ const AdminDashboard = () => {
             <p className="text-muted-foreground mt-2">Manage cities, categories, and professionals</p>
           </div>
           <div className="flex gap-2">
+            {import.meta.env.VITE_IS_PRODUCTION !== "1" && (
+              <Button onClick={() => navigate("/admin/demo")} variant="outline">
+                <Presentation className="mr-2 h-4 w-4" />
+                Demo
+              </Button>
+            )}
             <Button onClick={() => navigate("/crm")} variant="outline">
               <Briefcase className="mr-2 h-4 w-4" />
               CRM
@@ -172,16 +178,6 @@ const AdminDashboard = () => {
             >
               <Smartphone className="mr-2 h-4 w-4" />
               Mobile Preview
-            </Button>
-            <Button
-              asChild
-              variant="outline"
-              className="h-auto py-3 border-slate-500 text-slate-600 hover:bg-slate-50"
-            >
-              <a href="/admin/active-confirmed-agents.csv" download="active-confirmed-agents.csv" target="_blank" rel="noopener noreferrer">
-                <Download className="mr-2 h-4 w-4" />
-                Active Confirmed Agents CSV
-              </a>
             </Button>
           </div>
         </div>
