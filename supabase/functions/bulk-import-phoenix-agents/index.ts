@@ -53,7 +53,7 @@ serve(async (req) => {
         .select('id', { count: 'exact', head: true })
         .eq('city_id', city.id)
         .eq('active', true)
-        .gte('review_stars_rating', 4.8)
+        .gte('review_stars_rating', 4.5)
         .gte('num_total_reviews', 50);
       
       if ((count || 0) < 10) {

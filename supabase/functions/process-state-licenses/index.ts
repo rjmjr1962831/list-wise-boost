@@ -541,8 +541,8 @@ async function processAgent(
 
     console.log(`[${name}] Found: rating=${exaRating ?? 'NA'}, reviews=${exaReviewCount ?? 'NA'}`);
 
-    // 3. Check qualification from Exa data: 4.8+ stars and 20+ reviews
-    const isQualified = (exaRating ?? 0) >= 4.8 && (exaReviewCount ?? 0) >= 20;
+    // 3. Check qualification from Exa data: 4.5+ stars and 10+ recent reviews
+    const isQualified = (exaRating ?? 0) >= 4.5 && (exaReviewCount ?? 0) >= 10;
     
     // 4. Check duplicate by Zillow URL (in-memory with normalization)
     const normalizedUrl = normalizeZillowUrl(zillowUrl);

@@ -25,8 +25,8 @@ serve(async (req) => {
       .from('professionals')
       .select('*')
       .eq('active', true)
-      .gte('review_stars_rating', 4.8)
-      .gte('num_total_reviews', 20)
+      .gte('review_stars_rating', 4.5)
+      .gte('num_total_reviews', 10)
       .is('verification_token', null) // Only get agents missing tokens
       .limit(5000);
 

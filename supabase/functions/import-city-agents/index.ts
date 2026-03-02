@@ -7,8 +7,8 @@ const corsHeaders = {
 };
 
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
-const MIN_REVIEWS = 20; // Require 20+ reviews
-const MIN_RATING = 4.8; // Require 4.8+ rating
+const MIN_REVIEWS = 10; // Require 10+ recent reviews
+const MIN_RATING = 4.5; // Require 4.5+ rating
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {

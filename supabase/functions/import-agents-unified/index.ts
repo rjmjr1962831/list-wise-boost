@@ -831,8 +831,8 @@ Deno.serve(async (req) => {
       state,
       startIndex = 0, // For queue-based state import
       maxAgents = 50,
-      minRating = 4.8,
-      minReviews = 20,
+      minRating = 4.5,
+      minReviews = 10,
       triggerEnrichment = true,
       dryRun = false,
       async: runAsync = true

@@ -31,7 +31,7 @@ serve(async (req) => {
       .from('professionals')
       .select('id', { count: 'exact', head: true })
       .eq('active', true)
-      .gte('review_stars_rating', 4.8)
+      .gte('review_stars_rating', 4.5)
       .gte('num_total_reviews', 50);
 
     if (cityId) {
@@ -68,7 +68,7 @@ serve(async (req) => {
         cities!inner(name, state)
       `)
       .eq('active', true)
-      .gte('review_stars_rating', 4.8)
+      .gte('review_stars_rating', 4.5)
       .gte('num_total_reviews', 50)
       .order('name')
       .range(offset, offset + batchSize - 1);

@@ -184,7 +184,7 @@ serve(async (req) => {
         zillow_url: exaResult?.zillowUrl || null,
         rating: exaResult?.rating || null,
         review_count: exaResult?.reviewCount || null,
-        qualified: (exaResult?.rating || 0) >= 4.8 && (exaResult?.reviewCount || 0) >= 20,
+        qualified: (exaResult?.rating || 0) >= 4.5 && (exaResult?.reviewCount || 0) >= 10,
         sample_text: exaResult?.resultText || null,
       });
 
@@ -200,7 +200,7 @@ serve(async (req) => {
     console.log(`\n=== SUMMARY ===`);
     console.log(`Tested: ${results.length}`);
     console.log(`Found Zillow profiles: ${found}`);
-    console.log(`Qualified (4.8+/20+): ${qualified}`);
+    console.log(`Qualified (4.5+/10+): ${qualified}`);
     console.log(`Avg response time: ${avgTime}ms`);
 
     return new Response(JSON.stringify({

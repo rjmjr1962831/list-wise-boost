@@ -125,10 +125,10 @@ serve(async (req) => {
         }
 
         // Skip if not active or doesn't meet qualifications (per project knowledge Sync Criteria)
-        // Required: active=true, 4.8+ rating, 20+ reviews, email not null/empty
+        // Required: active=true, 4.5+ rating, 10+ recent reviews, email not null/empty
         if (!professional.active || 
-            professional.review_stars_rating < 4.8 || 
-            professional.num_total_reviews < 20 ||
+            professional.review_stars_rating < 4.5 || 
+            professional.num_total_reviews < 10 ||
             !professional.email || professional.email.trim() === '') {
           results.skipped++;
           continue;

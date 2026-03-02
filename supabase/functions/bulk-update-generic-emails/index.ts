@@ -41,10 +41,10 @@ serve(async (req) => {
       throw new Error(`Failed to fetch agents: ${fetchError.message}`);
     }
 
-    // Filter for agents needing enrichment (generic email OR missing phone) AND rating >= 4.8
+    // Filter for agents needing enrichment (generic email OR missing phone) AND rating >= 4.5
     let agentsNeedingEnrichment = agents?.filter(agent => {
       const hasIssue = isGenericEmail(agent.email) || !agent.phone || agent.phone.trim() === '';
-      const goodRating = agent.review_stars_rating >= 4.8;
+      const goodRating = agent.review_stars_rating >= 4.5;
       return hasIssue && goodRating;
     }) || [];
 

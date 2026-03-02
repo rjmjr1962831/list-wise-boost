@@ -497,8 +497,8 @@ serve(async (req) => {
 
       console.log(`enrichment-api - Successfully updated professional ${professional_id}`);
 
-      // Check if agent is qualified (4.8+ rating AND 20+ reviews) and needs synthesis
-      const isQualified = data.review_stars_rating >= 4.8 && data.num_total_reviews >= 20;
+      // Check if agent is qualified (4.5+ rating AND 10+ recent reviews) and needs synthesis
+      const isQualified = data.review_stars_rating >= 4.5 && data.num_total_reviews >= 10;
       let synthesisTriggerResult = null;
       
       if (isQualified && !data.synthesized_bio) {
@@ -639,14 +639,14 @@ serve(async (req) => {
       console.log(`enrichment-api - Successfully updated license ${license_id}: rating=${zillow_rating}, reviews=${zillow_reviews}`);
 
       // Check if qualified for promotion
-      const isQualified = (zillow_rating >= 4.8) && (zillow_reviews >= 20);
+      const isQualified = (zillow_rating >= 4.5) && (zillow_reviews >= 10);
       
       return new Response(
         JSON.stringify({ 
           success: true, 
           updated: data,
           qualified: isQualified,
-          message: isQualified ? 'Qualified! Call promote_to_professional to create agent.' : 'Not qualified (needs 4.8+ rating AND 20+ reviews)'
+          message: isQualified ? 'Qualified! Call promote_to_professional to create agent.' : 'Not qualified (needs 4.5+ rating AND 10+ recent reviews)'
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
@@ -682,14 +682,14 @@ serve(async (req) => {
       }
 
       // Check qualification
-      if ((license.zillow_rating || 0) < 4.8 || (license.zillow_reviews || 0) < 20) {
+      if ((license.zillow_rating || 0) < 4.5 || (license.zillow_reviews || 0) < 10) {
         console.log(`enrichment-api - License ${license_id} not qualified: rating=${license.zillow_rating}, reviews=${license.zillow_reviews}`);
         return new Response(
           JSON.stringify({ 
             error: 'Not qualified',
             zillow_rating: license.zillow_rating,
             zillow_reviews: license.zillow_reviews,
-            required: '4.8+ rating AND 20+ reviews'
+            required: '4.5+ rating AND 10+ recent reviews'
           }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );

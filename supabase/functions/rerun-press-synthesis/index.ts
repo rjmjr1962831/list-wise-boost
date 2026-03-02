@@ -133,8 +133,8 @@ async function processAllAgents(
       .from('professionals')
       .select('id, name, company, business_name, city_id, synthesized_bio, profile_last_synthesized_at')
       .eq('active', true)
-      .gte('review_stars_rating', 4.8)
-      .gte('num_total_reviews', 20);
+      .gte('review_stars_rating', 4.5)
+      .gte('num_total_reviews', 10);
     
     // Apply state filter if provided
     if (stateFilter && cityIds.length > 0) {

@@ -24,7 +24,7 @@ serve(async (req) => {
     );
 
     // Get all qualified agents with their city info
-    // Qualification: active, 4.8+ rating, 20+ reviews
+    // Qualification: active, 4.5+ rating, 10+ recent reviews
     const { data: professionals, error: fetchError } = await supabase
       .from('professionals')
       .select(`
@@ -33,8 +33,8 @@ serve(async (req) => {
         cities!inner(slug, name)
       `)
       .eq('active', true)
-      .gte('review_stars_rating', 4.8)
-      .gte('num_total_reviews', 20);
+      .gte('review_stars_rating', 4.5)
+      .gte('num_total_reviews', 10);
 
     if (fetchError) {
       throw new Error(`Failed to fetch professionals: ${fetchError.message}`);

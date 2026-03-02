@@ -272,7 +272,7 @@ serve(async (req) => {
     const limit = body.limit || 50;
     const cityName = body.city;
 
-    // Get qualified professionals: active, has email, 4.8+ rating, 20+ reviews
+    // Get qualified professionals: active, has email, 4.5+ rating, 10+ recent reviews
     let query = supabase
       .from("professionals")
       .select(`
@@ -282,8 +282,8 @@ serve(async (req) => {
       `)
       .eq("active", true)
       .not("email", "is", null)
-      .gte("review_stars_rating", 4.8)
-      .gte("num_total_reviews", 20)
+      .gte("review_stars_rating", 4.5)
+      .gte("num_total_reviews", 10)
       .limit(limit);
 
     if (cityName) {

@@ -63,8 +63,8 @@ serve(async (req) => {
         .select('id, name, email')
         .in('city_id', cityChunk)
         .eq('active', true)
-        .gte('review_stars_rating', 4.8)
-        .gte('num_total_reviews', 20)
+        .gte('review_stars_rating', 4.5)
+        .gte('num_total_reviews', 10)
         .not('email', 'is', null);
 
       if (profError) {
