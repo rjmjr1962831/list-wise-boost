@@ -3,6 +3,9 @@
 .env.local
 .env.*.local
 
+# Vault/run-once SQL with service role key - NEVER commit
+run-once-vault-service-role-key.sql
+
 # Logs
 logs
 *.log
