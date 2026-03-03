@@ -59,7 +59,7 @@ export function AgentLookupModal({ agent, open, onOpenChange }: AgentLookupModal
                     License Verified
                   </Badge>
                 )}
-                {agent.review_stars_rating && agent.review_stars_rating >= 4.8 && (
+                {agent.review_stars_rating && agent.review_stars_rating >= 4.5 && (
                   <Badge variant="outline" className="text-xs">
                     <Star className="h-3 w-3 mr-1 fill-amber-400 text-amber-400" />
                     {agent.review_stars_rating.toFixed(1)}

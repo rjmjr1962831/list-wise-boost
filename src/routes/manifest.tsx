@@ -118,6 +118,10 @@ const CleanRoom = lazy(() => import("@/pages/CleanRoom"));
 const NeighborhoodApply = lazy(() => import("@/pages/NeighborhoodApply"));
 
 const AdminDashboard = lazy(() => import("@/pages/AdminDashboard"));
+/** Demo walkthrough: staging-only internal document; never on www. */
+const AdminDemo = import.meta.env.VITE_IS_PRODUCTION !== "1"
+  ? lazy(() => import("@/pages/admin/AdminDemo"))
+  : null;
 const AdminLogin = lazy(() => import("@/pages/AdminLogin"));
 const AdminExportAgents = lazy(() => import("@/pages/AdminExportAgents"));
 const BotAnalyticsDashboard = lazy(() => import("@/pages/BotAnalyticsDashboard"));
@@ -152,6 +156,7 @@ export const routeManifest: RouteObject[] = [
   { path: "/main", element: React.createElement(Navigate, { to: "/", replace: true }) },
   { path: "/admin/login", element: wrapAdmin(React.createElement(AdminLogin, null)) },
   { path: "/admin", element: wrapAdmin(React.createElement(AdminDashboard, null)) },
+  ...(AdminDemo ? [{ path: "/admin/demo", element: wrapAdmin(React.createElement(AdminDemo, null)) }] : []),
   { path: "/admin/crm/login", element: wrapAdmin(React.createElement(CRMLogin, null)) },
   {
     path: "/admin/crm",

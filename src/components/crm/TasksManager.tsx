@@ -204,8 +204,8 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
         dueAt.setHours(9, 0, 0, 0);
         await supabase.from("crm_tasks").delete().eq("professional_id", task.professional_id).eq("task_type", "follow_up");
         const followUpDesc = notesTrimmed
-          ? `Notes: ${notesTrimmed}\n\nDue in ${n} day(s). Original: ${task.title}`
-          : `Due in ${n} day(s). Original: ${task.title}`;
+          ? `Notes: ${notesTrimmed}\n\nScheduled. Original: ${task.title}`
+          : `Scheduled. Original: ${task.title}`;
         const { error: insertErr } = await supabase.from("crm_tasks").insert({
           professional_id: task.professional_id,
           task_type: "follow_up",

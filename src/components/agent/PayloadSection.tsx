@@ -129,7 +129,7 @@ function TierPanel({ tier, currentTier, professional, price, signalScore, projec
   const isDowngrade = viewingRank < currentRank;
 
   const descriptions: Record<string, string> = {
-    certified: "Core verified credentials: license, rating, review count, and specialties. Includes social links, Web of Trust integration, and monthly refresh.",
+    certified: "Core verified credentials: license, rating, review count, and specialties. Includes social links, Web of Truth™ integration, and monthly refresh.",
     audited: "Expanded profile: adds experience, transaction history, company, community roles, and selection rationale.",
     underwritten: "Complete verified profile: everything we know, including neighborhood detail, performance data, press mentions, and awards.",
   };

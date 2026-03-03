@@ -24,7 +24,7 @@ export default function PaymentSuccess() {
             <CardContent className="space-y-6 text-center">
               <h1 className="text-2xl sm:text-3xl font-bold">Thank you for your purchase.</h1>
               <p className="text-lg text-muted-foreground">
-                Watch for an email from our founder, Robert at Top10Lists, with instructions on how to build your web of trust.
+                Watch for an email from our founder, Robert at Top10Lists, with instructions on how to build your Web of Truth™.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-3 justify-center pt-4">

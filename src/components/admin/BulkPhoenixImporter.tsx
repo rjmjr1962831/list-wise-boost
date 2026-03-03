@@ -52,7 +52,7 @@ export function BulkPhoenixImporter() {
           .select('id', { count: 'exact', head: true })
           .eq('city_id', city.id)
           .eq('active', true)
-          .gte('review_stars_rating', 4.8)
+          .gte('review_stars_rating', 4.5)
           .gte('num_total_reviews', 50);
 
         cityStats.push({ name: city.name, qualified_count: count || 0 });
@@ -109,7 +109,7 @@ export function BulkPhoenixImporter() {
       
       if (error) throw error;
       
-      toast.success(`Import started for ${data.totalCitiesNeedingAgents} cities (4.8★ + 20 reviews)`);
+      toast.success(`Import started for ${data.totalCitiesNeedingAgents} cities (4.5★ + 10 reviews)`);
       
       // Start polling for the new session
       setTimeout(fetchActiveSession, 2000);
@@ -136,7 +136,7 @@ export function BulkPhoenixImporter() {
           </Button>
         </CardTitle>
         <CardDescription>
-          Import agents (4.8★ + 20+ reviews) for Arizona cities with fewer than 10 qualified agents.
+          Import agents (4.5★ + 10+ reviews in last 18 months) for Arizona cities with fewer than 10 qualified agents.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">

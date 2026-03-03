@@ -230,7 +230,7 @@ export function ProfileSection({
                   <p className="text-sm py-2 px-3 bg-muted/50 rounded-md min-h-[38px]">
                     {professional[field.key] || (
                       <span className="text-muted-foreground italic">
-                        {field.key.startsWith("social_") ? "Very Important in Your Web of Trust" : "Not set"}
+                        {field.key.startsWith("social_") ? "Very Important in Your Web of Truth™" : "Not set"}
                       </span>
                     )}
                   </p>

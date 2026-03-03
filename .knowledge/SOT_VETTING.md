@@ -46,8 +46,8 @@ globs: ["scrapers/**/*", "data/**/*", "docs/daily-logs/**/*"]
 **Before Publishing:**
 - ✅ License number verified against state database
 - ✅ Experience years calculated from license issue date
-- ✅ Review count minimum: 20+ verified reviews
-- ✅ Rating minimum: 4.8+ weighted average
+- ✅ Review count minimum: 10+ verified reviews in the last 18 months
+- ✅ Rating minimum: 4.5+ weighted average
 - ✅ Transaction history: 3+ documented transactions (for neighborhood experts)
 
 **Scraper Rules:**
@@ -123,8 +123,8 @@ Artifact: https://www.top10lists.us/api/v1/badge/abc-123
 **Source:** `supabase/functions/generate-sitemap/index.ts`  
 **Purpose:** Sitemap as a map of **Authority** for >92% EE-A-T; no "Empty Merit Gaps."
 
-### Rule A: 4.8+ Filter
-- **Cities:** Only include city pages that have **at least one agent** with 4.8+ stars and 20+ reviews (from `professionals`). Cities with no qualified agents are excluded.
+### Rule A: Qualification Filter
+- **Cities:** Only include city pages that have **at least one agent** with 4.5+ stars and 10+ reviews in the last 18 months (from `professionals`). Cities with no qualified agents are excluded.
 - **Neighborhoods:** Only include neighborhood pages that have at least one such agent with verified activity in that neighborhood’s ZIPs (via `get_neighborhood_ids_with_qualified_agents()`).
 - Pages with no qualified agents should be 404/noindex and **must not** appear in the sitemap.
 

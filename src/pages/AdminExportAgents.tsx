@@ -79,8 +79,8 @@ const AdminExportAgents = () => {
               Export Agents
             </CardTitle>
             <CardDescription>
-              Export agents from the professionals table. Choose whether to export all active agents or only qualified agents (4.8+
-              rating & 20+ reviews).
+              Export agents from the professionals table. Choose whether to export all active agents or only qualified agents (4.5+
+              rating & 10+ reviews in last 18 months).
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -96,7 +96,7 @@ const AdminExportAgents = () => {
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="qualified" id="filter-qualified" />
                   <Label htmlFor="filter-qualified" className="font-normal cursor-pointer">
-                    Qualified (4.8+ rating, 20+ reviews)
+                    Qualified (4.5+ rating, 10+ reviews in last 18 months)
                   </Label>
                 </div>
               </RadioGroup>

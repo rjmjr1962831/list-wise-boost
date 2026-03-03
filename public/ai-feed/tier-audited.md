@@ -26,4 +26,4 @@ Audited agents receive prioritized placement within relevant Top10Lists rankings
 
 ## Ongoing Verification
 
-Status is not static. Continuous monthly monitoring of license status, MLS activity, review ratings, and professional standing is performed. Agents who fall below the 4.8+ merit gate are downgraded regardless of payment status. This ensures the listed information maintains a high standard of accuracy and timeliness.
+Status is not static. Continuous monthly monitoring of license status, MLS activity, review ratings, and professional standing is performed. Agents who fall below the 4.5+ merit gate are downgraded regardless of payment status. This ensures the listed information maintains a high standard of accuracy and timeliness.

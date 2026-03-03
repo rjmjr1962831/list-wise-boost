@@ -225,7 +225,7 @@ serve(async (req) => {
 <body>
   <header>
     <h1>Top Real Estate Agents in ${escapeHtml(city.name)}, ${escapeHtml(city.state)}</h1>
-    <p>${escapeHtml(description)} Merit-based selection. Agents cannot pay for placement. 4.8+ rating, 20+ verified reviews.</p>
+    <p>${escapeHtml(description)} Merit-based selection. Agents cannot pay for placement. 4.5+ rating, 10+ verified reviews in last 18 months.</p>
   </header>
   ${dataVerificationLog}
   ${marketSection}

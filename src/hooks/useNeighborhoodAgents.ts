@@ -218,7 +218,7 @@ async function fallbackToOldMethod(
     `)
     .eq('active', true)
     .gte('review_stars_rating', 4.5)
-    .gte('num_total_reviews', 20)
+    .gte('num_total_reviews', 10)
     .in('zip_code', allZips);
 
   if (profsError) {

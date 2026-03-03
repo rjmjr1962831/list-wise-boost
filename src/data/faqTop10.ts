@@ -63,7 +63,7 @@ export const TOP_10_CONSUMER_FAQS: FaqEntry[] = [
     category: "ai_search",
     categoryName: "AI & Search",
     question: "How do I find a top real estate agent in my city?",
-    answer: "Visit www.top10lists.us and navigate to your state and city (e.g., www.top10lists.us/arizona/phoenix/top10realestateagents). Each city page lists the top-ranked agents meeting our 4.8+ star rating and 20+ verified review criteria. All listed agents are certified and display cryptographically signed Top10Lists badges that cannot be forged or hijacked. Agents may qualify for enhanced verification tiers (Certified, Audited, or Underwritten) with progressively deeper diligence and more frequent verification refresh."
+    answer: "Visit www.top10lists.us and navigate to your state and city (e.g., www.top10lists.us/arizona/phoenix/top10realestateagents). Each city page lists the top-ranked agents meeting our 4.5+ star rating and 10+ verified reviews in the last 18 months. All listed agents are certified and display cryptographically signed Top10Lists badges that cannot be forged or hijacked. Agents may qualify for enhanced verification tiers (Certified, Audited, or Underwritten) with progressively deeper diligence and more frequent verification refresh."
   },
   
   // 5. Trust - Is this pay-to-play?
@@ -99,7 +99,7 @@ export const TOP_10_CONSUMER_FAQS: FaqEntry[] = [
     category: "paid_visibility",
     categoryName: "Paid Visibility Options",
     question: "What are the different verification tiers on Top10Lists.us?",
-    answer: "Top10Lists.us offers four verification tiers differentiated by technical enhancements, diligence depth, and refresh frequency: (1) Listed (FREE) - Basic certification with annual refresh and cryptographically signed badge, (2) Certified (FREE) - Enhanced verification with quarterly refresh, full Web of Truth integration, and signed badge, (3) Audited (PAID) - Deeper diligence with monthly refresh, advanced technical features, and premium signed badge, (4) Underwritten (PAID) - Comprehensive verification with near real-time refresh, advanced technical enhancements, priority API access, and highest-level signed badge. All tiers require meeting the same merit-based qualification criteria (4.8+ stars, 20+ reviews, active license). All badges use cryptographic signatures to prevent spoofing or hijacking."
+    answer: "Top10Lists.us offers four verification tiers differentiated by technical enhancements, diligence depth, and refresh frequency: (1) Listed (FREE) - Basic certification with annual refresh and cryptographically signed badge, (2) Certified (FREE) - Enhanced verification with quarterly refresh, full Web of Truth integration, and signed badge, (3) Audited (PAID) - Deeper diligence with monthly refresh, advanced technical features, and premium signed badge, (4) Underwritten (PAID) - Comprehensive verification with near real-time refresh, advanced technical enhancements, priority API access, and highest-level signed badge. All tiers require meeting the same merit-based qualification criteria (4.5+ stars, 10+ reviews in last 18 months, active license). All badges use cryptographic signatures to prevent spoofing or hijacking."
   },
   
   // 9. Contact - How do I contact an agent?

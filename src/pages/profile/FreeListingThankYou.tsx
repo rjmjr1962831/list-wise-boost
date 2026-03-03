@@ -136,7 +136,7 @@ export default function FreeListingThankYou() {
             .eq('city_id', cityData.id)
             .eq('active', true)
             .neq('id', profData.id)
-            .gte('review_stars_rating', 4.8)
+            .gte('review_stars_rating', 4.5)
             .gte('num_total_reviews', 50)
             .limit(9);
 
@@ -167,7 +167,7 @@ export default function FreeListingThankYou() {
                     .select('*')
                     .in('city_id', regionCityIds)
                     .eq('active', true)
-                    .gte('review_stars_rating', 4.8)
+                    .gte('review_stars_rating', 4.5)
                     .gte('num_total_reviews', 50)
                     .limit(9 - allAgents.length);
 
