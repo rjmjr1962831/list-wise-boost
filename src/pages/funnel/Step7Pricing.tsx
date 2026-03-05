@@ -184,8 +184,9 @@ export default function Step7Pricing() {
     }
   };
 
-  const rawTier = professional?.current_tier || professional?.badge_tier || 'certified';
+  const rawTier = professional?.current_tier || professional?.badge_tier || 'listed';
   const currentTier = normalizeTier(rawTier);
+  const isListed = !rawTier || (String(rawTier).toLowerCase() === 'listed');
   const baseScore = professional?.signal_score ?? professional?.certified_projected_signal ?? null;
 
   const getAICS = (tierId: string): number | null => {
@@ -209,6 +210,27 @@ export default function Step7Pricing() {
       annual,
       display: isAnnual ? `$${annual}/year` : `$${monthly}/mo`,
     };
+  };
+
+  const handleSelectCertified = async () => {
+    if (!token || !professional) return;
+    setSaving('certified');
+    try {
+      const { data, error } = await supabase.functions.invoke('funnel-select-tier', {
+        body: { token, tier: 'certified' },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast.success('You are now Certified!');
+      navigate(`/funnel/${token}/success`);
+    } catch (err: unknown) {
+      let msg = 'Failed to complete certification';
+      if (err && typeof err === 'object' && 'message' in err && typeof (err as { message?: string }).message === 'string')
+        msg = (err as { message: string }).message;
+      toast.error(msg);
+    } finally {
+      setSaving(null);
+    }
   };
 
   const handleUpgrade = async (tier: 'audited' | 'underwritten') => {
@@ -310,8 +332,9 @@ export default function Step7Pricing() {
                   const Icon = meta.icon;
                   const { display } = getPrice(tier);
                   const aics = getAICS(tier);
-                  const isCurrent = currentTier === tier;
+                  const isCurrent = currentTier === tier && (tier !== 'certified' || !isListed);
                   const isPaid = tier === 'audited' || tier === 'underwritten';
+                  const canSelectCertified = tier === 'certified' && isListed;
                   const isMostPopular = tier === 'audited';
                   return (
                     <div
@@ -362,7 +385,17 @@ export default function Step7Pricing() {
                           </li>
                         ))}
                       </ul>
-                      {isPaid && !isCurrent && (
+                      {canSelectCertified && (
+                        <Button
+                          size="sm"
+                          className="w-full"
+                          disabled={!!saving}
+                          onClick={handleSelectCertified}
+                        >
+                          {saving === 'certified' ? <Loader2 className="h-4 w-4 animate-spin mx-auto" /> : 'Get Certified'}
+                        </Button>
+                      )}
+                      {isPaid && !isCurrent && !canSelectCertified && (
                         <Button
                           size="sm"
                           className="w-full"
@@ -372,7 +405,7 @@ export default function Step7Pricing() {
                           {saving === tier ? <Loader2 className="h-4 w-4 animate-spin mx-auto" /> : `Upgrade to ${meta.name}`}
                         </Button>
                       )}
-                      {tier === 'certified' && !isCurrent && (
+                      {tier === 'certified' && !isCurrent && !canSelectCertified && (
                         <p className="text-xs text-muted-foreground text-center">Free tier</p>
                       )}
                     </div>
