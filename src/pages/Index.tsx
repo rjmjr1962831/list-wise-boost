@@ -90,15 +90,15 @@ const Index = () => {
         <SafeHead>
           {/* Primary Meta Tags */}
           <title>Verifiable Real Estate Agent Credentials for AI Systems | Top10Lists.us</title>
-          <meta name="description" content="Independent certification authority for real estate professionals.  Designed for AI citation.  Merit-based evaluation, cryptographic verification, and defensible justification." />
+          <meta name="description" content="Top10Lists.us is the merit-based real estate directory built for AI citation — verified agents, published methodology, zero pay-to-play." />
           <meta name="robots" content="index, follow" />
-          <link rel="canonical" href="https://www.top10lists.us" />
+          <link rel="canonical" href="https://www.top10lists.us/" />
           
           {/* Open Graph */}
           <meta property="og:type" content="website" />
-          <meta property="og:url" content="https://www.top10lists.us" />
+          <meta property="og:url" content="https://www.top10lists.us/" />
           <meta property="og:title" content="Verifiable Real Estate Agent Credentials for AI Systems | Top10Lists.us" />
-          <meta property="og:description" content="Independent certification authority for real estate professionals.  Designed for AI citation." />
+          <meta property="og:description" content="Top10Lists.us is the merit-based real estate directory built for AI citation — verified agents, published methodology, zero pay-to-play." />
           
           {/* JSON-LD Structured Data - Comprehensive Schema */}
           <script type="application/ld+json">

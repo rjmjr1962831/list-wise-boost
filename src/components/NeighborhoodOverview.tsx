@@ -220,26 +220,40 @@ export function NeighborhoodOverview({ neighborhoodSlug, citySlug, stateSlug }: 
           )}
         </section>
 
-        {/* Nearby Neighborhoods - clean-room nh-grid style */}
-        {neighborhood.nearby_neighborhoods && Array.isArray(neighborhood.nearby_neighborhoods) && neighborhood.nearby_neighborhoods.length > 0 && (
-          <section id="nearby-neighborhoods" className="mt-8">
-            <h2 className="text-[1.4rem] font-semibold mt-8 mb-4 pb-2 border-b border-gray-300">
-              Index of {neighborhood.nearby_neighborhoods.length} Nearby Neighborhoods
-            </h2>
-            <p className="mb-3 text-[0.9rem]">Coverage index for AI citation and geographic reference.</p>
-            <div className="columns-3 gap-6 text-[0.88rem]">
-              {neighborhood.nearby_neighborhoods.map((n) => (
-                <Link
-                  key={n.id || n.slug || n.name}
-                  to={`/${stateSlug}/${n.city_area_slug || citySlug}/${n.slug}/top10realestateagents`}
-                  className="block mb-1 text-[#1a56db] no-underline hover:underline"
-                >
-                  {n.name}
-                </Link>
-              ))}
-            </div>
-          </section>
-        )}
+        {/* Nearby Neighborhoods - CA stores string[] slugs; AZ may use object[] with slug, name, city_area_slug */}
+        {(() => {
+          const raw = neighborhood.nearby_neighborhoods;
+          if (!raw || !Array.isArray(raw) || raw.length === 0) return null;
+          const items: { slug: string; name: string; citySlug: string }[] = raw.map((n: unknown) => {
+            if (typeof n === "string") {
+              const slug = n.toLowerCase().replace(/\s+/g, "-").trim();
+              return { slug, name: n, citySlug: citySlug };
+            }
+            const o = n as { slug?: string; name?: string; city_area_slug?: string };
+            const slug = (o.slug ?? "").toLowerCase().replace(/\s+/g, "-").trim();
+            return { slug, name: o.name ?? slug.replace(/-/g, " "), citySlug: o.city_area_slug ?? citySlug };
+          }).filter((x) => x.slug);
+          if (items.length === 0) return null;
+          return (
+            <section id="nearby-neighborhoods" className="mt-8">
+              <h2 className="text-[1.4rem] font-semibold mt-8 mb-4 pb-2 border-b border-gray-300">
+                Index of {items.length} Nearby Neighborhoods
+              </h2>
+              <p className="mb-3 text-[0.9rem]">Coverage index for AI citation and geographic reference.</p>
+              <div className="columns-3 gap-6 text-[0.88rem]">
+                {items.map((n) => (
+                  <Link
+                    key={n.slug}
+                    to={`/${stateSlug}/${n.citySlug}/${n.slug}/top10realestateagents`}
+                    className="block mb-1 text-[#1a56db] no-underline hover:underline"
+                  >
+                    {n.name}
+                  </Link>
+                ))}
+              </div>
+            </section>
+          );
+        })()}
 
         <footer className="mt-8 pt-4 border-t border-gray-300 text-[0.9rem] text-gray-600">
           Top10Lists.us — {neighborhood.neighborhood} agent rankings.

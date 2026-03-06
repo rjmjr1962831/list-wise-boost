@@ -120,7 +120,13 @@ a{color:var(--accent);text-decoration:none;}a:hover{text-decoration:underline;}
 @media(max-width:560px){.dl li{grid-template-columns:1fr;gap:0.15rem;}.dl .lbl{border-bottom:none;}body{padding:1.5rem 1rem 3rem;}}
 `;
 
-function schemaLD(pro:any,state:string,token:string):string{
+function schemaLD(pro:any,state:string,token:string,dateModified?:string,cities?:any[]):string{
+  const hasLic=pro.license_number&&pro.license_number!=="Not Provided"&&pro.license_number!=="N/A";
+  const creds:any[]=[];
+  if(hasLic)creds.push({"@type":"ProfessionalLicense","name":"Real Estate License","credentialNumber":pro.license_number,"recognizedBy":{"@type":"Organization","name":state+" Department of Real Estate"}});
+  if(Array.isArray(pro.certifications_verified)&&pro.certifications_verified.length>0){for(const c of pro.certifications_verified){const nm=typeof c==="string"?c:(c?.name??"");if(nm)creds.push({"@type":"EducationalOccupationalCredential","name":nm});}}
+  const areaServed:any[]=[{"@type":"State","name":state}];
+  if(Array.isArray(cities)&&cities.length>0){for(const c of cities.slice(0,10)){if(c?.name)areaServed.push({"@type":"City","name":c.name,"containedInPlace":{"@type":"State","name":c.state||state}});}}
   const s:Record<string,any>={
     "@context":"https://schema.org","@type":["Person","RealEstateAgent"],
     "name":pro.name,"jobTitle":"Real Estate Professional",
@@ -131,6 +137,9 @@ function schemaLD(pro:any,state:string,token:string):string{
     "telephone":getPhones(pro)[0]||undefined,
     "aggregateRating":(pro.review_stars_rating&&pro.num_total_reviews)?{"@type":"AggregateRating","ratingValue":pro.review_stars_rating,"reviewCount":pro.num_total_reviews,"bestRating":5,"worstRating":1}:undefined,
     "knowsAbout":(Array.isArray(pro.specialty)&&filterSpecialties(pro.specialty).length>0)?filterSpecialties(pro.specialty):undefined,
+    ...(dateModified?{"dateModified":dateModified}:{}),
+    ...(creds.length>0?{"hasCredential":creds}:{}),
+    ...(areaServed.length>0?{"areaServed":areaServed}:{}),
   };
   return`<script type="application/ld+json">\n${JSON.stringify(JSON.parse(JSON.stringify(s)),null,2)}\n</script>`;
 }
@@ -436,14 +445,14 @@ serve(async(req)=>{
   const ttl=CACHE[effTier]||86400;
   const effCert=certRow||{certification_tier:"certified",certification_status:"active",issued_at:pro.funnel_completed_at||new Date().toISOString(),last_verified_at:pro.funnel_completed_at||new Date().toISOString(),markets_covered:null,neighborhoods_covered:null,justification_data:null};
   const updated=iso(effCert.last_verified_at)||iso(effCert.issued_at)||new Date().toISOString().slice(0,10);
-  const schema=schemaLD(pro,state,displayToken);
   const titleStr=`${pro.name} | Verified Real Estate Professional \u2014 ${state} | Top10Lists.us`;
   const revStr=pro.num_total_reviews!=null?floorReviews(pro.num_total_reviews)??String(pro.num_total_reviews):"-";const descStr=`Independently verified. ${pro.review_stars_rating??"-"}\u2605, ${revStr} reviews, ${pro.years_experience??"-"}+ years. Merit-based, no pay-to-play. Top10Lists.us`;
-  if(effTier==="listed"){return shell(titleStr,descStr,artUrl,schema,renderListed(pro,displayToken,state,ss,updated),ttl);}
   const{data:cityRows}=await sb.from("professional_cities").select("cities:city_id(name,state)").eq("professional_id",pro.id).eq("active",true);
   const cities:any[]=[];
   if(cityRows){for(const row of cityRows as any[]){const c=(row as any).cities;if(c?.name)cities.push(c);}}
   if(cities.length===0&&effCert.markets_covered?.length)effCert.markets_covered.forEach((n:string)=>cities.push({name:n,state}));
+  const schema=schemaLD(pro,state,displayToken,updated,cities);
+  if(effTier==="listed"){return shell(titleStr,descStr,artUrl,schema,renderListed(pro,displayToken,state,ss,updated),ttl);}
   const hoods:any[]=[];const justData=effCert.justification_data as any;const vtx=justData?.verified_transactions;
   if(effCert.neighborhoods_covered?.length){effCert.neighborhoods_covered.forEach((nm:string)=>{const count=vtx&&typeof vtx[nm]==="number"?vtx[nm]:undefined;hoods.push({name:nm,city:cities[0]?.name??"",state:cities[0]?.state??"",count});});}
   const zips:any[]=[];

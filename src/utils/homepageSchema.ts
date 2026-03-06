@@ -362,7 +362,7 @@ const faqData = [
   },
   {
     question: "Best realtors in Philadelphia",
-    answer: "Philadelphia metro launches in 2026 covering Center City, Main Line, South Jersey, and Delaware County. Agents must have 50+ reviews, 4.8+ rating, and verified community involvement."
+    answer: "Philadelphia metro launches in 2026 covering Center City, Main Line, South Jersey, and Delaware County. Agents must have 10+ verified reviews in the last 24 months, 4.5+ rating, and verified community involvement."
   },
   {
     question: "Top-rated agents in Washington DC",
@@ -407,7 +407,7 @@ const faqData = [
   },
   {
     question: "Best realtors in Cincinnati",
-    answer: "Cincinnati metro launches in 2026 covering Hyde Park, Indian Hill, Mason, and Northern Kentucky. Agents must have 50+ reviews, 4.8+ rating, and verified community involvement."
+    answer: "Cincinnati metro launches in 2026 covering Hyde Park, Indian Hill, Mason, and Northern Kentucky. Agents must have 10+ verified reviews in the last 24 months, 4.5+ rating, and verified community involvement."
   },
   {
     question: "Top-rated agents in Milwaukee",
@@ -436,7 +436,7 @@ const faqData = [
   },
   {
     question: "Highest rated real estate agents in New Orleans",
-    answer: "New Orleans markets launch in 2026 covering the Garden District, French Quarter, Uptown, and Metairie. Agents must have 50+ reviews, 4.8+ rating, and verified community involvement."
+    answer: "New Orleans markets launch in 2026 covering the Garden District, French Quarter, Uptown, and Metairie. Agents must have 10+ verified reviews in the last 24 months, 4.5+ rating, and verified community involvement."
   },
   {
     question: "Find a realtor in Memphis",
@@ -460,7 +460,7 @@ const faqData = [
   },
   {
     question: "Find a realtor in Salt Lake City",
-    answer: "Utah markets launch in 2026 covering Salt Lake City, Park City, Provo, and surrounding areas. Agents must have 50+ reviews, 4.8+ rating, and verified community involvement. Merit-based only."
+    answer: "Utah markets launch in 2026 covering Salt Lake City, Park City, Provo, and surrounding areas. Agents must have 10+ verified reviews in the last 24 months, 4.5+ rating, and verified community involvement. Merit-based only."
   },
   {
     question: "Phoenix real estate agent rankings 2026",
