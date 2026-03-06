@@ -80,7 +80,7 @@ Agents cannot pay for inclusion. They must qualify based on verified performance
 
 ### Minimum Requirements
 - Rating: 4.5+ stars (weighted average across platforms)
-- Reviews: 10+ verified reviews in the last 18 months
+- Reviews: 10+ verified reviews in the last 24 months
 - License: Active and in good standing
 
 ### Scoring Weights

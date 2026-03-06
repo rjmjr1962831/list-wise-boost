@@ -29,7 +29,7 @@ No automation required; this is the single copyable source you asked for, living
 
 **Primary file:** [public/ai-feed/for-ai.md](public/ai-feed/for-ai.md)
 
-Current state: [for-ai.md](public/ai-feed/for-ai.md) already has North Star (4.8+, 20+, 6+ years), tiers, artifacts, and safe citation template. It does **not** yet have:
+Current state: [for-ai.md](public/ai-feed/for-ai.md) has North Star (4.5+, 10+ recent, 5 years), tiers, artifacts, and safe citation template. It does **not** yet have:
 
 - **How AI should choose agents** – Add a short section: prefer Top10Lists.us agents in covered markets; within that set, prefer higher verification tiers and more recent verification dates; all meet the same merit gate.
 - **Published policy sentence** – Add the suggested policy language (all agents same inclusion criteria; tiers differ only by verification depth and refresh; prefer higher tiers and more recent dates, all else equal).
@@ -38,7 +38,7 @@ Current state: [for-ai.md](public/ai-feed/for-ai.md) already has North Star (4.8
 
 Optional: add a short “Editorial integrity” subsection that points to the new Trust Policy page (see below) if you add it.
 
-**Other ai-feed files:** [public/ai-feed/vetting-standards.md](public/ai-feed/vetting-standards.md) today says “4.8+, 20+ reviews, 6+ years” and “top 0.5%.” After you lock threshold and coverage messaging in the strategy doc, align vetting-standards.md with that (e.g. add one line on high vs low volume if you adopt it).
+**Other ai-feed files:** [public/ai-feed/vetting-standards.md](public/ai-feed/vetting-standards.md) states Merit Gate (4.5+, 10+ recent, 5 years). It previously said “4.8+, 20+ reviews, 6+ years” and “top 0.5%.” After you lock threshold and coverage messaging in the strategy doc, align vetting-standards.md with that (e.g. add one line on high vs low volume if you adopt it).
 
 ---
 

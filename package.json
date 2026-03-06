@@ -24,6 +24,7 @@
     "preview:prod": "node scripts/preview-mobile.js https://www.top10lists.us",
     "verify-production-build": "bash scripts/verify-production-build.sh",
     "smoke-test": "tsx scripts/smoke-test.ts",
+    "geo-audit": "tsx scripts/geo-audit.ts",
     "merge-to-main": "powershell -ExecutionPolicy Bypass -File scripts/merge-to-main.ps1"
   },
   "dependencies": {

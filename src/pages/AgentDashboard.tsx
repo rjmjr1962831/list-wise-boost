@@ -46,10 +46,12 @@ interface AvailableCity {
 interface CitySubscription {
   id: string;
   city_name: string;
+  neighborhood_name: string;
   subscription_type: string;
   is_active: boolean;
   started_at: string;
   expires_at: string | null;
+  tier?: string;
 }
 
 export default function AgentDashboard() {
@@ -60,6 +62,7 @@ export default function AgentDashboard() {
   const [professionalId, setProfessionalId] = useState<string | null>(null);
   const [verificationToken, setVerificationToken] = useState<string | null>(null);
   const [subscriptions, setSubscriptions] = useState<CitySubscription[]>([]);
+  const [citiesList, setCitiesList] = useState<string[]>([]);
   const [freeCity, setFreeCity] = useState<string | null>(null);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [newPassword, setNewPassword] = useState('');
@@ -285,18 +288,31 @@ export default function AgentDashboard() {
           tier: sub.tier_at_purchase,
         }));
         setSubscriptions(formattedSubs);
-        
-        // Find free city from subscriptions
         const freeSub = formattedSubs.find(s => s.subscription_type === 'free');
         if (freeSub) setFreeCity(freeSub.city_name);
       } else {
-        // Fallback: show city from professional's city_id if no subscriptions
-        if (data.city_id?.name) {
-          setFreeCity(data.city_id.name);
-        } else if (data.cities_subscribed?.length > 0) {
-          setFreeCity(data.cities_subscribed[0]);
-        }
+        if (data.city_id?.name) setFreeCity(data.city_id.name);
+        else if (data.cities_subscribed?.length > 0) setFreeCity(data.cities_subscribed[0]);
       }
+
+      // Load cities array from professional_cities (agents pick multiple cities)
+      const { data: pcRows } = await supabase
+        .from('professional_cities')
+        .select('city_id')
+        .eq('professional_id', data.id)
+        .eq('active', true);
+      let fromPc: string[] = [];
+      if (pcRows && pcRows.length > 0) {
+        const cityIds = pcRows.map((r: { city_id: string }) => r.city_id);
+        const { data: cityNames } = await supabase
+          .from('cities')
+          .select('name')
+          .in('id', cityIds);
+        fromPc = (cityNames || []).map((c: { name: string }) => c.name).filter(Boolean);
+      }
+      const fromSubs = (subs || []).map((s: any) => s.neighborhood_catalog?.city_area).filter(Boolean);
+      const uniqueCities = Array.from(new Set<string>([...fromPc, ...fromSubs]));
+      setCitiesList(uniqueCities.sort((a, b) => a.localeCompare(b)));
 
       // Transform data
       const transformedProfessional: Professional = {
@@ -485,7 +501,8 @@ export default function AgentDashboard() {
     );
   }
 
-  const paidCities = subscriptions.filter(s => s.subscription_type !== 'free' && s.is_active);
+  const paidSubscriptions = subscriptions.filter(s => s.subscription_type !== 'free' && s.is_active);
+  const activeNeighborhoods = subscriptions.filter(s => s.is_active);
 
   return (
     <>
@@ -599,26 +616,64 @@ export default function AgentDashboard() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {/* Free City */}
-                  {freeCity ? (
-                    <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg border">
-                      <div className="flex items-center gap-3">
-                        <CheckCircle2 className="h-5 w-5 text-primary" />
-                        <div>
-                          <div className="font-medium">{freeCity}</div>
-                          <div className="text-xs text-muted-foreground">Free Listing (Round-Robin)</div>
-                        </div>
-                      </div>
-                      <Button variant="ghost" size="sm" onClick={handleChangeFreeCity}>
-                        Change
-                      </Button>
-                    </div>
-                  ) : (
+                  {/* Cities (array) */}
+                  <div className="space-y-2">
+                    <div className="font-medium">Cities</div>
+                    <div className="text-xs text-muted-foreground">You appear on these city pages</div>
+                    {citiesList.length > 0 ? (
+                      <ul className="flex flex-wrap gap-2">
+                        {citiesList.map((name) => (
+                          <li
+                            key={name}
+                            className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-muted/50 border text-sm"
+                          >
+                            <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
+                            {name}
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">No cities selected yet.</p>
+                    )}
+                  </div>
+
+                  {/* Neighborhoods (array) */}
+                  <div className="space-y-2">
+                    <div className="font-medium">Neighborhoods</div>
+                    <div className="text-xs text-muted-foreground">You appear on these neighborhood pages</div>
+                    {activeNeighborhoods.length > 0 ? (
+                      <ul className="space-y-2">
+                        {activeNeighborhoods.map((sub) => (
+                          <li
+                            key={sub.id}
+                            className={`flex items-center justify-between px-3 py-2 rounded-md border text-sm ${
+                              sub.subscription_type === 'free'
+                                ? 'bg-muted/50'
+                                : 'bg-primary/5 border-primary/20'
+                            }`}
+                          >
+                            <div className="flex items-center gap-2">
+                              <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
+                              <span>{sub.neighborhood_name} ({sub.city_name})</span>
+                            </div>
+                            {sub.subscription_type !== 'free' && (
+                              <span className="text-xs text-primary font-medium px-2 py-0.5 bg-primary/10 rounded">
+                                Premium
+                              </span>
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">No neighborhoods selected yet.</p>
+                    )}
+                  </div>
+
+                  {/* Legacy single free city selector (if no cities/neighborhoods) */}
+                  {citiesList.length === 0 && activeNeighborhoods.length === 0 && (
                     <div className="p-4 bg-muted/50 rounded-lg border space-y-3">
-                      <div>
-                        <div className="font-medium">Select Your Free City</div>
-                        <div className="text-xs text-muted-foreground">Choose a city for your free round-robin listing</div>
-                      </div>
+                      <div className="font-medium">Select Your Free City</div>
+                      <div className="text-xs text-muted-foreground">Choose a city for your free round-robin listing</div>
                       <div className="flex gap-2">
                         <Select value={selectedFreeCityId} onValueChange={setSelectedFreeCityId}>
                           <SelectTrigger className="flex-1 bg-background">
@@ -641,29 +696,6 @@ export default function AgentDashboard() {
                       </div>
                     </div>
                   )}
-
-                  {/* Paid Cities */}
-                  {paidCities.length > 0 ? (
-                    paidCities.map((sub) => (
-                      <div 
-                        key={sub.id} 
-                        className="flex items-center justify-between p-4 bg-primary/5 rounded-lg border border-primary/20"
-                      >
-                        <div className="flex items-center gap-3">
-                          <CheckCircle2 className="h-5 w-5 text-primary" />
-                          <div>
-                            <div className="font-medium">{sub.city_name}</div>
-                            <div className="text-xs text-muted-foreground">
-                              Premium Placement • {sub.subscription_type === 'annual' ? 'Annual' : 'Monthly'}
-                            </div>
-                          </div>
-                        </div>
-                        <span className="text-xs text-primary font-medium px-2 py-1 bg-primary/10 rounded">
-                          Active
-                        </span>
-                      </div>
-                    ))
-                  ) : null}
 
                   {/* Add More Cities Button */}
                   <div className="flex flex-wrap gap-2 pt-2">
