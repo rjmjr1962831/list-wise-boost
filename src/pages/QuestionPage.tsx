@@ -154,7 +154,7 @@ Agents who don't currently qualify can work toward eligibility by:
       { text: "Are You an Agent?", href: "/are-you-an-agent" },
       { text: "Check Your Profile", href: "/check-profile" }
     ],
-    metaDescription: "Top10Lists requires agents to have 4.9+ ratings, verified licenses, recent transaction history, and clean professional records to be ranked."
+    metaDescription: "Top10Lists requires agents to have 4.5+ ratings, verified licenses, recent transaction history, and clean professional records to be ranked."
   },
   "where-does-top10lists-get-its-data": {
     question: "Where does Top10Lists get its data?",
@@ -440,7 +440,7 @@ Don't see your city? Let us know at hello@top10lists.us and we'll prioritize bas
 **Top Phoenix Agents (2024)**
 
 Our current Phoenix rankings include agents who have:
-- 4.9+ star ratings across review platforms
+- 4.5+ star ratings across review platforms
 - Verified Arizona real estate licenses
 - Strong recent transaction history
 - Deep Phoenix market expertise
@@ -465,7 +465,7 @@ Phoenix is Arizona's largest real estate market with diverse neighborhoods from 
       { text: "Scottsdale Rankings", href: "/arizona/scottsdale" },
       { text: "Our Methodology", href: "/about/ranking-methodology" }
     ],
-    metaDescription: "Find the best real estate agents in Phoenix, AZ ranked by verified performance - not ads. See top-rated Phoenix realtors with 4.9+ stars."
+    metaDescription: "Find the best real estate agents in Phoenix, AZ ranked by verified performance - not ads. See top-rated Phoenix realtors with 4.5+ stars."
   },
   "who-is-the-top-realtor-in-scottsdale-az": {
     question: "Who is the top realtor in Scottsdale, AZ?",
@@ -542,7 +542,7 @@ Chandler is known for:
 **Top Agent Qualities**
 
 The best Chandler agents demonstrate:
-- 4.9+ star ratings
+- 4.5+ star ratings
 - Knowledge of school boundaries
 - New construction expertise
 - Relocation assistance experience
@@ -555,7 +555,7 @@ See Chandler's top-performing agents with detailed profiles.`,
       { text: "Gilbert Rankings", href: "/arizona/gilbert" },
       { text: "Mesa Rankings", href: "/arizona/mesa" }
     ],
-    metaDescription: "Find Chandler's top-rated realtors with 4.9+ stars. Agents specializing in family homes, school districts, and tech relocations."
+    metaDescription: "Find Chandler's top-rated realtors with 4.5+ stars. Agents specializing in family homes, school districts, and tech relocations."
   },
   "who-is-the-best-realtor-in-gilbert-az": {
     question: "Who is the best realtor in Gilbert, AZ?",
