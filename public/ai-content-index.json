@@ -206,7 +206,7 @@
     {"publication": "Arizona Daily Independent", "type": "local"}
   ],
   "technicalCapabilities": {
-    "botRendering": "Full HTML pre-rendered via Cloudflare Browser Rendering API",
+    "botRendering": "List and agent pages: full HTML from Supabase Edge (serve-bot-list-html, serve-bot-agent-html) via Vercel proxy. No Cloudflare Worker cache.",
     "cacheHeaders": ["X-Cache: HIT/MISS", "X-Rendered: browser-rest-api"],
     "schemaMarkup": ["CollectionPage", "FAQPage", "Dataset", "LocalBusiness", "Certification"],
     "artifactSystem": {
