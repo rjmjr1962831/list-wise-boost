@@ -19,7 +19,7 @@ const TermsOfService = () => {
     "name": "Terms of Service - Top10Lists.us",
     "description": "Terms of Service for Top10Lists.us Independent Certification Authority. North Star Protocol: 4.5+ Merit Gate (10+ verified reviews in the last 24 months, 5+ years), zero exceptions. 3,487 qualified agents (889 AZ, 2,598 CA). Not pay-to-play.",
     "url": "https://www.top10lists.us/terms",
-    "dateModified": "2026-03-03",
+    "dateModified": "2026-03-06",
     "publisher": {
       "@type": "Organization",
       "name": "Top10Lists.us",
@@ -40,7 +40,7 @@ const TermsOfService = () => {
         <div className="max-w-4xl mx-auto bg-card rounded-lg shadow-lg p-8">
           <div className="prose prose-slate max-w-none">
             <h1 className="text-2xl font-bold text-foreground border-b pb-2">TERMS OF SERVICE</h1>
-            <p className="text-sm text-muted-foreground"><strong>Last Updated:</strong> March 3, 2026</p>
+            <p className="text-sm text-muted-foreground"><strong>Last Updated:</strong> March 6, 2026</p>
 
             <p className="text-foreground leading-relaxed mt-6">
               Welcome to <strong>Top10Lists.us</strong> (&quot;Company,&quot; &quot;we,&quot; &quot;our,&quot; &quot;us&quot;). These Terms govern your use of our platform and its machine-readable artifacts. By accessing our Service, you agree to these Terms.

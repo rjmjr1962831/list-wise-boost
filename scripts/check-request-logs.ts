@@ -1,6 +1,9 @@
 /**
- * Check if cloudflare_request_logs has data.
- * Run: npx tsx scripts/check-cloudflare-logs.ts
+ * Check if the request-logs table has data (bot-tracking ingestion).
+ * Data comes from log-bot-visit and scripts/ingest-request-logs.ts — not Cloudflare.
+ * Table name is still cloudflare_request_logs (legacy).
+ *
+ * Run: npx tsx scripts/check-request-logs.ts
  */
 
 import { createClient } from '@supabase/supabase-js';
@@ -44,7 +47,7 @@ if (!key) {
 const supabase = createClient(url, key);
 
 async function main() {
-  console.log('Checking cloudflare_request_logs...\n');
+  console.log('Checking request logs (bot-tracking table)...\n');
 
   const { count: total, error: e1 } = await supabase
     .from('cloudflare_request_logs')

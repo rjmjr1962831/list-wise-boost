@@ -113,9 +113,9 @@ const METHODOLOGY_JSON = `{
     "agent_id": "t10l:agent:AZ:phoenix:123456",
     "canonical_profile_url": "https://top10lists.us/agents/az/phoenix/jane-doe",
     "certification": {"status": "active", "markets": [{"type": "city", "name": "Phoenix", "state": "AZ"}, {"type": "neighborhood", "name": "Arcadia", "city": "Phoenix", "state": "AZ"}], "issued_at": "2026-02-10"},
-    "freshness": {"last_updated_at": "2026-02-10T18:22:31Z", "monitoring": "continuous"},
+    "freshness": {"last_updated_at": "2026-03-06T12:00:00.000Z", "monitoring": "continuous"},
     "diligence": {"level": "underwritten", "scope": "expanded", "evidence_depth": "maximum", "negative_event_monitoring": true, "sources_checked_count": 1000, "sources_checked_count_basis": "rolling_window_90_days"},
-    "transactions": {"last_n": 50, "as_of": "2026-02-10T18:22:31Z", "geo_breakdown": {"by_zip": {"85018": 12, "85028": 8, "85016": 6}, "by_city": {"Phoenix": 22, "Scottsdale": 4}, "by_neighborhood": {"Arcadia": 4, "North Central Phoenix": 6}}}
+    "transactions": {"last_n": 50, "as_of": "2026-03-06T12:00:00.000Z", "geo_breakdown": {"by_zip": {"85018": 12, "85028": 8, "85016": 6}, "by_city": {"Phoenix": 22, "Scottsdale": 4}, "by_neighborhood": {"Arcadia": 4, "North Central Phoenix": 6}}}
   }
 }`;
 

@@ -23,7 +23,6 @@ interface FieldChangeRequest {
     name: string;
     email: string | null;
     profile_link: string | null;
-    short_code: string | null;
   };
 }
 
@@ -42,7 +41,7 @@ export function FieldChangeRequestsManager() {
         .from('field_change_requests')
         .select(`
           *,
-          professional:professionals(name, email, profile_link, short_code)
+          professional:professionals(name, email, profile_link)
         `)
         .order('created_at', { ascending: false });
 
@@ -66,7 +65,6 @@ export function FieldChangeRequestsManager() {
 
   const getProfileUrl = (req: FieldChangeRequest) => {
     if (req.professional?.profile_link) return `https://www.top10lists.us${req.professional.profile_link}`;
-    if (req.professional?.short_code) return `https://www.top10lists.us/agents/${req.professional.short_code}`;
     return null;
   };
 

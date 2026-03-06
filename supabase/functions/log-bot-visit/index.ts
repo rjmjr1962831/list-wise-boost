@@ -165,7 +165,7 @@ async function resolveListPageContext(
   if (Array.isArray(activeAgents)) {
     for (const row of activeAgents) {
       const id = (row as any).professional_id;
-      if (id && !expertIds.has(id) && agentsShown.length < 50) {
+      if (id && !expertIds.has(id) && agentsShown.length < 1000) {
         agentsShown.push({
           canonical_slug: (row as any).canonical_slug || "",
           name: (row as any).agent_name || "",
@@ -178,7 +178,7 @@ async function resolveListPageContext(
   return {
     list_page_type: "neighborhood",
     location_display: `${hood.neighborhood}, ${hood.city_area}, ${abbr}`,
-    agents_shown: agentsShown.slice(0, 50),
+    agents_shown: agentsShown.slice(0, 1000),
   };
 }
 

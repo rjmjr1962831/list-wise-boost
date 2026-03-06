@@ -248,7 +248,7 @@ async function resolveListPageContext(
       const id = (row as { professional_id?: string }).professional_id;
       const slug = (row as { canonical_slug?: string }).canonical_slug;
       const name = (row as { agent_name?: string }).agent_name;
-      if (id && slug && !seen.has(id) && agentsShown.length < 50) {
+      if (id && slug && !seen.has(id) && agentsShown.length < 1000) {
         seen.add(id);
         agentsShown.push({ canonical_slug: slug, name: name || "" });
       }
@@ -260,7 +260,7 @@ async function resolveListPageContext(
   return {
     list_page_type: "neighborhood",
     location_display: `${h.neighborhood}, ${h.city_area}, ${abbr}`,
-    agents_shown: agentsShown.slice(0, 50),
+    agents_shown: agentsShown.slice(0, 1000),
   };
 }
 

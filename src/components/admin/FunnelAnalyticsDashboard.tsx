@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
-import { RefreshCw, MousePointer, Eye, Edit, CreditCard, CheckCircle, ExternalLink, FileCheck, Send } from 'lucide-react';
+import { RefreshCw, MousePointer, Eye, Edit, CreditCard, CheckCircle, FileCheck, Send } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface FunnelStage {
@@ -17,7 +17,6 @@ interface FunnelStage {
 interface AgentActivity {
   name: string;
   email: string;
-  short_code: string;
   funnel_status: string;
   verification_started_at: string | null;
   funnel_started_at: string | null;
@@ -65,7 +64,7 @@ export function FunnelAnalyticsDashboard() {
       // Get magic link clicks from professionals table
       const { data: professionals, error: profError } = await supabase
         .from('professionals')
-        .select('id, name, email, short_code, funnel_status, verification_started_at, funnel_started_at, checkout_started_at, funnel_completed_at')
+        .select('id, name, email, funnel_status, verification_started_at, funnel_started_at, checkout_started_at, funnel_completed_at')
         .not('verification_started_at', 'is', null)
         .order('verification_started_at', { ascending: false });
 
@@ -94,7 +93,7 @@ export function FunnelAnalyticsDashboard() {
           event_name,
           created_at,
           professional_id,
-          professionals!inner(name, email, short_code, funnel_status)
+          professionals!inner(name, email, funnel_status)
         `)
         .order('created_at', { ascending: false })
         .limit(50);
@@ -108,7 +107,6 @@ export function FunnelAnalyticsDashboard() {
         activityMap.set(p.id, {
           name: p.name,
           email: p.email || '',
-          short_code: p.short_code || '',
           funnel_status: p.funnel_status || 'unknown',
           verification_started_at: p.verification_started_at,
           funnel_started_at: p.funnel_started_at,
@@ -254,7 +252,6 @@ export function FunnelAnalyticsDashboard() {
                     <th className="text-left py-2 px-2">Status</th>
                     <th className="text-left py-2 px-2">Last Event</th>
                     <th className="text-left py-2 px-2">When</th>
-                    <th className="text-left py-2 px-2">Profile</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -276,19 +273,6 @@ export function FunnelAnalyticsDashboard() {
                       </td>
                       <td className="py-2 px-2 text-muted-foreground">
                         {formatDate(activity.last_event_at)}
-                      </td>
-                      <td className="py-2 px-2">
-                        {activity.short_code && (
-                          <a 
-                            href={`https://www.top10lists.us/p/${activity.short_code}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-primary hover:underline flex items-center gap-1"
-                          >
-                            <ExternalLink className="h-3 w-3" />
-                            View
-                          </a>
-                        )}
                       </td>
                     </tr>
                   ))}

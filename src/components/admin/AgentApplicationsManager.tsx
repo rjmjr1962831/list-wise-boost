@@ -66,14 +66,12 @@ export function AgentApplicationsManager() {
         if (status === "approved") {
           const { data: professional } = await supabase
             .from("professionals")
-            .select("profile_link, short_code")
+            .select("profile_link")
             .eq("email", application.email)
             .maybeSingle();
           
           if (professional?.profile_link) {
             profileLink = professional.profile_link;
-          } else if (professional?.short_code) {
-            profileLink = `https://top10lists.us/p/${professional.short_code}`;
           }
         }
 

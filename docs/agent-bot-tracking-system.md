@@ -11,8 +11,8 @@ This system tracks when AI bots (Google, Claude, ChatGPT, Perplexity, etc.) visi
 ### 1. **Bot Visit Tracking**
 - Automatically detects and logs bot visits and counts them per agent when the agent is visible on the page.
 - **Full profile:** `/{state}/{city}/agents/{slug}` or **artifact:** `/artifact/{uuid}` → one row with that agent’s `agent_id`.
-- **City list** (e.g. Phoenix): `/{state}/{city}` or `/{state}/{city}/top10realestateagents` → one **request** row with `agents_shown` (up to 50 agents); a **batch job** creates per-agent rows so each gets credit.
-- **Neighborhood list** (e.g. Arcadia): same — one request row, batch job creates up to 50 per-agent rows.
+- **City list** (e.g. Phoenix): `/{state}/{city}` or `/{state}/{city}/top10realestateagents` → one **request** row with `agents_shown` (up to **1000** agents); a **batch job** creates per-agent rows so each gets credit.
+- **Neighborhood list** (e.g. Arcadia): same — one request row, batch job creates up to **1000** per-agent rows.
 - Tracks profile pages, artifact pages, and list pages (city/neighborhood).
 - Records cache hit/miss status.
 
@@ -89,13 +89,13 @@ This system tracks when AI bots (Google, Claude, ChatGPT, Perplexity, etc.) visi
 
 - **Batch aggregation**: Instead of updating the summary in a trigger on every insert, run a nightly job that aggregates yesterday’s rows from `cloudflare_request_logs` into `agent_bot_visit_summary`. That reduces trigger load; the summary would be at most one day behind.
 
-### List-page attribution and scale (up to 50 agents per page)
+### List-page attribution and scale (up to 1000 agents per page)
 
-List pages (city and neighborhood) can show **up to 50 agents**. To keep the request path fast at ~1000+ requests/day:
+List pages (city and neighborhood) can show **up to 1000 agents**. To keep the request path fast at ~1000+ requests/day:
 
-- **On each list-page request:** We insert **one row** with `agents_shown` (array of up to 50 `{ canonical_slug, name }`), `agent_id` null, and `list_page_processed_at` null.
+- **On each list-page request:** We insert **one row** with `agents_shown` (array of up to 1000 `{ canonical_slug, name }`), `agent_id` null, and `list_page_processed_at` null.
 - **Batch job:** **`process-list-page-logs`** runs every **10 minutes** (cron). It reads unprocessed list-page rows, looks up professional ids for each slug, inserts one row per agent into `cloudflare_request_logs` (trigger updates `agent_bot_visit_summary`), then sets `list_page_processed_at` on the original row.
-- **Result:** No 50-insert burst on the request path; per-agent attribution happens within ~10 minutes.
+- **Result:** No 1000-insert burst on the request path; per-agent attribution happens within ~10 minutes (batch job processes in chunks of 250).
 
 ## Ingesting logs without Cloudflare
 
@@ -119,12 +119,28 @@ Example log line:
 
 If your log format differs (e.g. CSV or different field names), transform to this shape first or extend the script.
 
+**Option 2: Run the batch via Edge Function**
+
+- **Edge Function:** **`ingest-request-logs`** — accepts POST with body `{ "entries": LogEntry[] }` (or a raw array). Same resolution and insert logic as the script; runs in Supabase so you don’t need the CLI or DB credentials locally.
+- **Script that runs the batch file:** Read a local log file and POST it to the function:
+
+```bash
+npx tsx scripts/call-ingest-request-logs.ts path/to/logs.jsonl
+```
+
+Requires `.env` with `SUPABASE_SERVICE_ROLE_KEY` (or `VITE_SUPABASE_ANON_KEY`) and `VITE_SUPABASE_URL`/`SUPABASE_URL`. Deploy the function first: `npx supabase functions deploy ingest-request-logs --project-ref wiotrvoirdgzfacuuiem`.
+
 ## Supabase Functions
 
 ### `log-bot-visit`
 **Location**: `supabase/functions/log-bot-visit/index.ts`
 
-**Ingestion entrypoint (no Cloudflare).** Accepts POST with `url`, `path`, `user_agent`, optional `timestamp`, `cache_status`, etc. Inserts one row into `cloudflare_request_logs`. For profile/artifact URLs sets `agent_id`; for list pages (city/neighborhood) sets `agents_shown` (up to 50 agents). Per-agent rows for list pages are created by the batch job, not on the request path.
+**Ingestion entrypoint (no Cloudflare).** Accepts POST with `url`, `path`, `user_agent`, optional `timestamp`, `cache_status`, etc. Inserts one row into `cloudflare_request_logs`. For profile/artifact URLs sets `agent_id`; for list pages (city/neighborhood) sets `agents_shown` (up to 1000 agents). Per-agent rows for list pages are created by the batch job, not on the request path.
+
+### `ingest-request-logs`
+**Location**: `supabase/functions/ingest-request-logs/index.ts`
+
+**Batch ingest (Option 2).** Accepts POST with `{ "entries": LogEntry[] }` or a raw array. Each entry: `path` or `url`, `user_agent`, optional `timestamp`, `cache_status`, etc. Same bot detection and resolution as `log-bot-visit`; inserts in batches of 100. Use from a script (e.g. `scripts/call-ingest-request-logs.ts`) after exporting Vercel or other logs to JSON/JSONL.
 
 ### `process-list-page-logs`
 **Location**: `supabase/functions/process-list-page-logs/index.ts`
@@ -181,7 +197,7 @@ Features:
 ### List-page per-agent rows
 **Schedule**: Every 10 minutes  
 **Job name**: `process-list-page-logs`  
-**Function**: `process-list-page-logs` Edge Function — creates per-agent rows from list-page rows (up to 50 agents per page) so the trigger can update `agent_bot_visit_summary` without doing 50 inserts on the request path.
+**Function**: `process-list-page-logs` Edge Function — creates per-agent rows from list-page rows (up to 1000 agents per page) so the trigger can update `agent_bot_visit_summary` without doing 1000 inserts on the request path.
 
 ## Deployment Steps
 
@@ -279,11 +295,26 @@ Bot notification emails support:
 2. Check `agent_id` is being extracted correctly in logs
 3. Verify RLS policies allow agent to read their own data
 
-### Bot visits not being tracked?
-1. Check Cloudflare Worker is deployed with latest changes
-2. Verify `log-bot-visit` function is deployed
-3. Check function logs for errors
-4. Verify bot detection patterns in worker code
+### Empty or almost no data in request logs (last 7–90 days)?
+
+If `cloudflare_request_logs` has very few rows (e.g. 0–1 bot visit in 90 days), the pipeline is not being fed:
+
+1. **The app does not call `log-bot-visit`.** The Vite/React app and Vercel runtime do not currently POST to `log-bot-visit` on each request. Traffic that goes only to Vercel never reaches the logging table.
+2. **Cloudflare is deprecated.** The old path (Worker → queue → consumer → log-bot-visit) is not in use.
+
+**To get richer bot data, choose one (or both):**
+
+- **Wire up a caller:** Add a layer that invokes `log-bot-visit` for each request (e.g. Vercel middleware or an API route that receives request URL + User-Agent and POSTs to the Supabase function). Then deploy so production traffic goes through it.
+- **Ingest from Vercel logs:** Export request logs from Vercel (path, User-Agent, optional timestamp), transform to JSON array or JSONL (path/url, user_agent, etc.). Then either:
+  - **CLI (direct DB):** `npx tsx scripts/ingest-request-logs.ts path/to/logs.jsonl`
+  - **Via Edge Function:** `npx tsx scripts/call-ingest-request-logs.ts path/to/logs.jsonl` (POSTs to `ingest-request-logs`; deploy the function first).
+
+Quick check: `npx tsx scripts/check-request-logs.ts` — shows row counts and a sample of the request-logs table.
+
+### Bot visits not being tracked? (after a caller is in place)
+1. Verify `log-bot-visit` Edge Function is deployed: `npx supabase functions deploy log-bot-visit --project-ref wiotrvoirdgzfacuuiem`
+2. Check function logs for errors (Supabase Dashboard → Edge Functions → log-bot-visit → Logs)
+3. Confirm the caller sends `path` or `url` and `user_agent` (and optional `timestamp`, `cache_status`)
 
 ## API Reference
 
