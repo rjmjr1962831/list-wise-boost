@@ -26,8 +26,8 @@ CREATE TABLE state_licenses (
   
   -- Zillow prequalification data (from Exa search)
   zillow_url TEXT,
-  zillow_rating NUMERIC,        -- Must be >= 4.8 to qualify
-  zillow_reviews INTEGER,       -- Must be >= 20 to qualify
+  zillow_rating NUMERIC,        -- Must be >= 4.5 to qualify
+  zillow_reviews INTEGER,       -- Must be >= 10 to qualify (verified in last 24 months)
   zillow_reviews_json JSONB,
   zillow_status TEXT,           -- 'qualified', 'not_qualified', 'not_found', 'error'
   zillow_error TEXT,
@@ -70,7 +70,7 @@ CREATE TABLE arizona_licenses (
 );
 
 -- PROFESSIONALS: Qualified agents who passed prequalification AND enrichment
--- Only agents with 4.8+ rating AND 20+ reviews go here
+-- Only agents with 4.5+ rating AND 10+ recent reviews go here
 CREATE TABLE professionals (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   
@@ -373,14 +373,14 @@ CREATE TABLE agent_city_subscriptions (
 -- ============================================
 
 -- PREQUALIFICATION CRITERIA (must pass BOTH):
---   1. review_stars_rating >= 4.8
---   2. num_total_reviews >= 20
+--   1. review_stars_rating >= 4.5
+--   2. num_total_reviews >= 10 (verified in last 24 months)
 
 -- PIPELINE FLOW:
 --   1. Query state_licenses WHERE zillow_scraped_at IS NULL
 --   2. Filter duplicates IN MEMORY against professionals.license_number BEFORE API calls
 --   3. Use Exa to find Zillow profile URL and extract rating/reviews
---   4. If qualified (4.8+/20+), run Firecrawl enrichment (75 concurrency)
+--   4. If qualified (4.5+/10+), run Firecrawl enrichment (75 concurrency)
 --   5. Insert to professionals table
 --   6. Update state_licenses with results
 

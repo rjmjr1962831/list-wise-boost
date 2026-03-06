@@ -118,8 +118,8 @@ VERIFICATION REQUIREMENTS FOR NEIGHBORHOOD EXPERT:
 - Payment does not override verification or approval.
 
 QUALIFICATION CRITERIA:
-- 4.8+ star rating (weighted average across Google, Zillow, Realtor.com, Redfin)
-- 20+ verified reviews across platforms
+- 4.5+ star rating (weighted average across Google, Zillow, Realtor.com, Redfin)
+- 10+ verified reviews in the last 24 months
 - Active license in good standing
 - No significant complaints or disciplinary actions
 

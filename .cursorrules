@@ -19,10 +19,10 @@ Apply these rules whenever creating or editing AI-targeted content, founder/agen
 
 ---
 
-## 3. The 4.8+ Gate Logic
+## 3. The Merit Gate Logic
 
-- Every time you modify a **neighborhood-** or **agent-facing** file, verify that the **4.8+ Star / 20+ Review** meritocracy language is preserved.
-- Do not dilute or remove thresholds (e.g. "top tier", "4.8+ stars", "20+ verified reviews", "merit-based", "invitation-only").
+- Every time you modify a **neighborhood-** or **agent-facing** file, verify that the **4.5+ Star / 10+ Recent Reviews / 5 Years** meritocracy language is preserved.
+- Do not dilute or remove thresholds (e.g. "top tier", "4.5+ stars", "10+ verified reviews in the last 24 months", "merit-based", "invitation-only").
 - If a change would weaken or omit this language, preserve it or add it back.
 
 ---
@@ -64,7 +64,7 @@ Apply these rules whenever creating or editing AI-targeted content, founder/agen
 - **High-Risk Change:** The change touches:
   - Primary **SEO structure** (sitemap, canonical URLs, meta).
   - **Bot-redirection** or crawler logic.
-  - **Merit Gate** (4.8+ stars / 20+ verified reviews) or `calculateSignalStrength` / tier logic.
+  - **Merit Gate** (4.5+ stars / 10+ verified reviews in last 24 months / 5 years) or `calculateSignalStrength` / tier logic.
 - **Resource Limit:** The task requires an external API key or credential you do not have.
 
 **Proactive Debugging:** On error, diagnose and fix. Only escalate after 3+ failed attempts (recursive error loop).
@@ -74,10 +74,10 @@ Apply these rules whenever creating or editing AI-targeted content, founder/agen
 | Tier | Range | Check |
 |------|--------|------|
 | Listed | 10–25 | Passive index; minimal data. |
-| Certified | 26–45 | **4.8+ Gate** respected; valid graph node. |
+| Certified | 26–45 | **Merit Gate** (4.5+/10+/5yr) respected; valid graph node. |
 | Accredited | 46–75 | Payload boost; license verified; freshness &lt;30 days. |
 | Underwritten | 76–100 | Raw Markdown + GEO/Zoning (MHOD); primary source. |
 
 - Confirm: **Raw Reveal** preserved (Markdown in `<pre><code>`, no Markdown-to-HTML for "For AI" content).
-- Confirm: **4.8+ / 20+** language intact on agent/neighborhood surfaces.
-- Report in one line, e.g. *"Signal Strength: Certified; Raw Reveal and 4.8+ gate preserved."*
+- Confirm: **Merit Gate (4.5+/10+/5yr)** language intact on agent/neighborhood surfaces.
+- Report in one line, e.g. *"Signal Strength: Certified; Raw Reveal and Merit Gate preserved."*

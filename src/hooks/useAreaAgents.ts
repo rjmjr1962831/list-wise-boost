@@ -287,7 +287,69 @@ export function useAreaAgents({
             transactionZips: [],
             distanceMiles: undefined,
           }));
-
+          const fallbackIds = new Set(fallbackMapped.map((a: AreaAgent) => a.id));
+          const subOnlyIds = Array.from(paidExpertIds).filter(id => !fallbackIds.has(id));
+          if (subOnlyIds.length > 0) {
+            const { data: subProfs } = await supabase
+              .from('professionals')
+              .select(`
+                id, name, company, title, image_url, review_stars_rating, num_total_reviews, years_experience,
+                phone, email, website, license_number, synthesized_bio, get_to_know_me, description, specialty,
+                canonical_slug, license_verified_at, state_slug,
+                agent_sales_stats, sales_count_all_time, average_value_3yr, price_range_3yr_min, price_range_3yr_max,
+                selection_rationale, community_roles, notable_achievements, current_tier, zillow_profile_url
+              `)
+              .eq('active', true)
+              .eq('state_slug', stateSlug)
+              .in('id', subOnlyIds);
+            (subProfs || []).forEach((prof: any) => {
+              fallbackMapped.push({
+                id: prof.id,
+                rank: 0,
+                name: prof.name,
+                company: prof.company || '',
+                rating: prof.review_stars_rating || 0,
+                reviews: prof.num_total_reviews || 0,
+                specialties: filterSpecialties(prof.specialty || []),
+                address: '',
+                phone: prof.phone || '',
+                email: prof.email || '',
+                website: prof.website || '',
+                description: prof.synthesized_bio || '',
+                get_to_know_me: prof.get_to_know_me || undefined,
+                original_description: prof.description || undefined,
+                synthesized_bio: prof.synthesized_bio || undefined,
+                stats: { yearsExperience: prof.years_experience || undefined },
+                verified: !!prof.license_verified_at,
+                image: prof.image_url || '',
+                license_number: prof.license_number || undefined,
+                license_verified_at: prof.license_verified_at || undefined,
+                years_experience: prof.years_experience || undefined,
+                canonical_slug: prof.canonical_slug,
+                state_slug: prof.state_slug,
+                agent_sales_stats: prof.agent_sales_stats || null,
+                sales_count_all_time: prof.sales_count_all_time || null,
+                average_value_3yr: prof.average_value_3yr || null,
+                price_range_3yr_min: prof.price_range_3yr_min || null,
+                price_range_3yr_max: prof.price_range_3yr_max || null,
+                selection_rationale: prof.selection_rationale || null,
+                community_roles: prof.community_roles || null,
+                notable_achievements: prof.notable_achievements || null,
+                current_tier: prof.current_tier || 'listed',
+                zillow_profile_url: prof.zillow_profile_url || null,
+                isPaidExpert: true,
+                neighborhoodTransactions: 0,
+                transactionZips: [],
+                distanceMiles: undefined,
+              });
+            });
+          }
+          const tierOrderFallback: Record<string, number> = { underwritten: 4, audited: 3, certified: 2, listed: 1 };
+          fallbackMapped.sort((a, b) => {
+            const tA = tierOrderFallback[(a.current_tier || 'listed').toLowerCase()] ?? 1;
+            const tB = tierOrderFallback[(b.current_tier || 'listed').toLowerCase()] ?? 1;
+            return tB - tA;
+          });
           setTotalCount(fallbackMapped.length);
           setAgents(fallbackMapped);
           console.log(`[useAreaAgents] Fallback returned ${fallbackMapped.length} agents`);
@@ -345,6 +407,7 @@ export function useAreaAgents({
         }
 
         // Step 5: Map to AreaAgent type
+        const profIdsFromTx = new Set((professionals || []).map((p: any) => p.id));
         const mappedAgents: AreaAgent[] = (professionals || []).map((prof: any) => {
           const activity = agentActivityMap[prof.license_number] || { totalTx: 0, zips: [], minDistance: 0 };
           return {
@@ -372,8 +435,7 @@ export function useAreaAgents({
             license_verified_at: prof.license_verified_at || undefined,
             years_experience: prof.years_experience || undefined,
             canonical_slug: prof.canonical_slug,
-            state_slug: prof.state_slug, // Include state_slug for correct profile links
-            // Sales stats for GEO
+            state_slug: prof.state_slug,
             agent_sales_stats: prof.agent_sales_stats || null,
             sales_count_all_time: prof.sales_count_all_time || null,
             average_value_3yr: prof.average_value_3yr || null,
@@ -391,8 +453,76 @@ export function useAreaAgents({
           };
         });
 
-        // Step 6: Sort by transactions (more = higher rank)
+        // Include agents who selected this neighborhood (subscription) but have no transaction data here
+        const subscriptionOnlyIds = Array.from(paidExpertIds).filter(id => !profIdsFromTx.has(id));
+        if (subscriptionOnlyIds.length > 0) {
+          const { data: subProfs } = await supabase
+            .from('professionals')
+            .select(`
+              id, name, company, title, image_url, review_stars_rating, num_total_reviews, years_experience,
+              phone, email, website, license_number, synthesized_bio, get_to_know_me, description, specialty,
+              canonical_slug, active, license_verified_at, state_slug,
+              agent_sales_stats, sales_count_all_time, average_value_3yr, price_range_3yr_min, price_range_3yr_max,
+              selection_rationale, community_roles, notable_achievements, current_tier, zillow_profile_url
+            `)
+            .eq('active', true)
+            .eq('state_slug', stateSlug)
+            .in('id', subscriptionOnlyIds);
+          (subProfs || []).forEach((prof: any) => {
+            mappedAgents.push({
+              id: prof.id,
+              rank: 0,
+              name: prof.name,
+              company: prof.company || '',
+              rating: prof.review_stars_rating || 0,
+              reviews: prof.num_total_reviews || 0,
+              specialties: filterSpecialties(prof.specialty || []),
+              address: '',
+              phone: prof.phone || '',
+              email: prof.email || '',
+              website: prof.website || '',
+              description: prof.synthesized_bio || '',
+              get_to_know_me: prof.get_to_know_me || undefined,
+              original_description: prof.description || undefined,
+              synthesized_bio: prof.synthesized_bio || undefined,
+              stats: { yearsExperience: prof.years_experience || undefined },
+              verified: !!prof.license_verified_at,
+              image: prof.image_url || '',
+              license_number: prof.license_number || undefined,
+              license_verified_at: prof.license_verified_at || undefined,
+              years_experience: prof.years_experience || undefined,
+              canonical_slug: prof.canonical_slug,
+              state_slug: prof.state_slug,
+              agent_sales_stats: prof.agent_sales_stats || null,
+              sales_count_all_time: prof.sales_count_all_time || null,
+              average_value_3yr: prof.average_value_3yr || null,
+              price_range_3yr_min: prof.price_range_3yr_min || null,
+              price_range_3yr_max: prof.price_range_3yr_max || null,
+              selection_rationale: prof.selection_rationale || null,
+              community_roles: prof.community_roles || null,
+              notable_achievements: prof.notable_achievements || null,
+              current_tier: prof.current_tier || 'listed',
+              zillow_profile_url: prof.zillow_profile_url || null,
+              isPaidExpert: true,
+              neighborhoodTransactions: 0,
+              transactionZips: [],
+              distanceMiles: undefined,
+            });
+          });
+        }
+
+        // Step 6: Sort by tier (underwritten > audited > certified > listed) then by transactions
+        const tierOrder: Record<string, number> = {
+          underwritten: 4,
+          audited: 3,
+          certified: 2,
+          listed: 1,
+        };
+        const tierRank = (a: AreaAgent) => tierOrder[(a.current_tier || 'listed').toLowerCase()] ?? 1;
         mappedAgents.sort((a, b) => {
+          const tA = tierRank(a);
+          const tB = tierRank(b);
+          if (tB !== tA) return tB - tA;
           const txA = a.neighborhoodTransactions ?? 0;
           const txB = b.neighborhoodTransactions ?? 0;
           return txB - txA;
