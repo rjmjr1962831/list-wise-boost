@@ -109,7 +109,7 @@ async function resolveListPageContext(
       .order("is_brand_builder", { ascending: false, nullsFirst: false })
       .order("rank", { ascending: true })
       .order("name", { ascending: true })
-      .limit(10);
+      .limit(50);
     if (!profs || profs.length === 0) return null;
     const abbr = STATE_SLUG_TO_ABBR[stateSlug] || stateSlug.toUpperCase();
     return {
@@ -165,7 +165,7 @@ async function resolveListPageContext(
   if (Array.isArray(activeAgents)) {
     for (const row of activeAgents) {
       const id = (row as any).professional_id;
-      if (id && !expertIds.has(id) && agentsShown.length < 10) {
+      if (id && !expertIds.has(id) && agentsShown.length < 50) {
         agentsShown.push({
           canonical_slug: (row as any).canonical_slug || "",
           name: (row as any).agent_name || "",
@@ -178,7 +178,7 @@ async function resolveListPageContext(
   return {
     list_page_type: "neighborhood",
     location_display: `${hood.neighborhood}, ${hood.city_area}, ${abbr}`,
-    agents_shown: agentsShown.slice(0, 10),
+    agents_shown: agentsShown.slice(0, 50),
   };
 }
 
@@ -290,7 +290,7 @@ serve(async (req) => {
       ? await supabase.from("cloudflare_request_logs").upsert(row, { onConflict: "ray_id" })
       : await supabase.from("cloudflare_request_logs").insert(row);
 
-    if (error && error.code !== '23505') { // Ignore duplicate errors
+    if (error && error.code !== "23505") {
       console.error("Insert error:", error);
       const errorMsg = error.message || JSON.stringify(error);
       return new Response(
@@ -298,6 +298,9 @@ serve(async (req) => {
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    // List pages: we only insert the single row with agents_shown. A batch job (process-list-page-logs)
+    // creates per-agent rows and sets list_page_processed_at so each agent gets credit at scale.
 
     return new Response(
       JSON.stringify({ success: true }),
