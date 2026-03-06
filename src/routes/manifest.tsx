@@ -105,6 +105,7 @@ const Founder = lazy(() => import("@/pages/Founder"));
 const AILiability = lazy(() => import("@/pages/AILiability"));
 const AICitationWhitepaper = lazy(() => import("@/pages/AICitationWhitepaper"));
 const ProtocolServices = lazy(() => import("@/pages/ProtocolServices"));
+const ProtocolAdopters = lazy(() => import("@/pages/ProtocolAdopters"));
 const PaymentsSecurity = lazy(() => import("@/pages/PaymentsSecurity"));
 const QualifiedAgentsPage = lazy(() => import("@/pages/QualifiedAgentsPage"));
 const AreaAgentsPage = lazy(() => import("@/pages/AreaAgentsPage"));
@@ -118,6 +119,10 @@ const CleanRoom = lazy(() => import("@/pages/CleanRoom"));
 const NeighborhoodApply = lazy(() => import("@/pages/NeighborhoodApply"));
 
 const AdminDashboard = lazy(() => import("@/pages/AdminDashboard"));
+/** Demo walkthrough: staging-only internal document; never on www. */
+const AdminDemo = import.meta.env.VITE_IS_PRODUCTION !== "1"
+  ? lazy(() => import("@/pages/admin/AdminDemo"))
+  : null;
 const AdminLogin = lazy(() => import("@/pages/AdminLogin"));
 const AdminExportAgents = lazy(() => import("@/pages/AdminExportAgents"));
 const BotAnalyticsDashboard = lazy(() => import("@/pages/BotAnalyticsDashboard"));
@@ -152,6 +157,7 @@ export const routeManifest: RouteObject[] = [
   { path: "/main", element: React.createElement(Navigate, { to: "/", replace: true }) },
   { path: "/admin/login", element: wrapAdmin(React.createElement(AdminLogin, null)) },
   { path: "/admin", element: wrapAdmin(React.createElement(AdminDashboard, null)) },
+  ...(AdminDemo ? [{ path: "/admin/demo", element: wrapAdmin(React.createElement(AdminDemo, null)) }] : []),
   { path: "/admin/crm/login", element: wrapAdmin(React.createElement(CRMLogin, null)) },
   {
     path: "/admin/crm",
@@ -201,6 +207,7 @@ export const routeManifest: RouteObject[] = [
   { path: "/ai-liability", element: React.createElement(AILiability, null) },
   { path: "/ai-citation-whitepaper", element: React.createElement(AICitationWhitepaper, null) },
   { path: "/protocol-services", element: React.createElement(ProtocolServices, null) },
+  { path: "/protocol-adopters", element: React.createElement(ProtocolAdopters, null) },
   { path: "/payments-security", element: React.createElement(PaymentsSecurity, null) },
   { path: "/check-profile", element: React.createElement(CheckProfile, null) },
   { path: "/check-agent", element: React.createElement(AgentLookup, null) },

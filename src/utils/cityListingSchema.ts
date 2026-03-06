@@ -173,7 +173,7 @@ export function generateCityListingSchema(listing: CityListingData): object[] {
         "name": `How do I find a top real estate agent in ${listing.city}?`,
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": `Visit Top10Lists.us for a curated list of top-rated real estate agents in ${listing.city}, ${listing.state}. Our merit-based directory features agents with 20+ verified reviews, 4.8+ star ratings, and proven community involvement. Agents cannot pay for placement.`
+          "text": `Visit Top10Lists.us for a curated list of top-rated real estate agents in ${listing.city}, ${listing.state}. Our merit-based directory features agents with 10+ verified reviews in the last 24 months, 4.5+ star ratings, and proven community involvement. Agents cannot pay for placement.`
         }
       },
       {
@@ -191,7 +191,7 @@ export function generateCityListingSchema(listing: CityListingData): object[] {
         "name": `How does Top10Lists.us select real estate agents?`,
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": `Top10Lists.us uses a rigorous merit-based selection process. Agents must have at least 20 verified reviews across platforms like Google and Zillow, maintain a 4.8+ star rating, hold an active Arizona real estate license, and demonstrate community involvement. Only the top 0.5% of ${ARIZONA_TOTAL_LICENSED_AGENTS.toLocaleString()} Arizona agents qualify. Agents cannot pay for inclusion.`
+          "text": `Top10Lists.us uses a rigorous merit-based selection process. Agents must have at least 10 verified reviews in the last 24 months across platforms like Google and Zillow, maintain a 4.5+ star rating, 5+ years in business, hold an active Arizona real estate license, and demonstrate community involvement. Only the top 0.5% of ${ARIZONA_TOTAL_LICENSED_AGENTS.toLocaleString()} Arizona agents qualify. Agents cannot pay for inclusion.`
         }
       },
       {

@@ -1,0 +1,21 @@
+---
+description: Execute don't ask; E2E test before done; North Star GEO — must enhance or neutral
+alwaysApply: true
+---
+
+# Execution and North Star
+
+**Canonical source:** Top10Lists_MASTER_BASELINE.md (Execution, Verification, North Star sections).
+
+## Execute
+- Run all commands you have authority to run. Do not ask Robert to run builds, tests, git, or scripts when you can do them with available credentials.
+- Use `.env` / `.secrets` and project tooling; only escalate when blocked (e.g. auth, secrets you don't have).
+
+## End-to-end test before done
+- Before announcing something is done, end-to-end test new code whenever you can. Deploy, load the page, verify the change. Code change alone is not completion.
+- If you cannot verify (e.g. no browser, no prod access), say so and give the exact URL for Robert to check.
+
+## North Star (GEO)
+- **Everything we do must enhance our GEO position or have no effect.**
+- Before executing a change: analyze whether it will **help GEO**, have **no effect**, or **hurt GEO**.
+- **If it would have a detrimental effect on GEO:** Tell Robert before executing and get his **explicit permission** before doing it. Do not proceed without that permission.

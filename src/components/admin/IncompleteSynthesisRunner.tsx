@@ -48,8 +48,8 @@ export function IncompleteSynthesisRunner() {
         .from('professionals')
         .select('id, synthesized_bio, city:cities(state)')
         .eq('active', true)
-        .gte('review_stars_rating', 4.8)
-        .gte('num_total_reviews', 20);
+        .gte('review_stars_rating', 4.5)
+        .gte('num_total_reviews', 10);
 
       if (error) throw error;
 
@@ -114,8 +114,8 @@ export function IncompleteSynthesisRunner() {
         .from('professionals')
         .select('id, synthesized_bio, city:cities(state)')
         .eq('active', true)
-        .gte('review_stars_rating', 4.8)
-        .gte('num_total_reviews', 20);
+        .gte('review_stars_rating', 4.5)
+        .gte('num_total_reviews', 10);
 
       if (countError) throw countError;
 

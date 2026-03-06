@@ -71,7 +71,7 @@ export function SelectionRationaleGenerator() {
       .select('id, name, review_stars_rating, num_total_reviews, selection_rationale, selection_rationale_generated_at')
       .eq('active', true)
       .gte('review_stars_rating', 4.5)
-      .gte('num_total_reviews', 20)
+      .gte('num_total_reviews', 10)
       .order('review_stars_rating', { ascending: false });
 
     if (selectedCity !== 'all') {

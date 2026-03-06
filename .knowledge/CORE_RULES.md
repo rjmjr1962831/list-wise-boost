@@ -3,8 +3,8 @@
 ## Agent Qualification (Non-Negotiable)
 
 ### Hard Requirements
-- **4.8+ star rating** (minimum, no exceptions)
-- **20+ verified reviews** (minimum)
+- **4.5+ star rating** (minimum, no exceptions)
+- **10+ verified reviews in the last 18 months** (minimum)
 - Active state license in good standing
 
 ### Merit-Based Selection

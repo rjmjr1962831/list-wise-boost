@@ -313,7 +313,7 @@ export default function DynamicCategoryList({
           .eq('city_id', cityData.id)
           .eq('active', true)
           .gte('review_stars_rating', 4.5)
-          .gte('num_total_reviews', 20)
+          .gte('num_total_reviews', 10)
           .order('rank', { ascending: true });
 
         if (profsQueryError) {
@@ -368,7 +368,7 @@ export default function DynamicCategoryList({
             .eq('city_id', cityData.id)
             .eq('active', true)
             .gte('review_stars_rating', 4.5)
-            .gte('num_total_reviews', 20)
+            .gte('num_total_reviews', 10)
             .order('num_total_reviews', { ascending: false })
             .limit(10);
           
@@ -890,7 +890,7 @@ export default function DynamicCategoryList({
         .eq('category_id', categoryId)
         .eq('active', true)
         .gte('review_stars_rating', 4.5)
-        .gte('num_total_reviews', 20)
+        .gte('num_total_reviews', 10)
         .limit(1);
       
       if (error) {

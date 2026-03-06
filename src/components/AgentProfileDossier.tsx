@@ -1,7 +1,6 @@
 import React from "react";
 import { AgentSourcesBlock } from "@/components/AgentSourcesBlock";
 import { formatWithParagraphs } from "@/utils/formatParagraphs";
-import { normBioText } from "@/utils/normBioText";
 
 /* -------------------------------------------------
    Machine-Native Artifact Types
@@ -433,26 +432,7 @@ export default function AgentProfileDossier(props: AgentProfileDossierProps) {
         </section>
       )}
 
-      {/* 9. Detailed Reasoning (synthesized bio) - Collapsed by default for token extraction */}
-      {synthesizedBio && (
-        <section style={{ marginBottom: "1.5rem" }}>
-          <h2 style={{ fontSize: "11px", fontWeight: 700, textTransform: "uppercase", marginBottom: "0.5rem" }}>
-            DETAILED_REASONING
-          </h2>
-          <div
-            style={{
-              border: "1px solid #000",
-              padding: "1rem",
-              fontSize: "12px",
-              lineHeight: 1.6,
-            }}
-            className="[&>p]:mb-4 [&>p:last-child]:mb-0"
-            dangerouslySetInnerHTML={{ __html: normBioText(synthesizedBio) }}
-          />
-        </section>
-      )}
-
-      {/* 10. In Their Own Words */}
+      {/* 9. In Their Own Words */}
       {getToKnowMe && (
         <section style={{ marginBottom: "1.5rem" }}>
           <h2 style={{ fontSize: "11px", fontWeight: 700, textTransform: "uppercase", marginBottom: "0.5rem" }}>
@@ -470,7 +450,7 @@ export default function AgentProfileDossier(props: AgentProfileDossierProps) {
         </section>
       )}
 
-      {/* 11. Selected Client Feedback */}
+      {/* 10. Selected Client Feedback */}
       {props.selectedReviews && props.selectedReviews.length > 0 && (
         <section style={{ marginBottom: "1.5rem" }}>
           <h2 style={{ fontSize: "11px", fontWeight: 700, textTransform: "uppercase", marginBottom: "0.5rem" }}>

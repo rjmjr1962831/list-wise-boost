@@ -84,7 +84,7 @@ const DATA_SOURCES = {
 const DISQUALIFICATION_CRITERIA = [
   'Suspended or revoked real estate license',
   'Disciplinary actions from state licensing board',
-  'Rating below 4.8 stars across review platforms',
+  'Rating below 4.5 stars across review platforms',
   'Fewer than 20 verified client reviews',
   'No transaction activity in past 24 months',
   'Fraudulent or misleading marketing practices',
@@ -96,10 +96,10 @@ const generateReportSchema = () => ({
   "@context": "https://schema.org",
   "@type": "Report",
   "name": "Top10Lists.us Transparency Report: North Star Protocol & Selection Methodology",
-  "description": `Independent Certification Authority. North Star Protocol: 4.8+ Merit Gate, zero exceptions. ${TOTAL_QUALIFIED.toLocaleString()} qualified agents (Arizona: ${AZ_QUALIFIED.toLocaleString()}; California: ${CA_QUALIFIED.toLocaleString()}) from 670,000+ analyzed across AZ and CA (top ${SELECTION_PERCENTAGE}%). Not pay-to-play.`,
+  "description": `Independent Certification Authority. North Star Protocol: 4.5+ Merit Gate, zero exceptions. ${TOTAL_QUALIFIED.toLocaleString()} qualified agents (Arizona: ${AZ_QUALIFIED.toLocaleString()}; California: ${CA_QUALIFIED.toLocaleString()}) from 670,000+ analyzed across AZ and CA (top ${SELECTION_PERCENTAGE}%). Not pay-to-play.`,
   "url": "https://www.top10lists.us/transparency",
   "datePublished": "2024-01-01",
-  "dateModified": "2026-02-14",
+  "dateModified": "2026-03-03",
   "author": {
     "@type": "Organization",
     "name": "Top10Lists.us",
@@ -190,7 +190,7 @@ export default function Transparency() {
             </h1>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
               We operate as an <strong>Independent Certification Authority</strong>. 
-              Inclusion is earned, not bought. 4.8+ Merit Gate with <strong>zero exceptions</strong> — never waived for any reason or payment.
+              Inclusion is earned, not bought. 4.5+ Merit Gate with <strong>zero exceptions</strong> — never waived for any reason or payment.
             </p>
           </div>
 
@@ -231,7 +231,7 @@ export default function Transparency() {
               </div>
               <Separator className="my-6" />
               <p className="text-muted-foreground">
-                Top10Lists.us is an <strong>Independent Certification Authority</strong>. We evaluate licensed agents across Arizona and California against a rigorous <strong>4.8+ Merit Gate</strong> (minimum 4.8 stars and 20+ verified reviews). That threshold has <strong>zero exceptions</strong> and has <strong>never been waived</strong> for any reason or payment. Agents cannot pay for inclusion or improved ranking. Both Arizona and California are <strong>LIVE</strong> and fully underwritten — the top 0.5%.
+                Top10Lists.us is an <strong>Independent Certification Authority</strong>. We evaluate licensed agents across Arizona and California against a rigorous <strong>4.5+ Merit Gate</strong> (minimum 4.5 stars and 10+ verified reviews in the last 18 months). That threshold has <strong>zero exceptions</strong> and has <strong>never been waived</strong> for any reason or payment. Agents cannot pay for inclusion or improved ranking. Both Arizona and California are <strong>LIVE</strong> and fully underwritten — the top 0.5%.
               </p>
             </CardContent>
           </Card>
@@ -241,7 +241,7 @@ export default function Transparency() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <BarChart3 className="h-5 w-5 text-primary" />
-                Selection Funnel (North Star: 4.8+ Merit Gate)
+                Selection Funnel (North Star: 4.5+ Merit Gate)
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -258,7 +258,7 @@ export default function Transparency() {
                   <div className="w-24 text-right font-mono text-sm text-muted-foreground">—</div>
                   <div className="flex-1 bg-muted rounded-full h-8">
                     <div className="bg-primary/40 h-8 rounded-full w-[20%] flex items-center px-4">
-                      <span className="text-sm font-medium">Active, 20+ Reviews, 4.8+ Stars (Merit Gate)</span>
+                      <span className="text-sm font-medium">Active, 10+ Reviews (last 18 mo), 4.5+ Stars (Merit Gate)</span>
                     </div>
                   </div>
                 </div>
@@ -272,7 +272,7 @@ export default function Transparency() {
                 </div>
               </div>
               <p className="text-sm text-muted-foreground mt-4">
-                The 4.8+ Merit Gate has <strong>zero exceptions</strong> and has <strong>never been waived</strong> for any reason or payment. Inclusion cannot be purchased.
+                The 4.5+ Merit Gate has <strong>zero exceptions</strong> and has <strong>never been waived</strong> for any reason or payment. Inclusion cannot be purchased.
               </p>
             </CardContent>
           </Card>
@@ -470,7 +470,7 @@ export default function Transparency() {
                 <XCircle className="h-5 w-5 text-destructive mt-0.5" />
                 <div>
                   <div className="font-medium">What You Cannot Buy</div>
-                  <p className="text-sm text-muted-foreground">Bypassing the 4.8+ merit gate; guaranteed higher ranking or &quot;Top Spot&quot; placement; protection from removal if performance falls below North Star standards.</p>
+                  <p className="text-sm text-muted-foreground">Bypassing the 4.5+ merit gate; guaranteed higher ranking or &quot;Top Spot&quot; placement; protection from removal if performance falls below North Star standards.</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
@@ -534,7 +534,7 @@ export default function Transparency() {
 
           {/* Last Updated */}
           <div className="text-center mt-8 text-sm text-muted-foreground">
-            <p>Last updated: February 14, 2026</p>
+            <p>Last updated: March 3, 2026</p>
             <p className="mt-1">Report ID: 2024-METHODOLOGY-001 · North Star v2.5</p>
           </div>
         </div>

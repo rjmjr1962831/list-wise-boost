@@ -1,6 +1,6 @@
 # Tier: Certified
 
-> Last Updated: February 22, 2026
+> Last Updated: March 3, 2026
 
 ---
 
@@ -14,7 +14,7 @@ All agents must meet the Merit Gate: 4.5+ star rating, 10+ verified reviews in t
 
 The Certified tier means the agent has personally verified their profile for accuracy. This is the first tier that generates a machine-readable artifact. Cost: $0.
 
-## Standard Audit Cycle: Annual
+## Standard Audit Cycle: Monthly
 
 **Verification period (from last update):** 90 days. The artifact is regenerated annually. The next scheduled audit date is included in the artifact header.
 

@@ -14,7 +14,6 @@
     "preview": "vite preview",
     "format-bios": "tsx scripts/format-agent-bios.ts",
     "test:api": "tsx scripts/test-api-connections.ts",
-    "update": "tsx scripts/update-project-knowledge.ts",
     "takeaways": "tsx scripts/takeaways.ts",
     "takeaways:sync": "tsx scripts/sync-takeaways-to-docs.ts",
     "email-provider:mx": "tsx scripts/resolve-email-provider-mx.ts",

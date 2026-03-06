@@ -167,7 +167,7 @@ const OptInPolicy = () => {
 
           {/* Last Updated */}
           <footer className="text-center text-sm text-muted-foreground pt-8 border-t">
-            <p>Last Updated: December 2024</p>
+            <p>Last Updated: March 3, 2026</p>
             <p className="mt-2">
               <Link to="/" className="text-primary hover:underline">
                 Return to Home

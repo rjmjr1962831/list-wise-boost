@@ -1,8 +1,8 @@
 import { AlertTriangle, Check } from "lucide-react";
 
 const requirements = [
-  "20+ verified reviews",
-  "4.8+ star rating",
+  "10+ verified reviews in the last 18 months",
+  "4.5+ star rating",
   "6+ years experience",
   "Active license, clean record",
 ];

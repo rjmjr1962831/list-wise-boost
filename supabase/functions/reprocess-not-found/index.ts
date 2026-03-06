@@ -287,8 +287,8 @@ async function processAgent(
       return { name, licenseNumber: license_number, status: 'duplicate', zillowUrl };
     }
 
-    // Check qualification: 4.8+ stars and 20+ reviews
-    const isQualified = (exaRating ?? 0) >= 4.8 && (exaReviewCount ?? 0) >= 20;
+    // Check qualification: 4.5+ stars and 10+ reviews
+    const isQualified = (exaRating ?? 0) >= 4.5 && (exaReviewCount ?? 0) >= 10;
     
     let fullData: any = {};
     let rating = exaRating ?? 0;

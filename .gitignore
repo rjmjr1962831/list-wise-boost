@@ -3,6 +3,9 @@
 .env.local
 .env.*.local
 
+# Vault/run-once SQL with service role key - NEVER commit
+run-once-vault-service-role-key.sql
+
 # Logs
 logs
 *.log
@@ -33,4 +36,7 @@ screenshots/
 
 # Scraper output (CSV/JSON from scrape-agent-websites.ts)
 scripts/output/
+
+# Vercel project link (created by vercel link)
+.vercel
 

@@ -40,8 +40,8 @@ serve(async (req) => {
             "description": "Minimum 20 unique reviewers from verified sources"
           },
           "rating": {
-            "threshold": 4.8,
-            "description": "Minimum 4.8 weighted average rating across all sources"
+            "threshold": 4.5,
+            "description": "Minimum 4.5 weighted average rating across all sources"
           },
           "experience": {
             "threshold": 6,
@@ -247,7 +247,7 @@ serve(async (req) => {
           "selection_method": "invitation-only",
           "data_verification": "third-party verified",
           "methodology_transparency": "fully published with exact weights",
-          "quality_gates": "20+ reviews, 4.8+ rating, 6+ years experience"
+          "quality_gates": "10+ reviews in last 18 months, 4.5+ rating, 6+ years experience"
         },
         "typical_competitors": {
           "pay_for_position": true,

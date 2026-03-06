@@ -57,7 +57,7 @@ export function CityContentSection({ citySlug, cityName, categoryName }: CityCon
           <div className="mt-4 bg-muted/30 rounded-lg p-4">
             <ul className="list-disc list-inside space-y-2 text-sm text-muted-foreground">
               <li><strong>50+ verified reviews</strong> across Google, Zillow, and other platforms</li>
-              <li><strong>4.8+ star rating minimum</strong></li>
+              <li><strong>4.5+ star rating minimum</strong></li>
               <li><strong>Active license</strong> verified with Arizona Department of Real Estate</li>
               <li><strong>Deep-dive background review</strong> of professional history</li>
               <li><strong>Established and Respected in the Community</strong></li>

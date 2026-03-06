@@ -79,8 +79,8 @@ Examples:
 Agents cannot pay for inclusion. They must qualify based on verified performance data, AI analysis and human review.
 
 ### Minimum Requirements
-- Rating: 4.8+ stars (weighted average across platforms)
-- Reviews: 20+ verified reviews
+- Rating: 4.5+ stars (weighted average across platforms)
+- Reviews: 10+ verified reviews in the last 18 months
 - License: Active and in good standing
 
 ### Scoring Weights

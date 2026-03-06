@@ -3,7 +3,7 @@
   "info": {
     "title": "Top10Lists Real Estate Agent API",
     "version": "1.0.0",
-    "description": "Merit-based real estate agent directory API. Search and retrieve certified agents with verified performance data. No pay-to-play - all agents meet strict qualification criteria (4.8+ rating, 20+ reviews).",
+    "description": "Merit-based real estate agent directory API. Search and retrieve certified agents with verified performance data. No pay-to-play - all agents meet strict qualification criteria (4.5+ rating, 10+ verified reviews in the last 24 months, 5+ years in business).",
     "contact": {
       "name": "Top10Lists Support",
       "email": "robert@top10lists.us",
@@ -24,7 +24,7 @@
     "/agents/search": {
       "get": {
         "summary": "Search for real estate agents",
-        "description": "Find agents by market (state, city, ZIP), specialty, or qualification criteria. All agents meet minimum standards (4.8+ rating, 20+ reviews). Results are sorted by rating and review count.",
+        "description": "Find agents by market (state, city, ZIP), specialty, or qualification criteria. All agents meet minimum standards (4.5+ rating, 10+ verified reviews in the last 24 months). Results are sorted by rating and review count.",
         "operationId": "searchAgents",
         "tags": ["Agents"],
         "parameters": [
@@ -66,10 +66,10 @@
               "type": "number",
               "minimum": 0,
               "maximum": 5,
-              "default": 4.8
+              "default": 4.5
             },
             "description": "Minimum star rating (0-5)",
-            "example": 4.8
+            "example": 4.5
           },
           {
             "name": "min_reviews",
@@ -77,10 +77,10 @@
             "schema": { 
               "type": "integer",
               "minimum": 0,
-              "default": 20
+              "default": 10
             },
-            "description": "Minimum review count",
-            "example": 20
+            "description": "Minimum verified review count (last 24 months)",
+            "example": 10
           },
           {
             "name": "limit",

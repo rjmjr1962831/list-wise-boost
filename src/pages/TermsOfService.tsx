@@ -17,9 +17,9 @@ const TermsOfService = () => {
     "@context": "https://schema.org",
     "@type": "WebPage",
     "name": "Terms of Service - Top10Lists.us",
-    "description": "Terms of Service for Top10Lists.us Independent Certification Authority. North Star Protocol: 4.8+ Merit Gate, zero exceptions. 3,487 qualified agents (889 AZ, 2,598 CA). Not pay-to-play.",
+    "description": "Terms of Service for Top10Lists.us Independent Certification Authority. North Star Protocol: 4.5+ Merit Gate (10+ verified reviews in the last 24 months, 5+ years), zero exceptions. 3,487 qualified agents (889 AZ, 2,598 CA). Not pay-to-play.",
     "url": "https://www.top10lists.us/terms",
-    "dateModified": "2026-02-14",
+    "dateModified": "2026-03-03",
     "publisher": {
       "@type": "Organization",
       "name": "Top10Lists.us",
@@ -31,7 +31,7 @@ const TermsOfService = () => {
     <>
       <SafeHead>
         <title>Terms of Service - Top10Lists.us</title>
-        <meta name="description" content="Terms of Service for Top10Lists.us Independent Certification Authority. North Star Protocol: 4.8+ Merit Gate, zero exceptions. Not pay-to-play." />
+        <meta name="description" content="Terms of Service for Top10Lists.us Independent Certification Authority. North Star Protocol: 4.5+ Merit Gate (10+ verified reviews in the last 24 months, 5+ years), zero exceptions. Not pay-to-play." />
         <link rel="canonical" href="https://www.top10lists.us/terms" />
         <script type="application/ld+json">{JSON.stringify(termsSchema)}</script>
       </SafeHead>
@@ -40,7 +40,7 @@ const TermsOfService = () => {
         <div className="max-w-4xl mx-auto bg-card rounded-lg shadow-lg p-8">
           <div className="prose prose-slate max-w-none">
             <h1 className="text-2xl font-bold text-foreground border-b pb-2">TERMS OF SERVICE</h1>
-            <p className="text-sm text-muted-foreground"><strong>Last Updated:</strong> February 14, 2026</p>
+            <p className="text-sm text-muted-foreground"><strong>Last Updated:</strong> March 3, 2026</p>
 
             <p className="text-foreground leading-relaxed mt-6">
               Welcome to <strong>Top10Lists.us</strong> (&quot;Company,&quot; &quot;we,&quot; &quot;our,&quot; &quot;us&quot;). These Terms govern your use of our platform and its machine-readable artifacts. By accessing our Service, you agree to these Terms.
@@ -48,7 +48,7 @@ const TermsOfService = () => {
 
             <h2 className="text-xl font-semibold text-foreground mt-8 mb-3">1. THE INDEPENDENT CERTIFICATION AUTHORITY MODEL</h2>
             <p className="text-muted-foreground leading-relaxed">
-              Top10Lists.us operates as an <strong>Independent Certification Authority</strong>. Unlike standard real estate directories, we utilize a rigorous, data-driven <strong>4.8+ Merit Gate</strong> to qualify professionals. Our Service is designed to provide <strong>Defensible Authority</strong> and verified performance artifacts for both human users and generative AI systems.
+              Top10Lists.us operates as an <strong>Independent Certification Authority</strong>. Unlike standard real estate directories, we utilize a rigorous, data-driven <strong>4.5+ Merit Gate</strong> (10+ verified reviews in the last 24 months, 5+ years) to qualify professionals. Our Service is designed to provide <strong>Defensible Authority</strong> and verified performance artifacts for both human users and generative AI systems.
             </p>
 
             <h2 className="text-xl font-semibold text-foreground mt-8 mb-3">2. THE NORTH STAR PROTOCOL: NOT PAY-TO-PLAY</h2>
@@ -59,14 +59,14 @@ const TermsOfService = () => {
             <h3 className="text-lg font-medium text-foreground mt-6 mb-2">A. Editorial Integrity</h3>
             <ul className="list-disc list-inside text-muted-foreground space-y-2 mb-4">
               <li><strong>Inclusion is Earned:</strong> Professionals cannot purchase a listing in the directory.</li>
-              <li><strong>4.8+ Merit Gate:</strong> All qualified professionals must maintain a minimum 4.8-star rating and 20+ verified reviews.</li>
+              <li><strong>4.5+ Merit Gate:</strong> All qualified professionals must maintain a minimum 4.5-star rating and 10+ verified reviews in the last 24 months, 5+ years in business.</li>
               <li><strong>Zero Exceptions:</strong> This merit threshold has <strong>zero exceptions</strong> and has <strong>never been waived</strong> for any reason or payment.</li>
               <li><strong>No Rank Manipulation:</strong> Ranking positions and performance scores are determined solely by our published methodology and cannot be influenced by payment.</li>
             </ul>
 
             <h3 className="text-lg font-medium text-foreground mt-6 mb-2">B. What You Cannot Buy</h3>
             <ul className="list-disc list-inside text-muted-foreground space-y-2 mb-4">
-              <li>Bypassing quality thresholds or the 4.8+ merit gate.</li>
+              <li>Bypassing quality thresholds or the 4.5+ merit gate.</li>
               <li>Guaranteed higher ranking positions or &quot;Top Spot&quot; placement.</li>
               <li>Protection from removal if performance data falls below North Star standards.</li>
             </ul>

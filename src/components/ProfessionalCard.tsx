@@ -1366,7 +1366,7 @@ export const ProfessionalCard = ({
                             />
                           ))}
                         </div>
-                        <span className="font-bold text-lg" itemProp="ratingValue">{displayRating}</span>
+                        <span className="font-bold text-lg" itemProp="ratingValue">{displayRating >= 4.8 ? '4.8+' : displayRating >= 4.5 ? '4.5+' : displayRating}</span>
                         <span className="text-sm text-muted-foreground">(<span itemProp="reviewCount">{Math.max(0, Math.floor((displayReviews - 10) / 10) * 10).toLocaleString('en-US')}+</span> reviews)</span>
                         <meta itemProp="bestRating" content="5" />
                       </div>
@@ -1382,7 +1382,9 @@ export const ProfessionalCard = ({
                       {/* Years */}
                       <div className="flex flex-col">
                         <span className="text-2xl font-bold text-foreground leading-none">
-                          {yearsExperience != null && yearsExperience > 0 ? yearsExperience : 'NA'}
+                          {yearsExperience != null && yearsExperience > 0
+                            ? `${Math.max(5, Math.floor(yearsExperience / 5) * 5)}+`
+                            : 'NA'}
                         </span>
                         <span className="text-[0.65rem] uppercase tracking-wider text-muted-foreground mt-1">
                           Years
@@ -1626,104 +1628,6 @@ export const ProfessionalCard = ({
                 </div>
               )}
             </div>
-
-              {/* Synthesized Bio Display - always show, fallback to description if no synthesized_bio */}
-              {(() => {
-                if (isEditing) return null;
-                
-                const synthesizedBio = (professional as any).synthesized_bio;
-                const descriptionFallback = (professional as any).description;
-                const bioContent = synthesizedBio || descriptionFallback;
-                
-                if (!bioContent) return null;
-                
-                // Convert plain text to paragraphs based on English grammar rules
-                // Split on topic changes: sentences about different subjects become separate paragraphs
-                const formatBioWithParagraphs = (text: string): string => {
-                  // If already has HTML paragraph tags, return as-is
-                  if (text.includes('<p>') || text.includes('<p ')) {
-                    return text;
-                  }
-                  
-                  // If has double newlines, split on those
-                  if (text.includes('\n\n')) {
-                    const paragraphs = text.split(/\n{2,}/).filter(Boolean);
-                    return paragraphs.map(p => `<p class="mb-4">${p.trim()}</p>`).join('');
-                  }
-                  
-                  // If has single newlines, treat each as a paragraph
-                  if (text.includes('\n')) {
-                    const paragraphs = text.split(/\n+/).filter(Boolean);
-                    return paragraphs.map(p => `<p class="mb-4">${p.trim()}</p>`).join('');
-                  }
-                  
-                  // Split long text into logical paragraphs based on topic shifts
-                  // Look for sentences that start new topics (credentials, achievements, community, etc.)
-                  const sentences = text.split(/(?<=[.!?])\s+/);
-                  let paragraphs: string[] = [];
-                  let currentParagraph: string[] = [];
-                  
-                  const topicIndicators = [
-                    /^(An?|The|His|Her|Their)\s+(Arizona|team|performance|expertise)/i,
-                    /^(He|She|They)\s+(holds?|earned?|maintains?|has|have|serves?|also)/i,
-                    /^(Since|Beyond|In addition|Additionally|Previously|Before)/i,
-                    /^(The\s+\w+\s+Team)/i,
-                    /^(As\s+a|With\s+over|For\s+over)/i,
-                  ];
-                  
-                  sentences.forEach((sentence, index) => {
-                    const trimmed = sentence.trim();
-                    if (!trimmed) return;
-                    
-                    // Start new paragraph on topic shift (after first 2 sentences)
-                    const isTopicShift = index > 1 && topicIndicators.some(pattern => pattern.test(trimmed));
-                    
-                    if (isTopicShift && currentParagraph.length >= 2) {
-                      paragraphs.push(currentParagraph.join(' '));
-                      currentParagraph = [trimmed];
-                    } else {
-                      currentParagraph.push(trimmed);
-                      // Also break after every 3-4 sentences for readability
-                      if (currentParagraph.length >= 4) {
-                        paragraphs.push(currentParagraph.join(' '));
-                        currentParagraph = [];
-                      }
-                    }
-                  });
-                  
-                  if (currentParagraph.length > 0) {
-                    paragraphs.push(currentParagraph.join(' '));
-                  }
-                  
-                  // Ensure minimum 2 paragraphs for better readability
-                  if (paragraphs.length === 1 && paragraphs[0].length > 200) {
-                    const midPoint = Math.floor(sentences.length / 2);
-                    paragraphs = [
-                      sentences.slice(0, midPoint).join(' '),
-                      sentences.slice(midPoint).join(' ')
-                    ];
-                  }
-                  
-                  return paragraphs.map(p => `<p class="mb-4">${p}</p>`).join('');
-                };
-                
-                const displayHtml = formatBioWithParagraphs(bioContent);
-                
-                return (
-                  <div className="border rounded-lg p-4 bg-primary/5 mt-3">
-                    <h4 className="sr-only">Professional Summary</h4>
-                    <div 
-                      className="prose prose-sm max-w-none text-sm text-foreground leading-relaxed [&>p]:mb-4 [&>p:last-child]:mb-0"
-                      dangerouslySetInnerHTML={{ __html: displayHtml }}
-                    />
-                    {(professional as any).profile_last_synthesized_at && (
-                      <p className="text-xs text-muted-foreground mt-2">
-                        Profile synthesized: {format(new Date((professional as any).profile_last_synthesized_at), 'MMM d, yyyy')}
-                      </p>
-                    )}
-                  </div>
-                );
-              })()}
 
               {/* Collapsible Bars - buttons in horizontal row */}
               <div

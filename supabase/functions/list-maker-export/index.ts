@@ -76,21 +76,46 @@ serve(async (req) => {
     }
 
     const csv = csvRows.join("\n");
+    const count = rows?.length || 0;
     const fileName = `list-maker-${Date.now()}.csv`;
-    const { data: uploadData, error: uploadError } = await supabase.storage
-      .from("list-maker-exports")
-      .upload(fileName, new TextEncoder().encode(csv), {
-        contentType: "text/csv",
-        upsert: true,
-      });
 
-    if (uploadError) throw uploadError;
+    // Upload to storage so we always have a URL (required when CSV is too large for response body)
+    let url: string | null = null;
+    try {
+      const { error: uploadError } = await supabase.storage
+        .from("list-maker-exports")
+        .upload(fileName, new TextEncoder().encode(csv), {
+          contentType: "text/csv",
+          upsert: true,
+        });
+      if (uploadError) {
+        console.error("list-maker-export storage upload failed:", uploadError);
+      } else {
+        const { data: urlData } = supabase.storage.from("list-maker-exports").getPublicUrl(fileName);
+        url = urlData.publicUrl;
+      }
+    } catch (e) {
+      console.error("list-maker-export storage error:", e);
+    }
 
-    const { data: urlData } = supabase.storage.from("list-maker-exports").getPublicUrl(fileName);
-    const url = urlData.publicUrl;
+    // Include csv in body only when small enough (~1.5MB) to avoid response truncation
+    const MAX_CSV_IN_BODY = 1_500_000;
+    const includeCsv = csv.length <= MAX_CSV_IN_BODY;
+    const payload: { url: string | null; count: number; csv?: string } = { url, count };
+    if (includeCsv) payload.csv = csv;
+
+    if (!url && !includeCsv) {
+      return new Response(
+        JSON.stringify({
+          error:
+            "Export too large for direct download and storage upload failed. Create the storage bucket: run migration 20260303000000_list_maker_exports_bucket.sql",
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 }
+      );
+    }
 
     return new Response(
-      JSON.stringify({ url, count: rows?.length || 0 }),
+      JSON.stringify(payload),
       { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
     );
   } catch (err: any) {

@@ -102,9 +102,7 @@ Routing: react-router-dom (FROZEN)
 
 ## Bot Rendering
 
-Service: Cloudflare Workers
-Worker: orange-truth-a103
-Cache TTL: 24 hours
+**Cloudflare is deprecated.** Do not add new Cloudflare dependencies. (Legacy: Worker orange-truth-a103, Cache TTL 24h.)
 
 ## Development Tools
 

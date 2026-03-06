@@ -91,7 +91,7 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
             <CardTitle className="text-lg">Our Tiered Product Structure</CardTitle>
   
           </div>
-          {/* AICS + Web of Trust + Ways to Improve */}
+          {/* AICS + Web of Truth™ + Ways to Improve */}
           <div className="grid gap-3 sm:grid-cols-2">
             {/* AI Citability Score */}
             <div className="rounded-lg border bg-muted/30 p-4">
@@ -102,9 +102,9 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
               <p className="text-xs text-muted-foreground mt-1">Based on your current tier and verified data</p>
             </div>
 
-            {/* Web of Trust */}
+            {/* Web of Truth™ */}
             <div className="rounded-lg border bg-muted/30 p-4">
-              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Your Web of Trust</p>
+              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Your Web of Truth<sup>™</sup></p>
               {professional.profile_link ? (
                 <div className="flex items-center gap-2 mt-1">
                   <CheckCircle className="h-5 w-5 text-green-500 shrink-0" />
@@ -133,8 +133,8 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
               </li>
               <li className="flex items-center gap-2">
                 <span className="text-primary">•</span>
-                {professional.profile_link ? "Your Web of Trust is active" : (
-                  <span>Enable your Web of Trust <span className="text-xs text-green-600 font-medium">(free)</span></span>
+                {professional.profile_link ? "Your Web of Truth™ is active" : (
+                  <span>Enable your Web of Truth™ <span className="text-xs text-green-600 font-medium">(free)</span></span>
                 )}
               </li>
             </ul>

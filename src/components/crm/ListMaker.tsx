@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { Loader2, Download, RefreshCw, Link2 } from "lucide-react";
+import { Loader2, Download, RefreshCw } from "lucide-react";
 
 export interface ListMakerCriteria {
   active?: boolean | "all"; // true=active only, false=inactive only, "all"=both
@@ -71,7 +71,6 @@ export function ListMaker() {
   const [count, setCount] = useState<number | null>(null);
   const [loadingCount, setLoadingCount] = useState(false);
   const [exporting, setExporting] = useState(false);
-  const [lastCsvUrl, setLastCsvUrl] = useState<string | null>(null);
 
   const buildQuery = useCallback(() => {
     let q = supabase.from("professionals").select("id", { count: "exact", head: true });
@@ -118,18 +117,37 @@ export function ListMaker() {
       return;
     }
     setExporting(true);
-    setLastCsvUrl(null);
     try {
       const { data, error } = await supabase.functions.invoke("list-maker-export", {
         body: { criteria, outputFields },
       });
-      // Prefer server error message (data.error) over generic "Non 2XX"
       if (data?.error) throw new Error(data.error);
       if (error) throw error;
-      const url = data?.url;
-      if (!url) throw new Error("No URL returned");
-      setLastCsvUrl(url);
-      toast.success(`CSV ready: ${data?.count ?? 0} rows. Link below.`);
+      const url = data?.url ?? null;
+      const csv = data?.csv;
+      const count = data?.count ?? 0;
+      if (!csv && !url) throw new Error("No CSV or URL returned");
+
+      const filename = `list-maker-export-${Date.now()}.csv`;
+      const triggerDownload = (blob: Blob) => {
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(a.href);
+      };
+
+      if (typeof csv === "string" && csv.length > 0) {
+        triggerDownload(new Blob([csv], { type: "text/csv" }));
+        toast.success(`${count} rows. File downloaded.`);
+      } else if (url) {
+        const res = await fetch(url, { mode: "cors" });
+        if (!res.ok) throw new Error("Could not fetch file for download");
+        triggerDownload(await res.blob());
+        toast.success(`${count} rows. File downloaded.`);
+      }
     } catch (e: any) {
       toast.error("Export failed: " + (e.message || e));
     } finally {
@@ -286,7 +304,7 @@ export function ListMaker() {
         <CardHeader>
           <CardTitle>Results</CardTitle>
           <CardDescription>
-            Count of matching agents, Refine to update, Download CSV for a link
+            Count of matching agents. Refine to update, then Download CSV to save the file.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -321,20 +339,6 @@ export function ListMaker() {
             </Button>
           </div>
 
-          {lastCsvUrl && (
-            <div className="rounded-md border bg-muted/50 p-4">
-              <p className="text-sm font-medium mb-1">CSV ready (staging):</p>
-              <a
-                href={lastCsvUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm text-primary hover:underline flex items-center gap-1 break-all"
-              >
-                <Link2 className="h-4 w-4 shrink-0" />
-                {lastCsvUrl}
-              </a>
-            </div>
-          )}
         </CardContent>
       </Card>
     </div>
