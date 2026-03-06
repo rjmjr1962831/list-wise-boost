@@ -105,6 +105,7 @@ const Founder = lazy(() => import("@/pages/Founder"));
 const AILiability = lazy(() => import("@/pages/AILiability"));
 const AICitationWhitepaper = lazy(() => import("@/pages/AICitationWhitepaper"));
 const ProtocolServices = lazy(() => import("@/pages/ProtocolServices"));
+const ProtocolAdopters = lazy(() => import("@/pages/ProtocolAdopters"));
 const PaymentsSecurity = lazy(() => import("@/pages/PaymentsSecurity"));
 const QualifiedAgentsPage = lazy(() => import("@/pages/QualifiedAgentsPage"));
 const AreaAgentsPage = lazy(() => import("@/pages/AreaAgentsPage"));
@@ -206,6 +207,7 @@ export const routeManifest: RouteObject[] = [
   { path: "/ai-liability", element: React.createElement(AILiability, null) },
   { path: "/ai-citation-whitepaper", element: React.createElement(AICitationWhitepaper, null) },
   { path: "/protocol-services", element: React.createElement(ProtocolServices, null) },
+  { path: "/protocol-adopters", element: React.createElement(ProtocolAdopters, null) },
   { path: "/payments-security", element: React.createElement(PaymentsSecurity, null) },
   { path: "/check-profile", element: React.createElement(CheckProfile, null) },
   { path: "/check-agent", element: React.createElement(AgentLookup, null) },
