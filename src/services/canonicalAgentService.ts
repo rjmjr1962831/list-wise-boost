@@ -62,7 +62,7 @@ function calculateAgentScore(professional: any): number {
   
   // Special badges (0-5 points)
   const badges = professional.badges?.length || 0;
-  if (professional.is_brand_builder) score += 2;
+  // DEPRECATED: is_brand_builder no longer used for ranking (removed 2026-03)
   if (professional.is_premier_agent) score += 2;
   if (professional.is_top_agent) score += 1;
   

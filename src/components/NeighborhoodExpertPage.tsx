@@ -3,6 +3,7 @@ import { SafeHead } from "@/components/SafeHead";
 import { useAreaAgents } from '@/hooks/useAreaAgents';
 import { CleanRoomAgentArticle } from './CleanRoomAgentArticle';
 import { VerificationDisclaimer } from '@/components/VerificationDisclaimer';
+import { ARIZONA_TOTAL_LICENSED_AGENTS } from '@/data/arizonaCityPricing';
 
 interface NeighborhoodExpertPageProps {
   neighborhoodSlug: string;
@@ -29,21 +30,17 @@ export function NeighborhoodExpertPage({
     radiusMiles: 5,
   });
 
-  // Sort: paid experts first, then by tier (underwritten > certified > audited > listed), then by transactions
+  // Order by tier (underwritten, audited, certified, listed) then by transactions (hook already does this; ensure consistency)
+  const tierOrder: Record<string, number> = {
+    underwritten: 4,
+    audited: 3,
+    certified: 2,
+    listed: 1,
+  };
   const sortedAgents = useMemo(() => {
-    const tierRank: Record<string, number> = {
-      underwritten: 4,
-      certified: 3,
-      accredited: 2,
-      audited: 2,
-      listed: 1,
-    };
     return [...areaAgents].sort((a, b) => {
-      const aExp = (a as any).isPaidExpert ? 1 : 0;
-      const bExp = (b as any).isPaidExpert ? 1 : 0;
-      if (bExp !== aExp) return bExp - aExp;
-      const aTier = tierRank[(a as any).current_tier?.toLowerCase()] ?? 1;
-      const bTier = tierRank[(b as any).current_tier?.toLowerCase()] ?? 1;
+      const aTier = tierOrder[(a as any).current_tier?.toLowerCase()] ?? 1;
+      const bTier = tierOrder[(b as any).current_tier?.toLowerCase()] ?? 1;
       if (bTier !== aTier) return bTier - aTier;
       const txA = (a as any).neighborhoodTransactions ?? 0;
       const txB = (b as any).neighborhoodTransactions ?? 0;
@@ -103,7 +100,7 @@ export function NeighborhoodExpertPage({
     );
   }
 
-  const totalLicensed = stateSlug === 'arizona' ? 90000 : 100000;
+  const totalLicensed = stateSlug === 'arizona' ? ARIZONA_TOTAL_LICENSED_AGENTS : 100000;
 
   return (
     <>

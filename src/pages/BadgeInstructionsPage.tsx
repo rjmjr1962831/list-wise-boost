@@ -243,7 +243,7 @@ export default function BadgeInstructionsPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           {[
-            { name: "LinkedIn", tip: "Add the link in your profile headline, about section, or featured link." },
+            { name: "LinkedIn", tip: "Paste this into your Licenses and Certifications section." },
             { name: "Facebook", tip: "Paste the link in your bio or in a post; add the badge image as a profile frame or cover if supported." },
             { name: "Instagram", tip: "Add the link in your profile bio (Instagram allows one link)." },
             { name: "TikTok", tip: "Add the link in your bio." },
