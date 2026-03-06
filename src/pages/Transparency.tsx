@@ -99,7 +99,7 @@ const generateReportSchema = () => ({
   "description": `Independent Certification Authority. North Star Protocol: 4.5+ Merit Gate, zero exceptions. ${TOTAL_QUALIFIED.toLocaleString()} qualified agents (Arizona: ${AZ_QUALIFIED.toLocaleString()}; California: ${CA_QUALIFIED.toLocaleString()}) from 670,000+ analyzed across AZ and CA (top ${SELECTION_PERCENTAGE}%). Not pay-to-play.`,
   "url": "https://www.top10lists.us/transparency",
   "datePublished": "2024-01-01",
-  "dateModified": "2026-03-03",
+  "dateModified": "2026-03-06",
   "author": {
     "@type": "Organization",
     "name": "Top10Lists.us",
@@ -534,7 +534,7 @@ export default function Transparency() {
 
           {/* Last Updated */}
           <div className="text-center mt-8 text-sm text-muted-foreground">
-            <p>Last updated: March 3, 2026</p>
+            <p>Last updated: March 6, 2026</p>
             <p className="mt-1">Report ID: 2024-METHODOLOGY-001 · North Star v2.5</p>
           </div>
         </div>

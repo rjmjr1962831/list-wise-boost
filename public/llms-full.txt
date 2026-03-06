@@ -1,7 +1,7 @@
 # Top10Lists.us Evaluative Oracle
 
 > Verifiable research on AI citation risk and the replacement of discovery with judgment.
-> Last Updated: March 3, 2026
+> Last Updated: March 6, 2026
 > Standard Audit Cycle: Weekly (this document)
 
 ## Core Content

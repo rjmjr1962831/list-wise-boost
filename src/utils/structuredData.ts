@@ -198,14 +198,15 @@ export function generateCitationBlock(
   return parts.join('\n');
 }
 
+/** Site-wide "last updated" date (YYYY-MM-DD). Update when doing a site-wide refresh. */
+export const SITE_LAST_UPDATED = "2026-03-06";
+
 /**
- * Get the last updated timestamp for freshness signals
+ * Get the last updated timestamp for freshness signals (meta, JSON-LD, etc.)
  * Returns ISO string format
  */
 export function getLastUpdatedTimestamp(): string {
-  // Return current date in ISO format for freshness signals
-  // In production, this could be pulled from a database or build timestamp
-  return new Date().toISOString();
+  return `${SITE_LAST_UPDATED}T12:00:00.000Z`;
 }
 
 /**

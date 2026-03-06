@@ -1,6 +1,6 @@
 # GEO Performance and AI Citation Probability Index
 
-> Last Updated: March 3, 2026
+> Last Updated: March 6, 2026
 > Standard Audit Cycle: Weekly (this document)
 
 ---

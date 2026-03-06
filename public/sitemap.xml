@@ -1,29 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <!-- Generated: 2026-02-21 -->
-  <!-- Static, editorial, Q&A, and AI discovery pages -->
+  <!-- Generated: 2026-03-06 -->
   <sitemap>
     <loc>https://www.top10lists.us/sitemap-pages.xml</loc>
-    <lastmod>2026-02-21</lastmod>
+    <lastmod>2026-03-06</lastmod>
   </sitemap>
-  <!-- State hub pages -->
   <sitemap>
     <loc>https://www.top10lists.us/sitemap-states.xml</loc>
-    <lastmod>2026-02-21</lastmod>
+    <lastmod>2026-03-06</lastmod>
   </sitemap>
-  <!-- City agent listing pages -->
   <sitemap>
     <loc>https://www.top10lists.us/sitemap-cities.xml</loc>
-    <lastmod>2026-02-21</lastmod>
+    <lastmod>2026-03-06</lastmod>
   </sitemap>
-  <!-- Neighborhood agent listing pages -->
   <sitemap>
     <loc>https://www.top10lists.us/sitemap-neighborhoods.xml</loc>
-    <lastmod>2026-02-21</lastmod>
+    <lastmod>2026-03-06</lastmod>
   </sitemap>
-  <!-- Individual agent profile pages -->
   <sitemap>
     <loc>https://www.top10lists.us/sitemap-agents.xml</loc>
-    <lastmod>2026-02-21</lastmod>
+    <lastmod>2026-03-06</lastmod>
   </sitemap>
 </sitemapindex>
