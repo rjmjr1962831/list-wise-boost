@@ -300,58 +300,105 @@ export default function DynamicCategoryList({
 
         setCategory(categoryData);
 
-        // SINGLE QUERY: Direct query on professionals table - no ID list intermediary
-
+        // Agents for this city: use selected cities when agent has selected; otherwise use office zip
         let professionalsData: any[] = [];
         let profsError = null;
-        
-        // Single direct query: Get all qualified professionals for this city
-        // (No category_id filter — align with serve-bot-list-html; city pages show all qualified agents for the city.)
-        const { data: allProfs, error: profsQueryError } = await supabase
-          .from('professionals')
-          .select('*')
+
+        const tierOrder: Record<string, number> = {
+          underwritten: 4,
+          audited: 3,
+          certified: 2,
+          listed: 1,
+        };
+        const tierRank = (p: any) => tierOrder[(p.current_tier || 'listed').toLowerCase()] ?? 1;
+
+        // Agents who have selected ANY city (use their selection only; never office zip)
+        const { data: anyPcRows } = await supabase
+          .from('professional_cities')
+          .select('professional_id')
+          .eq('active', true);
+        const idsWithSelectedCities = new Set((anyPcRows || []).map((r: any) => r.professional_id));
+
+        // 1) Professionals who selected THIS city (professional_cities)
+        const { data: pcRows } = await supabase
+          .from('professional_cities')
+          .select('professional_id')
           .eq('city_id', cityData.id)
-          .eq('active', true)
-          .gte('review_stars_rating', 4.5)
-          .gte('num_total_reviews', 10)
-          .order('rank', { ascending: true });
+          .eq('active', true);
+        const idsFromPc = new Set((pcRows || []).map((r: any) => r.professional_id));
 
-        if (profsQueryError) {
-          console.error('Error fetching qualified professionals:', profsQueryError);
-          profsError = profsQueryError;
+        const byId = new Map<string, any>();
+
+        if (idsFromPc.size > 0) {
+          const { data: profsByPc, error: pcQueryError } = await supabase
+            .from('professionals')
+            .select('*')
+            .in('id', Array.from(idsFromPc))
+            .eq('active', true)
+            .gte('review_stars_rating', 4.5)
+            .gte('num_total_reviews', 10);
+          if (pcQueryError) profsError = pcQueryError;
+          (profsByPc || []).forEach((p: any) => byId.set(p.id, p));
         }
-        
-        console.log(`📊 Single query returned ${allProfs?.length || 0} qualified agents for ${cityData.name}`);
 
-        const brandBuilderProfs = (allProfs || []).filter((p: any) => p.is_brand_builder === true);
-        const freeProfs = (allProfs || []).filter((p: any) => p.is_brand_builder !== true);
-        
-        console.log(`🔍 Query returned: ${allProfs.length} total (${brandBuilderProfs.length} Brand Builders + ${freeProfs.length} free)`);
-        console.log(`🏆 Brand Builders:`, brandBuilderProfs.map((p: any) => p.name));
+        // 2) Office-zip assignment: ONLY for agents who have NOT selected cities
+        //    (agents with selected cities use their selection only)
+        const { data: ncRows } = await supabase
+          .from('neighborhood_catalog')
+          .select('zips')
+          .eq('city_area_slug', citySlug)
+          .eq('state', cityData.state || 'Arizona')
+          .eq('is_active', true);
+        const cityZips = new Set<string>();
+        (ncRows || []).forEach((r: any) => {
+          if (Array.isArray(r.zips)) r.zips.forEach((z: string) => cityZips.add(z));
+        });
+        if (cityZips.size > 0) {
+          const zipList = Array.from(cityZips);
+          // Two queries to avoid .or() syntax; merge and dedupe
+          const [res1, res2] = await Promise.all([
+            supabase.from('professionals').select('*').eq('active', true).eq('state_slug', normalizedStateSlug).gte('review_stars_rating', 4.5).gte('num_total_reviews', 10).in('business_zip', zipList),
+            supabase.from('professionals').select('*').eq('active', true).eq('state_slug', normalizedStateSlug).gte('review_stars_rating', 4.5).gte('num_total_reviews', 10).in('zip_code', zipList),
+          ]);
+          const profsByZip = [...(res1.data || []), ...(res2.data || [])];
+          const seen = new Set<string>();
+          for (const p of profsByZip) {
+            if (seen.has(p.id)) continue;
+            seen.add(p.id);
+            const officeZip = (p.business_zip || p.zip_code || '').toString().trim();
+            if (!officeZip || !cityZips.has(officeZip)) continue;
+            if (idsWithSelectedCities.has(p.id)) continue; // use selected cities only for them
+            if (!byId.has(p.id)) byId.set(p.id, p);
+          }
+        }
 
-        // Hourly round-robin: rotate through free agents based on current hour
+        let allProfs = Array.from(byId.values());
+
+        // Sort by tier (underwritten first, then audited, certified, listed)
+        allProfs.sort((a, b) => {
+          const tA = tierRank(a);
+          const tB = tierRank(b);
+          return tB - tA;
+        });
+
+        console.log(`📊 City page: ${allProfs.length} qualified agents for ${cityData.name} (selected cities or office-zip, by tier)`);
+
+        const brandBuilderProfs = allProfs.filter((p: any) => p.is_brand_builder === true);
+        const freeProfs = allProfs.filter((p: any) => p.is_brand_builder !== true);
+
         const hourlyOffset = Math.floor(Date.now() / (1000 * 60 * 60)) % (freeProfs.length || 1);
-        
-        // Fill remaining slots after brand builders
         const spotsRemaining = Math.max(0, 10 - brandBuilderProfs.length);
-        
-        // Pick agents starting from the hourly offset, wrapping around
         const rotatedPicks: typeof freeProfs = [];
         for (let i = 0; i < spotsRemaining && i < freeProfs.length; i++) {
           const index = (hourlyOffset + i) % freeProfs.length;
           rotatedPicks.push(freeProfs[index]);
         }
 
-        // Combine: Brand Builders first + rotated free picks
         professionalsData = [...brandBuilderProfs, ...rotatedPicks];
-        
-        // Store ALL qualified agents for "All Verified Agents" section (not just the top 10)
-        if (allProfs && allProfs.length > 0) {
+        if (allProfs.length > 0) {
           setAllVerifiedAgents(allProfs);
         }
-        
-        console.log(`✅ Final list: ${brandBuilderProfs.length} Brand Builders + ${rotatedPicks.length} rotated (offset ${hourlyOffset}) = ${professionalsData.length} total`);
-        console.log(`📋 Agents selected:`, professionalsData.map((p: any) => p.name));
+        console.log(`✅ Final list: ${brandBuilderProfs.length} Brand Builders + ${rotatedPicks.length} rotated = ${professionalsData.length} total`);
 
         if (profsError) {
           console.error('Error fetching professionals:', profsError);
