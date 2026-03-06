@@ -25,11 +25,15 @@ function esc(s: any): string { if (!s) return ""; return String(s).replace(/&/g,
 function sanitizeMeritGate(html: string): string {
   if (!html) return "";
   return String(html)
+    .replace(/4\.8\+?\s*star\s*rating,\s*20\+?\s*reviews?/gi, "4.5+ star rating, 10+ verified reviews in the last 24 months")
+    .replace(/4\.8\s*stars?,\s*20\+?\s*reviews?/gi, "4.5+ stars, 10+ verified reviews in the last 24 months")
     .replace(/4\.8\+?\s*star\s*rating/gi, "4.5+ star rating")
     .replace(/4\.8\+?\s*stars?/gi, "4.5+ stars")
-    .replace(/20\+?\s*verified\s*reviews/gi, "10+ verified reviews in the last 24 months")
-    .replace(/minimum\s*4\.8/gi, "minimum 4.5")
-    .replace(/4\.8\s*stars?,\s*20\+?\s*reviews/gi, "4.5+ stars, 10+ verified reviews in the last 24 months");
+    .replace(/\b20\+?\s*verified\s*reviews?/gi, "10+ verified reviews in the last 24 months")
+    .replace(/\b20\+?\s*reviews?(?=\s|\.|,|;|\)|$)/gi, "10+ verified reviews in the last 24 months")
+    .replace(/\b50\+?\s*(verified\s+)?(client\s+)?reviews?/gi, "10+ verified reviews in the last 24 months")
+    .replace(/\b6\+?\s*years?\s*(in\s+business|experience|verified)?/gi, "5+ years")
+    .replace(/minimum\s*4\.8/gi, "minimum 4.5");
 }
 function jp(v: any, fb: any = []): any { if (!v) return fb; if (typeof v !== "string") return v; try { return JSON.parse(v); } catch { return fb; } }
 function fr(n: number): string { if (!n || n < 10) return "10+"; return `${Math.floor((n - 10) / 10) * 10}+`; }
@@ -143,7 +147,7 @@ function renderAgent(a: any, si: any): string {
   // Selection rationale (NOT for listed)
   if (!isListed) {
     const rat = a.selection_rationale;
-    if (rat && rat !== "Unknown") o += `  <p><strong>Why selected:</strong> ${esc(rat)}</p>\n`;
+    if (rat && rat !== "Unknown") o += `  <p><strong>Why selected:</strong> ${esc(sanitizeMeritGate(rat))}</p>\n`;
   }
 
   // High-tier extras
@@ -332,7 +336,7 @@ serve(async (req) => {
     } else if (mk && Object.keys(mk).length > 0) {
       o += `<section id="${pp.citySlug}-market">\n`;
       o += `  <h2>${esc(city.name)} Real Estate Market Intelligence</h2>\n`;
-      if (mk.overview) o += `  <p>${esc(mk.overview)}</p>\n`;
+      if (mk.overview) o += `  <p>${esc(sanitizeMeritGate(mk.overview))}</p>\n`;
       const ms = mk.marketStats || {};
       if (Object.keys(ms).length > 0) {
         o += `  <table><thead><tr><th>Market Metric</th><th>Value</th></tr></thead><tbody>\n`;
@@ -342,13 +346,13 @@ serve(async (req) => {
         o += `  </tbody></table>\n`;
       }
       const hist = jp(mk.historicalFacts, []);
-      if (hist.length > 0) { o += `  <h3>History</h3>\n`; for (const h of hist) o += `  <p>${esc(h)}</p>\n`; }
-      if (mk.localCulture) o += `  <h3>Life in ${esc(city.name)}</h3>\n  <p>${esc(mk.localCulture)}</p>\n`;
-      if (mk.buyerProfile) o += `  <h3>Buyer Profile</h3>\n  <p>${esc(mk.buyerProfile)}</p>\n`;
-      if (mk.marketTrends) o += `  <h3>Market Trends</h3>\n  <p>${esc(mk.marketTrends)}</p>\n`;
-      if (mk.bestKeptSecret) o += `  <h3>Local Insider Tip</h3>\n  <p>${esc(mk.bestKeptSecret)}</p>\n`;
+      if (hist.length > 0) { o += `  <h3>History</h3>\n`; for (const h of hist) o += `  <p>${esc(sanitizeMeritGate(h))}</p>\n`; }
+      if (mk.localCulture) o += `  <h3>Life in ${esc(city.name)}</h3>\n  <p>${esc(sanitizeMeritGate(mk.localCulture))}</p>\n`;
+      if (mk.buyerProfile) o += `  <h3>Buyer Profile</h3>\n  <p>${esc(sanitizeMeritGate(mk.buyerProfile))}</p>\n`;
+      if (mk.marketTrends) o += `  <h3>Market Trends</h3>\n  <p>${esc(sanitizeMeritGate(mk.marketTrends))}</p>\n`;
+      if (mk.bestKeptSecret) o += `  <h3>Local Insider Tip</h3>\n  <p>${esc(sanitizeMeritGate(mk.bestKeptSecret))}</p>\n`;
       const hl = jp(mk.highlights, []);
-      if (hl.length > 0) { o += `  <h3>Why People Move to ${esc(city.name)}</h3>\n`; for (const h of hl) o += `  <p>${esc(h)}</p>\n`; }
+      if (hl.length > 0) { o += `  <h3>Why People Move to ${esc(city.name)}</h3>\n`; for (const h of hl) o += `  <p>${esc(sanitizeMeritGate(h))}</p>\n`; }
       o += `</section>\n`;
     }
 
