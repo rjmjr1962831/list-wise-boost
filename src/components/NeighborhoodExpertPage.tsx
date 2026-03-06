@@ -3,6 +3,7 @@ import { SafeHead } from "@/components/SafeHead";
 import { useAreaAgents } from '@/hooks/useAreaAgents';
 import { CleanRoomAgentArticle } from './CleanRoomAgentArticle';
 import { VerificationDisclaimer } from '@/components/VerificationDisclaimer';
+import { ARIZONA_TOTAL_LICENSED_AGENTS } from '@/data/arizonaCityPricing';
 
 interface NeighborhoodExpertPageProps {
   neighborhoodSlug: string;
@@ -10,6 +11,8 @@ interface NeighborhoodExpertPageProps {
   stateSlug: string;
   neighborhoodName: string;
   primaryZip?: string;
+  /** When neighborhoodSlug === citySlug (city-wide), pass city-level agents to show full list */
+  agentsOverride?: Array<{ id: string; name: string; [key: string]: unknown }>;
 }
 
 /**
@@ -21,6 +24,7 @@ export function NeighborhoodExpertPage({
   citySlug,
   stateSlug,
   neighborhoodName,
+  agentsOverride,
 }: NeighborhoodExpertPageProps) {
   const { agents: areaAgents, loading } = useAreaAgents({
     neighborhoodSlug,
@@ -28,28 +32,25 @@ export function NeighborhoodExpertPage({
     stateSlug,
     radiusMiles: 5,
   });
+  const agents = agentsOverride ?? areaAgents;
 
-  // Sort: paid experts first, then by tier (underwritten > certified > audited > listed), then by transactions
+  // Order by tier (underwritten, audited, certified, listed) then by transactions (hook already does this; ensure consistency)
+  const tierOrder: Record<string, number> = {
+    underwritten: 4,
+    audited: 3,
+    certified: 2,
+    listed: 1,
+  };
   const sortedAgents = useMemo(() => {
-    const tierRank: Record<string, number> = {
-      underwritten: 4,
-      certified: 3,
-      accredited: 2,
-      audited: 2,
-      listed: 1,
-    };
     return [...areaAgents].sort((a, b) => {
-      const aExp = (a as any).isPaidExpert ? 1 : 0;
-      const bExp = (b as any).isPaidExpert ? 1 : 0;
-      if (bExp !== aExp) return bExp - aExp;
-      const aTier = tierRank[(a as any).current_tier?.toLowerCase()] ?? 1;
-      const bTier = tierRank[(b as any).current_tier?.toLowerCase()] ?? 1;
+      const aTier = tierOrder[(a as any).current_tier?.toLowerCase()] ?? 1;
+      const bTier = tierOrder[(b as any).current_tier?.toLowerCase()] ?? 1;
       if (bTier !== aTier) return bTier - aTier;
       const txA = (a as any).neighborhoodTransactions ?? 0;
       const txB = (b as any).neighborhoodTransactions ?? 0;
       return txB - txA;
     });
-  }, [areaAgents]);
+  }, [agents]);
 
   const agentItemListSchema = useMemo(() => {
     if (sortedAgents.length === 0) return null;
@@ -93,7 +94,7 @@ export function NeighborhoodExpertPage({
     };
   }, [sortedAgents, neighborhoodName, stateSlug, citySlug, neighborhoodSlug]);
 
-  if (loading) {
+  if (!agentsOverride && loading) {
     return (
       <div className="animate-pulse space-y-6 max-w-3xl mx-auto font-serif">
         <div className="h-8 bg-muted rounded w-1/3" />
@@ -103,7 +104,7 @@ export function NeighborhoodExpertPage({
     );
   }
 
-  const totalLicensed = stateSlug === 'arizona' ? 90000 : 100000;
+  const totalLicensed = stateSlug === 'arizona' ? ARIZONA_TOTAL_LICENSED_AGENTS : 100000;
 
   return (
     <>

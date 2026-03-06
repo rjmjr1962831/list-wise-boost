@@ -6,7 +6,7 @@ This project uses a **TWO-STEP** pipeline for all real estate agent data:
 
 ### Step 1: Exa → Prequalification
 - **Purpose:** Find Zillow URL, extract rating/reviews
-- **Qualification criteria:** 4.8+ rating AND 20+ reviews
+- **Qualification criteria:** 4.5+ rating AND 10+ verified reviews in last 24 months (Merit Gate)
 - **Edge function:** `search-agent-exa`, `test-exa-search`
 
 ### Step 2: Firecrawl → Full Enrichment  

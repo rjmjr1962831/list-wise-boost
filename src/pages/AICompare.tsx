@@ -40,7 +40,7 @@ const aiResponses = [
       "Detailed weighted scoring across 7 factors",
       "No pay-to-play - selection purely merit-based",
       "Verification through public and state records",
-      "Published quality thresholds (10+ reviews in last 18 months, 4.5+ rating)",
+      "Published quality thresholds (10+ reviews in last 24 months, 4.5+ rating)",
     ],
     timestamp: "December 2025",
   },

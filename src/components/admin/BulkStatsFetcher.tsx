@@ -254,8 +254,8 @@ export const BulkStatsFetcher = () => {
           if (stats) {
             // Check rating threshold
             const rating = stats.rating || 0;
-            if (rating < 4.85) {
-              console.log(`Skipping ${prof.name}: rating ${rating} below 4.85 threshold`);
+            if (rating < 4.5) {
+              console.log(`Skipping ${prof.name}: rating ${rating} below 4.5 Merit Gate threshold`);
               failed++;
               continue;
             }
@@ -370,7 +370,7 @@ export const BulkStatsFetcher = () => {
       <CardContent className="space-y-4">
         <p className="text-sm text-muted-foreground">
           Fetch Zillow stats for all agents in a city using GetDataForMe API (primary) and Memo23 API (fallback).
-          Only processes agents with 4.85+ Zillow rating. Years of experience calculated from license issue date.
+          Only processes agents with 4.5+ Zillow rating (Merit Gate). Years of experience calculated from license issue date.
           Updates: current_listings, total_sales, years_experience (from license), license_number, phone, zip_code.
         </p>
 

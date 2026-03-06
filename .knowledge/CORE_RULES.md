@@ -4,7 +4,7 @@
 
 ### Hard Requirements
 - **4.5+ star rating** (minimum, no exceptions)
-- **10+ verified reviews in the last 18 months** (minimum)
+- **10+ verified reviews in the last 24 months** (minimum)
 - Active state license in good standing
 
 ### Merit-Based Selection

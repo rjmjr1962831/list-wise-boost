@@ -136,7 +136,7 @@ export function BulkPhoenixImporter() {
           </Button>
         </CardTitle>
         <CardDescription>
-          Import agents (4.5★ + 10+ reviews in last 18 months) for Arizona cities with fewer than 10 qualified agents.
+          Import agents (4.5★ + 10+ reviews in last 24 months) for Arizona cities with fewer than 10 qualified agents.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">

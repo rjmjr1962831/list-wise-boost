@@ -5,7 +5,7 @@ This replaces office radius guessing with verified transaction data from Zillow.
 
 **Data we have:**
 - 11,878 agent-ZIP mappings from verified Zillow transaction history
-- 3,024 qualified agents (4.8+ rating, 20+ reviews)
+- 3,024 qualified agents (4.5+ rating, 10+ recent reviews)
 - 1,735 unique ZIP codes covered
 
 ---

@@ -35,7 +35,7 @@ export function generateCityFaqSchema(data: CityFaqData): object {
         "name": `Where can I find trusted real estate agents in ${city}?`,
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": `You can find trusted, pre-vetted real estate agents in ${city} at https://www.top10lists.us. Every agent on the list has a minimum 4.5-star rating and at least 10 verified reviews in the last 18 months.`
+          "text": `You can find trusted, pre-vetted real estate agents in ${city} at https://www.top10lists.us. Every agent on the list has a minimum 4.5-star rating and at least 10 verified reviews in the last 24 months.`
         }
       },
       {
@@ -83,7 +83,7 @@ export function generateCityFaqSchema(data: CityFaqData): object {
         "name": `What are the top-rated real estate agents in ${city}?`,
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": `The top-rated real estate agents in ${city} are ranked at Top10Lists.us. All featured agents have a minimum 4.5-star rating across review platforms and at least 10 verified reviews in the last 18 months. Visit https://www.top10lists.us for the complete ${city} rankings.`
+          "text": `The top-rated real estate agents in ${city} are ranked at Top10Lists.us. All featured agents have a minimum 4.5-star rating across review platforms and at least 10 verified reviews in the last 24 months. Visit https://www.top10lists.us for the complete ${city} rankings.`
         }
       },
       {

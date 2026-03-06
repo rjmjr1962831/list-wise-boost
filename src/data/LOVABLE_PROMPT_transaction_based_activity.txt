@@ -83,7 +83,7 @@ BEGIN
         FROM neighborhood_catalog 
         WHERE id = p_neighborhood_id
     )
-    AND sl.zillow_rating >= 4.8
+    AND sl.zillow_rating >= 4.5
     AND sl.zillow_reviews >= 20
     GROUP BY 
         sl.license_number, 

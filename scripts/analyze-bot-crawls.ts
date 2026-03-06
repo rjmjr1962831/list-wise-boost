@@ -6,12 +6,31 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
-import * as dotenv from 'dotenv';
+import { readFileSync } from 'fs';
 
-dotenv.config();
+for (const p of ['.env', '.env.local']) {
+  try {
+    const env = readFileSync(p, 'utf-8');
+    for (const line of env.split(/\r?\n/)) {
+      const t = line.trim();
+      if (!t || t.startsWith('#')) continue;
+      const eq = t.indexOf('=');
+      if (eq <= 0) continue;
+      const key = t.slice(0, eq).trim();
+      let val = t.slice(eq + 1).trim();
+      if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) val = val.slice(1, -1);
+      process.env[key] = val;
+    }
+    break;
+  } catch { /* try next */ }
+}
 
-const supabaseUrl = process.env.VITE_SUPABASE_URL!;
-const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY!;
+const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || 'https://wiotrvoirdgzfacuuiem.supabase.co';
+const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
+if (!supabaseKey) {
+  console.error('Need VITE_SUPABASE_ANON_KEY or SUPABASE_SERVICE_ROLE_KEY in .env');
+  process.exit(1);
+}
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 interface BotCrawlStats {

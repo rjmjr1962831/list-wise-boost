@@ -12,7 +12,7 @@ export function PhoenixEnricher() {
     try {
       setIsRunning(true);
       
-      toast.info('Starting Greater Phoenix area enrichment (4.8★ + 100+ reviews)...');
+      toast.info('Starting Greater Phoenix area enrichment (4.5★ + 10+ reviews, Merit Gate)...');
       
       // Get Phoenix city ID
       const { data: cityData } = await supabase
@@ -68,7 +68,7 @@ export function PhoenixEnricher() {
       <CardHeader>
         <CardTitle>Phoenix Area Enrichment</CardTitle>
         <CardDescription>
-          Run getdataforme scraper for Greater Phoenix area. Filters for profiles with 4.8★ rating minimum and 100+ reviews.
+          Run getdataforme scraper for Greater Phoenix area. Filters for profiles with 4.5★ rating minimum and 10+ reviews (Merit Gate).
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -76,7 +76,7 @@ export function PhoenixEnricher() {
           <p><strong>Process:</strong></p>
           <ol className="list-decimal list-inside space-y-1 ml-2">
             <li>Scrapes Phoenix agents via getdataforme (agenscrape)</li>
-            <li>Filters profiles: ≥4.8 stars, ≥100 reviews</li>
+            <li>Filters profiles: ≥4.5 stars, ≥10 reviews (Merit Gate)</li>
             <li>Enriches qualifying agents with memo23</li>
             <li>Reuses existing enriched data where available</li>
           </ol>

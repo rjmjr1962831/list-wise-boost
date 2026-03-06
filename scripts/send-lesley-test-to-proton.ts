@@ -42,7 +42,7 @@ Loved talking to you just now.  I used to go to the Downtown Y when I lived down
 
 When you get 5 minutes, please go to [your profile]({{profile_url}}).  There you will confirm all the data we have compiled about you and select the cities and neighborhoods you want to be featured in.  This will immediately double the signal we have been putting out for you for the past three months.  Our certification tier is free for as long as you meet our selection criteria.
 
-To see why we selected you, go to [my website](https://www.top10lists.us/) and look around.  Check out the methodology page, which gives you a detailed explanation.  Just to pre-qualify, you have to meet our gate of 4.5+ star rating across Google and Zillow, have 10+ certified reviews in the last 18 months (we certify them) and be in the business at least 5 years.  Because you meet those criteria, we then did a deep dive with AI and Human analysis to ensure that you really are the community leader we want to feature.
+To see why we selected you, go to [my website](https://www.top10lists.us/) and look around.  Check out the methodology page, which gives you a detailed explanation.  Just to pre-qualify, you have to meet our gate of 4.5+ star rating across Google and Zillow, have 10+ certified reviews in the last 24 months (we certify them) and be in the business at least 5 years.  Because you meet those criteria, we then did a deep dive with AI and Human analysis to ensure that you really are the community leader we want to feature.
 
 I ran the numbers for you.  Since Dec 1, the various AIs have evaluated your profile over 1000 times and you have been named as a top agent by the top 4 AIs  36 times.
 

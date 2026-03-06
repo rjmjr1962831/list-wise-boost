@@ -56,7 +56,7 @@ const RankingMethodology = () => {
           "@type": "HowToStep",
           "position": 2,
           "name": "Criteria Screening",
-          "text": "Identify agents meeting selection criteria: minimum 20 unique reviewers, minimum 4.8 weighted average rating, and minimum 6 years verified market experience."
+          "text": "Identify agents meeting selection criteria: minimum 10 verified reviews in the last 24 months, minimum 4.5 weighted average rating, and minimum 5 years verified market experience."
         },
         {
           "@type": "HowToStep",
@@ -151,7 +151,7 @@ const RankingMethodology = () => {
       {
         "@type": "PropertyValue",
         "name": "Quality gates enforced",
-        "value": "20+ reviews, 4.8+ rating (Top10Lists) vs None or minimal (competitors)"
+        "value": "10+ reviews (last 24 mo), 4.5+ rating (Top10Lists) vs None or minimal (competitors)"
       },
       {
         "@type": "PropertyValue",
@@ -344,7 +344,7 @@ const RankingMethodology = () => {
                     <ChevronDown className="h-5 w-5 transition-transform group-open:rotate-180" />
                   </summary>
                   <p className="mt-3 text-muted-foreground">
-                    Our team continuously monitors agent performance data from Google Business, Zillow, Realtor.com, Redfin, press outlets, public records, and regulatory actions. When an agent's verified metrics meet all three selection criteria (20+ reviews, 4.8+ rating, 6+ years experience), they become eligible for invitation consideration. Final selection involves editorial review to ensure directory quality and appropriate market coverage.
+                    Our team continuously monitors agent performance data from Google Business, Zillow, Realtor.com, Redfin, press outlets, public records, and regulatory actions. When an agent's verified metrics meet all three selection criteria (10+ verified reviews in the last 24 months, 4.5+ rating, 5+ years experience), they become eligible for invitation consideration. Final selection involves editorial review to ensure directory quality and appropriate market coverage.
                   </p>
                 </details>
 

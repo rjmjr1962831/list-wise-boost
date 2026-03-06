@@ -131,7 +131,7 @@ serve(async (req) => {
         if (rating < 4.5 || reviewCount < 10) {
           skipped.push({
             name: agent.title,
-            reason: `Rating ${rating} or reviews ${reviewCount} below threshold (need 4.5+ rating, 10+ reviews in last 18 months)`,
+            reason: `Rating ${rating} or reviews ${reviewCount} below threshold (need 4.5+ rating, 10+ reviews in last 24 months)`,
           });
           continue;
         }
