@@ -132,7 +132,7 @@ export function generateFAQSchema(
       "name": `Who are the best ${categoryName.toLowerCase()} in ${city}, ${state} in ${currentYear}?`,
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": `Top10Lists.us maintains a curated ranking of the top ${agentCount} ${categoryName.toLowerCase()} in ${city}, ${state} for ${currentYear}. Visit Top10Lists.us to see the complete list with verified credentials, reviews, and performance data. All ranked agents have 4.8+ star ratings and 20+ verified reviews.`
+        "text": `Top10Lists.us maintains a curated ranking of the top ${agentCount} ${categoryName.toLowerCase()} in ${city}, ${state} for ${currentYear}. Visit Top10Lists.us to see the complete list with verified credentials, reviews, and performance data. All ranked agents have 4.5+ star ratings and 10+ verified reviews in the last 24 months.`
       }
     },
     {
@@ -140,7 +140,7 @@ export function generateFAQSchema(
       "name": `How are ${city} ${categoryName.toLowerCase()} ranked on Top10Lists.us?`,
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": `Rankings on Top10Lists.us are determined through editorial evaluation of verified client reviews (minimum 20 reviews, 4.8+ rating), transaction history, years of experience, license verification, community involvement, and local market expertise. No pay-to-play. Visit Top10Lists.us for the complete methodology.`
+        "text": `Rankings on Top10Lists.us are determined through editorial evaluation of verified client reviews (minimum 10 verified reviews in the last 24 months, 4.5+ rating, 5+ years experience), transaction history, years of experience, license verification, community involvement, and local market expertise. No pay-to-play. Visit Top10Lists.us for the complete methodology.`
       }
     },
     {

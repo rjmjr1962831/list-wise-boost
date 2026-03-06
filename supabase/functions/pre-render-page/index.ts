@@ -333,9 +333,19 @@ serve(async (req) => {
   if (neighborhood.writeup_html) marketSection += `<div class="writeup">${stripCjk(stripHtml(neighborhood.writeup_html)).slice(0, 3000)}</div>`;
   marketSection += `</section>`;
 
-  const nearby = (neighborhood.nearby_neighborhoods as string[]) || [];
-  const nearbySection = nearby.length
-    ? `<section id="nearby-neighborhoods"><h2>Nearby Neighborhoods</h2><p>${nearby.map((n: string) => `<a href="${BASE}/${state_slug}/${city_slug}/${String(n).toLowerCase().replace(/\s+/g, "-")}/top10realestateagents">${escapeHtml(n)}</a>`).join(", ")}</p></section>`
+  const nearbyRaw = neighborhood.nearby_neighborhoods ?? [];
+  const nearbyItems: { slug: string; name: string }[] = [];
+  for (const n of Array.isArray(nearbyRaw) ? nearbyRaw : []) {
+    if (typeof n === "string") {
+      const slug = n.toLowerCase().replace(/\s+/g, "-").trim();
+      if (slug) nearbyItems.push({ slug, name: n });
+    } else if (n && typeof n === "object" && (n as any).slug) {
+      const slug = String((n as any).slug).toLowerCase().replace(/\s+/g, "-").trim();
+      if (slug) nearbyItems.push({ slug, name: (n as any).name || slug.replace(/-/g, " ") });
+    }
+  }
+  const nearbySection = nearbyItems.length
+    ? `<section id="nearby-neighborhoods"><h2>Nearby Neighborhoods</h2><p>${nearbyItems.map(({ slug, name }) => `<a href="${BASE}/${state_slug}/${city_slug}/${slug}/top10realestateagents">${escapeHtml(name)}</a>`).join(", ")}</p></section>`
     : "";
 
   const agentIndexItems = agents.map((a: any) => `<li><a href="#${escapeAttr(a.license_number || a.short_code || "")}">${escapeHtml(a.name)} (${a.license_number || "N/A"})</a></li>`).join("\n      ");

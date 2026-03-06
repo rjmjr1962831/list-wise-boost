@@ -326,12 +326,24 @@ serve(async (req) => {
       o += `</section>\n`;
     }
 
-    // Neighborhoods
+    // Neighborhoods (CA stores nearby_neighborhoods as string[] slugs; AZ may use object[] with slug, name, city, distance_miles)
     if (isNh && nearby.length > 0) {
       o += `<section id="nearby">\n  <h2>Nearby Neighborhoods (${nearby.length})</h2>\n  <div class="nh-grid">\n`;
       for (const n of nearby) {
-        const nc = (n.city || "").toLowerCase().replace(/ /g, "-") || pp.citySlug;
-        o += `    <a href="https://www.top10lists.us/${pp.stateSlug}/${nc}/${n.slug || ""}/top10realestateagents">${esc(n.name || "")} (${n.distance_miles || "?"} mi)</a>\n`;
+        const slug = typeof n === "string"
+          ? String(n).toLowerCase().replace(/\s+/g, "-").trim()
+          : (n?.slug ?? "");
+        if (!slug) continue;
+        const nc = (typeof n === "object" && n && (n as any).city)
+          ? String((n as any).city).toLowerCase().replace(/ /g, "-")
+          : pp.citySlug;
+        const citySlug = nc || pp.citySlug;
+        const name = typeof n === "string"
+          ? (nhs.find((x) => (x.neighborhood_slug || "").toLowerCase() === slug)?.neighborhood ?? slug.replace(/-/g, " "))
+          : (n?.name ?? slug.replace(/-/g, " "));
+        const dist = typeof n === "object" && n && (n as any).distance_miles != null ? (n as any).distance_miles : null;
+        const distLabel = dist != null ? ` (${dist} mi)` : "";
+        o += `    <a href="https://www.top10lists.us/${pp.stateSlug}/${citySlug}/${slug}/top10realestateagents">${esc(name)}${distLabel}</a>\n`;
       }
       o += `  </div>\n</section>\n`;
     } else if (!isNh && nhs.length > 0) {
