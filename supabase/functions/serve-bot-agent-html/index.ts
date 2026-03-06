@@ -592,10 +592,15 @@ serve(async (req) => {
         ...CORS,
       },
     });
-  } catch (e: unknown) {
-    return new Response(
-      JSON.stringify({ error: "Internal error", detail: e instanceof Error ? e.message : String(e) }),
-      { status: 500, headers: { ...CORS, "Content-Type": "application/json" } }
-    );
+  } catch (_e: unknown) {
+    const html = "<!DOCTYPE html><html><head><title>Service Unavailable</title></head><body><h1>Service Unavailable</h1><p>Please try again later.</p></body></html>";
+    return new Response(html, {
+      status: 503,
+      headers: {
+        "Content-Type": "text/html; charset=utf-8",
+        "Retry-After": "60",
+        ...CORS,
+      },
+    });
   }
 });
