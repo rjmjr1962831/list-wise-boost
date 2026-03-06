@@ -39,13 +39,13 @@
 
 ## Issues to Address
 
-### 1. **Homepage copy: “constitutionally mandated” (if still live)**
+### 1. **Homepage copy: “constitutionally mandated” — fix applied**
 - A fetch of the production homepage returned sections **“A Mandated Shift in Trust”** and **“Why AI Ghosts Most Agents”** with the line: *“these systems are now constitutionally mandated to ignore sources that are biased or commercially distorted.”*
 - The **current** `Index.tsx` in the repo no longer contains that wording; it uses *“trained to prioritize … and to discount commercial placements”* with a link to [Anthropic’s ad-free policy](https://www.anthropic.com/news/claude-is-a-space-to-think).
-- **Action:** If production still shows “constitutionally mandated,” confirm the latest build is deployed and CDN cache has been purged. If that copy exists on another route (e.g. funnel or agent landing), find and soften/cite it the same way.
+- **Fix:** Post-build no longer overwrites `index.html` with `_home.html`. Root (/) now serves the SPA (live Index.tsx). After next deploy, confirm at [homepage](https://www.top10lists.us/).
 
-### 2. **protocol-adopters** — fixed
-- [protocol-adopters](https://www.top10lists.us/protocol-adopters) now has **clean-room HTML** at `public/protocol-adopters/index.html`; Vercel rewrite serves it at `/protocol-adopters` and `/protocol-adopters/` so bots get full content (title, description, intro, empty state, links to protocol-services, for-ai, methodology).
+### 2. **protocol-adopters** — fixed ✅
+- [protocol-adopters](https://www.top10lists.us/protocol-adopters) returns **clean-room HTML**: title "Protocol Adopters | AI Citation Protocol | Top10Lists.us", intro, empty state, links to protocol-services, for-ai, methodology. Confirmed via fetch post-deploy.
 
 ### 3. **Schema / Rich Results**
 - Not re-verified in this audit. index.html has Organization, WebSite, FAQPage; city bot HTML has ItemList.
@@ -74,15 +74,23 @@
 | sitemap.xml       | ✅     | Index + cities/neighborhoods/agents |
 | ai-content-index  | ✅     | v2.0, March 3; fix bot-rendering description |
 | ai-compare        | ✅     | Full content, correct meta |
-| Homepage          | ⚠️     | Verify “constitutionally mandated” is gone after deploy/cache |
-| protocol-adopters | ⚠️     | SPA-only; crawlers may see shell only |
-| Schema            | 🔲     | Confirm via Rich Results Test |
+| Homepage          | ⚠️→✅  | Fix: root serves SPA. Verify after next deploy. |
+| protocol-adopters | ✅     | Clean-room HTML live; confirmed in re-audit. |
+| Schema            | 🔲     | Robert handling Rich Results. |
 
 ---
 
+
+
+## Re-audit (post–protocol-adopters + homepage fix)
+
+- **Homepage:** Was still showing old copy because production served static `_home.html`. Post-build now keeps `index.html` as SPA; next deploy will show Index.tsx copy.
+- **protocol-adopters:** [protocol-adopters](https://www.top10lists.us/protocol-adopters) returns full clean-room HTML. ✅
+- **ai-content-index:** Live JSON still has `botRendering`: Cloudflare; update to Supabase Edge when editing.
+
 ## Priority Actions
 
-1. Confirm production homepage shows the softened “trained to prioritize” + Anthropic link (deploy + cache).
+1. Deploy (pts → ptm) so homepage serves SPA; then confirm [homepage](https://www.top10lists.us/) shows softened copy.
 2. Update ai-content-index.json (and related docs): bot rendering = Supabase Edge, not Cloudflare.
-3. Run Rich Results Test on homepage and one city page.
-4. (Optional) Add static or bot-friendly content for /protocol-adopters if you want it fully crawlable.
+3. Rich Results: Robert handling.
+4. ~~protocol-adopters~~ — done (clean-room HTML).

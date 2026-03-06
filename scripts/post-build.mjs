@@ -24,27 +24,11 @@ if (existsSync(spaEntry)) {
   console.log('[post-build] Saved SPA entry -> _spa.html');
 }
 
-// 2. Replace with static homepage, injecting current asset hashes
+// 2. Keep index.html as SPA entry (do not replace with static _home.html).
+//    Root (/) then serves the live React app (Index.tsx); no stale "constitutionally mandated" copy.
+//    _home.html is no longer used so GEO/homepage copy stays in sync with src/pages/Index.tsx.
 if (existsSync(staticHome)) {
-  const spaHtml = readFileSync(spaEntry, 'utf-8');
-  let homeHtml = readFileSync(staticHome, 'utf-8');
-
-  // Extract current asset paths from SPA entry
-  const cssMatch = spaHtml.match(/\/assets\/index-[^"]*\.css/);
-  const jsMatch = spaHtml.match(/\/assets\/index-[^"]*\.js/);
-
-  // Replace old asset paths in _home.html with current ones
-  if (cssMatch) {
-    homeHtml = homeHtml.replace(/\/assets\/index-[^"]*\.css/, cssMatch[0]);
-    console.log(`[post-build] Injected CSS: ${cssMatch[0]}`);
-  }
-  if (jsMatch) {
-    homeHtml = homeHtml.replace(/\/assets\/index-[^"]*\.js/, jsMatch[0]);
-    console.log(`[post-build] Injected JS: ${jsMatch[0]}`);
-  }
-
-  writeFileSync(spaEntry, homeHtml);
-  console.log('[post-build] Static homepage -> index.html (with current asset hashes)');
+  console.log('[post-build] Keeping index.html as SPA (homepage = live Index.tsx)');
 } else {
-  console.warn('[post-build] WARNING: _home.html not found, homepage will be SPA shell');
+  console.log('[post-build] index.html = SPA entry (no _home.html)');
 }
