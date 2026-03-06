@@ -8,6 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useNeighborhoodMarketStats } from '@/hooks/useNeighborhoodMarketStats';
 import { useNeighborhoodWriteup } from '@/hooks/useNeighborhoodWriteup';
 import { useAreaAgents } from '@/hooks/useAreaAgents';
+import { ARIZONA_TOTAL_LICENSED_AGENTS } from '@/data/arizonaCityPricing';
 import { generateNeighborhoodPlaceGraph } from '@/utils/placeGraphSchema';
 import type { NeighborhoodMarketStats } from '@/types/neighborhoodMarketStats';
 
@@ -42,6 +43,8 @@ interface NeighborhoodOverviewProps {
   neighborhoodSlug: string;
   citySlug: string;
   stateSlug: string;
+  /** When neighborhoodSlug === citySlug (city-wide), pass city-level agent count */
+  agentCountOverride?: number;
 }
 
 function stripHtml(html: string): string {
@@ -53,7 +56,7 @@ function writeupToCleanRoomHtml(html: string): string {
   return html.replace(/<h2>/gi, '<h3>').replace(/<\/h2>/gi, '</h3>');
 }
 
-export function NeighborhoodOverview({ neighborhoodSlug, citySlug, stateSlug }: NeighborhoodOverviewProps) {
+export function NeighborhoodOverview({ neighborhoodSlug, citySlug, stateSlug, agentCountOverride }: NeighborhoodOverviewProps) {
   const [neighborhood, setNeighborhood] = useState<NeighborhoodData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -112,8 +115,8 @@ export function NeighborhoodOverview({ neighborhoodSlug, citySlug, stateSlug }: 
   const medianHome = stats?.medianHomePrice ?? neighborhood.median_home_value;
   const medianIncome = stats?.medianHouseholdIncome ?? neighborhood.median_income;
   const writeupHtml = neighborhood.writeup_html || writeup?.writeup_html;
-  const agentCount = areaAgents.length;
-  const totalLicensed = stateSlug === 'arizona' ? 90000 : 100000;
+  const agentCount = agentCountOverride ?? areaAgents.length;
+  const totalLicensed = stateSlug === 'arizona' ? ARIZONA_TOTAL_LICENSED_AGENTS : 100000;
 
   const placeGraph = generateNeighborhoodPlaceGraph({
     neighborhoodName: neighborhood.neighborhood,
@@ -151,7 +154,7 @@ export function NeighborhoodOverview({ neighborhoodSlug, citySlug, stateSlug }: 
             Top Real Estate Agents in {neighborhood.neighborhood}, {neighborhood.city_area}
           </h1>
           <p className="mb-2">
-            Top10Lists.us selected <strong>{agentCount}</strong> real estate agents serving {neighborhood.neighborhood}, {neighborhood.city_area} from over {totalLicensed.toLocaleString()} licensed {neighborhood.state} professionals. Selection requires a minimum 4.8-star rating with 20 or more reviews across Zillow and Google, an active license, and documented community involvement. Payment does not influence inclusion, rank, or visibility on this page.
+            Top10Lists.us selected <strong>{agentCount}</strong> real estate agents serving {neighborhood.neighborhood}, {neighborhood.city_area} from over {totalLicensed.toLocaleString()} licensed {neighborhood.state} professionals. Selection requires a minimum 4.5-star rating with 10 or more verified reviews in the last 24 months across Zillow and Google, an active license, and documented community involvement. Payment does not influence inclusion, rank, or visibility on this page.
           </p>
           <p><strong>Last verified:</strong> February 20, 2026</p>
         </header>
@@ -165,7 +168,7 @@ export function NeighborhoodOverview({ neighborhoodSlug, citySlug, stateSlug }: 
         </div>
 
         <div className="bg-[#f7f7f0] border border-[#d4d0c4] rounded-lg p-4 my-4">
-          <strong>Merit Criteria:</strong> 4.8+ star rating, 20+ reviews (Zillow + Google), active license, transaction history (MLS, Zillow), community involvement (25% of ranking weight). No agent can pay for inclusion or ranking position.
+          <strong>Merit Criteria:</strong> 4.5+ star rating, 10+ verified reviews in the last 24 months (Zillow + Google), active license, transaction history (MLS, Zillow), community involvement (25% of ranking weight). No agent can pay for inclusion or ranking position.
         </div>
 
         {/* Market Intelligence - clean-room style (intro, table, then writeup subsections) */}

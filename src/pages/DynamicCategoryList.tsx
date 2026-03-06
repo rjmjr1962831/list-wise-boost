@@ -1427,12 +1427,13 @@ export default function DynamicCategoryList({
             </p>
           </div>
           
-          {/* Merit Transparency Banner */}
+          {/* Merit Transparency Banner - use live count when available */}
           <div className="mt-3">
             <MeritTransparencyBanner
               cityName={city.name}
               cityId={city.id}
               stateSlug={city.stateSlug || (city as any).state_slug || normalizedStateSlug}
+              qualifiedCountOverride={totalVerifiedCount > 0 ? totalVerifiedCount : undefined}
             />
           </div>
 
@@ -1461,6 +1462,7 @@ export default function DynamicCategoryList({
             stateName={city.state}
             cityId={city.id}
             stateSlug={city.stateSlug || (city as any).state_slug}
+            liveCountOverride={totalVerifiedCount > 0 ? totalVerifiedCount : undefined}
           />
         </div>
       )}
@@ -1472,15 +1474,17 @@ export default function DynamicCategoryList({
             neighborhoodSlug={neighborhoodSlug}
             citySlug={citySlug || ''}
             stateSlug={normalizedStateSlug}
+            agentCountOverride={neighborhoodSlug === citySlug && totalVerifiedCount > 0 ? totalVerifiedCount : undefined}
           />
           
-          {/* Page 1: Neighborhood Experts Only (Crawlable) */}
+          {/* Page 1: Neighborhood Experts Only (Crawlable) - use city-level agents when neighborhood === city (e.g. Scottsdale/Scottsdale) */}
           <NeighborhoodExpertPage
             neighborhoodSlug={neighborhoodSlug}
             citySlug={citySlug || ''}
             stateSlug={normalizedStateSlug}
             neighborhoodName={neighborhoodName || ''}
             primaryZip={neighborhoodZipCode}
+            agentsOverride={neighborhoodSlug === citySlug && totalVerifiedCount > 0 ? allListedProfessionals : undefined}
           />
         </div>
       )}

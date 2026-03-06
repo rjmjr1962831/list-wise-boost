@@ -1,5 +1,6 @@
 // supabase/functions/refresh-city-agent-counts/index.ts
 // Refreshes the city_agent_counts cache table with qualified agent counts per city.
+// Uses same logic as DynamicCategoryList: professional_cities (selected cities) + office zip.
 // Run monthly via cron or manually when agents are added.
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
@@ -16,45 +17,102 @@ serve(async (req) => {
   }
 
   try {
-    console.log('🔄 Starting city agent count refresh...');
+    console.log('🔄 Starting city agent count refresh (professional_cities + office zip)...');
     
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
 
-    // Get all qualified agents with their city info
-    // Qualification: active, 4.5+ rating, 10+ recent reviews
-    const { data: professionals, error: fetchError } = await supabase
+    // Get all active cities
+    const { data: cities, error: citiesError } = await supabase
+      .from('cities')
+      .select('id, slug, name, state, state_slug')
+      .eq('active', true);
+
+    if (citiesError || !cities?.length) {
+      throw new Error(`Failed to fetch cities: ${citiesError?.message || 'No cities'}`);
+    }
+
+    // Agents who have selected ANY city (use their selection only; never office zip)
+    const { data: anyPcRows } = await supabase
+      .from('professional_cities')
+      .select('professional_id')
+      .eq('active', true);
+    const idsWithSelectedCities = new Set((anyPcRows || []).map((r: any) => r.professional_id));
+
+    // Get all professional_cities rows (professional_id, city_id)
+    const { data: pcRows, error: pcError } = await supabase
+      .from('professional_cities')
+      .select('professional_id, city_id')
+      .eq('active', true);
+
+    if (pcError) throw new Error(`Failed to fetch professional_cities: ${pcError.message}`);
+
+    // Build map: city_id -> Set of professional_ids
+    const cityToProfs = new Map<string, Set<string>>();
+    for (const r of pcRows || []) {
+      if (!r.city_id || !r.professional_id) continue;
+      if (!cityToProfs.has(r.city_id)) cityToProfs.set(r.city_id, new Set());
+      cityToProfs.get(r.city_id)!.add(r.professional_id);
+    }
+
+    // Get neighborhood_catalog zips per city (city_area_slug -> zips)
+    const { data: ncRows } = await supabase
+      .from('neighborhood_catalog')
+      .select('city_area_slug, zips, state')
+      .eq('is_active', true);
+
+    const cityZipsMap = new Map<string, Set<string>>();
+    for (const r of ncRows || []) {
+      const slug = r.city_area_slug;
+      if (!slug) continue;
+      const state = r.state || 'Arizona';
+      if (!cityZipsMap.has(slug)) cityZipsMap.set(slug, new Set());
+      if (Array.isArray(r.zips)) {
+        r.zips.forEach((z: string) => cityZipsMap.get(slug)!.add(z));
+      }
+    }
+
+    // Get all qualified professionals (active, 4.5+, 10+ reviews) with zip info
+    const { data: allProfs, error: profsError } = await supabase
       .from('professionals')
-      .select(`
-        id,
-        city_id,
-        cities!inner(slug, name)
-      `)
+      .select('id, business_zip, zip_code, state_slug')
       .eq('active', true)
       .gte('review_stars_rating', 4.5)
       .gte('num_total_reviews', 10);
 
-    if (fetchError) {
-      throw new Error(`Failed to fetch professionals: ${fetchError.message}`);
-    }
+    if (profsError) throw new Error(`Failed to fetch professionals: ${profsError.message}`);
 
-    console.log(`📊 Found ${professionals?.length || 0} qualified agents`);
-
-    // Count agents per city
+    // Count per city using same logic as DynamicCategoryList
     const cityCounts: Record<string, { count: number; name: string }> = {};
-    
-    (professionals || []).forEach((prof: any) => {
-      const citySlug = prof.cities?.slug;
-      const cityName = prof.cities?.name;
-      if (citySlug && cityName) {
-        if (!cityCounts[citySlug]) {
-          cityCounts[citySlug] = { count: 0, name: cityName };
+
+    for (const city of cities) {
+      const byId = new Set<string>();
+
+      // 1) From professional_cities
+      const idsFromPc = cityToProfs.get(city.id) || new Set();
+      idsFromPc.forEach((id) => byId.add(id));
+
+      // 2) From office zip (only for agents who have NOT selected cities)
+      const citySlug = city.slug;
+      const stateSlug = (city.state_slug || 'arizona').toLowerCase();
+      const cityZips = cityZipsMap.get(citySlug);
+      if (cityZips && cityZips.size > 0) {
+        const zipList = Array.from(cityZips);
+        for (const p of allProfs || []) {
+          if (idsWithSelectedCities.has(p.id)) continue;
+          const officeZip = (p.business_zip || p.zip_code || '').toString().trim();
+          if (!officeZip || !cityZips.has(officeZip)) continue;
+          if ((p.state_slug || '').toLowerCase() !== stateSlug) continue;
+          byId.add(p.id);
         }
-        cityCounts[citySlug].count++;
       }
-    });
+
+      if (byId.size > 0) {
+        cityCounts[citySlug] = { count: byId.size, name: city.name };
+      }
+    }
 
     console.log(`🏙️ Agents distributed across ${Object.keys(cityCounts).length} cities`);
 
@@ -85,12 +143,9 @@ serve(async (req) => {
       throw new Error(`Failed to update cache: ${upsertError.message}`);
     }
 
-    // Log summary
     const totalAgents = Object.values(cityCounts).reduce((sum, c) => sum + c.count, 0);
-    
     console.log(`✅ Updated ${updates.length} cities with ${totalAgents} total agents`);
     
-    // Log top 5 cities
     const topCities = updates
       .sort((a, b) => b.agent_count - a.agent_count)
       .slice(0, 5);

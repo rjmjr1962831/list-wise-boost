@@ -26,11 +26,13 @@ interface MeritTransparencyBannerProps {
   cityName: string;
   cityId: string;
   stateSlug: string;
+  /** Override with live count from page (avoids stale city_id query) */
+  qualifiedCountOverride?: number;
 }
 
-export function MeritTransparencyBanner({ cityName, cityId, stateSlug }: MeritTransparencyBannerProps) {
-  // Fetch the count of qualified agents for this specific city
-  const { data: qualifiedCount, isLoading } = useQuery({
+export function MeritTransparencyBanner({ cityName, cityId, stateSlug, qualifiedCountOverride }: MeritTransparencyBannerProps) {
+  // Fetch the count of qualified agents for this specific city (skip when override provided)
+  const { data: qualifiedCountFromQuery, isLoading } = useQuery({
     queryKey: ['merit-count', cityId],
     queryFn: async () => {
       const { count, error } = await supabase
@@ -45,14 +47,15 @@ export function MeritTransparencyBanner({ cityName, cityId, stateSlug }: MeritTr
       return count;
     },
     staleTime: 1000 * 60 * 60 * 24, // 24-hour client cache
-    enabled: !!cityId,
+    enabled: !!cityId && qualifiedCountOverride === undefined,
   });
 
+  const qualifiedCount = qualifiedCountOverride ?? qualifiedCountFromQuery;
   const normalizedSlug = stateSlug.toLowerCase();
   const totalLicensed = STATE_LICENSED_TOTALS[normalizedSlug] || 100_000;
 
   // Don't render until we have real data, and skip if zero qualified
-  if (isLoading || qualifiedCount === undefined || qualifiedCount === 0) return null;
+  if ((qualifiedCountOverride === undefined && isLoading) || qualifiedCount === undefined || qualifiedCount === 0) return null;
 
   const formattedTotal = totalLicensed.toLocaleString();
 

@@ -15,6 +15,8 @@ interface CityMarketOverviewProps {
   stateName: string;
   cityId?: string;
   stateSlug?: string;
+  /** Override with live agent count from page (avoids stale city_agent_counts cache) */
+  liveCountOverride?: number;
 }
 
 const ARTIFACT_STYLE = {
@@ -28,13 +30,13 @@ function truncateToNugget(text: string, maxWords = 55): string {
   return words.slice(0, maxWords).join(' ') + '...';
 }
 
-export function CityMarketOverview({ citySlug, cityName, stateName, cityId, stateSlug }: CityMarketOverviewProps) {
+export function CityMarketOverview({ citySlug, cityName, stateName, cityId, stateSlug, liveCountOverride }: CityMarketOverviewProps) {
   const { marketData } = useCityMarketContent(citySlug, cityName);
   const { data: cityAgentCount } = useAgentCountForCity(citySlug);
   const { data: totalAgentCount } = useTotalAgentCount();
 
   const qualifiedCount = 900;
-  const cityCount = cityAgentCount || 0;
+  const cityCount = liveCountOverride ?? cityAgentCount ?? 0;
   const stateSlugNorm = stateSlug || (stateName === 'Arizona' ? 'arizona' : stateName?.toLowerCase().replace(/\s+/g, '-') || '');
   const artifactId = cityId || citySlug;
   const artifactBar = formatArtifactBar('city', artifactId, stateSlugNorm);

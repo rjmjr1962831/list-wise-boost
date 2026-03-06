@@ -11,6 +11,8 @@ interface NeighborhoodExpertPageProps {
   stateSlug: string;
   neighborhoodName: string;
   primaryZip?: string;
+  /** When neighborhoodSlug === citySlug (city-wide), pass city-level agents to show full list */
+  agentsOverride?: Array<{ id: string; name: string; [key: string]: unknown }>;
 }
 
 /**
@@ -22,6 +24,7 @@ export function NeighborhoodExpertPage({
   citySlug,
   stateSlug,
   neighborhoodName,
+  agentsOverride,
 }: NeighborhoodExpertPageProps) {
   const { agents: areaAgents, loading } = useAreaAgents({
     neighborhoodSlug,
@@ -29,6 +32,7 @@ export function NeighborhoodExpertPage({
     stateSlug,
     radiusMiles: 5,
   });
+  const agents = agentsOverride ?? areaAgents;
 
   // Order by tier (underwritten, audited, certified, listed) then by transactions (hook already does this; ensure consistency)
   const tierOrder: Record<string, number> = {
@@ -46,7 +50,7 @@ export function NeighborhoodExpertPage({
       const txB = (b as any).neighborhoodTransactions ?? 0;
       return txB - txA;
     });
-  }, [areaAgents]);
+  }, [agents]);
 
   const agentItemListSchema = useMemo(() => {
     if (sortedAgents.length === 0) return null;
@@ -90,7 +94,7 @@ export function NeighborhoodExpertPage({
     };
   }, [sortedAgents, neighborhoodName, stateSlug, citySlug, neighborhoodSlug]);
 
-  if (loading) {
+  if (!agentsOverride && loading) {
     return (
       <div className="animate-pulse space-y-6 max-w-3xl mx-auto font-serif">
         <div className="h-8 bg-muted rounded w-1/3" />
