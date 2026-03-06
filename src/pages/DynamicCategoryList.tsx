@@ -383,22 +383,13 @@ export default function DynamicCategoryList({
 
         console.log(`📊 City page: ${allProfs.length} qualified agents for ${cityData.name} (selected cities or office-zip, by tier)`);
 
-        const brandBuilderProfs = allProfs.filter((p: any) => p.is_brand_builder === true);
-        const freeProfs = allProfs.filter((p: any) => p.is_brand_builder !== true);
-
-        const hourlyOffset = Math.floor(Date.now() / (1000 * 60 * 60)) % (freeProfs.length || 1);
-        const spotsRemaining = Math.max(0, 10 - brandBuilderProfs.length);
-        const rotatedPicks: typeof freeProfs = [];
-        for (let i = 0; i < spotsRemaining && i < freeProfs.length; i++) {
-          const index = (hourlyOffset + i) % freeProfs.length;
-          rotatedPicks.push(freeProfs[index]);
-        }
-
-        professionalsData = [...brandBuilderProfs, ...rotatedPicks];
+        // City pages: show ALL qualified agents by tier (underwritten → audited → certified → listed).
+        // No round-robin on city pages. Round-robin applies only to neighborhoods and only for listed agents.
+        professionalsData = allProfs;
         if (allProfs.length > 0) {
           setAllVerifiedAgents(allProfs);
         }
-        console.log(`✅ Final list: ${brandBuilderProfs.length} Brand Builders + ${rotatedPicks.length} rotated = ${professionalsData.length} total`);
+        console.log(`✅ Final list: ${professionalsData.length} agents by tier (all agents, no round-robin on city pages)`);
 
         if (profsError) {
           console.error('Error fetching professionals:', profsError);
@@ -1147,23 +1138,16 @@ export default function DynamicCategoryList({
     );
   }
 
-  // Take first 10 qualifying professionals
-  const topTenProfessionals = filteredProfessionals.slice(0, 10);
-
-  // All verified agents NOT in the top 10 (for "All Verified Agents" section)
-  const topTenIds = new Set(topTenProfessionals.map(p => p.id));
-  const remainingVerifiedAgents = allVerifiedAgents
-    .filter(a => !topTenIds.has(a.id))
-    .map(convertToProfessional);
-  // Raw DB records for payload rendering (keeps community_roles, notable_achievements, etc.)
-  const remainingVerifiedRaw = allVerifiedAgents.filter(a => !topTenIds.has(a.id));
-  const totalVerifiedCount = topTenProfessionals.length + remainingVerifiedAgents.length;
+  // List ALL qualified professionals (city and neighborhood pages show full list)
+  const allListedProfessionals = filteredProfessionals;
+  const totalVerifiedCount = allListedProfessionals.length;
+  const remainingVerifiedRaw = allVerifiedAgents; // For payload blocks
 
   const sections: ListSection[] = [
     {
       title: "",
       description: "",
-      items: topTenProfessionals,
+      items: allListedProfessionals,
       accentColor: "primary" as const
     }
   ];
@@ -1226,21 +1210,18 @@ export default function DynamicCategoryList({
   
   // Freshness signals for LLM optimization
   const lastUpdated = getLastUpdatedTimestamp();
-  const topAgentName = topTenProfessionals[0]?.name;
+  const topAgentName = allListedProfessionals[0]?.name;
   
   // State abbreviation for schemas
   const stateAbbrev = city.state_slug === 'arizona' ? 'AZ' : city.state_slug.toUpperCase().slice(0, 2);
   
   // Convert professionals to AgentData for enhanced schemas
-  const agentDataArray = topTenProfessionals.map(prof => 
+  const agentDataArray = allListedProfessionals.map(prof => 
     professionalToAgentData(prof, city.name, city.state, stateAbbrev, prof.id || '')
   );
 
   // Convert ALL verified agents for complete ItemList schema (GEO: bots must see everyone)
-  const allAgentDataArray = [
-    ...topTenProfessionals,
-    ...remainingVerifiedAgents
-  ].map(prof =>
+  const allAgentDataArray = allListedProfessionals.map(prof =>
     professionalToAgentData(prof, city.name, city.state, stateAbbrev, prof.id || '')
   );
 
@@ -1411,7 +1392,7 @@ export default function DynamicCategoryList({
           </script>
         ))}
         {/* Complete verified agents ItemList - all agents, not just top 10 */}
-        {totalVerifiedCount > 10 && (
+        {totalVerifiedCount > 0 && (
           <script type="application/ld+json">
             {JSON.stringify(allVerifiedItemListSchema)}
           </script>
@@ -1573,7 +1554,7 @@ export default function DynamicCategoryList({
       )}
 
       {/* All Verified Agents - full text/markdown payloads for AI consumption */}
-      {!neighborhoodSlug && remainingVerifiedAgents.length > 0 && (
+      {!neighborhoodSlug && remainingVerifiedRaw.length > 0 && (
         <div className="container mx-auto px-4 mt-8 mb-12">
           <div className="border-t border-border pt-8">
             <h2 className="text-xl font-semibold mb-2">
