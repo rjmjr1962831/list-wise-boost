@@ -458,7 +458,7 @@ export default function AgentLanding() {
               </div>
 
               <p className="text-sm text-muted-foreground mt-6">
-                4.9+ rating required • Experience matters • AI-first platform
+                4.5+ rating required • Experience matters • AI-first platform
               </p>
             </Card>
           </div>
