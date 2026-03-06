@@ -12,7 +12,9 @@ alwaysApply: true
 - Push to **staging** only when Robert says "push to staging" or when there are 10+ updates. Only **"push to main"** authorizes production. Use `npm run merge-to-main`; never manual merge.
 - Do what you can yourself; use credentials in `.env` / `.secrets`. Never say "done" without verification.
 - Links: always give Robert full URLs as markdown links: `[text](https://www.top10lists.us/...)`.
-- Business model: Listed/Certified $0; Audited $100/mo; Underwritten $150/mo. Qualification: 4.5+ stars, 10+ reviews in last 18 months. Cloudflare is deprecated.
+- Business model: Listed/Certified $0; Audited $100/mo; Underwritten $150/mo. Qualification: 4.5+ stars, 10+ reviews in last 24 months. Cloudflare is deprecated.
+- **AI pages:** If a page is for AI consumption (transparency, FAQ, methodology, for-ai, etc.), serve **clean room HTML**—minimal, self-contained, no React SPA, no browser rendering. Never serve full HTML (SPA shell or Cloudflare Browser Rendering) for AI pages.
 - **When Robert says "remember":** Add to `docs/cursor-daily-updates.md`.
+- **"ALL" means every single instance.** When Robert says "all" (e.g. "fix all references", "update all pages"), interpret literally: every file, every page, every occurrence. No exceptions, no "most" or "main" or "key" subsets. Search exhaustively; fix exhaustively.
 
 **Conflict rule:** If anything in this repo conflicts with the master doc, the master doc wins. Deprecate the earlier statement.

@@ -334,7 +334,7 @@ export default function CheckProfile() {
                   />
                   <RequirementCard
                     icon={<CheckCircle2 className="h-5 w-5" />}
-                    title="20+ Reviews"
+                    title="10+ Verified Reviews (last 24 mo)"
                     description="Demonstrated client satisfaction"
                   />
                   <RequirementCard

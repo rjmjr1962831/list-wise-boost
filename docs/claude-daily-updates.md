@@ -9,7 +9,7 @@ All AI-facing files rewritten with consistent current data. Numbers are now unif
 - Arizona: 88 cities, 2,923 neighborhoods
 - California: 1,650+ cities, 4,631 neighborhoods
 
-New content added to all files: artifact endpoint (`/artifact/{token}`, text/markdown), Standard Audit Cycle language (Annual/Monthly/Daily), AI Citation Probability Index, neighborhood verification methodology (100 transactions, 2 minimum), 10+ data sources listed, Merit Gate includes "6+ years."
+New content added to all files: artifact endpoint (`/artifact/{token}`, text/markdown), Standard Audit Cycle language (Annual/Monthly/Daily), AI Citation Probability Index, neighborhood verification methodology (100 transactions, 2 minimum), 10+ data sources listed, Merit Gate includes "5+ years."
 
 "Accredited" renamed to "Audited" in all remaining files. `tier-accredited.md` deleted, replaced with `tier-audited.md`.
 

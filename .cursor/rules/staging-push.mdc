@@ -11,7 +11,7 @@ Otherwise: commit locally only. No push. (Vercel build fees.)
 
 # SHORTHANDS
 - **pts** = Push to staging. When Robert says "pts", commit and push to `origin/staging`.
-- **ptm** = Push to main. When Robert says "ptm", run `npm run merge-to-main` (merge staging → main, exclude internal docs, push main). Do not touch main without ptm.
+- **ptm** = Push to main. When Robert says "ptm", run `npm run merge-to-main` (merge staging → main, exclude internal docs, push main, purge Vercel cache). Do not touch main without ptm.
 
 ---
 
@@ -29,7 +29,7 @@ Otherwise: commit locally only. No push. (Vercel build fees.)
 - **Allowed:** `staging` → `main` (merge or deploy from staging to production).
 - **Forbidden:** Never merge or deploy `main` into `staging`. Never bring main back into staging.
 
-**Internal documents are excluded from main.** Run `npm run merge-to-main` (not a manual merge). This script merges staging into main, then removes all paths listed in `scripts/internal-documents.txt` from main. Those files remain on staging only and never appear on the public production branch.
+**Internal documents are excluded from main.** Run `npm run merge-to-main` (not a manual merge). This script merges staging into main, removes paths in `scripts/internal-documents.txt` from main, pushes to origin, then purges Vercel CDN and Data cache (via `VERCEL_TOKEN` in `.env`). Those files remain on staging only and never appear on the public production branch.
 
 ---
 

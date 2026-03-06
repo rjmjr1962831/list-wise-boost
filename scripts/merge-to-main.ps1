@@ -94,6 +94,23 @@ function Merge-StagingToMain {
         Write-Host "Merge complete. Pushing main to origin..."
         git push origin main
 
+        # Purge Vercel CDN and Data cache so production serves fresh content
+        $envPath = Join-Path $RepoRoot ".env"
+        if (Test-Path $envPath) {
+            $tokenLine = Get-Content $envPath | Select-String '^VERCEL_TOKEN='
+            if ($tokenLine) {
+                $token = $tokenLine.ToString().Split('=', 2)[1].Trim()
+                Write-Host ""
+                Write-Host "Purging Vercel cache..."
+                & npx vercel cache purge --yes --token $token 2>&1
+                if ($LASTEXITCODE -eq 0) {
+                    Write-Host "Vercel cache purged."
+                } else {
+                    Write-Warning "Vercel cache purge failed (non-fatal)."
+                }
+            }
+        }
+
         Write-Host ""
         Write-Host "Done. Main has been updated. Internal documents remain on staging only."
         Write-Host "To continue work on staging: git checkout staging"

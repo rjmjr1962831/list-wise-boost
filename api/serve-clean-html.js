@@ -19,7 +19,7 @@ export default async function handler(req, res) {
   }
 
   // Only allow known function names
-  const allowed = ['serve-bot-state-html', 'serve-bot-list-html', 'serve-bot-agent-html', 'artifact-markdown'];
+  const allowed = ['serve-bot-state-html', 'serve-bot-list-html', 'serve-bot-agent-html', 'serve-bot-content-html', 'artifact-markdown'];
   if (!allowed.includes(fn)) {
     res.status(403).json({ error: 'Unknown function' });
     return;

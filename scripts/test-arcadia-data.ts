@@ -113,8 +113,8 @@ async function testArcadiaQuery() {
     .select('id, name, company, business_city, business_zip, state_slug, review_stars_rating, num_total_reviews')
     .eq('active', true)
     .eq('state_slug', stateSlug)
-    .gte('review_stars_rating', 4.8)
-    .gte('num_total_reviews', 20)
+    .gte('review_stars_rating', 4.5)
+    .gte('num_total_reviews', 10)
     .order('num_total_reviews', { ascending: false })
     .limit(10);
 
