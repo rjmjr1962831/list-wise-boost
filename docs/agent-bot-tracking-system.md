@@ -4,15 +4,17 @@
 
 This system tracks when AI bots (Google, Claude, ChatGPT, Perplexity, etc.) visit agent profiles and certification artifacts, then sends personalized email notifications to agents.
 
+**Architecture (Cloudflare deprecated):** Log ingestion uses **our own pipeline** only. Call **`log-bot-visit`** from your front-end, middleware, or log pipeline with each request (url, user_agent, etc.), or bulk-load from your log files with **`scripts/ingest-request-logs.ts`**. The former Cloudflare logpull/logpush path is deprecated; the table name `cloudflare_request_logs` is legacy.
+
 ## Features
 
 ### 1. **Bot Visit Tracking**
-- Automatically detects and logs bot visits to agent profiles
-- Extracts `agent_id` from URL paths:
-  - `/california/agents/john-doe-1234` → looks up by canonical_slug
-  - `/artifact/{uuid}` → directly extracts UUID
-- Tracks both profile pages and artifact pages
-- Records cache hit/miss status
+- Automatically detects and logs bot visits and counts them per agent when the agent is visible on the page.
+- **Full profile:** `/{state}/{city}/agents/{slug}` or **artifact:** `/artifact/{uuid}` → one row with that agent’s `agent_id`.
+- **City list** (e.g. Phoenix): `/{state}/{city}` or `/{state}/{city}/top10realestateagents` → one **request** row with `agents_shown` (up to 50 agents); a **batch job** creates per-agent rows so each gets credit.
+- **Neighborhood list** (e.g. Arcadia): same — one request row, batch job creates up to 50 per-agent rows.
+- Tracks profile pages, artifact pages, and list pages (city/neighborhood).
+- Records cache hit/miss status.
 
 ### 2. **Daily Summaries**
 - Aggregates bot visits by date per agent
@@ -54,7 +56,8 @@ This system tracks when AI bots (Google, Claude, ChatGPT, Perplexity, etc.) visi
   - `last_notification_sent_at` - Timestamp tracking
 
 #### `agent_bot_visit_summary`
-- Daily aggregated statistics per agent
+- Daily aggregated statistics per agent (one row per agent per calendar day).
+- **Retention**: Only the last **90 days** are kept. A daily cron job runs `purge_agent_bot_visit_summary_retention()` so the table size stays bounded (max rows ≈ agents with bot traffic × 90). For long-range or custom-period analytics, use `cloudflare_request_logs` (see [Scale and retention](#scale-and-retention)).
 - Fields:
   - `agent_id`, `date` - Composite key
   - `total_bot_visits` - Count
@@ -67,14 +70,66 @@ This system tracks when AI bots (Google, Claude, ChatGPT, Perplexity, etc.) visi
 - Added `agent_id` column
 - Automatically populated when logging bot visits
 
+### Scale and retention
+
+**Why the summary table could grow too large**
+
+- One row per (agent_id, date) means unbounded growth: e.g. 50k agents × 365 days ≈ 18M+ rows per year.
+- The trigger runs on every bot log insert, so write load scales with traffic.
+
+**What we do**
+
+1. **Retention**  
+   We keep only the last **90 days** in `agent_bot_visit_summary`. A daily cron job (`purge-agent-bot-summary-retention`) deletes older rows. Notifications and the agent dashboard only need recent data.
+
+2. **Long-range or custom periods**  
+   Use `cloudflare_request_logs` (filter `is_bot = true`, `agent_id IS NOT NULL`) and group by `agent_id` and your time bucket. See `scripts/bot-crawls-per-agent.sql` for ready-to-run queries.
+
+**Optional future improvement**
+
+- **Batch aggregation**: Instead of updating the summary in a trigger on every insert, run a nightly job that aggregates yesterday’s rows from `cloudflare_request_logs` into `agent_bot_visit_summary`. That reduces trigger load; the summary would be at most one day behind.
+
+### List-page attribution and scale (up to 50 agents per page)
+
+List pages (city and neighborhood) can show **up to 50 agents**. To keep the request path fast at ~1000+ requests/day:
+
+- **On each list-page request:** We insert **one row** with `agents_shown` (array of up to 50 `{ canonical_slug, name }`), `agent_id` null, and `list_page_processed_at` null.
+- **Batch job:** **`process-list-page-logs`** runs every **10 minutes** (cron). It reads unprocessed list-page rows, looks up professional ids for each slug, inserts one row per agent into `cloudflare_request_logs` (trigger updates `agent_bot_visit_summary`), then sets `list_page_processed_at` on the original row.
+- **Result:** No 50-insert burst on the request path; per-agent attribution happens within ~10 minutes.
+
+## Ingesting logs without Cloudflare
+
+You can feed the same pipeline from **your own logs** (Vercel, server, or any export). No Cloudflare required.
+
+**Script: `scripts/ingest-request-logs.ts`**
+
+- Reads a **JSON Lines** (`.jsonl`) or **JSON array** file.
+- Each line/entry: `path` or `url`, `user_agent`, optional `timestamp`, `cache_status`, `ray_id`, etc.
+- Detects bot from `user_agent`, resolves `agent_id` from path (artifact UUID or `/{state}/agents/{slug}`), inserts into `cloudflare_request_logs`. The existing DB trigger still updates `agent_bot_visit_summary`.
+
+```bash
+npx tsx scripts/ingest-request-logs.ts path/to/logs.jsonl
+```
+
+Example log line:
+
+```json
+{"path":"/arizona/phoenix/agents/jane-doe","user_agent":"Mozilla/5.0 (compatible; Googlebot/2.1)","timestamp":"2026-03-06T12:00:00Z"}
+```
+
+If your log format differs (e.g. CSV or different field names), transform to this shape first or extend the script.
+
 ## Supabase Functions
 
-### `log-bot-visit` (modified)
+### `log-bot-visit`
 **Location**: `supabase/functions/log-bot-visit/index.ts`
 
-Enhanced to extract agent_id from URLs:
-- Pattern 1: `/artifact/{uuid}` - direct extraction
-- Pattern 2: `/{state}/agents/{slug}` - database lookup
+**Ingestion entrypoint (no Cloudflare).** Accepts POST with `url`, `path`, `user_agent`, optional `timestamp`, `cache_status`, etc. Inserts one row into `cloudflare_request_logs`. For profile/artifact URLs sets `agent_id`; for list pages (city/neighborhood) sets `agents_shown` (up to 50 agents). Per-agent rows for list pages are created by the batch job, not on the request path.
+
+### `process-list-page-logs`
+**Location**: `supabase/functions/process-list-page-logs/index.ts`
+
+**Batch job.** Runs every 10 min (cron). Selects rows where `agents_shown` is set and `list_page_processed_at` is null, looks up professional ids for each slug, inserts one row per agent (trigger updates summary), then sets `list_page_processed_at`. Keeps list-page attribution off the hot path.
 
 ### `send-bot-notifications`
 **Location**: `supabase/functions/send-bot-notifications/index.ts`
@@ -115,15 +170,18 @@ Features:
 ## Cron Jobs
 
 ### Daily Notification Job
-**Schedule**: Every day at 9:00 AM UTC
+**Schedule**: Every day at 9:00 AM UTC  
+**Job name**: `send-daily-bot-notifications`
 
-```sql
-SELECT cron.schedule(
-  'send-daily-bot-notifications',
-  '0 9 * * *',
-  $$ ... $$
-);
-```
+### Summary retention purge
+**Schedule**: Every day at 3:00 AM UTC  
+**Job name**: `purge-agent-bot-summary-retention`  
+**Function**: `purge_agent_bot_visit_summary_retention()` — deletes `agent_bot_visit_summary` rows where `date < CURRENT_DATE - 90`. Keeps the summary table bounded (see [Scale and retention](#scale-and-retention)).
+
+### List-page per-agent rows
+**Schedule**: Every 10 minutes  
+**Job name**: `process-list-page-logs`  
+**Function**: `process-list-page-logs` Edge Function — creates per-agent rows from list-page rows (up to 50 agents per page) so the trigger can update `agent_bot_visit_summary` without doing 50 inserts on the request path.
 
 ## Deployment Steps
 
