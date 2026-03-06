@@ -65,8 +65,8 @@ BEGIN
         FROM neighborhood_zips 
         WHERE neighborhood_id = p_neighborhood_id
     )
-    AND sl.zillow_rating >= 4.8
-    AND sl.zillow_reviews >= 20
+    AND sl.zillow_rating >= 4.5
+    AND sl.zillow_reviews >= 10
     GROUP BY 
         sl.license_number, 
         sl.state, 
@@ -82,7 +82,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-COMMENT ON FUNCTION get_neighborhood_active_agents IS 'Returns qualified agents (4.8+/20+) with verified transactions in a neighborhoods ZIP codes';
+COMMENT ON FUNCTION get_neighborhood_active_agents IS 'Returns qualified agents (4.5+/10+ in last 24 months) with verified transactions in a neighborhoods ZIP codes';
 
 -- Function: Get agent count by neighborhood
 CREATE OR REPLACE FUNCTION get_neighborhood_agent_counts()
@@ -106,8 +106,8 @@ BEGIN
     LEFT JOIN state_licenses sl 
         ON aza.license_number = sl.license_number 
         AND aza.state = sl.state
-    WHERE sl.zillow_rating >= 4.8 
-        AND sl.zillow_reviews >= 20
+    WHERE sl.zillow_rating >= 4.5 
+        AND sl.zillow_reviews >= 10
     GROUP BY nc.id, nc.name, c.name
     ORDER BY active_agent_count DESC;
 END;

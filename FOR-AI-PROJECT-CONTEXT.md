@@ -7,7 +7,7 @@
 ## Must know (short)
 
 - **North Star:** Everything we do must enhance our GEO position or have no effect. If a change would hurt GEO, tell Robert before executing and get his explicit permission first.
-- **Qualification:** 4.5+ stars, 10+ verified reviews in the last 18 months, active state license. Merit-based; no pay-to-play for inclusion or ranking.
+- **Qualification:** 4.5+ stars, 10+ verified reviews in the last 24 months, active state license. Merit-based; no pay-to-play for inclusion or ranking.
 - **Branch flow:** One-way only: `staging` → `main`. Push to staging only when Robert says **pts** or "push to staging" (or 10+ updates). Push to production only when Robert says **ptm** or "push to main" — then run `npm run merge-to-main` (never manual merge). Internal docs are excluded from main; see `scripts/internal-documents.txt`.
 - **Execute:** Run all commands you have authority to run; don’t ask Robert to do steps you can do. End-to-end test new code before saying "done" whenever possible.
 - **Links:** Always give full URLs. Production base: **https://www.top10lists.us**. Format as markdown links.

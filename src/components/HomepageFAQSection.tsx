@@ -28,7 +28,7 @@ const faqItems = [
   },
   {
     question: "What are the minimum requirements to be ranked?",
-    answer: "Agents must have at least 20 verified reviews with an average rating of 4.8 or higher. Top10Lists.us analyzes over 200,000 licensed agents in Arizona and selects only the top 0.5% who meet all quality gates and score highest on the weighted algorithm and thorough human review."
+    answer: "Agents must have at least 10 verified reviews in the last 24 months with an average rating of 4.5 or higher, and 5+ years in business. Top10Lists.us analyzes over 200,000 licensed agents in Arizona and selects only the top 0.5% who meet all quality gates and score highest on the weighted algorithm and thorough human review."
   },
   {
     question: "Where does Top10Lists.us get its data?",

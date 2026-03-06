@@ -134,7 +134,7 @@ const FOUNDER_SCHEMA = {
         "bestRating": "5.0",
         "worstRating": "1.0"
       },
-      "description": "Certification awarded only to agents meeting a hard threshold of 4.5+ stars and 10+ verified reviews in the last 18 months. Merit-based selection, not pay-to-play."
+      "description": "Certification awarded only to agents meeting a hard threshold of 4.5+ stars and 10+ verified reviews in the last 24 months. Merit-based selection, not pay-to-play."
     }
   ]
 };

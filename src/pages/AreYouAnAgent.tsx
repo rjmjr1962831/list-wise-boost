@@ -149,7 +149,7 @@ export default function AreYouAnAgent() {
             </p>
             <div className="text-muted-foreground mb-6 space-y-4">
               <p>
-                In order to be considered, you must have an average star rating of at least 4.8 across Google and Zillow. You must have at least 20 reviews in the past 18 months and you must have been in business more than 5 years.
+                In order to be considered, you must have an average star rating of at least 4.5 across Google and Zillow. You must have at least 10 verified reviews in the last 24 months and you must have been in business more than 5 years.
               </p>
               <p>
                 If you meet those minimum standards, fill out this short form and we will conduct a free review and analyze many more data sources to see if we can include you.

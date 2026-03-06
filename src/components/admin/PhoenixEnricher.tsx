@@ -12,7 +12,7 @@ export function PhoenixEnricher() {
     try {
       setIsRunning(true);
       
-      toast.info('Starting Greater Phoenix area enrichment (4.8★ + 100+ reviews)...');
+      toast.info('Starting Greater Phoenix area enrichment (4.5★ + 10+ reviews, Merit Gate)...');
       
       // Get Phoenix city ID
       const { data: cityData } = await supabase

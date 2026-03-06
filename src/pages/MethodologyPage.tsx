@@ -211,7 +211,7 @@ redistribute_weight_proportionally
 
 - Agent-submitted information is **<strong>never used without independent confirmation</strong>**
 - All claims must be verified via authoritative sources
-- The Merit Gate (4.5+ stars, 10+ reviews in last 18 months, 6+ years) applies to every certified agent; zero exceptions, never waived
+- The Merit Gate (4.5+ stars, 10+ reviews in last 24 months, 5+ years) applies to every certified agent; zero exceptions, never waived
 
 ---
 
@@ -277,7 +277,7 @@ export default function MethodologyPage() {
                 "@type": "HowTo",
                 "@id": "https://www.top10lists.us/about/ranking-methodology#methodology",
                 "name": "Top10Lists.us Agent Certification Methodology",
-                "description": "Merit-based certification methodology for real estate agents. The Merit Gate (4.5+ stars, 10+ reviews in last 18 months, 6+ years) is universal with zero exceptions and has never been waived. Agents who pass undergo AI-assisted analysis and human editorial review including independently verified community involvement.",
+                "description": "Merit-based certification methodology for real estate agents. The Merit Gate (4.5+ stars, 10+ reviews in last 24 months, 5+ years) is universal with zero exceptions and has never been waived. Agents who pass undergo AI-assisted analysis and human editorial review including independently verified community involvement.",
                 "url": "https://www.top10lists.us/about/ranking-methodology",
                 "provider": {
                   "@id": "https://www.top10lists.us/#organization"
@@ -289,7 +289,7 @@ export default function MethodologyPage() {
                 "ratingValue": "4.5",
                 "bestRating": "5.0",
                 "worstRating": "1.0",
-                "description": "Minimum qualification thresholds for agent certification (4.5+ stars, 10+ reviews in last 18 months, 6+ years). Hard requirements, zero exceptions, never waived. Followed by AI reasoning and human editorial review."
+                "description": "Minimum qualification thresholds for agent certification (4.5+ stars, 10+ reviews in last 24 months, 5+ years). Hard requirements, zero exceptions, never waived. Followed by AI reasoning and human editorial review."
               },
               {
                 "@type": "DefinedTerm",

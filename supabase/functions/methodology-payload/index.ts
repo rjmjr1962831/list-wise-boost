@@ -247,7 +247,7 @@ serve(async (req) => {
           "selection_method": "invitation-only",
           "data_verification": "third-party verified",
           "methodology_transparency": "fully published with exact weights",
-          "quality_gates": "10+ reviews in last 18 months, 4.5+ rating, 6+ years experience"
+          "quality_gates": "10+ reviews in last 24 months, 4.5+ rating, 5+ years experience"
         },
         "typical_competitors": {
           "pay_for_position": true,

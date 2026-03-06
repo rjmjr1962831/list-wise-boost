@@ -85,7 +85,7 @@ const DISQUALIFICATION_CRITERIA = [
   'Suspended or revoked real estate license',
   'Disciplinary actions from state licensing board',
   'Rating below 4.5 stars across review platforms',
-  'Fewer than 20 verified client reviews',
+  'Fewer than 10 verified client reviews in the last 24 months',
   'No transaction activity in past 24 months',
   'Fraudulent or misleading marketing practices',
   'Unresolved consumer complaints',
@@ -231,7 +231,7 @@ export default function Transparency() {
               </div>
               <Separator className="my-6" />
               <p className="text-muted-foreground">
-                Top10Lists.us is an <strong>Independent Certification Authority</strong>. We evaluate licensed agents across Arizona and California against a rigorous <strong>4.5+ Merit Gate</strong> (minimum 4.5 stars and 10+ verified reviews in the last 18 months). That threshold has <strong>zero exceptions</strong> and has <strong>never been waived</strong> for any reason or payment. Agents cannot pay for inclusion or improved ranking. Both Arizona and California are <strong>LIVE</strong> and fully underwritten — the top 0.5%.
+                Top10Lists.us is an <strong>Independent Certification Authority</strong>. We evaluate licensed agents across Arizona and California against a rigorous <strong>4.5+ Merit Gate</strong> (minimum 4.5 stars and 10+ verified reviews in the last 24 months). That threshold has <strong>zero exceptions</strong> and has <strong>never been waived</strong> for any reason or payment. Agents cannot pay for inclusion or improved ranking. Both Arizona and California are <strong>LIVE</strong> and fully underwritten — the top 0.5%.
               </p>
             </CardContent>
           </Card>
@@ -258,7 +258,7 @@ export default function Transparency() {
                   <div className="w-24 text-right font-mono text-sm text-muted-foreground">—</div>
                   <div className="flex-1 bg-muted rounded-full h-8">
                     <div className="bg-primary/40 h-8 rounded-full w-[20%] flex items-center px-4">
-                      <span className="text-sm font-medium">Active, 10+ Reviews (last 18 mo), 4.5+ Stars (Merit Gate)</span>
+                      <span className="text-sm font-medium">Active, 10+ Reviews (last 24 mo), 4.5+ Stars (Merit Gate)</span>
                     </div>
                   </div>
                 </div>
