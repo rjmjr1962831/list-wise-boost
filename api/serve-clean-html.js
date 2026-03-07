@@ -10,14 +10,23 @@
 
 const SUPABASE_URL = 'https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1';
 
+const CONTENT_PATHS = ['/for-ai', '/transparency', '/faq'];
+
 export default async function handler(req, res) {
   let { fn, path } = req.query;
-  // Fallback: Vercel rewrites may pass original URL; parse from req.url if query params missing
+  // Reject malformed path (e.g. "undefined" or "undefinedfor-ai" from bad rewrite param interpolation)
+  if (path && (path.includes('undefined') || path === 'undefined')) path = null;
+  // Fallback: parse from req.url when query params missing or malformed
   if ((!fn || !path) && req.url) {
     try {
       const u = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
       fn = fn || u.searchParams.get('fn');
       path = path || u.searchParams.get('path');
+      // When rewrite forwards original path, pathname may be the content path (e.g. /for-ai)
+      if (!path && u.pathname && CONTENT_PATHS.includes(u.pathname)) {
+        path = u.pathname;
+        fn = fn || 'serve-bot-content-html';
+      }
     } catch (_) {}
   }
   if (!fn || !path) {
