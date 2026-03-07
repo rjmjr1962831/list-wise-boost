@@ -18,7 +18,9 @@ export default async function handler(req, res) {
     return;
   }
   try {
-    const url = `${SUPABASE_URL}/serve-bot-content-html?path=${encodeURIComponent('/for-ai')}`;
+    const pathParam = '/for-ai';
+    const url = `${SUPABASE_URL}/serve-bot-content-html?path=${encodeURIComponent(pathParam)}`;
+    res.setHeader('X-Debug-URL', url);
     const upstream = await fetch(url, {
       headers: { Authorization: `Bearer ${key}`, apikey: key },
     });
