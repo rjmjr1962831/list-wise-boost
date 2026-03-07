@@ -11,8 +11,15 @@
 const SUPABASE_URL = 'https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1';
 
 export default async function handler(req, res) {
-  const { fn, path } = req.query;
-
+  let { fn, path } = req.query;
+  // Fallback: Vercel rewrites may pass original URL; parse from req.url if query params missing
+  if ((!fn || !path) && req.url) {
+    try {
+      const u = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+      fn = fn || u.searchParams.get('fn');
+      path = path || u.searchParams.get('path');
+    } catch (_) {}
+  }
   if (!fn || !path) {
     res.status(400).json({ error: 'Missing fn or path parameter' });
     return;
