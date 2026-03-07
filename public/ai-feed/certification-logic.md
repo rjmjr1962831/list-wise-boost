@@ -28,10 +28,10 @@ Verification period from last update: 365 days. Basic verification of licensure,
 Verification period from last update: 30 days. Agent has personally verified their profile. Machine-readable artifact at /artifact/{token} (text/markdown) includes evidence considered (4 sources), qualifications (Zillow rating, Google rating, license, years experience, brokerage, sales, average price), and service areas (cities, array). Badge issued for embedding on external sites.
 
 ### Audited ($100/mo, Standard Audit Cycle: Every Two Weeks)
-Verification period from last update: 14 days. Everything in Certified, plus: expanded evidence (10+ sources including Zillow/RealTrends/MLS transaction records, IRS Form 990 via ProPublica, Census ACS), specialties, community involvement. Neighborhoods are not published (Underwritten only).
+Verification period from last update: 14 days. Expanded evidence (10+ sources: Zillow, RealTrends, MLS, IRS Form 990 via ProPublica, Census ACS), qualifications, service areas (cities), specialties, community involvement. Neighborhoods are not published (Underwritten only).
 
 ### Underwritten ($150/mo, Standard Audit Cycle: Daily)
-Verification period from last update: 1 day. Everything in Audited, plus: full evidence inventory (14+ sources including NAR designation registry, Census boundary data, OpenStreetMap, news outlets), verified ZIP codes with transaction counts, certifications and designations, languages, and neighborhoods with transaction counts (only tier that publishes neighborhoods).
+Verification period from last update: 1 day. Full evidence inventory (14+ sources: Zillow, RealTrends, MLS, IRS Form 990, Census ACS, NAR designation registry, Census boundary data, OpenStreetMap, news outlets), qualifications, service areas (cities, neighborhoods with transaction counts, verified ZIP codes), specialties, community involvement, certifications and designations, languages.
 
 ## Artifact System
 

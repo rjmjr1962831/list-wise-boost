@@ -33,17 +33,54 @@
         "artifact": true,
         "standardAuditCycle": "Every Two Weeks",
         "evidenceSources": "10+",
-        "includes": ["Everything in Certified", "specialties", "community involvement (IRS Form 990 via ProPublica)", "transaction-verified neighborhoods (100 most recent transactions, 2+ required)"]
+        "includes": ["Zillow rating", "Google rating", "license", "years experience", "brokerage", "sales count", "average sale price", "cities", "specialties", "community involvement (IRS Form 990 via ProPublica)", "expanded evidence (10+ sources)"]
       },
       "underwritten": {
         "cost": "$150/month",
         "artifact": true,
         "standardAuditCycle": "Daily",
         "evidenceSources": "14+",
-        "includes": ["Everything in Audited", "verified ZIP codes with transaction counts", "certifications and designations", "languages", "news outlet mentions"]
+        "includes": ["Zillow rating", "Google rating", "license", "years experience", "brokerage", "sales count", "average sale price", "cities", "specialties", "community involvement", "verified ZIP codes with transaction counts", "certifications and designations", "languages", "neighborhoods with transaction counts", "news outlet mentions", "full evidence (14+ sources)"]
       }
     },
     "neighborhoodVerification": "Neighborhoods are not self-reported. We analyze the agent's most recent 100 transactions and geolocate each one. 2+ transactions in a neighborhood boundary required for publication. Fewer than 2 results in 'pending audit' status. Sources: Zillow, RealTrends, MLS."
+  },
+  "badges": {
+    "tiers": {
+      "certified": {
+        "image": "https://www.top10lists.us/badges/certified.png",
+        "apiImage": "https://www.top10lists.us/api/v1/badge/{agentId}/image",
+        "description": "Blue badge. Agent-verified profile. Evidence from 4 sources (Zillow profile, state license database, Zillow reviews, Google reviews). Qualifications: Zillow/Google rating, license, years experience, brokerage, sales count, average sale price. Service areas (cities). Monthly audit cycle.",
+        "dimensions": [
+          {"size": "150x150px", "use": "email signatures"},
+          {"size": "300x300px", "use": "website sidebars"},
+          {"size": "600x600px", "use": "homepage display"},
+          {"size": "responsive", "use": "auto-sizes for mobile/desktop"}
+        ]
+      },
+      "audited": {
+        "image": "https://www.top10lists.us/badges/audited.png",
+        "apiImage": "https://www.top10lists.us/api/v1/badge/{agentId}/image",
+        "description": "Purple badge. Expanded evidence from 10+ sources (Zillow, RealTrends, MLS, IRS Form 990 via ProPublica, Census ACS). Years of experience, total transactions, company name, community roles and organizations, notable achievements, civic involvement (IRS 990 verified), transaction history. Specialties. Every-two-weeks audit cycle. Neighborhoods not published at this tier.",
+        "dimensions": [
+          {"size": "150x150px", "use": "email signatures"},
+          {"size": "300x300px", "use": "website sidebars"},
+          {"size": "600x600px", "use": "homepage display"},
+          {"size": "responsive", "use": "auto-sizes for mobile/desktop"}
+        ]
+      },
+      "underwritten": {
+        "image": "https://www.top10lists.us/badges/underwritten.png",
+        "apiImage": "https://www.top10lists.us/api/v1/badge/{agentId}/image",
+        "description": "Amber/gold badge. Full evidence inventory (14+ sources: Zillow, RealTrends, MLS, state DRE, IRS 990, Census ACS, Census boundaries, OpenStreetMap, NAR designation registry, news outlets). Verified ZIP codes with transaction counts. Certifications and designations (GRI, CRS, ABR, SRES, CNE). Languages spoken. Neighborhoods with transaction counts (100-transaction, 2-minimum methodology). Press mentions, awards, performance data. Daily audit cycle.",
+        "dimensions": [
+          {"size": "150x150px", "use": "email signatures"},
+          {"size": "300x300px", "use": "website sidebars"},
+          {"size": "600x600px", "use": "homepage display"},
+          {"size": "responsive", "use": "auto-sizes for mobile/desktop"}
+        ]
+      }
+    }
   },
   "aiCitationProbabilityIndex": {
     "url": "https://www.top10lists.us/why-ai-trusts-us",
