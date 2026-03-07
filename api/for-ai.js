@@ -5,6 +5,7 @@
 const SUPABASE_URL = 'https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1';
 
 export default async function handler(req, res) {
+  res.setHeader('X-For-AI-Handler', 'true');
   const supabaseKey =
     process.env.SUPABASE_SERVICE_ROLE_KEY ||
     process.env.SUPABASE_SERVICE_KEY ||
