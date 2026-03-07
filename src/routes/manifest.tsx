@@ -26,6 +26,7 @@ const VerifySpecialties = lazy(() => import("@/pages/VerifySpecialties"));
 const VerifyCities = lazy(() => import("@/pages/VerifyCities"));
 const CityLanding = lazy(() => import("@/pages/CityLanding"));
 const StateLanding = lazy(() => import("@/pages/StateLanding"));
+const StateNoindexRedirect = lazy(() => import("@/pages/StateNoindexRedirect"));
 const CityComingSoon = lazy(() => import("@/pages/CityComingSoon"));
 const AlbuquerqueRedirect = lazy(() => import("@/pages/AlbuquerqueRedirect"));
 const StateAgentOrCategoryRouter = lazy(() => import("@/pages/StateAgentOrCategoryRouter"));
@@ -292,5 +293,6 @@ export const routeManifest: RouteObject[] = [
   { path: "/:stateSlug/:citySlug", element: React.createElement(CityLanding, null) },
   { path: "/arizona", element: React.createElement(StateLanding, null) },
   { path: "/california", element: React.createElement(StateLanding, null) },
+  { path: "/:stateSlug", element: React.createElement(StateNoindexRedirect, null) },
   { path: "*", element: React.createElement(NotFound, null) },
 ];

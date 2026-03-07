@@ -13,6 +13,9 @@ const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_S
 const BASE_URL = 'https://www.top10lists.us';
 const MAX_URLS_PER_SITEMAP = 50000; // Sitemap spec limit
 
+/** Only AZ and CA in sitemaps. All other states: noindex, not in sitemap. */
+const SITEMAP_STATES = ['arizona', 'california'];
+
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 interface City {
@@ -55,6 +58,7 @@ async function fetchAllCities(): Promise<City[]> {
       .from('cities')
       .select('slug, state_slug, name, state')
       .eq('active', true)
+      .in('state_slug', SITEMAP_STATES)
       .order('state_slug')
       .order('slug')
       .range(offset, offset + pageSize - 1);
@@ -80,6 +84,7 @@ async function fetchAllNeighborhoods(): Promise<Neighborhood[]> {
       .select('neighborhood_slug, city_area_slug, primary_zip, state, neighborhood, city_area')
       .eq('is_active', true)
       .not('primary_zip', 'is', null)
+      .in('state', ['Arizona', 'California'])
       .order('state')
       .order('city_area_slug')
       .order('neighborhood_slug')
@@ -107,6 +112,7 @@ async function fetchAllAgents(): Promise<Agent[]> {
       .eq('active', true)
       .not('canonical_slug', 'is', null)
       .not('state_slug', 'is', null)
+      .in('state_slug', SITEMAP_STATES)
       .order('state_slug')
       .order('canonical_slug')
       .range(offset, offset + pageSize - 1);
