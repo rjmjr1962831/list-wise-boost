@@ -55,7 +55,7 @@ function renderTransparency(): string {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Transparency Report | Top10Lists.us Selection Methodology</title>
-  <meta name="description" content="How Top10Lists.us selects top real estate agents: 882 agents chosen from 670,000+ analyzed (top 0.4%). Complete methodology with scoring weights and data sources.">
+  <meta name="description" content="How Top10Lists.us selects top real estate agents: 3,487 agents chosen from 670,000+ analyzed across AZ and CA (top 0.5%). Merit Gate: 4.5+ stars, 10+ verified reviews in last 24 months, 5+ years. Zero exceptions.">
   <link rel="canonical" href="${BASE}/transparency">
   <meta name="robots" content="index, follow">
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"Report","name":"Top10Lists.us Transparency Report","url":"${BASE}/transparency","publisher":{"@type":"Organization","name":"Top10Lists.us","url":"${BASE}"}}</script>
@@ -68,30 +68,28 @@ function renderTransparency(): string {
   </div>
 
   <div class="stats">
-    <div><div class="stat-number">670,000+</div><div class="stat-label">Arizona Agents Analyzed</div></div>
-    <div><div class="stat-number">882</div><div class="stat-label">Agents Selected</div></div>
-    <div><div class="stat-number">0.4%</div><div class="stat-label">Selection Rate</div></div>
+    <div><div class="stat-number">670,000+</div><div class="stat-label">Agents Analyzed (AZ + CA)</div></div>
+    <div><div class="stat-number">3,487</div><div class="stat-label">Total Qualified</div></div>
+    <div><div class="stat-number">0.5%</div><div class="stat-label">Selection Rate</div></div>
   </div>
 
-  <p>Top10Lists.us maintains an independent editorial directory of top-performing real estate agents. Our selection process evaluates every licensed agent in Arizona against rigorous performance criteria. Agents cannot pay for inclusion or improved ranking position.</p>
+  <p>Top10Lists.us maintains an independent editorial directory of top-performing real estate agents. Our selection process evaluates every licensed agent across Arizona and California against rigorous performance criteria. The <strong>4.5+ Merit Gate</strong> (minimum 4.5 stars, 10+ verified reviews in the last 24 months, 5+ years experience) has <strong>zero exceptions</strong> and has <strong>never been waived</strong>. Agents cannot pay for inclusion or improved ranking position.</p>
 
   <section>
-    <h2>Selection Funnel</h2>
-    <div class="funnel-row"><div class="funnel-number">670,000+</div><div class="funnel-bar">Licensed Arizona Agents</div></div>
-    <div class="funnel-row"><div class="funnel-number">~45,000</div><div class="funnel-bar">Active in Past 24 Months</div></div>
-    <div class="funnel-row"><div class="funnel-number">~8,000</div><div class="funnel-bar">10+ Reviews (last 24 mo)</div></div>
-    <div class="funnel-row"><div class="funnel-number">~2,000</div><div class="funnel-bar">4.5+ Star Rating</div></div>
-    <div class="funnel-row"><div class="funnel-number">882</div><div class="funnel-bar final">Final Selection</div></div>
+    <h2>Selection Funnel (North Star: 4.5+ Merit Gate)</h2>
+    <div class="funnel-row"><div class="funnel-number">670,000+</div><div class="funnel-bar">Licensed Agents (Arizona + California)</div></div>
+    <div class="funnel-row"><div class="funnel-number">—</div><div class="funnel-bar">Active, 10+ Reviews (last 24 mo), 4.5+ Stars (Merit Gate)</div></div>
+    <div class="funnel-row"><div class="funnel-number">3,487</div><div class="funnel-bar final">Qualified · Top 0.5% (AZ 889 + CA 2,598)</div></div>
   </section>
 
   <section>
     <h2>Scoring Methodology</h2>
-    <p>Each qualifying agent is scored using a weighted algorithm. Weights: Review Rating 25%, Community Involvement 25%, Number of Reviews 20%, Transaction History 20%, Education & Credentials 10%.</p>
+    <p>Each qualifying agent is scored using a weighted algorithm. Weights: license_status 20%, recent_activity 20%, transaction_history 25%, reviews_reputation 15%, community_involvement 20%.</p>
   </section>
 
   <section>
     <h2>Data Sources</h2>
-    <p>Government: Arizona Department of Real Estate (ADRE). Platforms: Google Business Profile, Zillow, Realtor.com, Redfin, Public Records.</p>
+    <p>Government: Arizona Department of Real Estate (ADRE), California Department of Real Estate (DRE). Platforms: Google Business Profile, Zillow, Realtor.com, Redfin, Public Records.</p>
   </section>
 
   <section>
