@@ -43,3 +43,5 @@ When Robert says **"t1"** or **"run t1"**:
 5. **Do not** update `docs/COMPREHENSIVE_KNOWLEDGE_DOCUMENT.md` yourself. The **s1** step does that.
 
 6. **Location:** Save in this repo at `docs/takeaways/`. This path is excluded from main (internal docs).
+
+7. **pts:** When Robert says **"pts"** after t1, commit and push to staging: `git add docs/takeaways/*.md`, `git commit -m "t1 takeaways"`, `git push origin staging`.
