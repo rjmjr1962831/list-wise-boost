@@ -109,19 +109,30 @@ serve(async (req) => {
     const offset     = body.offset || 0;
     const stateFilter = body.state_slug || null;  // optional: 'arizona' | 'california'
 
-    // ── 1. Pull agents not yet audited (or stale > 7 days) ────────────────────
-    // Fetch agent IDs already audited recently
+    // ── 1. Pull agents not yet audited, or paid-tier agents due for 30-day refresh ──
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString();
+
+    // IDs already audited and NOT due for refresh (listed agents audited any time = done)
     const { data: audited } = await supabase
       .from('geo_audit_results')
-      .select('agent_id')
-      .gte('audited_at', new Date(Date.now() - 7 * 86400000).toISOString());
+      .select('agent_id, audited_at, current_tier');
 
-    const auditedIds = new Set((audited || []).map((r: any) => r.agent_id));
+    const auditedIds = new Set(
+      (audited || [])
+        .filter((r: any) => {
+          // Paid tier: re-audit if older than 30 days
+          if (r.current_tier === 'audited' || r.current_tier === 'underwritten') {
+            return r.audited_at > thirtyDaysAgo;  // keep in skip set only if fresh
+          }
+          return true;  // listed/certified: skip once done, never re-audit
+        })
+        .map((r: any) => r.agent_id)
+    );
 
     // Fetch candidate agents
     let query = supabase
       .from('professionals')
-      .select('id,name,company,state_slug,current_tier,years_experience,total_sales,review_stars_rating,num_total_reviews,most_recent_review_date,description,website,license_number,agent_sales_stats,professional_information')
+      .select('id,name,company,state_slug,current_tier,short_code,years_experience,total_sales,review_stars_rating,num_total_reviews,most_recent_review_date,description,website,license_number,agent_sales_stats,professional_information')
       .eq('active', true)
       .range(offset, offset + batchSize + auditedIds.size + 100 - 1)  // over-fetch to account for already-audited
       .limit(200);
@@ -235,11 +246,18 @@ serve(async (req) => {
         if ((agent.years_experience    || 0) < 5)   failures.push(`Years: ${agent.years_experience} (need 5+)`);
 
         // Upsert to geo_audit_results
+        // Derive platform booleans from Exa URLs
+        const hasPress = sl.filter((s: string) =>
+          !['zillow','realtor','linkedin','facebook','homelight','top10lists','google'].some((x: string) => s.includes(x))
+        ).length > 0;
+
         await supabase.from('geo_audit_results').upsert({
           agent_id:              agent.id,
           full_name:             agent.name,
           brokerage:             agent.company,
           state_slug:            agent.state_slug || null,
+          current_tier:          agent.current_tier || null,
+          artifact_url:          agent.short_code ? `https://www.top10lists.us/artifact/${agent.short_code}` : null,
           audited_at:            new Date().toISOString(),
           status:                'complete',
           aics_version:          'v1',
@@ -249,6 +267,8 @@ serve(async (req) => {
           score_certified:       scores.certified.total,
           score_audited:         scores.audited.total,
           score_underwritten:    scores.underwritten.total,
+          score_lift_to_audited:       scores.audited.total - scores.unlisted.total,
+          score_lift_to_underwritten:  scores.underwritten.total - scores.unlisted.total,
           pillar_identity:       scores.unlisted.identity,
           pillar_authority:      scores.unlisted.authority,
           pillar_social:         scores.unlisted.social,
@@ -262,6 +282,23 @@ serve(async (req) => {
           exa_sources:           exaSources,
           exa_source_count:      exaSources.length,
           platforms_found:       exaSources,
+          // Platform presence
+          has_zillow:            sl.some((s: string) => s.includes('zillow')),
+          has_realtor:           hasRealtor,
+          has_linkedin:          hasLinkedin,
+          has_facebook:          hasFacebook,
+          has_homelight:         hasHomelight,
+          has_top10:             hasTop10,
+          has_personal_site:     hasPersonalSite,
+          // Gap flags (true = action needed)
+          gap_stale_reviews:     recency < 4,
+          gap_no_linkedin:       !hasLinkedin,
+          gap_no_schema:         true,   // always true -- we cannot verify schema from URL-only Exa
+          gap_no_realtor:        !hasRealtor,
+          gap_no_homelight:      !hasHomelight,
+          gap_no_press:          !hasPress,
+          gap_no_personal_site:  !hasPersonalSite,
+          // Merit gate
           merit_gate_pass:       failures.length === 0,
           merit_gate_failures:   failures,
           updated_at:            new Date().toISOString(),
