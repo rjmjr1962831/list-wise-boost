@@ -67,7 +67,7 @@ function computeScore(a: any, tierRec: number, hasTop10: boolean, bonus: number)
   if (hasTop10) citable += 7;
   citable = Math.round(citable * (0.4 + 0.6 * (tierRec / 10)));
 
-  const total = Math.min(97, identity + authority + social + tech + citable + bonus);
+  const total = Math.min(99, identity + authority + social + tech + citable + bonus);
   return { identity, authority, social, tech, citable, bonuses: bonus, total };
 }
 
@@ -89,7 +89,7 @@ function buildRemediation(a: any, scores: any, exaSources: string[]): string {
   let doc = `YOUR PERSONALIZED GEO REMEDIATION PLAN\n`;
   doc += `Generated: ${new Date().toISOString().split('T')[0]}\n`;
   doc += `Agent: ${a.name}\n`;
-  doc += `Current AICS: ${scores.unlisted.total}/97  (${band(scores.unlisted.total)})\n\n`;
+  doc += `Current AICS: ${scores.unlisted.total}/100  (${band(scores.unlisted.total)})\n\n`;
   doc += `WHAT AI CAN SEE TODAY (${exaSources.length} sources):\n`;
   exaSources.forEach(s => { doc += `  - ${s}\n`; });
   doc += `\nACTION LIST (highest impact first):\n\n`;
@@ -97,8 +97,8 @@ function buildRemediation(a: any, scores: any, exaSources: string[]): string {
     doc += `${i + 1}. ${g.action}\n   Impact: +${g.impact} pts  |  Effort: ${g.effort}\n\n`;
   });
   const lift = gaps.reduce((sum, g) => sum + g.impact, 0);
-  doc += `Completing all items above could increase your AICS to: ~${Math.min(97, scores.unlisted.total + lift)}/97\n`;
-  doc += `With Top10Lists Audited, your projected AICS is: ${scores.audited.total}/97\n\n`;
+  doc += `Completing all items above could increase your AICS to: ~${Math.min(99, scores.unlisted.total + lift)}/100\n`;
+  doc += `With Top10Lists Audited, your projected AICS is: ${scores.audited.total}/100\n\n`;
   doc += `NOTE: These are projections. Actual results vary by market competitiveness.\n`;
   return doc;
 }
