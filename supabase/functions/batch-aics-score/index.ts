@@ -69,7 +69,7 @@ function computeScore(a: any, tierRec: number, hasTop10: boolean, bonus: number)
   if (hasTop10) citable += 7;
   citable = Math.round(citable * (0.4 + 0.6 * (tierRec / 10)));
 
-  const total = Math.min(97, identity + authority + social + tech + citable + bonus);
+  const total = Math.min(99, identity + authority + social + tech + citable + bonus);
   return { identity, authority, social, tech, citable, bonuses: bonus, total };
 }
 
