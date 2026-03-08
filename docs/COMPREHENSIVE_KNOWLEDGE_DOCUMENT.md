@@ -123,7 +123,7 @@
 
 - **"ALL"** means every single instance. Fix every file, every page, every occurrence. Grep exhaustively; fix exhaustively. Check edge functions, static HTML, FAQ JSON, llms.txt, templates.
 - **"remember":** Add to `docs/cursor-daily-updates.md`.
-- **"ryt":** Update only `Top10Lists_MASTER_BASELINE.md` (repo root; may be internal-doc excluded).
+- **"ryt":** Read `docs/COMPREHENSIVE_KNOWLEDGE_DOCUMENT.md`. Do not post/update there.
 
 ---
 
@@ -155,7 +155,7 @@
 
 **Data sources:** State license databases (908,906 licenses, AZ/CA/TX/FL/NY/CO), Zillow (Apify memo23, ~$0.50/agent), Exa.ai + DeepSeek (profile discovery, press mentions). SourceRE ARELLO API evaluated, not implemented.
 
-**Database:** Supabase PostgreSQL. Enrichment API: `https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/enrichment-api`. Paginate for tables >1,000 rows.
+**Database:** Supabase PostgreSQL. Project: `wiotrvoirdgzfacuuiem`. Enrichment API: `https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/enrichment-api`. Paginate for tables >1,000 rows. **Never use** dead project `bgdtekbhelormzbymkhh`.
 
 **Frontend:** Vercel, React SPA (Vite), react-router-dom (FROZEN).
 
@@ -220,6 +220,7 @@ From `src/data/master-ssot.md`:
 | Coverage language | "top 0.2%" | "fewer than 1% of licensed agents in covered markets" |
 | AI pages | React SPA or static HTML | Clean room HTML via serve-bot-content-html |
 | Cloudflare | Browser Rendering | Deprecated |
+| Supabase project | bgdtekbhelormzbymkhh (dead) | wiotrvoirdgzfacuuiem only |
 | Tier name | Accredited | Audited |
 | Agent count | 882 (AZ only) | 3,487 (889 AZ + 2,598 CA) |
 

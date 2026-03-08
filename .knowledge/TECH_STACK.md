@@ -87,7 +87,7 @@ Contact: support@sourceredb.com
 ## Database
 
 Platform: Supabase PostgreSQL
-Project ID: wiotrvoirdgzfacuuiem
+Project ID: wiotrvoirdgzfacuuiem (ONLY — never use dead project bgdtekbhelormzbymkhh)
 Enrichment API: https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/enrichment-api
 
 Query Limits:
