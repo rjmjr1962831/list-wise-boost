@@ -180,7 +180,8 @@ async function searchWithExa(
   city: string,
   state: string,
   company: string,
-  exaApiKey: string
+  exaApiKey: string,
+  useContentMode = true
 ): Promise<ExaResult[]> {
   console.log(`🔍 Exa search for: ${agentName} in ${city}, ${state}`);
 
@@ -201,7 +202,9 @@ async function searchWithExa(
     ? `"${agentName}" "${company}" OR "${company}" (profile OR review OR featured OR about)`
     : `"${agentName}" ${city} realtor (review OR profile OR about OR bio)`;
 
-  const queries = [professionalQuery, communityQuery, authorQuery, mediaQuery, companyQuery];
+  // authorQuery and mediaQuery dropped -- edge cases that rarely yield results and add cost.
+  // Professional + community + company covers 95%+ of signal for most agents.
+  const queries = [professionalQuery, communityQuery, companyQuery];
   const results: ExaResult[] = [];
 
   for (const query of queries) {
@@ -217,11 +220,13 @@ async function searchWithExa(
         body: JSON.stringify({
           query,
           type: "auto",
-          numResults: 25, // Increased from 15 to capture more results
-          contents: {
-            text: { maxCharacters: 2500 }, // Extended content for better extraction
-            highlights: { numSentences: 5 }
-          },
+          numResults: 10,
+          ...(useContentMode ? {
+            contents: {
+              text: { maxCharacters: 800 },
+              highlights: { numSentences: 3 }
+            }
+          } : {}),
           excludeDomains: EXCLUDED_DOMAINS
         })
       });
@@ -606,8 +611,14 @@ serve(async (req) => {
       state, 
       professionalId, 
       dryRun = false,
-      skipIfNoPress = true 
+      skipIfNoPress = true,
+      tier = 'listed'
     } = await req.json();
+
+    // Tier gate: only audited and underwritten get full content extraction.
+    // Listed agents get URL-only mode -- sufficient for AICS source counting, zero content cost.
+    const contentTiers = ['audited', 'underwritten'];
+    const useContentMode = contentTiers.includes(tier);
 
     if (!agentName) {
       return new Response(
@@ -635,8 +646,8 @@ serve(async (req) => {
     console.log(`🚀 Starting Exa+DeepSeek enrichment for: ${agentName}`);
     const startTime = Date.now();
 
-    // Step 1: Search with Exa (5 targeted queries)
-    const searchResults = await searchWithExa(agentName, city, state, companyDisplay, exaApiKey);
+    // Step 1: Search with Exa (3 targeted queries, content only for audited/underwritten)
+    const searchResults = await searchWithExa(agentName, city, state, companyDisplay, exaApiKey, useContentMode);
 
     // Step 2: Calculate confidence score BEFORE synthesis
     const confidenceScore = calculateConfidence(agentName, city, state, searchResults);
