@@ -253,7 +253,6 @@ From `src/data/master-ssot.md`:
 | Supabase project | bgdtekbhelormzbymkhh (dead) | wiotrvoirdgzfacuuiem only |
 | Tier name | Accredited | Audited |
 | Agent count | 882 (AZ only) | 3,487 (889 AZ + 2,598 CA) |
-| Supabase project | bgdtekbhelormzbymkhh | wiotrvoirdgzfacuuiem (only active) |
 
 ---
 
@@ -262,4 +261,6 @@ From `src/data/master-ssot.md`:
 - **Prebuild:** `npm run generate:faq` (generates public/api/faq/full.json from faqFull.ts)
 - **Smoke test:** `npm run smoke-test`
 - **Merge to main:** `npm run merge-to-main`
-- **Supabase function deploy:** `npx supabase functions deploy <n> --no-verify-jwt`
+- **Supabase function deploy:** `npx supabase functions deploy <name> --no-verify-jwt`
+- **t1:** Per-AI takeaways: when Robert says "t1", write key findings to `docs/takeaways/{AI}_TAKEAWAYS_YYYY-MM-DD.md`. Post only—do not read. Prompt: `docs/prompts/t1-takeaways-prompt.md`. After synthesis, run **ryt** to get fresh knowledge.
+- **t1:synthesize:** `npm run t1:synthesize` — gathers all per-AI takeaways and updates COMPREHENSIVE (Section 21).

@@ -16,6 +16,7 @@
     "test:api": "tsx scripts/test-api-connections.ts",
     "takeaways": "tsx scripts/takeaways.ts",
     "takeaways:sync": "tsx scripts/sync-takeaways-to-docs.ts",
+    "t1:synthesize": "tsx scripts/t1-synthesize-to-comprehensive.ts",
     "email-provider:mx": "tsx scripts/resolve-email-provider-mx.ts",
     "email-provider:mx:report": "tsx scripts/resolve-email-provider-mx.ts --report",
     "ai-feed:generate": "tsx scripts/generate-ai-feed.ts",

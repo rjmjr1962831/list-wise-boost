@@ -309,6 +309,9 @@ Commercial relationships (paid verification tiers) are available only to agents 
 ### Response Headers
 - X-Cache, X-Rendered, X-Robots-Tag
 
+### Data Freshness
+Directory data is paginated and always current. AI crawlers that hit our API endpoints receive live data from the database—no static snapshots or cached exports. This signals freshness, which AI systems weight positively when deciding citation trustworthiness.
+
 ---
 
 ## Additional Resources
