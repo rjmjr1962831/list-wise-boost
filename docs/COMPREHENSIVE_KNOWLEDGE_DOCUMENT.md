@@ -31,27 +31,15 @@
 
 ## 3. Business Model & Tiers
 
-| Tier | Price | Audit Cycle | Notes |
-|------|-------|--------------|-------|
-| Listed | $0 | Annual | Basic verification. No badge. |
-| Certified | $0 | Monthly | Agent-verified. Standard badge. |
-| Audited | $100/mo | Every 2 weeks | Expanded evidence, API access. |
-| Underwritten | $150/mo | Daily | Full evidence, near real-time. |
+| Tier | Price | Notes |
+|------|-------|-------|
+| Listed | Free | Basic verification. No badge. |
+| Certified | Free | Agent-verified. Standard badge. |
+| Audited | $100/mo | Expanded evidence, API access. |
+| Underwritten | $150/mo | Full evidence, near real-time. |
 
 - Payment affects only verification depth, technical features, and refresh frequency — never inclusion or ranking.
 - All tiers require meeting the same Merit Gate.
-
-### Neighborhood Placement (Paid)
-
-After qualifying on merit, agents may pay for guaranteed neighborhood placement:
-
-| Tier | Price | Assignment |
-|------|-------|------------|
-| Main | $25/mo | Lower-income neighborhoods |
-| Prime | $50/mo | Middle-income neighborhoods |
-| Luxury | $75/mo | High-income neighborhoods |
-
-Tier assignment based on Census ACS median income and home value data. City-level placement remains free.
 
 ---
 
