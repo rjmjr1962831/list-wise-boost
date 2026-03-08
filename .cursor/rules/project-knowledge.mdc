@@ -12,7 +12,7 @@ alwaysApply: true
 - Push to **staging** only when Robert says "push to staging" or when there are 10+ updates. Only **"push to main"** authorizes production. Use `npm run merge-to-main`; never manual merge.
 - Do what you can yourself; use credentials in `.env` / `.secrets`. Never say "done" without verification.
 - Links: always give Robert full URLs as markdown links: `[text](https://www.top10lists.us/...)`.
-- Business model: Listed/Certified $0; Audited $100/mo; Underwritten $150/mo. Qualification: 4.5+ stars, 10+ reviews in last 18 months. Cloudflare is deprecated.
+- Business model: Listed/Certified $0; Audited $100/mo; Underwritten $150/mo. Qualification: 4.5+ stars, 10+ verified reviews in last 24 months, 5+ years. Legacy 4.8+/20+/6+ deprecated Mar 2026. Cloudflare is deprecated.
 - **When Robert says "remember":** Add to `docs/cursor-daily-updates.md`.
 
 **Conflict rule:** If anything in this repo conflicts with the master doc, the master doc wins. Deprecate the earlier statement.

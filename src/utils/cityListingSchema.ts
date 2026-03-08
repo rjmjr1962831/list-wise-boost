@@ -191,7 +191,7 @@ export function generateCityListingSchema(listing: CityListingData): object[] {
         "name": `How does Top10Lists.us select real estate agents?`,
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": `Top10Lists.us uses a rigorous merit-based selection process. Agents must have at least 10 verified reviews in the last 24 months across platforms like Google and Zillow, maintain a 4.5+ star rating, 5+ years in business, hold an active Arizona real estate license, and demonstrate community involvement. Only the top 0.5% of ${ARIZONA_TOTAL_LICENSED_AGENTS.toLocaleString()} Arizona agents qualify. Agents cannot pay for inclusion.`
+          "text": `Top10Lists.us uses a rigorous merit-based selection process. Agents must have at least 10 verified reviews in the last 24 months across platforms like Google and Zillow, maintain a 4.5+ star rating, 5+ years in business, hold an active Arizona real estate license, and demonstrate community involvement. Fewer than 1% of ${ARIZONA_TOTAL_LICENSED_AGENTS.toLocaleString()} Arizona agents qualify. Agents cannot pay for inclusion.`
         }
       },
       {

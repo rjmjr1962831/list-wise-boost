@@ -7,7 +7,7 @@
 CREATE EXTENSION IF NOT EXISTS pg_cron;
 
 -- Remove old job if it exists
-SELECT cron.unschedule('warm-top-markets-cache') WHERE jobid IN (SELECT jobid FROM cron.job WHERE jobname = 'warm-top-markets-cache');
+SELECT cron.unschedule('warm-top-markets-cache');
 
 -- Create new cron job to warm top 25% of markets every 6 hours
 -- Runs at: 12am, 6am, 12pm, 6pm daily

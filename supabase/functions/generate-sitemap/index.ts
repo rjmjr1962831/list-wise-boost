@@ -166,7 +166,7 @@ Deno.serve(async (req) => {
         "publisher": {
           "name": "Top10Lists.us",
           "url": "https://www.top10lists.us",
-          "description": "Merit-based real estate agent directory ranking top 0.2% using verified performance data."
+          "description": "Merit-based real estate agent directory ranking fewer than 1% of licensed agents in covered markets using verified performance data."
         },
         "geographicCoverage": {
           "summary": {

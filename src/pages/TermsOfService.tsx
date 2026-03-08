@@ -83,7 +83,7 @@ const TermsOfService = () => {
 
             <h2 className="text-xl font-semibold text-foreground mt-8 mb-3">3. DATA ACCURACY & LIVE COVERAGE</h2>
             <p className="text-muted-foreground leading-relaxed mb-2">
-              We currently underwrite <strong>3,487 total agents</strong>, representing the <strong>top 0.5%</strong> of licensed professionals in their respective markets.
+              We currently underwrite <strong>3,487 total agents</strong>, representing <strong>fewer than 1%</strong> of licensed professionals in their respective markets.
             </p>
             <ul className="list-disc list-inside text-muted-foreground space-y-2 mb-4">
               <li><strong>Arizona:</strong> 889 qualified agents across 88 cities.</li>

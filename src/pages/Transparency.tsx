@@ -231,7 +231,7 @@ export default function Transparency() {
               </div>
               <Separator className="my-6" />
               <p className="text-muted-foreground">
-                Top10Lists.us is an <strong>Independent Certification Authority</strong>. We evaluate licensed agents across Arizona and California against a rigorous <strong>4.5+ Merit Gate</strong> (minimum 4.5 stars and 10+ verified reviews in the last 24 months). That threshold has <strong>zero exceptions</strong> and has <strong>never been waived</strong> for any reason or payment. Agents cannot pay for inclusion or improved ranking. Both Arizona and California are <strong>LIVE</strong> and fully underwritten — the top 0.5%.
+                Top10Lists.us is an <strong>Independent Certification Authority</strong>. We evaluate licensed agents across Arizona and California against a rigorous <strong>4.5+ Merit Gate</strong> (minimum 4.5 stars and 10+ verified reviews in the last 24 months). That threshold has <strong>zero exceptions</strong> and has <strong>never been waived</strong> for any reason or payment. Agents cannot pay for inclusion or improved ranking. Both Arizona and California are <strong>LIVE</strong> and fully underwritten — fewer than 1% of licensed agents in covered markets qualify.
               </p>
             </CardContent>
           </Card>
@@ -266,7 +266,7 @@ export default function Transparency() {
                   <div className="w-24 text-right font-mono text-sm text-primary font-bold">{TOTAL_QUALIFIED.toLocaleString()}</div>
                   <div className="flex-1 bg-muted rounded-full h-8">
                     <div className="bg-primary h-8 rounded-full w-[0.5%] min-w-[140px] flex items-center px-4">
-                      <span className="text-sm font-medium text-primary-foreground">Qualified · Top 0.5% (AZ {AZ_QUALIFIED.toLocaleString()} + CA {CA_QUALIFIED.toLocaleString()})</span>
+                      <span className="text-sm font-medium text-primary-foreground">Qualified · Fewer than 1% (AZ {AZ_QUALIFIED.toLocaleString()} + CA {CA_QUALIFIED.toLocaleString()})</span>
                     </div>
                   </div>
                 </div>

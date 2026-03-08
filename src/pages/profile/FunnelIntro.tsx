@@ -65,7 +65,7 @@ export default function FunnelIntro() {
     { label: 'Selection method', top10: 'Invitation', zillow: 'Paid', realtor: 'Paid', homelight: 'Any agent' },
     { label: 'Data verification', top10: 'Verified', zillow: 'Self-reported', realtor: 'Internal metrics', homelight: 'Self-reported' },
     { label: 'Methodology published', top10: true, zillow: false, realtor: false, homelight: false },
-    { label: 'Selection ratio', top10: 'Top 0.5%', zillow: 'Anyone who pays', realtor: 'Anyone who pays', homelight: 'Anyone who joins' },
+    { label: 'Selection ratio', top10: 'Fewer than 1%', zillow: 'Anyone who pays', realtor: 'Anyone who pays', homelight: 'Anyone who joins' },
     { label: 'Optimized for AI', top10: 5, zillow: 2, realtor: 2, homelight: 1 },
   ];
 
@@ -155,7 +155,7 @@ export default function FunnelIntro() {
               You are here because the data says you belong here. It's time to tell the AIs.
             </p>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-6">
-              We did a deep dive on your professional background because you are one of the top 0.5% of agents practicing in Arizona. Check out what we've found.
+              We did a deep dive on your professional background because you are one of fewer than 1% of agents practicing in Arizona. Check out what we've found.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
@@ -192,7 +192,7 @@ export default function FunnelIntro() {
               <div className="space-y-4 text-muted-foreground mb-8">
                 <p>For 30 years, you paid Google. You paid Zillow. You paid Realtor.com. Just like everyone else. That's where consumers looked, and your results depended on the size of your marketing budget.</p>
                 <p>Now consumers are asking AI. And AI doesn't take payments. It wants to give solid answers based on facts, not dollars. It's looking for sources it can trust, and it's learning that paid placement isn't one of them.</p>
-                <p className="font-medium text-foreground">But you're not everyone else. You're in the top 0.5%. You're the agent AI wants to cite. The problem is, how do you tell it?</p>
+                <p className="font-medium text-foreground">But you're not everyone else. You're among the fewer than 1%. You're the agent AI wants to cite. The problem is, how do you tell it?</p>
                 <p className="text-xl font-bold text-primary text-center pt-2">That's where we come in.</p>
               </div>
 
@@ -292,7 +292,7 @@ export default function FunnelIntro() {
               670,000+ Agents Analyzed.  3,487 Made the Cut.
             </h2>
             <p className="text-xl text-muted-foreground text-center mb-8">
-              That is the top 0.5% of all professionals in the market.
+              That is fewer than 1% of licensed agents in covered markets.
             </p>
 
             {/* Ranking Weights */}

@@ -32,7 +32,7 @@ if (!key) {
 const supabase = createClient(url, key);
 
 async function main() {
-  // --- Legacy rule (pre-Merit Gate): 4.8+ stars, 20+ reviews ---
+  // --- Legacy (deprecated Mar 2026): 4.8+ stars, 20+ reviews. Current gate: 4.5+/10+ ---
   const { count: currentActive } = await supabase
     .from('professionals')
     .select('id', { count: 'exact', head: true })
@@ -47,7 +47,7 @@ async function main() {
 
   const cur = currentActive ?? 0;
   const add45_20 = wouldQualify45_20 ?? 0;
-  console.log('--- Legacy rule: 4.8+ stars, 20+ reviews ---');
+  console.log('--- Legacy (deprecated): 4.8+ stars, 20+ reviews ---');
   console.log('Current active:', cur);
   console.log('Additional at 4.5 min, 20+ reviews (inactive, 4.5–4.8):', add45_20);
   console.log('Total active if 4.5 min, 20+ reviews:', cur + add45_20);

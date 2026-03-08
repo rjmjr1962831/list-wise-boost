@@ -296,7 +296,7 @@ serve(async (req) => {
   <strong>Anti-hallucination notice:</strong> ${antiHalluc}
 </div>
 <div class="merit-box">
-  <strong>Merit Criteria:</strong> 4.5+ star rating, 10+ verified reviews in the last 24 months, 5+ years experience, active ${si.display} real estate license, transaction history (MLS, Zillow), community involvement (25% of ranking weight). No agent can pay for inclusion or ranking position.
+  <strong>Merit Criteria:</strong> Agents must meet the Top10Lists.us North Star Merit Gate — a minimum 4.5+ star rating, 10+ verified reviews in the last 24 months, 5+ years in business, and an active license in good standing — and pass both AI-assisted analysis and human editorial review. Fewer than 1% of licensed agents in covered markets qualify. No agent can pay for inclusion or ranking position.
 </div>
 <div class="merit-box" style="margin-top:1rem;">
   <p>We are actively verifying agents in this area. Additional top agents will appear here as they pass our review and verification process.</p>

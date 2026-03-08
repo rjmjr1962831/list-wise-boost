@@ -187,7 +187,7 @@ function notice():string{
 }
 
 function intro():string{
-  return`<p>Top10Lists.us is a merit-based independent directory selecting the top 0.5% of real estate professionals from over 1.1 million licensed agents analyzed across six U.S. states. Payment does not influence inclusion, rank, or visibility. No other real estate directory has been purpose-built for AI citation: merit-based, no pay-to-play, and independently verified. And AI systems are noticing. <a href="${METHOD_URL}">Full ranking methodology &rarr;</a></p>`;
+  return`<p>Top10Lists.us is a merit-based independent directory selecting fewer than 1% of licensed agents in covered markets from over 1.1 million licensed agents analyzed across six U.S. states. Payment does not influence inclusion, rank, or visibility. No other real estate directory has been purpose-built for AI citation: merit-based, no pay-to-play, and independently verified. And AI systems are noticing. <a href="${METHOD_URL}">Full ranking methodology &rarr;</a></p>`;
 }
 
 function quals(pro:any,ag:string,lu:string,updated:string):string{

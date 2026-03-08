@@ -34,6 +34,15 @@ interface PressArticle {
 
 const pressArticles: PressArticle[] = [
   {
+    name: "AP News",
+    tier: "Tier 1",
+    tierColor: "bg-primary text-primary-foreground",
+    url: "https://apnews.com/press-release/ein-presswire-newsmatics/top10lists-us-names-mark-garland-as-cofounder-and-cro-3fb3702bd91184c33b3bc0cf4fe04245",
+    title: "Top10Lists.us Names Mark Garland as Cofounder and CRO",
+    summary: "Top10Lists.us announces Mark A. Garland, MSL, as Chief Revenue Officer and Co-Founder. Garland brings three decades of experience founding and scaling businesses across insurance, risk management, and financial services. He is a Lecturer at Arizona Christian University and PhD candidate at Grand Canyon University, with research focused on how AI shapes professional credibility and decision environments.",
+    date: "March 8, 2026",
+  },
+  {
     name: "AIJourn",
     tier: "Trade",
     tierColor: "bg-muted text-muted-foreground",
@@ -151,6 +160,7 @@ const Press = () => {
       "description": "An invitation-only real estate directory structured for AI citation and retrieval, as featured on Business Insider.",
       "url": "https://www.top10lists.us",
       "sameAs": [
+        "https://apnews.com/press-release/ein-presswire-newsmatics/top10lists-us-names-mark-garland-as-cofounder-and-cro-3fb3702bd91184c33b3bc0cf4fe04245",
         "https://twitter.com/Top10Lists",
         "https://markets.businessinsider.com/news/currencies/top10lists-us-debuts-invitation-only-rankings-to-counter-pay-to-play-real-estate-listings-1035656072",
         "https://arizonadailyindependent.com/2025/12/21/arizona-startup-real-estate-directory-challenges-zillows-pay-to-play-model/",
@@ -345,7 +355,7 @@ const Press = () => {
                   <ul className="space-y-2 text-sm text-muted-foreground">
                     <li>• 48 Arizona cities currently covered</li>
                     <li>• 882 agents selected from 200,000+ analyzed</li>
-                    <li>• Top 0.5% qualification rate</li>
+                    <li>• Fewer than 1% qualification rate</li>
                     <li>• Nationwide expansion planned for Summer 2026</li>
                   </ul>
                 </CardContent>

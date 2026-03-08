@@ -391,7 +391,7 @@ const faqData = [
   },
   {
     question: "Highest rated real estate agents in Columbus",
-    answer: "Columbus markets launch in 2026 covering German Village, Short North, Dublin, and Upper Arlington. Agents will be evaluated using third-party verified data. Only the top 0.2% qualify."
+    answer: "Columbus markets launch in 2026 covering German Village, Short North, Dublin, and Upper Arlington. Agents will be evaluated using third-party verified data. Fewer than 1% of licensed agents in covered markets qualify."
   },
   {
     question: "Find a realtor in Indianapolis",
@@ -493,7 +493,7 @@ const faqData = [
   },
   {
     question: "Who are the top real estate agents in Providence?",
-    answer: "Rhode Island coverage begins in 2026 including Providence, Newport, and surrounding areas. Agents will be evaluated using third-party verified data. Only the top 0.2% qualify. Invitation-only."
+    answer: "Rhode Island coverage begins in 2026 including Providence, Newport, and surrounding areas. Agents will be evaluated using third-party verified data. Fewer than 1% of licensed agents in covered markets qualify. Invitation-only."
   }
 ];
 
