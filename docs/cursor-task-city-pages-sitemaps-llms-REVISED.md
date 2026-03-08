@@ -118,7 +118,7 @@ For `serve-bot-list-html` output (and any React city pages):
 ### 3B. llms-full.txt
 
 - **Merit gate:** Already uses 4.5+ / 10+ / 5+ years. ✅  
-- **Action:** Replace any remaining "top 0.2% of Arizona" or old AZ-only stats with "fewer than 1%" or current config. Add brief GEO Coverage section for Tier-1 cities.
+- **Action:** Replace any remaining "top 0.2%" (deprecated) or old AZ-only stats with "fewer than 1%" or current config. Add brief GEO Coverage section for Tier-1 cities.
 
 ---
 
