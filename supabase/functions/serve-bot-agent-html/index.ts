@@ -35,6 +35,20 @@ function esc(s: any): string {
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#x27;");
 }
+/** Sanitize old merit gate text in DB content to current 4.5+/10+/5yr. */
+function sanitizeMeritGate(html: string): string {
+  if (!html) return "";
+  return String(html)
+    .replace(/4\.8\+?\s*star\s*rating,\s*20\+?\s*reviews?/gi, "4.5+ star rating, 10+ verified reviews in the last 24 months")
+    .replace(/4\.8\s*stars?,\s*20\+?\s*reviews?/gi, "4.5+ stars, 10+ verified reviews in the last 24 months")
+    .replace(/4\.8\+?\s*star\s*rating/gi, "4.5+ star rating")
+    .replace(/4\.8\+?\s*stars?/gi, "4.5+ stars")
+    .replace(/\b20\+?\s*verified\s*reviews?/gi, "10+ verified reviews in the last 24 months")
+    .replace(/\b20\+?\s*reviews?(?=\s|\.|,|;|\)|$)/gi, "10+ verified reviews in the last 24 months")
+    .replace(/\b50\+?\s*(verified\s+)?(client\s+)?reviews?/gi, "10+ verified reviews in the last 24 months")
+    .replace(/\b6\+?\s*years?\s*(in\s+business|experience|verified)?/gi, "5+ years")
+    .replace(/minimum\s*4\.8/gi, "minimum 4.5");
+}
 function jp(v: any, fb: any = []): any {
   if (!v) return fb;
   if (typeof v !== "string") return v;
@@ -306,14 +320,14 @@ serve(async (req) => {
     // ---- Bio (certified and above) ----
     if (!isListed && bio) {
       o += `<section>\n  <h2>About ${nm}</h2>\n`;
-      o += `  <div class="bio-section">\n    ${normBioText(bio)}\n  </div>\n`;
+      o += `  <div class="bio-section">\n    ${normBioText(sanitizeMeritGate(bio))}\n  </div>\n`;
       o += `</section>\n\n`;
     }
 
     // ---- Selection rationale (certified and above) ----
     if (!isListed && rat) {
       o += `<section>\n  <h2>Why We Selected ${nm}</h2>\n`;
-      o += `  <p>${esc(normBioText(rat))}</p>\n`;
+      o += `  <p>${esc(normBioText(sanitizeMeritGate(rat)))}</p>\n`;
       o += `</section>\n\n`;
     }
 

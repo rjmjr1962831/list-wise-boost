@@ -10,16 +10,32 @@
 
 const SUPABASE_URL = 'https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1';
 
-export default async function handler(req, res) {
-  const { fn, path } = req.query;
+const CONTENT_PATHS = ['/for-ai', '/transparency', '/faq'];
 
+export default async function handler(req, res) {
+  let { fn, path } = req.query;
+  // Reject malformed path (e.g. "undefined" or "undefinedfor-ai" from bad rewrite param interpolation)
+  if (path && (path.includes('undefined') || path === 'undefined')) path = null;
+  // Fallback: parse from req.url when query params missing or malformed
+  if ((!fn || !path) && req.url) {
+    try {
+      const u = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+      fn = fn || u.searchParams.get('fn');
+      path = path || u.searchParams.get('path');
+      // When rewrite forwards original path, pathname may be the content path (e.g. /for-ai)
+      if (!path && u.pathname && CONTENT_PATHS.includes(u.pathname)) {
+        path = u.pathname;
+        fn = fn || 'serve-bot-content-html';
+      }
+    } catch (_) {}
+  }
   if (!fn || !path) {
     res.status(400).json({ error: 'Missing fn or path parameter' });
     return;
   }
 
   // Only allow known function names
-  const allowed = ['serve-bot-state-html', 'serve-bot-list-html', 'serve-bot-agent-html', 'artifact-markdown'];
+  const allowed = ['serve-bot-state-html', 'serve-bot-list-html', 'serve-bot-agent-html', 'serve-bot-content-html', 'artifact-markdown'];
   if (!allowed.includes(fn)) {
     res.status(403).json({ error: 'Unknown function' });
     return;

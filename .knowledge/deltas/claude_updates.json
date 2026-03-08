@@ -17,7 +17,7 @@
       "available_fields": ["firstName", "lastName", "licenseNumber", "licenseType", "licenseStatus", "licenseIssueDate", "licenseExpirationDate", "jurisdiction"],
       "missing_fields": ["ratings", "reviews", "transaction_history", "sales_stats", "agent_bios", "profile_photos"],
       "value_proposition": "Replaces brittle state-by-state scraping with standardized API for license verification",
-      "limitation": "Does NOT provide performance data needed for 4.8+ star qualification",
+      "limitation": "Does NOT provide performance data needed for 4.5+ star qualification",
       "recommendation": "Phase 2 adoption after $2K+ monthly revenue. Use for license verification only, keep Zillow for performance metrics.",
       "implementation": "Hybrid approach: ARELLO confirms 'licensed', Zillow confirms 'top 0.5%'",
       "risk": "Low. Supplementary data source, not replacement for current pipeline."

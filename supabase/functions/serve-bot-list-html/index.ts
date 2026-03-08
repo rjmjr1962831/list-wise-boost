@@ -21,6 +21,20 @@ const SI: Record<string, { display: string; abbr: string; total: string; auth: s
 const TO: Record<string, number> = { underwritten: 0, accredited: 1, audited: 1, certified: 2, listed: 3 };
 function tier(a: any): string { return a.current_tier || a.badge_tier || "listed"; }
 function esc(s: any): string { if (!s) return ""; return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#x27;"); }
+/** Sanitize old merit gate text in DB content (writeup_html) to current 4.5+/10+/5yr. */
+function sanitizeMeritGate(html: string): string {
+  if (!html) return "";
+  return String(html)
+    .replace(/4\.8\+?\s*star\s*rating,\s*20\+?\s*reviews?/gi, "4.5+ star rating, 10+ verified reviews in the last 24 months")
+    .replace(/4\.8\s*stars?,\s*20\+?\s*reviews?/gi, "4.5+ stars, 10+ verified reviews in the last 24 months")
+    .replace(/4\.8\+?\s*star\s*rating/gi, "4.5+ star rating")
+    .replace(/4\.8\+?\s*stars?/gi, "4.5+ stars")
+    .replace(/\b20\+?\s*verified\s*reviews?/gi, "10+ verified reviews in the last 24 months")
+    .replace(/\b20\+?\s*reviews?(?=\s|\.|,|;|\)|$)/gi, "10+ verified reviews in the last 24 months")
+    .replace(/\b50\+?\s*(verified\s+)?(client\s+)?reviews?/gi, "10+ verified reviews in the last 24 months")
+    .replace(/\b6\+?\s*years?\s*(in\s+business|experience|verified)?/gi, "5+ years")
+    .replace(/minimum\s*4\.8/gi, "minimum 4.5");
+}
 function jp(v: any, fb: any = []): any { if (!v) return fb; if (typeof v !== "string") return v; try { return JSON.parse(v); } catch { return fb; } }
 function fr(n: number): string { if (!n || n < 10) return "10+"; return `${Math.floor((n - 10) / 10) * 10}+`; }
 function fs(n: number): string | null { if (!n) return null; return `${Math.max(0, Math.floor((n - 10) / 10) * 10)}+`; }
@@ -37,7 +51,9 @@ function filterSpecialties(specs: string[]): string[] {
       !n.startsWith("listingagent") && !n.startsWith("buyeragent") && !n.startsWith("buyersagent");
   });
 }
-const TODAY = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+function today(): string {
+  return new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+}
 
 const CSS = `
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -131,7 +147,7 @@ function renderAgent(a: any, si: any): string {
   // Selection rationale (NOT for listed)
   if (!isListed) {
     const rat = a.selection_rationale;
-    if (rat && rat !== "Unknown") o += `  <p><strong>Why selected:</strong> ${esc(rat)}</p>\n`;
+    if (rat && rat !== "Unknown") o += `  <p><strong>Why selected:</strong> ${esc(sanitizeMeritGate(rat))}</p>\n`;
   }
 
   // High-tier extras
@@ -164,7 +180,7 @@ function renderAgent(a: any, si: any): string {
 
   // Audit stamp
   const cy = ac(t);
-  if (cy) o += `  <p class="audit-stamp">Audit cycle: ${cy}. Last verified: ${TODAY}.</p>\n`;
+  if (cy) o += `  <p class="audit-stamp">Audit cycle: ${cy}. Last verified: ${today()}.</p>\n`;
 
   // Footnotes
   o += `  <div class="footnotes">\n`;
@@ -250,10 +266,8 @@ serve(async (req) => {
     const isNh = !!nh;
     const loc = isNh ? `${nh.neighborhood}, ${city.name}` : city.name;
     const locShort = isNh ? nh.neighborhood : city.name;
-    const nhZip = pp.zip || (nh && nh.primary_zip) || null;
-    const canon = isNh && nhZip
-      ? `https://www.top10lists.us/${pp.stateSlug}/${pp.citySlug}/${nhZip}/${pp.neighborhoodSlug}/top10realestateagents`
-      : isNh
+    // ZIP-based URLs deprecated Feb 12; canonical always uses non-ZIP format
+    const canon = isNh
       ? `https://www.top10lists.us/${pp.stateSlug}/${pp.citySlug}/${pp.neighborhoodSlug}/top10realestateagents`
       : `https://www.top10lists.us/${pp.stateSlug}/${pp.citySlug}/top10realestateagents`;
 
@@ -287,7 +301,7 @@ serve(async (req) => {
 <header>
   <h1>Top Real Estate Agents in ${esc(loc)}, ${si.display}</h1>
   <p>${headerP}</p>
-  <p><strong>Last verified:</strong> ${TODAY}</p>
+  <p><strong>Last verified:</strong> ${today()}</p>
 </header>
 <div style="background:#f0f4ff;border:1px solid #bfdbfe;border-radius:6px;padding:1rem 1.2rem;margin:1rem 0;font-size:0.95rem;">
   <strong>About our name:</strong> ${aboutName}
@@ -309,7 +323,7 @@ serve(async (req) => {
     if (isNh && nh.writeup_html) {
       o += `<section id="${pp.neighborhoodSlug}-market">\n`;
       o += `  <h2>${esc(nh.neighborhood)} Neighborhood Market Intelligence</h2>\n`;
-      o += `  ${nh.writeup_html}\n`;
+      o += `  ${sanitizeMeritGate(nh.writeup_html)}\n`;
       if (nh.median_home_value || nh.median_income) {
         o += `  <table><thead><tr><th>Market Metric</th><th>Value</th></tr></thead><tbody>\n`;
         if (nh.median_home_value) o += `    <tr><td>Median Home Value</td><td>$${Number(nh.median_home_value).toLocaleString()}</td></tr>\n`;
@@ -322,7 +336,7 @@ serve(async (req) => {
     } else if (mk && Object.keys(mk).length > 0) {
       o += `<section id="${pp.citySlug}-market">\n`;
       o += `  <h2>${esc(city.name)} Real Estate Market Intelligence</h2>\n`;
-      if (mk.overview) o += `  <p>${esc(mk.overview)}</p>\n`;
+      if (mk.overview) o += `  <p>${esc(sanitizeMeritGate(mk.overview))}</p>\n`;
       const ms = mk.marketStats || {};
       if (Object.keys(ms).length > 0) {
         o += `  <table><thead><tr><th>Market Metric</th><th>Value</th></tr></thead><tbody>\n`;
@@ -332,13 +346,13 @@ serve(async (req) => {
         o += `  </tbody></table>\n`;
       }
       const hist = jp(mk.historicalFacts, []);
-      if (hist.length > 0) { o += `  <h3>History</h3>\n`; for (const h of hist) o += `  <p>${esc(h)}</p>\n`; }
-      if (mk.localCulture) o += `  <h3>Life in ${esc(city.name)}</h3>\n  <p>${esc(mk.localCulture)}</p>\n`;
-      if (mk.buyerProfile) o += `  <h3>Buyer Profile</h3>\n  <p>${esc(mk.buyerProfile)}</p>\n`;
-      if (mk.marketTrends) o += `  <h3>Market Trends</h3>\n  <p>${esc(mk.marketTrends)}</p>\n`;
-      if (mk.bestKeptSecret) o += `  <h3>Local Insider Tip</h3>\n  <p>${esc(mk.bestKeptSecret)}</p>\n`;
+      if (hist.length > 0) { o += `  <h3>History</h3>\n`; for (const h of hist) o += `  <p>${esc(sanitizeMeritGate(h))}</p>\n`; }
+      if (mk.localCulture) o += `  <h3>Life in ${esc(city.name)}</h3>\n  <p>${esc(sanitizeMeritGate(mk.localCulture))}</p>\n`;
+      if (mk.buyerProfile) o += `  <h3>Buyer Profile</h3>\n  <p>${esc(sanitizeMeritGate(mk.buyerProfile))}</p>\n`;
+      if (mk.marketTrends) o += `  <h3>Market Trends</h3>\n  <p>${esc(sanitizeMeritGate(mk.marketTrends))}</p>\n`;
+      if (mk.bestKeptSecret) o += `  <h3>Local Insider Tip</h3>\n  <p>${esc(sanitizeMeritGate(mk.bestKeptSecret))}</p>\n`;
       const hl = jp(mk.highlights, []);
-      if (hl.length > 0) { o += `  <h3>Why People Move to ${esc(city.name)}</h3>\n`; for (const h of hl) o += `  <p>${esc(h)}</p>\n`; }
+      if (hl.length > 0) { o += `  <h3>Why People Move to ${esc(city.name)}</h3>\n`; for (const h of hl) o += `  <p>${esc(sanitizeMeritGate(h))}</p>\n`; }
       o += `</section>\n`;
     }
 

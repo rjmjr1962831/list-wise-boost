@@ -1,0 +1,14 @@
+---
+description: AI content pages must serve clean room HTML, not full HTML
+globs: ["**/vercel.json", "**/api/serve-clean-html.js", "**/supabase/functions/serve-bot-*/**"]
+alwaysApply: false
+---
+
+# AI Content Serving
+
+**Rule:** Pages intended for AI consumption (transparency, FAQ, methodology, for-ai, protocol-adopters, etc.) must serve **clean room HTML**, not full HTML.
+
+- **Clean room HTML:** Minimal, self-contained HTML. Inline CSS. No React SPA. No external scripts. No Cloudflare Browser Rendering. Same pattern as `serve-bot-list-html`, `serve-bot-state-html`, `serve-bot-agent-html`.
+- **Full HTML (forbidden for AI pages):** React SPA shell, browser-rendered snapshot, or any HTML that requires JS to display content.
+
+**Implementation:** Route AI pages through `/api/serve-clean-html` → Supabase Edge Functions (`serve-bot-content-html`, etc.). Never let AI pages fall through to `/_spa.html` or `serve-bot-static-html` (Cloudflare Browser Rendering).

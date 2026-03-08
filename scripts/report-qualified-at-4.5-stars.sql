@@ -1,10 +1,9 @@
--- How many more agents would be active (qualified) if we lowered the minimum star threshold to 4.5?
--- Current rule: active = (review_stars_rating >= 4.8 AND num_total_reviews >= 20).
+-- Legacy report: compared 4.8+/20+ vs 4.5+/20+. Merit Gate is now 4.5+/10+/5yr.
 -- Run in Supabase SQL Editor.
 
 -- 1) One-row summary
 SELECT
-  (SELECT COUNT(*) FROM professionals WHERE active = true) AS current_active_4.8_plus,
+  (SELECT COUNT(*) FROM professionals WHERE active = true) AS current_active,
   (SELECT COUNT(*)
    FROM professionals
    WHERE active = false

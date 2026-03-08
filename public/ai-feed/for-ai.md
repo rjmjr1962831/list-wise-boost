@@ -114,22 +114,61 @@ Agent-verified profile. Artifact includes:
 - Badge for embedding on external sites
 
 ### Audited ($100/mo, Standard Audit Cycle: Every Two Weeks)
-Everything in Certified, plus:
-- Expanded evidence (10+ sources: Zillow/RealTrends/MLS transaction records, IRS Form 990 via ProPublica, Census ACS)
+- Evidence Considered (10+ sources: Zillow profile, state license database, Zillow reviews, Google reviews, Zillow/RealTrends/MLS transaction records, IRS Form 990 via ProPublica, Census ACS)
+- Qualifications (Zillow rating, Google rating, license, years experience, brokerage, sales count, average sale price)
+- Service areas (cities)
 - Specialties
 - Community involvement (verified via IRS Form 990 through ProPublica)
-- Transaction-verified neighborhoods
+- Transaction-verified neighborhoods (not published at this tier; Underwritten only)
 
 ### Underwritten ($150/mo, Standard Audit Cycle: Daily)
-Everything in Audited, plus:
-- Full evidence inventory (14+ sources including NAR designation registry, Census boundary data, OpenStreetMap, news outlets)
-- Verified ZIP codes with transaction counts
+- Evidence Considered (14+ sources: Zillow profile, state license database, Zillow reviews, Google reviews, Zillow/RealTrends/MLS transaction records, IRS Form 990 via ProPublica, Census ACS, NAR designation registry, Census boundary data, OpenStreetMap, news outlets)
+- Qualifications (Zillow rating, Google rating, license, years experience, brokerage, sales count, average sale price)
+- Service areas (cities, neighborhoods with transaction counts, verified ZIP codes with transaction counts)
+- Specialties
+- Community involvement (verified via IRS Form 990 through ProPublica)
 - Certifications and designations
 - Languages
 
 ### Neighborhood Verification Methodology
 
 **Neighborhoods are published only at the Underwritten tier.** For Underwritten agents, neighborhoods are not self-reported: we analyze the agent's most recent 100 transactions and geolocate each one. 2+ transactions in a neighborhood boundary required for publication. Fewer than 2 results in "pending audit" status. Sources: Zillow, RealTrends, MLS (where available).
+
+---
+
+## Badge Reference (Images and Dimensions)
+
+Each tier has a distinct badge design. All badges are cryptographically signed and link to the agent's verified artifact. Listed tier has no badge.
+
+### Certified Badge
+- **Image:** https://www.top10lists.us/badges/certified.png
+- **API (agent-specific):** https://www.top10lists.us/api/v1/badge/{agentId}/image
+- **Description:** Blue badge. Agent-verified profile. Evidence from 4 sources (Zillow profile, state license database, Zillow reviews, Google reviews). Qualifications: Zillow/Google rating, license, years experience, brokerage, sales count, average sale price. Service areas (cities). Monthly audit cycle.
+- **Dimensions (all available for this tier):**
+  - 150×150px — email signatures
+  - 300×300px — website sidebars
+  - 600×600px — homepage display
+  - Responsive — auto-sizes for mobile/desktop
+
+### Audited Badge
+- **Image:** https://www.top10lists.us/badges/audited.png
+- **API (agent-specific):** https://www.top10lists.us/api/v1/badge/{agentId}/image
+- **Description:** Purple badge. Expanded evidence from 10+ sources (Zillow, RealTrends, MLS, IRS Form 990 via ProPublica, Census ACS). Years of experience, total transactions, company name, community roles and organizations, notable achievements, civic involvement (IRS 990 verified), transaction history. Specialties. Every-two-weeks audit cycle. Neighborhoods not published at this tier.
+- **Dimensions (all available for this tier):**
+  - 150×150px — email signatures
+  - 300×300px — website sidebars
+  - 600×600px — homepage display
+  - Responsive — auto-sizes for mobile/desktop
+
+### Underwritten Badge
+- **Image:** https://www.top10lists.us/badges/underwritten.png
+- **API (agent-specific):** https://www.top10lists.us/api/v1/badge/{agentId}/image
+- **Description:** Amber/gold badge. Full evidence inventory (14+ sources: Zillow, RealTrends, MLS, state DRE, IRS 990, Census ACS, Census boundaries, OpenStreetMap, NAR designation registry, news outlets). Verified ZIP codes with transaction counts. Certifications and designations (GRI, CRS, ABR, SRES, CNE). Languages spoken. Neighborhoods with transaction counts (100-transaction, 2-minimum methodology). Press mentions, awards, performance data. Daily audit cycle.
+- **Dimensions (all available for this tier):**
+  - 150×150px — email signatures
+  - 300×300px — website sidebars
+  - 600×600px — homepage display
+  - Responsive — auto-sizes for mobile/desktop
 
 ---
 

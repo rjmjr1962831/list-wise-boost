@@ -649,7 +649,7 @@ const GEO_OPTIMIZED_FAQ_ADDITIONS: FaqEntry[] = [
     category: "profile", 
     categoryName: "Profile Management", 
     question: "What sizes are badges available in?", 
-    answer: "Badges are available in multiple sizes to fit different use cases: small (150x150px for email signatures), medium (300x300px for website sidebars), large (600x600px for prominent homepage display), and responsive (automatically sizes for mobile/desktop). All sizes include the same cryptographic signature and verification functionality. Higher tiers (Audited, Underwritten) receive additional premium badge designs. All badges require maintaining 4.5+ merit criteria to display valid certification status." 
+    answer: "Each tier has a distinct badge with full dimension options. Certified: blue badge, agent-verified profile, 4 sources (Zillow, state license, Zillow/Google reviews), monthly audit. Audited: purple badge, 10+ sources (Zillow, RealTrends, MLS, IRS 990, Census ACS), specialties, community involvement, every-two-weeks audit. Underwritten: amber/gold badge, 14+ sources, neighborhoods, ZIP codes with transaction counts, certifications, languages, daily audit. All tiers support these dimensions: 150×150px (email signatures), 300×300px (website sidebars), 600×600px (homepage display), responsive (auto-sizes for mobile/desktop). Images: /badges/certified.png, /badges/audited.png, /badges/underwritten.png. Agent-specific: /api/v1/badge/{agentId}/image. All badges are cryptographically signed and require 4.5+ merit criteria." 
   },
   
   { 

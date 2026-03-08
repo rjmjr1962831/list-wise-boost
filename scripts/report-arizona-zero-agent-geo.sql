@@ -1,4 +1,4 @@
--- Report: Arizona cities and neighborhoods with 0 qualified agents (4.8+ stars, 20+ reviews).
+-- Report: Arizona cities and neighborhoods with 0 qualified agents (4.5+ stars, 10+ verified reviews in last 24 months).
 -- Run in Supabase SQL Editor to see scope of "geo misfire" (empty list pages).
 -- Qualification matches get_neighborhood_ids_with_qualified_agents and generate-sitemap Rule A.
 
@@ -10,14 +10,14 @@ SELECT
   c.state,
   (SELECT COUNT(*) FROM professionals p
    WHERE p.city_id = c.id AND p.active = true
-     AND p.review_stars_rating >= 4.8 AND p.num_total_reviews >= 20) AS qualified_count
+     AND p.review_stars_rating >= 4.5 AND p.num_total_reviews >= 10) AS qualified_count
 FROM cities c
 WHERE c.active = true
   AND c.state = 'Arizona'
   AND NOT EXISTS (
     SELECT 1 FROM professionals p
     WHERE p.city_id = c.id AND p.active = true
-      AND p.review_stars_rating >= 4.8 AND p.num_total_reviews >= 20
+      AND p.review_stars_rating >= 4.5 AND p.num_total_reviews >= 10
   )
 ORDER BY c.name;
 
@@ -45,7 +45,7 @@ SELECT
      AND NOT EXISTS (
        SELECT 1 FROM professionals p
        WHERE p.city_id = c.id AND p.active = true
-         AND p.review_stars_rating >= 4.8 AND p.num_total_reviews >= 20
+         AND p.review_stars_rating >= 4.5 AND p.num_total_reviews >= 10
      )) AS az_cities_zero_qualified,
   (SELECT COUNT(*) FROM neighborhood_catalog nc
    WHERE nc.is_active = true AND nc.state = 'Arizona'

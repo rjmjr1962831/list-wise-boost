@@ -1870,7 +1870,7 @@ const CleanRoom = () => {
                 <thead><tr><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Metric</th><th style={{ border: "1px solid #ccc", padding: "0.4rem", textAlign: "left" }}>Value</th></tr></thead>
                 <tbody>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Rating</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>5 / 5 stars</td></tr>
-                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>20 verified</td></tr>
+                  <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Reviews</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>10+ verified in last 24 months</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Experience</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>2 years</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Career Transactions</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>59</td></tr>
                   <tr><td style={{ border: "1px solid #ccc", padding: "0.4rem", fontWeight: "bold" }}>Brokerage</td><td style={{ border: "1px solid #ccc", padding: "0.4rem" }}>RE/MAX Fine Properties</td></tr>

@@ -26,7 +26,7 @@ https://www.top10lists.us/artifact/{magic_link_token}
 Content-Type: text/markdown
 ```
 
-### Artifact Payload (everything in Audited, plus)
+### Artifact Payload
 
 **Evidence Considered (14+ sources):**
 - Zillow agent profile and transaction records
@@ -41,11 +41,11 @@ Content-Type: text/markdown
 - National Association of Realtors (designation and certification registry)
 - National and regional news outlets (with headline or mention context)
 
-**Additional Fields Beyond Audited:**
+**Qualifications and verified data:**
 - Verified ZIP codes with transaction counts and 3-year period
 - Certifications and designations (e.g., GRI, CRS, ABR, SRES, CNE)
 - Languages spoken
-- Cities upgraded to verified with transaction counts
+- Cities with transaction counts and 3-year period
 
 **Service Areas (all verified):**
 - Cities with transaction counts and 3-year period

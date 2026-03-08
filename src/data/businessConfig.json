@@ -1,0 +1,12 @@
+{
+  "meritGate": {
+    "rating": 4.5,
+    "reviews": 10,
+    "windowMonths": 24,
+    "yearsExperience": 5
+  },
+  "tier1Cities": {
+    "arizona": ["phoenix", "tucson", "mesa", "chandler", "gilbert", "glendale", "scottsdale"],
+    "california": ["los-angeles", "san-diego", "san-jose", "san-francisco", "fresno", "sacramento", "long-beach", "oakland", "bakersfield", "anaheim", "santa-ana", "riverside", "stockton", "irvine", "chula-vista", "fremont"]
+  }
+}
