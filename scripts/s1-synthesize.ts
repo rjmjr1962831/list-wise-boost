@@ -9,8 +9,10 @@
  *    - Sets "Last consolidated" to today
  *    - Adds/updates "## 21. Recent Updates (from t1)" with synthesized content
  *    - Preserves all other sections
+ * 4. pts: commits and pushes updated COMPREHENSIVE to staging
  */
 import { readFileSync, writeFileSync, readdirSync, existsSync } from 'fs';
+import { execSync } from 'child_process';
 import { resolve } from 'path';
 
 const TAKEAWAYS_DIR = resolve(process.cwd(), 'docs/takeaways');
@@ -77,6 +79,21 @@ function main() {
   const synthesis = synthesizeTakeaways(files);
   updateComprehensive(synthesis);
   console.log(`Updated docs/COMPREHENSIVE_KNOWLEDGE_DOCUMENT.md with synthesis from ${files.length} AI(s).`);
+
+  // pts: push to staging
+  execSync('git add docs/COMPREHENSIVE_KNOWLEDGE_DOCUMENT.md', { stdio: 'inherit' });
+  try {
+    execSync('git commit -m "s1: update COMPREHENSIVE Section 21 from takeaways"', { stdio: 'inherit' });
+    execSync('git push origin staging', { stdio: 'inherit' });
+    console.log('pts: pushed to staging.');
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : String(e);
+    if (msg.includes('nothing to commit') || msg.includes('no changes added')) {
+      console.log('No changes to commit; COMPREHENSIVE already up to date.');
+    } else {
+      throw e;
+    }
+  }
 }
 
 main();

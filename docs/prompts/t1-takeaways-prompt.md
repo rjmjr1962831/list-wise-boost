@@ -11,13 +11,14 @@ When Robert says **"t1"** or **"run t1"**:
    - Config changes (businessConfig, Supabase, Vercel)
    - Important decisions or pivots
 
-2. **Do not read** any docs. Only post. Robert will run **s1**, then have you run **ryt** to get the fresh knowledge.
+2. **Do not read** other docs. Exception: **read the target takeaways file if it exists** so you can merge (see step 3). Robert will run **s1**, then have you run **ryt** to get the fresh knowledge.
 
 3. **Save** to a file named by your AI identity:
    - **Path:** `docs/takeaways/{AI_ID}_TAKEAWAYS_YYYY-MM-DD.md`
    - **AI_ID:** Use your identifier: `CURSOR`, `CLAUDE`, `GEMINI`, etc.
    - **Date:** Today in YYYY-MM-DD format.
    - **Example:** Cursor saves `docs/takeaways/CURSOR_TAKEAWAYS_2026-03-08.md`
+   - **Merge, do not overwrite:** If the file already exists (e.g., another Cursor session ran t1 today), read it, append your new bullets to the appropriate sections, and write the merged result. Preserve all existing content.
 
 4. **Required structure:**
 
