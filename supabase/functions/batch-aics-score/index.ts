@@ -239,6 +239,7 @@ serve(async (req) => {
           agent_id:              agent.id,
           full_name:             agent.name,
           brokerage:             agent.company,
+          state_slug:            agent.state_slug || null,
           audited_at:            new Date().toISOString(),
           status:                'complete',
           aics_version:          'v1',
