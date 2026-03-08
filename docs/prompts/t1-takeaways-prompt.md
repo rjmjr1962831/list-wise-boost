@@ -11,7 +11,7 @@ When Robert says **"t1"** or **"run t1"**:
    - Config changes (businessConfig, Supabase, Vercel)
    - Important decisions or pivots
 
-2. **Do not read** any docs. Only post. Robert will run synthesis, then have you run **ryt** to get the fresh knowledge.
+2. **Do not read** any docs. Only post. Robert will run **s1**, then have you run **ryt** to get the fresh knowledge.
 
 3. **Save** to a file named by your AI identity:
    - **Path:** `docs/takeaways/{AI_ID}_TAKEAWAYS_YYYY-MM-DD.md`
@@ -40,6 +40,6 @@ When Robert says **"t1"** or **"run t1"**:
 - (Things we stopped using.)
 ```
 
-5. **Do not** update `docs/COMPREHENSIVE_KNOWLEDGE_DOCUMENT.md` yourself. The master synthesis step does that.
+5. **Do not** update `docs/COMPREHENSIVE_KNOWLEDGE_DOCUMENT.md` yourself. The **s1** step does that.
 
 6. **Location:** Save in this repo at `docs/takeaways/`. This path is excluded from main (internal docs).

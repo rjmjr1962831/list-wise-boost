@@ -6,7 +6,7 @@
 
 - `t1-takeaways-prompt.md` — universal prompt for any AI (Cursor, Claude, Gemini, etc.)
 
-**Master synthesis:** Run `npm run t1:synthesize` to gather all per-AI takeaways and update `docs/COMPREHENSIVE_KNOWLEDGE_DOCUMENT.md` (Section 21).
+**Master synthesis (s1):** Run `npm run s1` to gather all per-AI takeaways and update `docs/COMPREHENSIVE_KNOWLEDGE_DOCUMENT.md` (Section 21).
 
 ## Legacy Takeaways (Private Repo)
 

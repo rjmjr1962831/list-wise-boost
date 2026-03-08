@@ -1,7 +1,7 @@
 /**
- * t1 Master Synthesis — Gathers all per-AI takeaways and updates COMPREHENSIVE_KNOWLEDGE_DOCUMENT.
+ * s1 — Master Synthesis. Gathers all per-AI takeaways and updates COMPREHENSIVE_KNOWLEDGE_DOCUMENT.
  *
- * Usage: npm run t1:synthesize
+ * Usage: npm run s1
  *
  * 1. Reads all *TAKEAWAYS*.md in docs/takeaways/
  * 2. Consolidates them by date and AI source

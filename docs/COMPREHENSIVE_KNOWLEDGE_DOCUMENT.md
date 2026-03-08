@@ -262,5 +262,5 @@ From `src/data/master-ssot.md`:
 - **Smoke test:** `npm run smoke-test`
 - **Merge to main:** `npm run merge-to-main`
 - **Supabase function deploy:** `npx supabase functions deploy <name> --no-verify-jwt`
-- **t1:** Per-AI takeaways: when Robert says "t1", write key findings to `docs/takeaways/{AI}_TAKEAWAYS_YYYY-MM-DD.md`. Post only—do not read. Prompt: `docs/prompts/t1-takeaways-prompt.md`. After synthesis, run **ryt** to get fresh knowledge.
-- **t1:synthesize:** `npm run t1:synthesize` — gathers all per-AI takeaways and updates COMPREHENSIVE (Section 21).
+- **t1:** Per-AI takeaways: when Robert says "t1", write key findings to `docs/takeaways/{AI}_TAKEAWAYS_YYYY-MM-DD.md`. Post only—do not read. Prompt: `docs/prompts/t1-takeaways-prompt.md`. After Robert runs **s1**, run **ryt** to get fresh knowledge.
+- **s1:** `npm run s1` — gathers all per-AI takeaways and updates COMPREHENSIVE (Section 21).
