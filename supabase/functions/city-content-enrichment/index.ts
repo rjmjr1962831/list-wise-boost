@@ -5,7 +5,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-enrichment-key',
 }
 
-const DEEPSEEK_API_KEY = 'REDACTED_DEEPSEEK_KEY'
+const DEEPSEEK_API_KEY = Deno.env.get('DEEPSEEK_API_KEY')!
 const BATCH_SIZE = 2
 
 interface City {
@@ -15,7 +15,7 @@ interface City {
   slug: string
 }
 
-async function generateCityContent(city: City): Promise<object | null> {
+async function generateCityContent(city: City): Promise<{ content: object } | { error: string }> {
   const prompt = `Generate real estate market content for ${city.name}, ${city.state} as JSON:
 {"overview":"2-3 paragraphs about the city and real estate market","historicalFacts":["fact1","fact2","fact3"],"pointsOfInterest":["poi1 with description","poi2","poi3","poi4","poi5","poi6"],"localCulture":"paragraph on lifestyle and community","highlights":["reason1","reason2","reason3","reason4"],"buyerProfile":"paragraph on typical buyers","marketTrends":"paragraph on current market","bestKeptSecret":"insider tip","marketStats":{"population":number,"medianHomePrice":number,"medianRent":number,"medianHouseholdIncome":number,"daysOnMarket":number,"pricePerSqFt":number,"yearOverYearChange":decimal,"inventoryLevel":"Low/Moderate/High","marketType":"Seller's Market/Balanced/Buyer's Market","averageHomeSize":number,"homeownershipRate":decimal,"rentToIncomeRatio":decimal,"rentalVacancyRate":decimal,"pctRenterOccupied":decimal},"metadata":{"marketStatsUpdatedAt":"${new Date().toISOString()}","generatedBy":"DeepSeek"}}
 Be specific to ${city.name}. Use realistic ${city.state} market data. No em dashes. Return ONLY valid JSON.`
@@ -36,8 +36,10 @@ Be specific to ${city.name}. Use realistic ${city.state} market data. No em dash
     })
 
     if (!response.ok) {
-      console.error(`DeepSeek error: ${response.status}`)
-      return null
+      const errText = await response.text()
+      const msg = `DeepSeek ${response.status}: ${errText.slice(0, 200)}`
+      console.error(msg)
+      return { error: msg }
     }
 
     const data = await response.json()
@@ -49,10 +51,11 @@ Be specific to ${city.name}. Use realistic ${city.state} market data. No em dash
     if (content.endsWith('```')) content = content.slice(0, -3)
     content = content.trim()
 
-    return JSON.parse(content)
+    return { content: JSON.parse(content) }
   } catch (error) {
-    console.error(`Error generating content for ${city.name}:`, error)
-    return null
+    const msg = error instanceof Error ? error.message : String(error)
+    console.error(`Error generating content for ${city.name}:`, msg)
+    return { error: msg }
   }
 }
 
@@ -68,8 +71,29 @@ Deno.serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-    const citiesNeedingContent: City[] = []
-    
+    let citiesNeedingContent: City[] = []
+    const url = new URL(req.url)
+    const citySlug = url.searchParams.get('citySlug')
+
+    if (citySlug) {
+      const { data: city, error } = await supabase
+        .from('cities')
+        .select('id, name, state, slug')
+        .eq('slug', citySlug)
+        .eq('state_slug', 'arizona')
+        .eq('active', true)
+        .single()
+      if (error || !city) {
+        return new Response(JSON.stringify({ error: `City not found: ${citySlug}` }), {
+          status: 404,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        })
+      }
+      citiesNeedingContent = [city]
+      console.log(`Target city: ${city.name}`)
+    }
+
+    if (citiesNeedingContent.length === 0) {
     for (const state of ['Arizona', 'California']) {
       if (citiesNeedingContent.length >= BATCH_SIZE) break
       
@@ -122,6 +146,7 @@ Deno.serve(async (req) => {
         }
       }
     }
+    }
 
     if (citiesNeedingContent.length === 0) {
       const { count } = await supabase
@@ -145,9 +170,9 @@ Deno.serve(async (req) => {
     for (const city of citiesNeedingContent) {
       console.log(`Processing: ${city.name}, ${city.state}`)
       
-      const content = await generateCityContent(city)
+      const result = await generateCityContent(city)
       
-      if (content) {
+      if ('content' in result) {
         const { error: upsertError } = await supabase
           .from('marketing_content')
           .upsert({
@@ -155,7 +180,7 @@ Deno.serve(async (req) => {
             section: 'market_overview',
             key: 'full_content',
             type: 'json',
-            value: JSON.stringify(content),
+            value: JSON.stringify(result.content),
             active: true,
             updated_at: new Date().toISOString()
           }, {
@@ -169,7 +194,7 @@ Deno.serve(async (req) => {
           results.push({ city: city.name, state: city.state, status: 'success' })
         }
       } else {
-        results.push({ city: city.name, state: city.state, status: 'failed', error: 'Content generation failed' })
+        results.push({ city: city.name, state: city.state, status: 'failed', error: result.error })
       }
 
       await new Promise(resolve => setTimeout(resolve, 300))
