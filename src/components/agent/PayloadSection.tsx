@@ -380,7 +380,7 @@ export function PayloadSection({ professional }: PayloadSectionProps) {
                 tier="audited"
                 currentTier={currentTier}
                 professional={professional}
-                price="$100/mo"
+                price="$300/mo"
                 signalScore={professional.signal_score}
                 projectedScore={tierSignals.audited}
               />
@@ -391,7 +391,7 @@ export function PayloadSection({ professional }: PayloadSectionProps) {
                 tier="underwritten"
                 currentTier={currentTier}
                 professional={professional}
-                price="$150/mo"
+                price="$500/mo"
                 signalScore={professional.signal_score}
                 projectedScore={tierSignals.underwritten}
               />

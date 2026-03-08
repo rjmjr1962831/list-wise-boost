@@ -33,10 +33,11 @@
 
 | Tier | Price | Notes |
 |------|-------|-------|
-| Listed | Free | Basic verification. No badge. |
-| Certified | Free | Agent-verified. Standard badge. |
-| Audited | $100/mo | Expanded evidence, API access. |
-| Underwritten | $150/mo | Full evidence, near real-time. |
+| Listed | Free | Basic verification. Standard badge. |
+| Audited | $300/mo | Expanded evidence, API access. |
+| Underwritten | $500/mo | Full evidence, near real-time. |
+
+Legacy: 58 Certified agents grandfathered; full payload on listing pages; no new Certified issuances.
 
 - Payment affects only verification depth, technical features, and refresh frequency -- never inclusion or ranking.
 - All tiers require meeting the same Merit Gate.
@@ -201,7 +202,7 @@ Loop until `data.length < pageSize`.
 
 **Data quality gates before publishing:** License verified, experience from license date, 10+ reviews in 24 mo, 4.5+ rating, 3+ transactions for neighborhood experts.
 
-**Neighborhood Expert:** Requires paid subscription (Audited $100/mo or Underwritten $150/mo). Free agents can be "Qualified" but not featured as experts.
+**Neighborhood Expert:** Requires paid subscription (Audited $300/mo or Underwritten $500/mo). Free agents can be "Qualified" but not featured as experts.
 
 **Sitemap Rule A:** Cities and neighborhoods only if at least one agent has 4.5+ stars and 10+ reviews. Pages with no qualified agents must not appear in sitemap.
 
@@ -228,7 +229,7 @@ These paths are removed from main by merge-to-main; they exist on staging only:
 
 From `src/data/master-ssot.md`:
 
-- **4-Tier Model:** Listed $0, Certified $0, Audited $100/mo, Underwritten $150/mo.
+- **3-Tier Acquisition Model:** Listed $0, Audited $300/mo, Underwritten $500/mo. Legacy Certified ($0) remains for ~58 grandfathered agents; no new Certified badges issued.
 - **Methodology:** Merit-based selection of top 0.5%. Non-pay-to-play. Data: MLS, State Boards, Google, Zillow, Realtor.com.
 
 ---

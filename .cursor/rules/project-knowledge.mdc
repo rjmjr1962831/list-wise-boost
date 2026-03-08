@@ -15,6 +15,9 @@ alwaysApply: true
 - Business model: Listed/Certified $0; Audited $100/mo; Underwritten $150/mo. Qualification: 4.5+ stars, 10+ verified reviews in last 24 months, 5+ years. Legacy 4.8+/20+/6+ deprecated Mar 2026. Cloudflare is deprecated.
 - **AI pages:** If a page is for AI consumption (transparency, FAQ, methodology, for-ai, etc.), serve **clean room HTML**—minimal, self-contained, no React SPA, no browser rendering. Never serve full HTML (SPA shell or Cloudflare Browser Rendering) for AI pages.
 - **When Robert says "remember":** Add to `docs/cursor-daily-updates.md`.
+- **When Robert says "t1":** Read `docs/prompts/t1-takeaways-prompt.md` and follow it.
+- **When Robert says "ryt":** Read `docs/COMPREHENSIVE_KNOWLEDGE_DOCUMENT.md`. Do not post/update there.
+- **When Robert says "s1":** Run `npm run s1` (synthesizes takeaways into COMPREHENSIVE).
 - **"ALL" means every single instance.** When Robert says "all" (e.g. "fix all references", "update all pages"), interpret literally: every file, every page, every occurrence. No exceptions, no "most" or "main" or "key" subsets. Search exhaustively; fix exhaustively. Before finishing: grep for the old values across the entire repo; check edge functions, static HTML, DB-backed content, FAQ JSON, llms.txt, templates, and generated files. If any instance remains, the task is not done.
 
 **Conflict rule:** If anything in this repo conflicts with the master doc, the master doc wins. Deprecate the earlier statement.

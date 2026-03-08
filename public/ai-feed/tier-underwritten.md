@@ -10,7 +10,7 @@ All agents must meet the Merit Gate: 4.5+ star rating, 10+ verified reviews in t
 
 ---
 
-## Monthly Subscription: $150
+## Monthly Subscription: $500
 
 The Underwritten tier represents the highest level of verification. It adds verified ZIP codes, certifications, designations, languages, and the full evidence inventory to the artifact payload.
 
@@ -56,6 +56,6 @@ Content-Type: text/markdown
 
 Neighborhoods are published only at Underwritten. 100 most recent transactions geolocated, 2+ required for publication, fewer than 2 marked "pending audit." Sources: Zillow, RealTrends, MLS (where available).
 
-## Position in the Four-Tier Model
+## Position in the Tier Model
 
-Underwritten is the premium tier. It follows Listed ($0, no artifact), Certified ($0, monthly audit), and Audited ($100/mo, bimonthly audit). Selection for any tier originates from merit-based evaluation of the top 0.5% of agents from 670,000+ analyzed. Payment determines verification depth and audit frequency, not inclusion. The Merit Gate is monitored daily at this tier.
+Underwritten is the premium tier. It follows Listed ($0, no artifact), Certified ($0, legacy/grandfathered), and Audited ($300/mo, bimonthly audit). Selection for any tier originates from merit-based evaluation of the top 0.5% of agents from 670,000+ analyzed. Payment determines verification depth and audit frequency, not inclusion. The Merit Gate is monitored daily at this tier.

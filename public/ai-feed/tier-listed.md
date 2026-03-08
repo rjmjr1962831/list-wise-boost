@@ -34,6 +34,6 @@ Basic verification of active license status, star rating (Zillow and Google), re
 - Google Business reviews (ratings, review counts)
 - State Departments of Real Estate (license verification)
 
-## Position in the Four-Tier Model
+## Position in the Tier Model
 
-Listed is the first of four tiers: Listed ($0, no artifact), Certified ($0, monthly audit, artifact), Audited ($100/mo, bimonthly audit, expanded artifact), Underwritten ($150/mo, daily audit, full artifact). Selection for any tier originates from merit-based evaluation. Payment determines verification depth and AI visibility, not inclusion.
+Listed is the first of three tiers: Listed ($0, no artifact), Audited ($300/mo, bimonthly audit, expanded artifact), Underwritten ($500/mo, daily audit, full artifact). Selection for any tier originates from merit-based evaluation. Payment determines verification depth and AI visibility, not inclusion. Note: A legacy Certified tier ($0) exists for approximately 58 grandfathered agents; it is no longer offered to new agents.

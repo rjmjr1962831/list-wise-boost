@@ -6,7 +6,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-type CertificationTier = "listed" | "certified" | "audited" | "underwritten";
+type CertificationTier = "listed" | "audited" | "underwritten";
 
 interface FunnelSelectTierRequest {
   token: string;
@@ -30,7 +30,7 @@ serve(async (req) => {
       );
     }
 
-    const validTiers: CertificationTier[] = ["listed", "certified", "audited", "underwritten"];
+    const validTiers: CertificationTier[] = ["listed", "audited", "underwritten"];
     if (!validTiers.includes(body.tier)) {
       return new Response(
         JSON.stringify({ error: "Invalid tier" }),
@@ -65,7 +65,7 @@ serve(async (req) => {
       );
     }
 
-    const isFree = body.tier === "listed" || body.tier === "certified";
+    const isFree = body.tier === "listed";
     const nextBillDate = isFree ? null : body.billingCycle === "annual"
       ? new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString()
       : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();

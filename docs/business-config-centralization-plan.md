@@ -228,7 +228,7 @@ Deno cannot import Node modules. Options:
 ## 7. Out of Scope (For Now)
 
 - Pricing tiers (Bronze/Silver/Gold/Platinum) — different domain, already in `types/pricing.ts`.
-- Competitor pricing (Zillow $300–5000, RealTrends $100) — marketing copy, not business config.
+- Competitor pricing (Zillow $300–5000, RealTrends $195/year) — marketing copy, not business config.
 - Scoring weights — could be config but lower priority than merit gate.
 
 ---

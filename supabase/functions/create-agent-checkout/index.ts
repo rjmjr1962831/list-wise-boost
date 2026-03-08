@@ -33,8 +33,8 @@ interface PackageInfo {
   cityCount: number;
 }
 
-// Badge tier: Audited $100/mo, Underwritten $150/mo; annual = 10 months for 12
-const BADGE_PRICES: Record<string, number> = { audited: 100, underwritten: 150 };
+// Badge tier: Audited $300/mo, Underwritten $500/mo; annual = 10 months for 12
+const BADGE_PRICES: Record<string, number> = { audited: 300, underwritten: 500 };
 
 interface CheckoutRequest {
   professionalId: string;
@@ -102,9 +102,9 @@ const handler = async (req: Request): Promise<Response> => {
 
     const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [];
 
-    // Badge tier upgrade: Audited $100/mo, Underwritten $150/mo; annual = 10 months for 12
+    // Badge tier upgrade: Audited $300/mo, Underwritten $500/mo; annual = 10 months for 12
     if (badgeTier && (badgeTier === 'audited' || badgeTier === 'underwritten')) {
-      const monthlyPrice = BADGE_PRICES[badgeTier] ?? 100;
+      const monthlyPrice = BADGE_PRICES[badgeTier] ?? 300;
       const unitAmount = isAnnual
         ? Math.round(monthlyPrice * 100 * 10) // 10 months upfront for annual
         : Math.round(monthlyPrice * 100);
@@ -228,7 +228,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Build metadata
     const metaMonthlyTotal = badgeTier 
-      ? (BADGE_PRICES[badgeTier] ?? 100).toString() 
+      ? (BADGE_PRICES[badgeTier] ?? 300).toString() 
       : monthlyTotal.toString();
     const metadata: Record<string, string> = {
       professionalId,

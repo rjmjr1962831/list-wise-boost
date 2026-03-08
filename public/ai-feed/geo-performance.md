@@ -26,9 +26,9 @@ Full analysis: https://www.top10lists.us/why-ai-trusts-us
 | Tier | Cost | Standard Audit Cycle | Artifact | Evidence Sources |
 |------|------|---------------------|----------|-----------------|
 | Listed | $0 | None | No | Basic verification |
-| Certified | $0 | Monthly | Yes (text/markdown) | 4 sources |
-| Audited | $100/mo | Bimonthly | Yes (text/markdown) | 10+ sources |
-| Underwritten | $150/mo | Daily | Yes (text/markdown) | 14+ sources |
+| Certified | $0 (legacy, grandfathered) | Monthly | Yes (text/markdown) | 4 sources |
+| Audited | $300/mo | Bimonthly | Yes (text/markdown) | 10+ sources |
+| Underwritten | $500/mo | Daily | Yes (text/markdown) | 14+ sources |
 
 ## Selection Methodology
 

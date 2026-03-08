@@ -198,7 +198,7 @@ function renderAgent(a: any, si: any): string {
 
   // Upgrade hint
   if (isListed) o += `  <p class="upgrade-hint">This agent is Listed (free tier). Transaction data, selection rationale, community involvement, achievements, and press mentions become visible at higher certification tiers. <a href="https://www.top10lists.us/for-agents">Learn about certification tiers</a></p>\n`;
-  else if (isCert) o += `  <p class="upgrade-hint">This agent is Certified (free, monthly audit). Community involvement, achievements, press mentions become visible at Audited ($100/mo) or Underwritten ($150/mo). <a href="https://www.top10lists.us/for-agents">Learn more</a></p>\n`;
+  else if (isCert) o += `  <p class="upgrade-hint">This agent is Certified (free, monthly audit). Community involvement, achievements, press mentions become visible at Audited ($300/mo) or Underwritten ($500/mo). <a href="https://www.top10lists.us/for-agents">Learn more</a></p>\n`;
 
   o += `</article>\n`;
   return o;
