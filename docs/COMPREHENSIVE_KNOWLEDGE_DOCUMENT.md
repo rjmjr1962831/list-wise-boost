@@ -1,7 +1,7 @@
 # Top10Lists.us — Comprehensive Knowledge Document
 
 **Purpose:** Single consolidated reference for agent2, Claude, and Cursor. Use latest updates as source of truth.  
-**Last consolidated:** March 8, 2026  
+**Last consolidated:** 2026-03-08
 **Conflict rule:** When sources conflict, this document wins. Deprecate earlier statements.
 
 ---
@@ -264,3 +264,70 @@ From `src/data/master-ssot.md`:
 - **Supabase function deploy:** `npx supabase functions deploy <name> --no-verify-jwt`
 - **t1:** Per-AI takeaways: when Robert says "t1", write key findings to `docs/takeaways/{AI}_TAKEAWAYS_YYYY-MM-DD.md`. Post only—do not read. Prompt: `docs/prompts/t1-takeaways-prompt.md`. After Robert runs **s1**, run **ryt** to get fresh knowledge. **pts** after t1: push takeaways to staging.
 - **s1:** `npm run s1` — gathers all per-AI takeaways and updates COMPREHENSIVE (Section 21). **pts** after s1: push updated COMPREHENSIVE to staging.
+
+---
+
+## 21. Recent Updates (from t1)
+
+*Last synthesized: 2026-03-08*
+
+---
+
+### CURSOR — 2026-03-08
+
+# t1 Takeaways — CURSOR — 2026-03-08
+
+## Key Outcomes
+- Consolidated docs/COMPREHENSIVE_KNOWLEDGE_DOCUMENT.md with .knowledge/CORE_RULES, TECH_STACK, SOT_VETTING
+- Deprecated "top 0.2%" coverage language; canonical: "fewer than 1% of licensed agents in covered markets"
+- Business model: 4-tier only (Listed/Certified free, Audited $100/mo, Underwritten $150/mo); removed Main/Prime/Luxury
+- ryt: Read docs/COMPREHENSIVE_KNOWLEDGE_DOCUMENT.md; do not post there
+- t1: Per-AI takeaways, post only; s1: npm run s1 synthesizes into COMPREHENSIVE Section 21
+
+## Config / Infrastructure
+- Supabase: wiotrvoirdgzfacuuiem only. Dead project bgdtekbhelormzbymkhh — never use
+- Added DEAD INFRASTRUCTURE note to COMPREHENSIVE and .knowledge/TECH_STACK
+
+## New Rules or Docs
+- docs/prompts/t1-takeaways-prompt.md — per-AI takeaways, post only
+- docs/COMPREHENSIVE_KNOWLEDGE_DOCUMENT.md — single SSoT; project-knowledge.mdc points to it
+- public/ai-feed/for-ai.md — added Data Freshness subsection (paginated, live API data)
+
+## New Functions / Scripts
+- scripts/s1-synthesize.ts — npm run s1; gathers *TAKEAWAYS*.md, updates COMPREHENSIVE Section 21
+
+## Deprecated or Removed
+- "top 0.2%" as coverage language
+- Main/Prime/Luxury neighborhood pricing ($25/$50/$75)
+- MASTER_KNOWLEDGE_DOCUMENT_TODAY.MD — now a pointer to COMPREHENSIVE
+
+---
+
+### CLAUDE — 2026-03-08
+
+# t1 Takeaways — CLAUDE — 2026-03-08
+
+## Key Outcomes
+- Ran `ryt`: updated `docs/COMPREHENSIVE_KNOWLEDGE_DOCUMENT.md` on staging (commit bc0a679).
+- Discovered that `MASTER_KNOWLEDGE_DOCUMENT.md` does not exist at repo root on staging. Canonical file is `docs/COMPREHENSIVE_KNOWLEDGE_DOCUMENT.md`.
+- Discovered and read `docs/prompts/t1-takeaways-prompt.md` (new t1 protocol).
+
+## Config / Infrastructure
+- Active Supabase project: `wiotrvoirdgzfacuuiem` (only valid project).
+- Dead project `bgdtekbhelormzbymkhh` surfaced in a session-provided enrichment-api code block. That endpoint is permanently dead. All operations go to `wiotrvoirdgzfacuuiem`.
+- Enrichment API: `https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/enrichment-api`
+
+## New Rules or Docs
+- `docs/COMPREHENSIVE_KNOWLEDGE_DOCUMENT.md` updated:
+  - Section 12 (Supabase Pagination) expanded with per-table row counts, pagination code patterns for both enrichment-api and Supabase client, and the "exactly 1,000 rows = more rows exist" warning.
+  - Section 14 (Tech Stack) gained explicit DEAD INFRASTRUCTURE callout for old Supabase project `bgdtekbhelormzbymkhh`.
+  - Section 19 (Conflict Resolution) gained new row: `bgdtekbhelormzbymkhh` -> `wiotrvoirdgzfacuuiem`.
+  - Last consolidated date updated to March 8, 2026.
+- `docs/prompts/t1-takeaways-prompt.md` exists (new prompt; defines t1 behavior for all AI agents).
+
+## New Functions / Scripts
+- None added this session.
+
+## Deprecated or Removed
+- `bgdtekbhelormzbymkhh` Supabase project: confirmed dead, documented as such.
+- Any session notes or external docs referencing the old enrichment-api endpoint (`bgdtekbhelormzbymkhh`) should be treated as stale and ignored.
