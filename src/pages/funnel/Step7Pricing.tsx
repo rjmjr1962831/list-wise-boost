@@ -10,7 +10,7 @@ import { Loader2, BadgeCheck, Shield, Zap } from 'lucide-react';
 import { DataPayloadExpander } from '@/components/agent/DataPayloadExpander';
 import { toast } from 'sonner';
 
-type CertificationTier = 'certified' | 'audited' | 'underwritten';
+type CertificationTier = 'audited' | 'underwritten';
 
 interface PricingRow {
   tier: CertificationTier;
@@ -41,20 +41,19 @@ interface Professional {
 }
 
 const DEFAULT_PRICES: PricingRow[] = [
-  { tier: 'certified', monthly_price: 0, payload_weight: 'standard', refresh_cadence: 'monthly' },
-  { tier: 'audited', monthly_price: 100, payload_weight: 'enhanced', refresh_cadence: 'every_two_weeks' },
-  { tier: 'underwritten', monthly_price: 150, payload_weight: 'maximum', refresh_cadence: 'daily' },
+  { tier: 'audited', monthly_price: 300, payload_weight: 'enhanced', refresh_cadence: 'every_two_weeks' },
+  { tier: 'underwritten', monthly_price: 500, payload_weight: 'maximum', refresh_cadence: 'daily' },
 ];
 
 function normalizeTier(t: string | null | undefined): string {
   const t0 = (t || '').toLowerCase();
   if (t0 === 'accredited' || t0 === 'audited') return 'audited';
   if (t0 === 'underwritten') return 'underwritten';
-  return 'certified'; // listed or null = certified (minimum tier when on this page)
+  return 'listed'; // listed, certified (legacy), or null
 }
 
 function estimateAICS(base: number | null, currentTier: string, targetTier: string): number {
-  const lift: Record<string, number> = { certified: 11, audited: 23, underwritten: 33 };
+  const lift: Record<string, number> = { listed: 11, certified: 11, audited: 23, underwritten: 33 };
   const baseScore = base ?? 55;
   const targetLift = lift[targetTier] ?? 11;
   const currentLift = lift[currentTier] ?? 11;
@@ -62,15 +61,6 @@ function estimateAICS(base: number | null, currentTier: string, targetTier: stri
 }
 
 const TIER_META: Record<CertificationTier, { name: string; icon: typeof BadgeCheck; features: string[] }> = {
-  certified: {
-    name: 'Certified',
-    icon: BadgeCheck,
-    features: [
-      'Standard Top10Lists badge',
-      'Standard artifact, monthly refresh',
-      'Core credentials published to AI systems',
-    ],
-  },
   audited: {
     name: 'Audited',
     icon: Shield,
@@ -139,7 +129,10 @@ export default function Step7Pricing() {
           .select('tier, monthly_price, payload_weight, refresh_cadence')
           .eq('is_active', true);
         if (priceData && priceData.length > 0) {
-          setPrices(priceData as PricingRow[]);
+          const filtered = (priceData as PricingRow[]).filter((p) => p.tier === 'audited' || p.tier === 'underwritten');
+          setPrices(filtered.length > 0 ? filtered : DEFAULT_PRICES);
+        } else {
+          setPrices(DEFAULT_PRICES);
         }
         setLoading(false);
         return;
@@ -175,7 +168,10 @@ export default function Step7Pricing() {
       setProfessional(prof as Professional);
 
       if (priceData && priceData.length > 0) {
-        setPrices(priceData as PricingRow[]);
+        const filtered = (priceData as PricingRow[]).filter((p) => p.tier === 'audited' || p.tier === 'underwritten');
+        setPrices(filtered.length > 0 ? filtered : DEFAULT_PRICES);
+      } else {
+        setPrices(DEFAULT_PRICES);
       }
     } catch {
       navigate('/404');
@@ -186,16 +182,12 @@ export default function Step7Pricing() {
 
   const rawTier = professional?.current_tier || professional?.badge_tier || 'listed';
   const currentTier = normalizeTier(rawTier);
-  const isListed = !rawTier || (String(rawTier).toLowerCase() === 'listed');
   const baseScore = professional?.signal_score ?? professional?.certified_projected_signal ?? null;
 
   const getAICS = (tierId: string): number | null => {
     if (!professional) return null;
-    if (tierId === 'listed') return 10;
-    if (tierId === 'certified')
-      return professional.certified_projected_signal ?? professional.signal_score ?? 25;
-    if (tierId === 'audited')
-      return professional.audited_projected_signal ?? 65;
+    if (tierId === 'listed' || tierId === 'certified') return professional.certified_projected_signal ?? professional.signal_score ?? 25;
+    if (tierId === 'audited') return professional.audited_projected_signal ?? 65;
     if (tierId === 'underwritten') return 95;
     return null;
   };
@@ -210,27 +202,6 @@ export default function Step7Pricing() {
       annual,
       display: isAnnual ? `$${annual}/year` : `$${monthly}/mo`,
     };
-  };
-
-  const handleSelectCertified = async () => {
-    if (!token || !professional) return;
-    setSaving('certified');
-    try {
-      const { data, error } = await supabase.functions.invoke('funnel-select-tier', {
-        body: { token, tier: 'certified' },
-      });
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
-      toast.success('You are now Certified!');
-      navigate(`/funnel/${token}/success`);
-    } catch (err: unknown) {
-      let msg = 'Failed to complete certification';
-      if (err && typeof err === 'object' && 'message' in err && typeof (err as { message?: string }).message === 'string')
-        msg = (err as { message: string }).message;
-      toast.error(msg);
-    } finally {
-      setSaving(null);
-    }
   };
 
   const handleUpgrade = async (tier: 'audited' | 'underwritten') => {
@@ -309,7 +280,7 @@ export default function Step7Pricing() {
               </div>
               <CardTitle className="text-2xl">Select your certification level</CardTitle>
               <p className="text-muted-foreground">
-                Certified is free. Annual plans save 2 months.
+                Listed is free. Annual plans save 2 months.
               </p>
             </CardHeader>
             <CardContent>
@@ -326,15 +297,13 @@ export default function Step7Pricing() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-                {(['certified', 'audited', 'underwritten'] as const).map((tier) => {
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+                {(['audited', 'underwritten'] as const).map((tier) => {
                   const meta = TIER_META[tier];
                   const Icon = meta.icon;
                   const { display } = getPrice(tier);
                   const aics = getAICS(tier);
-                  const isCurrent = currentTier === tier && (tier !== 'certified' || !isListed);
-                  const isPaid = tier === 'audited' || tier === 'underwritten';
-                  const canSelectCertified = tier === 'certified' && isListed;
+                  const isCurrent = currentTier === tier;
                   const isMostPopular = tier === 'audited';
                   return (
                     <div
@@ -363,9 +332,9 @@ export default function Step7Pricing() {
                         <h3 className="font-semibold">{meta.name}</h3>
                       </div>
                       <p className="text-2xl font-bold text-foreground mb-3">{display}</p>
-                      <div className={`flex items-center justify-center gap-2 mb-3 ${tier === 'certified' ? 'opacity-50 pointer-events-none' : ''}`} onClick={(e) => e.stopPropagation()}>
+                      <div className="flex items-center justify-center gap-2 mb-3" onClick={(e) => e.stopPropagation()}>
                         <Label htmlFor={`billing-${tier}`} className="text-xs">Monthly</Label>
-                        <Switch id={`billing-${tier}`} checked={isAnnual} onCheckedChange={setIsAnnual} disabled={tier === 'certified'} />
+                        <Switch id={`billing-${tier}`} checked={isAnnual} onCheckedChange={setIsAnnual} />
                         <Label htmlFor={`billing-${tier}`} className="text-xs">Annual (2 mo free)</Label>
                       </div>
                       <div className="p-3 rounded-lg bg-muted/50 border mb-2">
@@ -385,17 +354,7 @@ export default function Step7Pricing() {
                           </li>
                         ))}
                       </ul>
-                      {canSelectCertified && (
-                        <Button
-                          size="sm"
-                          className="w-full"
-                          disabled={!!saving}
-                          onClick={handleSelectCertified}
-                        >
-                          {saving === 'certified' ? <Loader2 className="h-4 w-4 animate-spin mx-auto" /> : 'Get Certified'}
-                        </Button>
-                      )}
-                      {isPaid && !isCurrent && !canSelectCertified && (
+                      {!isCurrent && (
                         <Button
                           size="sm"
                           className="w-full"
@@ -404,9 +363,6 @@ export default function Step7Pricing() {
                         >
                           {saving === tier ? <Loader2 className="h-4 w-4 animate-spin mx-auto" /> : `Upgrade to ${meta.name}`}
                         </Button>
-                      )}
-                      {tier === 'certified' && !isCurrent && !canSelectCertified && (
-                        <p className="text-xs text-muted-foreground text-center">Free tier</p>
                       )}
                     </div>
                   );

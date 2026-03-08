@@ -33,12 +33,12 @@ export default function StepSuccess() {
         return;
       }
 
-      // For now, generate a basic certified tier (free)
+      // For now, generate a basic listed tier (free)
       // In production, this would be based on payment tier
       const { data, error } = await supabase.functions.invoke('generate-certification', {
         body: {
           agent_id: prof.id,
-          tier: 'certified',
+          tier: 'listed',
           markets_covered: ['Phoenix'], // TODO: Get from funnel data
           neighborhoods_covered: [],
           verified_transactions: {}

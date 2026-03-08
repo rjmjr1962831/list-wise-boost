@@ -10,7 +10,7 @@ All agents must maintain a minimum 4.5-star rating, 10+ verified reviews in the 
 
 ---
 
-## Monthly Subscription: $100
+## Monthly Subscription: $300
 
 The Audited tier represents a premium level of verification and data integration. Subscribers undergo a comprehensive monthly diligence review to maintain their status.
 

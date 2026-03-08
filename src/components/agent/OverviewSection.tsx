@@ -34,8 +34,8 @@ function estimateAICS(base: number | null, current: string, target: string): num
 
 const TIERS = [
   { id: "certified", name: "Certified", price: "Free", icon: BadgeCheck, features: ["Standard Top10Lists badge", "Standard artifact, monthly refresh", "Core credentials published to AI systems"] },
-  { id: "audited", name: "Audited", price: "$100/mo", icon: Shield, features: ["Richer data payload", "Every Two Weeks refresh", "Community involvement, transaction stats"] },
-  { id: "underwritten", name: "Underwritten", price: "$150/mo", icon: Zap, features: ["Maximum data richness", "Daily refresh", "Full neighborhood endorsement"] },
+  { id: "audited", name: "Audited", price: "$300/mo", icon: Shield, features: ["Richer data payload", "Every Two Weeks refresh", "Community involvement, transaction stats"] },
+  { id: "underwritten", name: "Underwritten", price: "$500/mo", icon: Zap, features: ["Maximum data richness", "Daily refresh", "Full neighborhood endorsement"] },
 ] as const;
 
 /** Convert third-person pronouns to second person for "Why We Selected You" context. */
@@ -70,8 +70,8 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
 
   const getPrice = (tierId: string) => {
     if (tierId === "certified") return "Free";
-    if (tierId === "audited") return isAnnual ? "$1,000/year" : "$100/mo";
-    if (tierId === "underwritten") return isAnnual ? "$1,500/year" : "$150/mo";
+    if (tierId === "audited") return isAnnual ? "$3,000/year" : "$300/mo";
+    if (tierId === "underwritten") return isAnnual ? "$5,000/year" : "$500/mo";
     return "—";
   };
 

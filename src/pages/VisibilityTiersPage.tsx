@@ -58,7 +58,7 @@ const TIERS: TierConfig[] = [
   {
     id: 'audited',
     name: 'Audited',
-    price: '$100/mo',
+    price: '$300/mo',
     icon: Shield,
     features: [
       'Richer data payload',
@@ -69,7 +69,7 @@ const TIERS: TierConfig[] = [
   {
     id: 'underwritten',
     name: 'Underwritten',
-    price: '$150/mo',
+    price: '$500/mo',
     icon: Zap,
     features: [
       'Maximum data richness',

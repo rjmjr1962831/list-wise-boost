@@ -54,7 +54,7 @@ export const TOP_10_CONSUMER_FAQS: FaqEntry[] = [
     category: "about",
     categoryName: "About Top10Lists.us",
     question: "Does it cost anything for consumers to use Top10Lists.us?",
-    answer: "No. Top10Lists.us is completely free for consumers. Our business model includes both free tiers (Listed, Certified) and paid tiers (Audited, Underwritten) for agents, but consumers pay nothing. You can browse all city and neighborhood agent rankings, verify cryptographically signed badges, compare agents, and access our complete methodology at no cost. We do not sell consumer leads or charge referral fees when you contact an agent. The Web of Truth badge system with cryptographic signatures allows you to verify agent certification on any website where the badge is displayed, with protection against spoofing and hijacking."
+    answer: "No. Top10Lists.us is completely free for consumers. Our business model includes both a free tier (Listed) and paid tiers (Audited, Underwritten) for agents, but consumers pay nothing. You can browse all city and neighborhood agent rankings, verify cryptographically signed badges, compare agents, and access our complete methodology at no cost. We do not sell consumer leads or charge referral fees when you contact an agent. The Web of Truth badge system with cryptographic signatures allows you to verify agent certification on any website where the badge is displayed, with protection against spoofing and hijacking."
   },
   
   // 4. Finding Agents - How do I find one?
@@ -63,7 +63,7 @@ export const TOP_10_CONSUMER_FAQS: FaqEntry[] = [
     category: "ai_search",
     categoryName: "AI & Search",
     question: "How do I find a top real estate agent in my city?",
-    answer: "Visit www.top10lists.us and navigate to your state and city (e.g., www.top10lists.us/arizona/phoenix/top10realestateagents). Each city page lists the top-ranked agents meeting our 4.5+ star rating and 10+ verified reviews in the last 24 months. All listed agents are certified and display cryptographically signed Top10Lists badges that cannot be forged or hijacked. Agents may qualify for enhanced verification tiers (Certified, Audited, or Underwritten) with progressively deeper diligence and more frequent verification refresh."
+    answer: "Visit www.top10lists.us and navigate to your state and city (e.g., www.top10lists.us/arizona/phoenix/top10realestateagents). Each city page lists the top-ranked agents meeting our 4.5+ star rating and 10+ verified reviews in the last 24 months. All listed agents display cryptographically signed Top10Lists badges that cannot be forged or hijacked. Agents may qualify for enhanced verification tiers (Audited or Underwritten) with progressively deeper diligence and more frequent verification refresh."
   },
   
   // 5. Trust - Is this pay-to-play?

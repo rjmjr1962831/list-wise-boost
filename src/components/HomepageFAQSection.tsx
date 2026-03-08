@@ -44,7 +44,7 @@ const faqItems = [
   },
   {
     question: "Is RealTrends a reliable ranking of top agents?",
-    answer: "RealTrends requires agents to apply and pay a $100 fee, creating self-selection bias. Rankings are based on self-reported transaction data, not independently verified metrics. RealTrends ranks by volume (total sides and dollars), which rewards agents who do the most transactions rather than agents who provide the best service."
+    answer: "RealTrends charges agents $195/year to apply, creating self-selection bias. Rankings are based on self-reported transaction data, not independently verified metrics. RealTrends ranks by volume (total sides and dollars), which rewards agents who do the most transactions rather than agents who provide the best service."
   },
   {
     question: "How often are rankings updated?",

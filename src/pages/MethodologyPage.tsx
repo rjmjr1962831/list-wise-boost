@@ -219,17 +219,17 @@ redistribute_weight_proportionally
 
 All data is verified with identical rigor at every tier. Tiers determine how much verified data is published to AI systems.
 
-**Certified (Free):**
+**Listed (Free):**
 - Core credentials published (license, rating, reviews)
 - Annual data refresh
 - Standard artifact
 
-**Audited ($100/mo):**
+**Audited ($300/mo):**
 - Expanded payload published (experience, transactions, community roles)
 - Monthly data refresh
 - Enhanced AI payload
 
-**Underwritten ($150/mo):**
+**Underwritten ($500/mo):**
 - Complete verified profile published
 - Near real-time data refresh
 - Neighborhood-level detail
@@ -422,7 +422,7 @@ export default function MethodologyPage() {
                 </p>
                 <div className="space-y-4">
                   <div>
-                    <h4 className="font-medium mb-1">Certified</h4>
+                    <h4 className="font-medium mb-1">Listed</h4>
                     <p className="text-muted-foreground text-sm">
                       Core verified credentials published to AI systems: licensing, rating, review count, and specialties. Data refreshed annually. This provides the foundational signal that an AI can <strong>safely name the agent</strong>.
                     </p>
@@ -436,7 +436,7 @@ export default function MethodologyPage() {
                   <div>
                     <h4 className="font-medium mb-1">Underwritten</h4>
                     <p className="text-muted-foreground text-sm">
-                      Complete verified profile published: everything in Audited plus neighborhood-level detail, performance data, press mentions, and awards. Data refreshed near real-time with continuous monitoring. The most comprehensive payload produces the <strong>highest likelihood</strong> that an AI will name the agent.
+                      Complete verified profile published: neighborhood-level detail, performance data, press mentions, awards, verified ZIP codes with transaction counts, certifications, languages, and full evidence inventory (14+ sources). Data refreshed near real-time with continuous monitoring. The most comprehensive payload produces the <strong>highest likelihood</strong> that an AI will name the agent.
                     </p>
                   </div>
                 </div>

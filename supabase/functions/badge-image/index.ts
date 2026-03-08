@@ -28,12 +28,17 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    // Query professional by id or short_code
-    const { data: professional, error } = await supabase
+    // Query professional by id, short_code, or canonical_slug
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(agentId)
+    let query = supabase
       .from('professionals')
-      .select('id, short_code, current_tier, badge_tier, badge_status')
-      .or(`id.eq.${agentId},short_code.eq.${agentId}`)
-      .single()
+      .select('id, short_code, canonical_slug, current_tier, badge_tier, badge_status')
+    if (isUuid) {
+      query = query.eq('id', agentId)
+    } else {
+      query = query.or(`short_code.eq.${agentId},canonical_slug.eq.${agentId}`)
+    }
+    const { data: professional, error } = await query.single()
 
     // Use current_tier so badge updates automatically when tier changes (up or down). Fallback to badge_tier for legacy.
     let badgeTier = (professional?.current_tier || professional?.badge_tier || 'certified').toLowerCase().replace(/\s+/g, '_')

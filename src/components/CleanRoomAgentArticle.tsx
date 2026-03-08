@@ -302,7 +302,7 @@ export function CleanRoomAgentArticle({ professional, stateSlug, citySlug, index
       {(tier === 'listed' || tier === 'certified') && (
         <p className="text-[0.82rem] text-gray-500 mt-2">
           This agent is {tierLabel} (free, monthly audit). Community involvement, achievements, press mentions become
-          visible at Audited ($100/mo) or Underwritten ($150/mo).{' '}
+          visible at Audited ($300/mo) or Underwritten ($500/mo).{' '}
           <a href="https://www.top10lists.us/for-agents" className="text-[#1a56db]">
             Learn more
           </a>
