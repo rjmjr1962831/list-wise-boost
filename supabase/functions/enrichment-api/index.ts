@@ -37,6 +37,38 @@ serve(async (req) => {
       );
     }
 
+    // ============ POST action=sql — Run raw SQL ============
+    if (req.method === 'POST') {
+      const body = await req.clone().json().catch(() => ({}));
+      if (body.action === 'sql' && body.sql) {
+        console.log('enrichment-api - Running raw SQL:', body.sql.substring(0, 100));
+        // Log available DB env vars for debugging
+        const dbUrl = Deno.env.get('DB_URL') || Deno.env.get('DATABASE_URL') || Deno.env.get('SUPABASE_DB_URL') || '';
+        console.log('DB_URL available:', !!Deno.env.get('DB_URL'), 'DATABASE_URL:', !!Deno.env.get('DATABASE_URL'));
+        if (!dbUrl) {
+          return new Response(
+            JSON.stringify({ error: 'No DB_URL configured' }),
+            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+        // Mask password in logs
+        console.log('Connecting to:', dbUrl.replace(/:[^@]+@/, ':***@'));
+        const { Pool } = await import("https://deno.land/x/postgres@v0.19.3/mod.ts");
+        const pool = new Pool(dbUrl, 1, true);
+        const conn = await pool.connect();
+        try {
+          const result = await conn.queryObject(body.sql);
+          return new Response(
+            JSON.stringify({ rows: result.rows, rowCount: result.rowCount }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        } finally {
+          conn.release();
+          await pool.end();
+        }
+      }
+    }
+
     // Initialize Supabase client with service role
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;

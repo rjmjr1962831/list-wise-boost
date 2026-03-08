@@ -52,10 +52,8 @@ async function enrichAgent(
     const actorId = 'memo23~apify-zillow-agents-cheerio';
     const actorInput = {
       startUrls: [{ url: agent.zillow_url }],
-      maxConcurrency: 5,
-      maxRequestRetries: 5,
-      requestHandlerTimeoutSecs: 180,
-      proxyConfiguration: proxyUrl ? {
+      maxItems: 1,
+      proxy: proxyUrl ? {
         useApifyProxy: false,
         proxyUrls: [proxyUrl]
       } : {
@@ -65,61 +63,25 @@ async function enrichAgent(
       }
     };
 
-    const runResponse = await fetch(
-      `https://api.apify.com/v2/acts/${actorId}/runs?token=${apifyToken}`,
+    const apifyResponse = await fetch(
+      `https://api.apify.com/v2/acts/${actorId}/run-sync-get-dataset-items`,
       {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apifyToken}`
+        },
         body: JSON.stringify(actorInput)
       }
     );
 
-    if (!runResponse.ok) {
-      const errorText = await runResponse.text();
-      throw new Error(`Apify start failed: ${runResponse.status} ${errorText}`);
+    if (!apifyResponse.ok) {
+      const errorText = await apifyResponse.text();
+      throw new Error(`Apify run failed: ${apifyResponse.status} ${errorText.slice(0, 200)}`);
     }
 
-    const runData = await runResponse.json();
-    const runId = runData.data.id;
-    console.log(`   Started Apify run: ${runId}`);
-
-    // Poll for completion
-    let attempts = 0;
-    const maxAttempts = 120;
-    let runStatus = 'RUNNING';
-    let agentData = null;
-
-    while (attempts < maxAttempts && runStatus === 'RUNNING') {
-      const delay = Math.min(2000 * Math.pow(1.3, Math.floor(attempts / 10)), 15000);
-      await new Promise(resolve => setTimeout(resolve, delay));
-
-      const statusResponse = await fetch(
-        `https://api.apify.com/v2/acts/${actorId}/runs/${runId}?token=${apifyToken}`
-      );
-
-      if (statusResponse.ok) {
-        const statusData = await statusResponse.json();
-        runStatus = statusData.data.status;
-
-        if (runStatus === 'SUCCEEDED') {
-          const datasetId = statusData.data.defaultDatasetId;
-          const datasetResponse = await fetch(
-            `https://api.apify.com/v2/datasets/${datasetId}/items?token=${apifyToken}`
-          );
-
-          if (datasetResponse.ok) {
-            const results = await datasetResponse.json();
-            if (results && results.length > 0) {
-              agentData = results[0];
-            }
-          }
-          break;
-        } else if (['FAILED', 'ABORTED', 'TIMED-OUT'].includes(runStatus)) {
-          throw new Error(`Apify run ${runStatus}`);
-        }
-      }
-      attempts++;
-    }
+    const apifyResults = await apifyResponse.json();
+    const agentData = apifyResults[0] || null;
 
     if (!agentData) {
       await supabase.from('state_licenses').update({
@@ -244,11 +206,15 @@ async function enrichAgent(
       }
     }
 
-    // Phone numbers
+    // Phone numbers - business goes to main phone, cell only to cell_phone
     if (agentData.phoneNumbers) {
       professionalData.phone_numbers = agentData.phoneNumbers;
-      if (agentData.phoneNumbers.cell) {
+      if (agentData.phoneNumbers.business) {
+        professionalData.phone = agentData.phoneNumbers.business;
+      } else if (agentData.phoneNumbers.cell) {
         professionalData.phone = agentData.phoneNumbers.cell;
+      }
+      if (agentData.phoneNumbers.cell) {
         professionalData.cell_phone = agentData.phoneNumbers.cell;
       }
     }
@@ -263,14 +229,16 @@ async function enrichAgent(
       professionalData.agent_sales_stats = agentData.agentSalesStats;
       professionalData.sales_count_all_time = agentData.agentSalesStats.countAllTime || null;
       professionalData.sales_count_last_year = agentData.agentSalesStats.countLastYear || null;
-      if (agentData.agentSalesStats.priceRange) {
-        professionalData.price_range_3yr_min = agentData.agentSalesStats.priceRange.min || null;
-        professionalData.price_range_3yr_max = agentData.agentSalesStats.priceRange.max || null;
+      if (agentData.agentSalesStats.priceRangeThreeYearMin !== undefined) {
+        professionalData.price_range_3yr_min = agentData.agentSalesStats.priceRangeThreeYearMin;
       }
-      if (agentData.agentSalesStats.averageValue) {
-        professionalData.average_value_3yr = agentData.agentSalesStats.averageValue || null;
+      if (agentData.agentSalesStats.priceRangeThreeYearMax !== undefined) {
+        professionalData.price_range_3yr_max = agentData.agentSalesStats.priceRangeThreeYearMax;
       }
-      professionalData.stats_include_team = agentData.agentSalesStats.includeTeam || false;
+      if (agentData.agentSalesStats.averageValueThreeYear !== undefined) {
+        professionalData.average_value_3yr = agentData.agentSalesStats.averageValueThreeYear;
+      }
+      professionalData.stats_include_team = agentData.agentSalesStats.stats_include_team || false;
     }
 
     // Team detection
@@ -289,12 +257,63 @@ async function enrichAgent(
       professionalData.agent_licenses = agentData.agentLicenses;
     }
 
+    // Email (critical for contact data)
+    if (agentData.email) professionalData.email = agentData.email;
+
+    // Website & languages from professionalInformation
+    if (agentData.professionalInformation) {
+      professionalData.professional_information = agentData.professionalInformation;
+      if (Array.isArray(agentData.professionalInformation)) {
+        for (const info of agentData.professionalInformation) {
+          if (info.websites?.length > 0) {
+            professionalData.website = info.websites[0].url || info.websites[0];
+          }
+          if (info.languages?.length > 0) {
+            professionalData.languages = info.languages;
+          }
+        }
+      }
+    }
+
+    // Get To Know Me (bio/about text)
+    if (agentData.getToKnowMe) professionalData.get_to_know_me = agentData.getToKnowMe;
+
+    // Top Agent / Premier Agent status
+    if (agentData.isTopAgent !== undefined) professionalData.is_top_agent = agentData.isTopAgent;
+    if (agentData.isPremierAgent !== undefined) professionalData.is_premier_agent = agentData.isPremierAgent;
+    if (agentData.inCanada !== undefined) professionalData.in_canada = agentData.inCanada;
+
+    // Video URL
+    if (agentData.sidebarVideoUrl) professionalData.sidebar_video_url = agentData.sidebarVideoUrl;
+
+    // Profile metadata
+    if (agentData.flag) professionalData.zillow_flag = agentData.flag;
+    if (agentData.profileImageId) professionalData.profile_image_id = agentData.profileImageId;
+    if (agentData.profileTypeIds) professionalData.profile_type_ids = agentData.profileTypeIds;
+    if (agentData.profileTypes) professionalData.profile_types = agentData.profileTypes;
+    if (agentData.cpdUserPronouns) professionalData.cpd_user_pronouns = agentData.cpdUserPronouns;
+
+    // Reviews data blob
+    if (agentData.reviewsData) professionalData.reviews_data = agentData.reviewsData;
+
+    // Preferred lenders
+    if (agentData.preferredLenders) professionalData.professional_data = { preferredLenders: agentData.preferredLenders };
+
     // Active listings count
-    if (agentData.forSaleCount !== undefined) {
+    if (agentData.forSaleListings?.listing_count !== undefined) {
+      professionalData.active_for_sale_count = agentData.forSaleListings.listing_count;
+    } else if (agentData.forSaleCount !== undefined) {
       professionalData.active_for_sale_count = agentData.forSaleCount;
     }
-    if (agentData.forRentCount !== undefined) {
+    if (agentData.forRentListings?.listing_count !== undefined) {
+      professionalData.active_for_rent_count = agentData.forRentListings.listing_count;
+    } else if (agentData.forRentCount !== undefined) {
       professionalData.active_for_rent_count = agentData.forRentCount;
+    }
+
+    // Past sales total
+    if (agentData.pastSales?.total !== undefined) {
+      professionalData.total_sales = agentData.pastSales.total;
     }
 
     // Insert into professionals
@@ -534,10 +553,8 @@ async function reEnrichProfessional(
     const actorId = 'memo23~apify-zillow-agents-cheerio';
     const actorInput = {
       startUrls: [{ url: professional.zillow_profile_url }],
-      maxConcurrency: 5,
-      maxRequestRetries: 5,
-      requestHandlerTimeoutSecs: 180,
-      proxyConfiguration: proxyUrl ? {
+      maxItems: 1,
+      proxy: proxyUrl ? {
         useApifyProxy: false,
         proxyUrls: [proxyUrl]
       } : {
@@ -547,61 +564,25 @@ async function reEnrichProfessional(
       }
     };
 
-    const runResponse = await fetch(
-      `https://api.apify.com/v2/acts/${actorId}/runs?token=${apifyToken}`,
+    const apifyResponse = await fetch(
+      `https://api.apify.com/v2/acts/${actorId}/run-sync-get-dataset-items`,
       {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apifyToken}`
+        },
         body: JSON.stringify(actorInput)
       }
     );
 
-    if (!runResponse.ok) {
-      const errorText = await runResponse.text();
-      throw new Error(`Apify start failed: ${runResponse.status} ${errorText}`);
+    if (!apifyResponse.ok) {
+      const errorText = await apifyResponse.text();
+      throw new Error(`Apify run failed: ${apifyResponse.status} ${errorText.slice(0, 200)}`);
     }
 
-    const runData = await runResponse.json();
-    const runId = runData.data.id;
-    console.log(`   Started Apify run: ${runId}`);
-
-    // Poll for completion
-    let attempts = 0;
-    const maxAttempts = 120;
-    let runStatus = 'RUNNING';
-    let agentData = null;
-
-    while (attempts < maxAttempts && runStatus === 'RUNNING') {
-      const delay = Math.min(2000 * Math.pow(1.3, Math.floor(attempts / 10)), 15000);
-      await new Promise(resolve => setTimeout(resolve, delay));
-
-      const statusResponse = await fetch(
-        `https://api.apify.com/v2/acts/${actorId}/runs/${runId}?token=${apifyToken}`
-      );
-
-      if (statusResponse.ok) {
-        const statusData = await statusResponse.json();
-        runStatus = statusData.data.status;
-
-        if (runStatus === 'SUCCEEDED') {
-          const datasetId = statusData.data.defaultDatasetId;
-          const datasetResponse = await fetch(
-            `https://api.apify.com/v2/datasets/${datasetId}/items?token=${apifyToken}`
-          );
-
-          if (datasetResponse.ok) {
-            const results = await datasetResponse.json();
-            if (results && results.length > 0) {
-              agentData = results[0];
-            }
-          }
-          break;
-        } else if (['FAILED', 'ABORTED', 'TIMED-OUT'].includes(runStatus)) {
-          throw new Error(`Apify run ${runStatus}`);
-        }
-      }
-      attempts++;
-    }
+    const apifyResults = await apifyResponse.json();
+    const agentData = apifyResults[0] || null;
 
     if (!agentData) {
       return {
@@ -635,6 +616,48 @@ async function reEnrichProfessional(
     }
     if (agentData.profilePhotoSrc) updateData.image_url = agentData.profilePhotoSrc;
 
+    // Email (critical for contact data)
+    if (agentData.email) updateData.email = agentData.email;
+
+    // Website & languages from professionalInformation
+    if (agentData.professionalInformation) {
+      updateData.professional_information = agentData.professionalInformation;
+      if (Array.isArray(agentData.professionalInformation)) {
+        for (const info of agentData.professionalInformation) {
+          if (info.websites?.length > 0) {
+            updateData.website = info.websites[0].url || info.websites[0];
+          }
+          if (info.languages?.length > 0) {
+            updateData.languages = info.languages;
+          }
+        }
+      }
+    }
+
+    // Get To Know Me (bio/about text)
+    if (agentData.getToKnowMe) updateData.get_to_know_me = agentData.getToKnowMe;
+
+    // Top Agent / Premier Agent status
+    if (agentData.isTopAgent !== undefined) updateData.is_top_agent = agentData.isTopAgent;
+    if (agentData.isPremierAgent !== undefined) updateData.is_premier_agent = agentData.isPremierAgent;
+    if (agentData.inCanada !== undefined) updateData.in_canada = agentData.inCanada;
+
+    // Video URL
+    if (agentData.sidebarVideoUrl) updateData.sidebar_video_url = agentData.sidebarVideoUrl;
+
+    // Profile metadata
+    if (agentData.flag) updateData.zillow_flag = agentData.flag;
+    if (agentData.profileImageId) updateData.profile_image_id = agentData.profileImageId;
+    if (agentData.profileTypeIds) updateData.profile_type_ids = agentData.profileTypeIds;
+    if (agentData.profileTypes) updateData.profile_types = agentData.profileTypes;
+    if (agentData.cpdUserPronouns) updateData.cpd_user_pronouns = agentData.cpdUserPronouns;
+
+    // Reviews data blob
+    if (agentData.reviewsData) updateData.reviews_data = agentData.reviewsData;
+
+    // Preferred lenders
+    if (agentData.preferredLenders) updateData.professional_data = { preferredLenders: agentData.preferredLenders };
+
     // Business info
     if (agentData.businessName) {
       updateData.business_name = agentData.businessName;
@@ -650,11 +673,15 @@ async function reEnrichProfessional(
       }
     }
 
-    // Phone numbers
+    // Phone numbers - business goes to main phone, cell only to cell_phone
     if (agentData.phoneNumbers) {
       updateData.phone_numbers = agentData.phoneNumbers;
-      if (agentData.phoneNumbers.cell) {
+      if (agentData.phoneNumbers.business) {
+        updateData.phone = agentData.phoneNumbers.business;
+      } else if (agentData.phoneNumbers.cell) {
         updateData.phone = agentData.phoneNumbers.cell;
+      }
+      if (agentData.phoneNumbers.cell) {
         updateData.cell_phone = agentData.phoneNumbers.cell;
       }
     }
@@ -669,14 +696,16 @@ async function reEnrichProfessional(
       updateData.agent_sales_stats = agentData.agentSalesStats;
       updateData.sales_count_all_time = agentData.agentSalesStats.countAllTime || null;
       updateData.sales_count_last_year = agentData.agentSalesStats.countLastYear || null;
-      if (agentData.agentSalesStats.priceRange) {
-        updateData.price_range_3yr_min = agentData.agentSalesStats.priceRange.min || null;
-        updateData.price_range_3yr_max = agentData.agentSalesStats.priceRange.max || null;
+      if (agentData.agentSalesStats.priceRangeThreeYearMin !== undefined) {
+        updateData.price_range_3yr_min = agentData.agentSalesStats.priceRangeThreeYearMin;
       }
-      if (agentData.agentSalesStats.averageValue) {
-        updateData.average_value_3yr = agentData.agentSalesStats.averageValue || null;
+      if (agentData.agentSalesStats.priceRangeThreeYearMax !== undefined) {
+        updateData.price_range_3yr_max = agentData.agentSalesStats.priceRangeThreeYearMax;
       }
-      updateData.stats_include_team = agentData.agentSalesStats.includeTeam || false;
+      if (agentData.agentSalesStats.averageValueThreeYear !== undefined) {
+        updateData.average_value_3yr = agentData.agentSalesStats.averageValueThreeYear;
+      }
+      updateData.stats_include_team = agentData.agentSalesStats.stats_include_team || false;
     }
 
     // Team detection
@@ -696,11 +725,20 @@ async function reEnrichProfessional(
     }
 
     // Active listings count
-    if (agentData.forSaleCount !== undefined) {
+    if (agentData.forSaleListings?.listing_count !== undefined) {
+      updateData.active_for_sale_count = agentData.forSaleListings.listing_count;
+    } else if (agentData.forSaleCount !== undefined) {
       updateData.active_for_sale_count = agentData.forSaleCount;
     }
-    if (agentData.forRentCount !== undefined) {
+    if (agentData.forRentListings?.listing_count !== undefined) {
+      updateData.active_for_rent_count = agentData.forRentListings.listing_count;
+    } else if (agentData.forRentCount !== undefined) {
       updateData.active_for_rent_count = agentData.forRentCount;
+    }
+
+    // Past sales total
+    if (agentData.pastSales?.total !== undefined) {
+      updateData.total_sales = agentData.pastSales.total;
     }
 
     // Update professionals record
