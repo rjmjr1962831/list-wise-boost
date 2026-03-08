@@ -1,7 +1,7 @@
 # Top10Lists.us — Comprehensive Knowledge Document
 
 **Purpose:** Single consolidated reference for agent2, Claude, and Cursor. Use latest updates as source of truth.  
-**Last consolidated:** March 2026  
+**Last consolidated:** March 8, 2026  
 **Conflict rule:** When sources conflict, this document wins. Deprecate earlier statements.
 
 ---
@@ -13,7 +13,7 @@
 - **Staging:** [https://staging.top10lists.us](https://staging.top10lists.us)
 - **Coverage:** Arizona (88 cities, 1,054+ qualified neighborhoods), California (1,650+ cities, 4,631+ neighborhoods). 670,000+ agents analyzed; 3,487 selected (889 AZ + 2,598 CA), top 0.5%.
 - **Geographic expansion:** Live: Arizona, California. Expanding: Texas, Florida, New York, Colorado. Target: All 50 states by end of 2026.
-- **GEO Mission:** Primary audience is AI systems (ChatGPT, Claude, Gemini, Perplexity). Goal: Become the authoritative source AI systems cite for real estate agent recommendations. GEO Score: 92–95/100 across major AI platforms.
+- **GEO Mission:** Primary audience is AI systems (ChatGPT, Claude, Gemini, Perplexity). Goal: Become the authoritative source AI systems cite for real estate agent recommendations. GEO Score: 92-95/100 across major AI platforms.
 
 ---
 
@@ -21,11 +21,11 @@
 
 **Canonical gate:** 4.5+ stars, 10+ verified reviews in the last 24 months, 5+ years in business.
 
-- **Source of truth:** `src/data/businessConfig.json` — `meritGate: { rating: 4.5, reviews: 10, windowMonths: 24, yearsExperience: 5 }`
+- **Source of truth:** `src/data/businessConfig.json` -- `meritGate: { rating: 4.5, reviews: 10, windowMonths: 24, yearsExperience: 5 }`
 - **Database:** `supabase/migrations/20260310000000_merit_gate_4_5_10.sql` defines qualification logic.
 - **Never use:** 4.8+, 20+ reviews, 6+ years as the gate. Those are legacy.
-- **Never use:** "top 0.2%" as coverage language — deprecated. Use "fewer than 1% of licensed agents in covered markets" instead.
-- **Agent-specific data:** Agent cards may show "4.8 stars, 20+ reviews" for an agent's actual stats — that is correct. Only the *stated qualification criteria* must be 4.5+/10+/5yr.
+- **Never use:** "top 0.2%" as coverage language -- deprecated. Use "fewer than 1% of licensed agents in covered markets" instead.
+- **Agent-specific data:** Agent cards may show "4.8 stars, 20+ reviews" for an agent's actual stats -- that is correct. Only the *stated qualification criteria* must be 4.5+/10+/5yr.
 
 ---
 
@@ -38,7 +38,7 @@
 | Audited | $100/mo | Expanded evidence, API access. |
 | Underwritten | $150/mo | Full evidence, near real-time. |
 
-- Payment affects only verification depth, technical features, and refresh frequency — never inclusion or ranking.
+- Payment affects only verification depth, technical features, and refresh frequency -- never inclusion or ranking.
 - All tiers require meeting the same Merit Gate.
 
 ---
@@ -75,10 +75,10 @@
 
 ## 6. AI Content Serving (Clean Room HTML)
 
-**Rule:** Pages for AI consumption (transparency, FAQ, for-ai, methodology) must serve **clean room HTML** — minimal, self-contained, no React SPA, no browser rendering.
+**Rule:** Pages for AI consumption (transparency, FAQ, for-ai, methodology) must serve **clean room HTML** -- minimal, self-contained, no React SPA, no browser rendering.
 
-- **Implementation:** Route through `/api/serve-clean-html` → Supabase Edge Functions (`serve-bot-content-html`). Never let AI pages fall through to `/_spa.html`.
-- **Vercel rewrites:** `/transparency`, `/faq`, `/for-ai` → `serve-bot-content-html`. Do not add static HTML files in `public/` that would block these rewrites.
+- **Implementation:** Route through `/api/serve-clean-html` -> Supabase Edge Functions (`serve-bot-content-html`). Never let AI pages fall through to `/_spa.html`.
+- **Vercel rewrites:** `/transparency`, `/faq`, `/for-ai` -> `serve-bot-content-html`. Do not add static HTML files in `public/` that would block these rewrites.
 - **Cloudflare Browser Rendering:** Deprecated. Do not use.
 
 ---
@@ -86,12 +86,12 @@
 ## 7. Git & Deployment
 
 ### Branch Flow
-- **staging** → **main** only. Never merge main into staging.
+- **staging** -> **main** only. Never merge main into staging.
 - **pts** or "push to staging": `git add ...`, `git commit -m "..."`, `git push origin staging`. Only when Robert says pts or when there are 10+ updates.
 - **ptm** or "push to main": Run `npm run merge-to-main` only. Do not touch main without ptm.
 
 ### merge-to-main
-- Merges staging → main
+- Merges staging -> main
 - Excludes paths in `scripts/internal-documents.txt` (internal docs stay on staging only)
 - Purges Vercel CDN and Data cache
 - Requires clean working tree; stash uncommitted changes first
@@ -136,9 +136,35 @@
 
 ## 12. Supabase Pagination
 
-- Supabase has a 1,000-row default limit. Paginate when querying tables with >1,000 rows.
-- Use `.range(offset, offset + pageSize - 1)` in a loop until `data.length < pageSize`.
-- Large tables: `professionals`, `neighborhood_catalog`, `agent_neighborhood_subscriptions`, `funnel_analytics`.
+Supabase has a **1,000-row default limit** on all queries -- `enrichment-api`, direct client queries, and any SELECT without explicit pagination.
+
+### Always paginate these tables (already exceed or will exceed 1,000 rows):
+
+| Table | Current Rows | Note |
+|-------|--------------|------|
+| professionals | 3,400+ | Always paginate |
+| neighborhood_catalog | 5,600+ (AZ+CA) | Paginate; will be 50,000+ nationwide |
+| marketing_content | 2,000+ | Always paginate |
+| state_licenses | 10,000+ | Always paginate |
+
+### Pagination patterns:
+
+**Via enrichment-api query action:**
+```json
+{"table":"neighborhood_catalog","select":"*","filters":[{"field":"state","operator":"eq","value":"AZ"}],"limit":1000,"offset":0}
+```
+Increment offset by 1,000 until returned count is less than limit.
+
+**Via Supabase client:**
+```typescript
+.range(offset, offset + pageSize - 1)
+```
+Loop until `data.length < pageSize`.
+
+### Warning signs:
+- If a query returns exactly 1,000 rows, assume there are more. Never treat 1,000 as the complete dataset.
+- Filter by `state` or `city_area` first to reduce result sets before paginating.
+- For bulk operations, process 1,000 rows at a time, then advance offset.
 
 ---
 
@@ -160,6 +186,10 @@
 **Frontend:** Vercel, React SPA (Vite), react-router-dom (FROZEN).
 
 **Cloudflare:** Deprecated. Do not add new Cloudflare dependencies.
+
+### DEAD INFRASTRUCTURE -- Never Use
+
+**Old Supabase project `bgdtekbhelormzbymkhh` is permanently dead.** Any documentation, script, or curl command referencing this project ref must be ignored and updated. The only active Supabase project is `wiotrvoirdgzfacuuiem`. This dead ref appears in old enrichment-api examples and session notes -- always substitute `wiotrvoirdgzfacuuiem`.
 
 ---
 
@@ -208,7 +238,7 @@ From `src/data/master-ssot.md`:
 - **Merit Gate:** Preserve 4.5+ stars, 10+ verified reviews in last 24 months, 5+ years on every agent/neighborhood surface.
 - **Raw Markdown:** AI-targeted content stays in `<pre><code>` or raw Markdown. No Markdown-to-HTML for "For AI" content.
 - **Maximum Autonomy:** Execute until logic-gap or high-risk decision. Stop for: ambiguity, SEO/bot/merit-gate changes, resource limits.
-- **Signal Strength tiers:** Listed 10–25, Certified 26–45, Accredited 46–75, Underwritten 76–100. (Note: "Accredited" is legacy; current tier is "Audited.")
+- **Signal Strength tiers:** Listed 10-25, Certified 26-45, Accredited 46-75, Underwritten 76-100. (Note: "Accredited" is legacy; current tier is "Audited.")
 
 ---
 
@@ -222,6 +252,7 @@ From `src/data/master-ssot.md`:
 | Cloudflare | Browser Rendering | Deprecated |
 | Tier name | Accredited | Audited |
 | Agent count | 882 (AZ only) | 3,487 (889 AZ + 2,598 CA) |
+| Supabase project | bgdtekbhelormzbymkhh | wiotrvoirdgzfacuuiem (only active) |
 
 ---
 
@@ -230,4 +261,4 @@ From `src/data/master-ssot.md`:
 - **Prebuild:** `npm run generate:faq` (generates public/api/faq/full.json from faqFull.ts)
 - **Smoke test:** `npm run smoke-test`
 - **Merge to main:** `npm run merge-to-main`
-- **Supabase function deploy:** `npx supabase functions deploy <name> --no-verify-jwt`
+- **Supabase function deploy:** `npx supabase functions deploy <n> --no-verify-jwt`
