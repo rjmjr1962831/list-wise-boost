@@ -63,14 +63,14 @@ Agent has personally verified their profile. Artifact includes:
 - Qualifications: Zillow rating, Google rating, license number, years experience, brokerage, total sales, average sale price
 - Service areas (cities)
 
-**Audited ($100/mo, Standard Audit Cycle: Every Two Weeks):**
+**Audited ($300/mo, Standard Audit Cycle: Every Two Weeks):**
 Everything in Certified, plus:
 - Expanded evidence: Zillow/RealTrends/MLS transaction records, IRS Form 990 filings via ProPublica, U.S. Census ACS data
 - Specialties
 - Community involvement (verified via ProPublica IRS Form 990 data)
 - Transaction-verified neighborhoods
 
-**Underwritten ($150/mo, Standard Audit Cycle: Daily):**
+**Underwritten ($500/mo, Standard Audit Cycle: Daily):**
 Everything in Audited, plus:
 - Full evidence inventory (14+ sources including NAR designation registry, Census boundary data, OpenStreetMap validation, news outlet mentions)
 - Verified ZIP codes with transaction counts

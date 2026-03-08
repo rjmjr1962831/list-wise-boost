@@ -213,7 +213,7 @@ serve(async (req) => {
   }
 
   const url = new URL(req.url);
-  const path = (url.searchParams.get("path") ?? "").replace(/^\/+|\/+$/g) || "/";
+  const path = (url.searchParams.get("path") ?? "").replace(/^\/+|\/+$/g, "") || "/";
   const norm = path === "" ? "/" : `/${path}`;
 
   let html: string;
