@@ -25,7 +25,7 @@ export const ProxySettings = () => {
   const [testResult, setTestResult] = useState<any>(null);
   
   const [credentials, setCredentials] = useState<ProxyCredentials>({
-    endpoint: 'rp.scrapegw.com:6060',
+    endpoint: 'proxy-us.proxy-cheap.com:5959',
     username: '',
     password: '',
     protocol: 'HTTP/Socks5'

@@ -26,7 +26,7 @@ serve(async (req) => {
     const proxyPassword = Deno.env.get('ROTATING_PROXY_PASSWORD');
     
     if (!apifyApiToken) throw new Error('APIFY_API_TOKEN not configured');
-    if (!proxyUsername || !proxyPassword) throw new Error('ProxyScrape credentials not configured');
+    if (!proxyUsername || !proxyPassword) throw new Error('Proxy-Cheap credentials not configured');
 
     const supabase = createClient(supabaseUrl, supabaseKey);
 
@@ -63,7 +63,7 @@ serve(async (req) => {
     console.log(`Will only update agents with business_address.city matching: ${searchCityName}`);
 
     // Configure ProxyScrape proxy (same as working architecture)
-    const proxyUrl = `http://${proxyUsername}:${proxyPassword}@rp.scrapegw.com:6060`;
+    const proxyUrl = `http://${proxyUsername}:${proxyPassword}@proxy-us.proxy-cheap.com:5959`;
     
     // Prepare actor input matching working function
     const actorInput = {

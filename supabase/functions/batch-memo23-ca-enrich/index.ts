@@ -897,15 +897,16 @@ serve(async (req) => {
   }
 
   try {
-    const { 
-      limit = 50, 
-      concurrency = 5, 
+    const {
+      limit = 50,
+      concurrency = 5,
       dryRun = false,
       sequential = false,
       delaySeconds = 5,
       mode = 'state_licenses', // 'state_licenses' or 'professionals'
       state = 'CA',            // State filter: 'CA', 'AZ', etc.
-      stateSlug = null         // For professionals mode: 'arizona', 'california'
+      stateSlug = null,        // For professionals mode: 'arizona', 'california'
+      nullContactOnly = false  // If true, only re-enrich agents with null email AND phone
     } = await req.json();
 
     console.log(`🚀 Starting batch Memo23 enrichment`);
@@ -924,7 +925,7 @@ serve(async (req) => {
     const proxyUsername = Deno.env.get('ROTATING_PROXY_USERNAME');
     const proxyPassword = Deno.env.get('ROTATING_PROXY_PASSWORD');
     const proxyUrl = (proxyUsername && proxyPassword)
-      ? `http://${proxyUsername}:${proxyPassword}@rp.scrapegw.com:6060`
+      ? `http://${proxyUsername}:${proxyPassword}@proxy-us.proxy-cheap.com:5959`
       : null;
 
     const results: EnrichmentResult[] = [];
@@ -935,12 +936,18 @@ serve(async (req) => {
     if (mode === 'professionals') {
       const targetStateSlug = stateSlug || (state === 'AZ' ? 'arizona' : 'california');
       
-      const { data: professionals, error: fetchError } = await supabase
+      let query = supabase
         .from('professionals')
         .select('id, name, zillow_profile_url')
         .eq('state_slug', targetStateSlug)
         .eq('active', true)
-        .not('zillow_profile_url', 'is', null)
+        .not('zillow_profile_url', 'is', null);
+
+      if (nullContactOnly) {
+        query = query.is('email', null).is('phone', null);
+      }
+
+      const { data: professionals, error: fetchError } = await query
         .order('created_at', { ascending: true })
         .limit(limit);
 

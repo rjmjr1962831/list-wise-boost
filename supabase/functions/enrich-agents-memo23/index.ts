@@ -48,7 +48,7 @@ serve(async (req) => {
               proxy: {
                 useApifyProxy: false,
                 proxyUrls: [
-                  'http://ws1et3ycrlwml6w:fyg90v72ru9t1xq@rp.scrapegw.com:6060'
+                  'http://pcpqh0DDmv-res-us:PC_9kCZToNJ46ODIkij1@proxy-us.proxy-cheap.com:5959'
                 ]
               }
             })
