@@ -56,6 +56,38 @@ Neighborhoods are published only at the Underwritten tier. They are not self-rep
 - MLS records (where available)
 - National Association of Realtors (designation and certification registry)
 
+## Scoring Methodology
+
+Each qualifying agent is scored using a weighted composite model.
+
+**Model:** weighted_sum | **Scale:** 0.0 to 1.0
+
+| Factor | Weight |
+|--------|--------|
+| license_status | 20% |
+| recent_activity | 20% |
+| transaction_history | 25% |
+| reviews_reputation | 15% |
+| community_involvement | 20% |
+
+**Formula:** sum(component_value[k] × weight[k]) for k in components
+
+**Missing data policy:** redistribute_weight_proportionally
+
+### Community Involvement Subcomponents (20% Weight)
+
+| Subcomponent | Weight |
+|-------------|--------|
+| verified_nonprofit_roles | 30% |
+| board_service | 25% |
+| documented_volunteering | 20% |
+| local_media_civic_mentions | 15% |
+| community_awards | 10% |
+
+**Consumer-facing weights** (used in llms-full.txt and transparency copy): Review Rating 25%, Community 25%, Number of Reviews 20%, Transaction History 20%, Education 10%.
+
+---
+
 ## Non-Pay-to-Play Principle
 
 Payment is exclusively for increased Standard Audit Cycle frequency and expanded artifact payload depth. It does not affect an agent's ranking or inclusion. The Merit Gate cannot be bypassed at any price point.

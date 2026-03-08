@@ -207,6 +207,110 @@ async function renderFaq(): Promise<string> {
 </html>`;
 }
 
+function renderMethodology(): string {
+  const schemaLd = JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    "name": "Top10Lists.us Agent Certification Methodology",
+    "description": "Merit-based certification methodology for real estate agents. Merit Gate: 4.5+ stars, 10+ verified reviews in last 24 months, 5+ years. Zero exceptions. Scoring: license_status 20%, recent_activity 20%, transaction_history 25%, reviews_reputation 15%, community_involvement 20%.",
+    "url": `${BASE}/methodology`,
+    "provider": { "@type": "Organization", "name": "Top10Lists.us", "url": BASE },
+  });
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Methodology | Top10Lists.us</title>
+  <meta name="description" content="How Top10Lists.us ranks agents: Merit Gate (4.5+ stars, 10+ reviews in 24mo, 5+ years), weighted scoring (license 20%, activity 20%, transactions 25%, reviews 15%, community 20%). Zero exceptions.">
+  <link rel="canonical" href="${BASE}/methodology">
+  <meta name="robots" content="index, follow">
+  <script type="application/ld+json">${schemaLd}</script>
+  <style>${CSS}</style>
+</head>
+<body>
+  <div class="merit-box">
+    <h1>Ranking Methodology</h1>
+    <p>Merit-based selection of top real estate agents. No pay-to-play. Zero exceptions to the Merit Gate.</p>
+  </div>
+
+  <section>
+    <h2>Merit Gate (Universal Standard — Zero Exceptions)</h2>
+    <p>Every agent must meet all three thresholds simultaneously. The Merit Gate has <strong>never been waived</strong> for any reason or payment.</p>
+    <ul>
+      <li><strong>Rating:</strong> 4.5+ stars (weighted average across Zillow and Google)</li>
+      <li><strong>Reviews:</strong> 10+ verified reviews in the last 24 months</li>
+      <li><strong>Experience:</strong> 5+ years in business with active state license</li>
+    </ul>
+    <p>Meeting the Merit Gate qualifies an agent for review, not for listing. Agents who pass undergo <strong>AI-assisted analysis and human editorial review</strong>.</p>
+  </section>
+
+  <section>
+    <h2>Scoring Weights</h2>
+    <p>Each qualifying agent is scored using a weighted composite model (scale: 0.0 to 1.0).</p>
+    <div class="factor"><span>License Status</span><span class="factor-weight">20%</span></div>
+    <div class="factor"><span>Recent Activity</span><span class="factor-weight">20%</span></div>
+    <div class="factor"><span>Transaction History</span><span class="factor-weight">25%</span></div>
+    <div class="factor"><span>Reviews &amp; Reputation</span><span class="factor-weight">15%</span></div>
+    <div class="factor"><span>Community Involvement</span><span class="factor-weight">20%</span></div>
+    <p style="margin-top:1rem;"><strong>Formula:</strong> sum(component_value[k] × weight[k]) for all components. Missing data: redistribute weight proportionally.</p>
+  </section>
+
+  <section>
+    <h2>Community Involvement (20% Weight — Subcomponents)</h2>
+    <div class="factor"><span>Verified Nonprofit Roles</span><span class="factor-weight">30%</span></div>
+    <div class="factor"><span>Board Service</span><span class="factor-weight">25%</span></div>
+    <div class="factor"><span>Documented Volunteering</span><span class="factor-weight">20%</span></div>
+    <div class="factor"><span>Local Media Civic Mentions</span><span class="factor-weight">15%</span></div>
+    <div class="factor"><span>Community Awards</span><span class="factor-weight">10%</span></div>
+  </section>
+
+  <section>
+    <h2>Coverage</h2>
+    <div class="stats">
+      <div><div class="stat-number">670,000+</div><div class="stat-label">Agents Analyzed (AZ + CA)</div></div>
+      <div><div class="stat-number">3,487</div><div class="stat-label">Qualified (889 AZ + 2,598 CA)</div></div>
+      <div><div class="stat-number">0.5%</div><div class="stat-label">Selection Rate</div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Data Sources</h2>
+    <ul>
+      <li>State Real Estate Licensing Authorities (ADRE, DRE)</li>
+      <li>Zillow agent profiles (ratings, reviews, transactions)</li>
+      <li>Google Business Profile (ratings, review counts)</li>
+      <li>MLS records (where available)</li>
+      <li>RealTrends (transaction data)</li>
+      <li>IRS Form 990 via ProPublica (community involvement)</li>
+      <li>U.S. Census Bureau (ACS, boundary data)</li>
+      <li>OpenStreetMap (neighborhood validation)</li>
+      <li>NAR designation registry</li>
+      <li>State and court records, local/national publications</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Verification Tiers</h2>
+    <h3>Listed (Free) — Annual Refresh</h3>
+    <p>Core credentials: license, rating, reviews. 4 evidence sources.</p>
+    <h3>Audited ($300/mo) — Biweekly Refresh</h3>
+    <p>Expanded: transactions, community involvement, 10+ sources.</p>
+    <h3>Underwritten ($500/mo) — Daily Refresh</h3>
+    <p>Complete profile: neighborhood-level detail, 14+ sources, continuous monitoring.</p>
+    <p>Payment affects only verification depth and refresh frequency — <strong>never inclusion or ranking</strong>.</p>
+  </section>
+
+  <section>
+    <h2>Non-Pay-to-Play Principle</h2>
+    <p>Agents cannot buy inclusion, ranking position, or scoring outcomes. Payment is exclusively for increased audit frequency and expanded artifact payload depth. The Merit Gate cannot be bypassed at any price.</p>
+  </section>
+
+  <p><a href="${BASE}/transparency">Transparency</a> | <a href="${BASE}/for-ai">For AI Systems</a> | <a href="${BASE}/faq">FAQ</a> | <a href="${BASE}/llms.txt">llms.txt</a></p>
+</body>
+</html>`;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { status: 204, headers: CORS });
@@ -223,6 +327,8 @@ serve(async (req) => {
     html = await renderFaq();
   } else if (norm === "/for-ai" || norm === "/for-ai/") {
     html = renderForAi();
+  } else if (norm === "/methodology" || norm === "/methodology/") {
+    html = renderMethodology();
   } else {
     return new Response(
       JSON.stringify({ error: "Path not supported", path: norm }),
