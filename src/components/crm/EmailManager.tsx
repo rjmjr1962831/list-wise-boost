@@ -279,6 +279,7 @@ export const EmailManager = () => {
     "hello@top10lists.us",
     "robert@toptenlists.us",
     "hello@toptenlists.us",
+    "mark@toptenlists.us",
   ];
 
   if (managingTemplates) {

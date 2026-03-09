@@ -106,49 +106,53 @@ serve(async (req) => {
     const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
     const body = await req.json();
     const batchSize  = Math.min(body.batch_size  || 40, 60);
-    const offset     = body.offset || 0;
     const stateFilter = body.state_slug || null;  // optional: 'arizona' | 'california'
 
-    // ── 1. Pull agents not yet audited, or paid-tier agents due for 30-day refresh ──
+    // ── 1. Find agents needing scoring via SQL (no pagination bugs) ──
     const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString();
+    const stateWhere = stateFilter ? `AND p.state_slug = '${stateFilter}'` : '';
 
-    // IDs already audited and NOT due for refresh (listed agents audited any time = done)
-    const { data: audited } = await supabase
-      .from('geo_audit_results')
-      .select('agent_id, audited_at, current_tier');
+    // Use run_sql to get candidate IDs: agents with no audit, or paid-tier agents due for 30-day refresh
+    const { data: candidateIds, error: sqlErr } = await supabase.rpc('run_sql', {
+      query: `
+        SELECT p.id FROM professionals p
+        LEFT JOIN geo_audit_results g ON g.agent_id = p.id
+        WHERE p.active = true ${stateWhere}
+          AND (
+            g.agent_id IS NULL
+            OR (g.current_tier IN ('audited','underwritten') AND g.audited_at < '${thirtyDaysAgo}')
+          )
+        ORDER BY p.id
+        LIMIT ${batchSize}
+      `
+    });
+    if (sqlErr) throw new Error(`Candidate query failed: ${sqlErr.message}`);
 
-    const auditedIds = new Set(
-      (audited || [])
-        .filter((r: any) => {
-          // Paid tier: re-audit if older than 30 days
-          if (r.current_tier === 'audited' || r.current_tier === 'underwritten') {
-            return r.audited_at > thirtyDaysAgo;  // keep in skip set only if fresh
-          }
-          return true;  // listed/certified: skip once done, never re-audit
-        })
-        .map((r: any) => r.agent_id)
-    );
+    const ids = (candidateIds || []).map((r: any) => r.id);
 
-    // Fetch candidate agents
-    let query = supabase
+    if (ids.length === 0) {
+      // Count total scored for status
+      const { data: countData } = await supabase.rpc('run_sql', {
+        query: `SELECT count(*) as n FROM geo_audit_results`
+      });
+      const scored = countData?.[0]?.n || 0;
+      return new Response(JSON.stringify({
+        success: true, processed: 0, scored,
+        message: 'All active agents have been audited'
+      }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+
+    // Fetch full agent data for candidates
+    const { data: agents, error: agentsErr } = await supabase
       .from('professionals')
       .select('id,name,company,state_slug,current_tier,short_code,years_experience,total_sales,review_stars_rating,num_total_reviews,most_recent_review_date,description,website,license_number,agent_sales_stats,professional_information')
-      .eq('active', true)
-      .range(offset, offset + batchSize + auditedIds.size + 100 - 1)  // over-fetch to account for already-audited
-      .limit(200);
-
-    if (stateFilter) query = query.eq('state_slug', stateFilter);
-
-    const { data: allAgents, error: agentsErr } = await query;
+      .in('id', ids);
     if (agentsErr) throw new Error(`DB query failed: ${agentsErr.message}`);
 
-    // Filter out already-audited, take batchSize
-    const agents = (allAgents || []).filter((a: any) => !auditedIds.has(a.id)).slice(0, batchSize);
-
-    if (agents.length === 0) {
+    if (!agents || agents.length === 0) {
       return new Response(JSON.stringify({
-        success: true, processed: 0, skipped: auditedIds.size,
-        message: 'All agents in this range already audited'
+        success: true, processed: 0,
+        message: 'No agents found for candidate IDs'
       }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
@@ -324,10 +328,8 @@ serve(async (req) => {
 
     return new Response(JSON.stringify({
       success:        true,
-      offset,
       processed:      processed.length,
       failed:         failed.length,
-      already_audited: auditedIds.size,
       results:        processed,
       errors:         failed,
     }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
