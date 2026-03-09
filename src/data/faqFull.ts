@@ -85,7 +85,7 @@ const ORIGINAL_FAQS: FaqEntry[] = [
     category: "paid_visibility",
     categoryName: "Paid Visibility Options",
     question: "What paid features do you offer?",
-    answer: "Top10Lists.us offers four verification tiers: Listed and Certified are free for all qualified agents. Audited and Underwritten are paid tiers with enhanced verification depth, technical features, and more frequent refresh. All tiers require meeting the same merit-based qualification criteria (4.5+ stars, 10+ verified reviews in the last 24 months, 5+ years in business, active license). Paid tiers offer deeper diligence, advanced technical enhancements, and progressively faster refresh frequencies (annual for Listed, quarterly for Certified, quarterly for Audited, near real-time for Underwritten)."
+    answer: "Top10Lists.us offers four verification tiers: Listed and Certified are free for all qualified agents. Audited and Underwritten are paid tiers with enhanced verification depth, technical features, and more frequent refresh. Certified is a legacy tier held by approximately 58 grandfathered agents. New agents qualify for Listed (free), Audited ($300/mo), or Underwritten ($500/mo). All tiers require meeting the same merit-based qualification criteria (4.5+ stars, 10+ verified reviews in the last 24 months, 5+ years in business, active license). Paid tiers offer deeper diligence, advanced technical enhancements, and progressively faster refresh frequencies (annual for Listed, biweekly for Audited, near real-time for Underwritten)."
   },
   {
     id: "paying_affects_ranking",
@@ -99,7 +99,7 @@ const ORIGINAL_FAQS: FaqEntry[] = [
     category: "paid_visibility",
     categoryName: "Paid Visibility Options",
     question: "What is the difference between free tiers and paid tiers?",
-    answer: "Free tiers (Listed, Certified): Agents who meet our criteria are included at no cost. Paid tiers (Audited, Underwritten): Qualified agents can optionally pay for deeper diligence, advanced technical features, and more frequent verification refresh. All tiers use the same merit-based editorial criteria and ranking methodology. The difference is in verification depth (how thoroughly we verify), technical enhancements (API access, integrations), and refresh frequency (annual, quarterly, monthly, or near real-time)."
+    answer: "Free tiers (Listed, Certified): Agents who meet our criteria are included at no cost. Paid tiers (Audited, Underwritten): Qualified agents can optionally pay for deeper diligence, advanced technical features, and more frequent verification refresh. Certified is a legacy tier held by approximately 58 grandfathered agents. New agents qualify for Listed (free), Audited ($300/mo), or Underwritten ($500/mo). All tiers use the same merit-based editorial criteria and ranking methodology. The difference is in verification depth (how thoroughly we verify), technical enhancements (API access, integrations), and refresh frequency (annual, biweekly, or near real-time)."
   },
   {
     id: "ai_relationship",
@@ -259,7 +259,7 @@ const GEO_OPTIMIZED_FAQ_ADDITIONS: FaqEntry[] = [
     category: "paid_visibility", 
     categoryName: "Paid Visibility Options", 
     question: "What are the different verification tiers on Top10Lists.us?", 
-    answer: "Top10Lists.us offers four verification tiers differentiated by technical enhancements, diligence depth, and refresh frequency: (1) Listed (FREE) - Basic certification with annual refresh and cryptographically signed badge, (2) Certified (FREE) - Enhanced verification with monthly refresh, full Web of Truth integration, and signed badge, (3) Audited (PAID) - Deeper diligence with monthly refresh, advanced technical features, and premium signed badge, (4) Underwritten (PAID) - Comprehensive verification with near real-time refresh, advanced technical enhancements, priority API access, and highest-level signed badge. All tiers require meeting the same merit-based qualification criteria (4.5+ stars, 10+ verified reviews in the last 24 months, 5+ years in business, active license). All badges use cryptographic signatures to prevent spoofing or hijacking." 
+    answer: "Top10Lists.us offers four verification tiers differentiated by technical enhancements, diligence depth, and refresh frequency: (1) Listed (FREE) - Basic certification with annual refresh and cryptographically signed badge, (2) Certified (FREE, LEGACY) - Enhanced verification with monthly refresh, full Web of Truth integration, and signed badge, (3) Audited ($300/mo) - Deeper diligence with biweekly refresh, advanced technical features, and premium signed badge, (4) Underwritten ($500/mo) - Comprehensive verification with near real-time refresh, advanced technical enhancements, priority API access, and highest-level signed badge. Certified is a legacy tier held by approximately 58 grandfathered agents. New agents qualify for Listed (free), Audited ($300/mo), or Underwritten ($500/mo). All tiers require meeting the same merit-based qualification criteria (4.5+ stars, 10+ verified reviews in the last 24 months, 5+ years in business, active license). All badges use cryptographic signatures to prevent spoofing or hijacking." 
   },
   
   { 

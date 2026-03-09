@@ -1,5 +1,6 @@
 /**
  * List Maker Export: Generate CSV from professionals by criteria and output fields.
+ * When AICS fields are requested, uses run_sql RPC with LEFT JOIN to geo_audit_results.
  * Uploads to Supabase storage, returns public URL.
  * Run from staging CRM only; do not push to main.
  */
@@ -9,6 +10,62 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
+// Map from frontend field keys to { table, column } for SQL query building
+const AICS_FIELD_MAP: Record<string, string> = {
+  aics_score_unlisted: "g.score_unlisted",
+  aics_score_listed: "g.score_listed",
+  aics_score_certified: "g.score_certified",
+  aics_score_audited: "g.score_audited",
+  aics_score_underwritten: "g.score_underwritten",
+  aics_lift_to_audited: "g.score_lift_to_audited",
+  aics_lift_to_underwritten: "g.score_lift_to_underwritten",
+  aics_most_recent_review_date: "g.most_recent_signal",
+  aics_gap_stale_reviews: "g.gap_stale_reviews",
+  aics_gap_no_linkedin: "g.gap_no_linkedin",
+  aics_gap_no_schema: "g.gap_no_schema",
+  aics_gap_no_personal_site: "g.gap_no_personal_site",
+  aics_gap_no_realtor: "g.gap_no_realtor",
+  aics_gap_no_press: "g.gap_no_press",
+  aics_artifact_url: "g.artifact_url",
+};
+
+// Friendly CSV header names matching the UI labels
+const FIELD_LABELS: Record<string, string> = {
+  id: "ID",
+  name: "Name",
+  email: "Email",
+  phone: "Phone",
+  website: "Website",
+  social_linkedin: "LinkedIn URL",
+  company: "Company / Brokerage",
+  canonical_slug: "Canonical Slug",
+  state_slug: "State Slug",
+  current_tier: "Current Tier",
+  magic_link: "Magic Link",
+  date_first_listed: "Date First Listed",
+  date_last_updated: "Date Last Updated",
+  zillow_profile_url: "Zillow URL",
+  city_name: "City Name",
+  created_at: "Created At",
+  updated_at: "Updated At",
+  review_stars_rating: "Rating",
+  aics_score_unlisted: "AICS Score (Current)",
+  aics_score_listed: "AICS Score (Listed)",
+  aics_score_certified: "AICS Score (Certified)",
+  aics_score_audited: "AICS Score (Audited)",
+  aics_score_underwritten: "AICS Score (Underwritten)",
+  aics_lift_to_audited: "Lift to Audited",
+  aics_lift_to_underwritten: "Lift to Underwritten",
+  aics_most_recent_review_date: "Most Recent Review Date",
+  aics_gap_stale_reviews: "Gap: Stale Reviews",
+  aics_gap_no_linkedin: "Gap: No LinkedIn",
+  aics_gap_no_schema: "Gap: No Schema",
+  aics_gap_no_personal_site: "Gap: No Personal Site",
+  aics_gap_no_realtor: "Gap: No Realtor",
+  aics_gap_no_press: "Gap: No Press",
+  aics_artifact_url: "Artifact URL",
 };
 
 serve(async (req) => {
@@ -28,58 +85,48 @@ serve(async (req) => {
 
     const baseUrl = "https://www.top10lists.us";
 
-    // Select fields needed for output (company/business_name coalesced as Company / Brokerage)
-    const selectStr =
-      "id,name,email,phone,website,company,business_name,canonical_slug,state_slug,current_tier,card_created_at,created_at,updated_at,verification_token,zillow_profile_url,city_id,cities(name)";
+    // Check if any AICS fields are requested
+    const hasAicsFields = outputFields.some((f) => f in AICS_FIELD_MAP);
 
-    let query = supabase.from("professionals").select(selectStr, { count: "exact" });
+    let rows: Record<string, unknown>[];
 
-    // Apply criteria
-    if (criteria.active === true) query = query.eq("active", true);
-    if (criteria.active === false) query = query.eq("active", false);
-    if (Array.isArray(criteria.state_slugs) && criteria.state_slugs.length > 0)
-      query = query.in("state_slug", criteria.state_slugs);
-    if (Array.isArray(criteria.current_tiers) && criteria.current_tiers.length > 0)
-      query = query.in("current_tier", criteria.current_tiers);
-    if (typeof criteria.min_rating === "number")
-      query = query.gte("review_stars_rating", criteria.min_rating);
-    if (criteria.email_verified === true)
-      query = query.not("email_verified_at", "is", null);
-    if (criteria.has_license === true)
-      query = query.not("license_number", "is", null).neq("license_number", "");
+    if (hasAicsFields) {
+      // Use run_sql RPC for JOIN query
+      rows = await queryWithJoin(supabase, criteria, outputFields);
+    } else {
+      // Use standard Supabase client query (no join needed)
+      rows = await queryStandard(supabase, criteria);
+    }
 
-    const { data: rows, error } = await query.order("state_slug").order("name").limit(50000);
-
-    if (error) throw error;
-
-    // Build CSV headers from outputFields
-    const headers = outputFields.map((f) => f);
+    // Build CSV
     const escape = (v: unknown): string => {
       if (v == null) return "";
       const s = typeof v === "object" ? JSON.stringify(v) : String(v);
       return s.includes(",") || s.includes('"') || s.includes("\n") ? `"${s.replace(/"/g, '""')}"` : s;
     };
 
+    const headers = outputFields.map((f) => FIELD_LABELS[f] || f);
     const csvRows: string[] = [headers.join(",")];
 
-    for (const r of rows || []) {
-      const row = r as Record<string, unknown> & { cities?: { name?: string }; verification_token?: string; card_created_at?: string; created_at?: string; updated_at?: string; company?: string; business_name?: string };
+    for (const row of rows) {
       const cells = outputFields.map((f) => {
         if (f === "magic_link") return escape(row.verification_token ? `${baseUrl}/dashboard/${row.verification_token}` : "");
         if (f === "date_first_listed") return escape(row.card_created_at || row.created_at);
         if (f === "date_last_updated") return escape(row.updated_at);
-        if (f === "city_name") return escape(row.cities?.name);
+        if (f === "city_name") return escape(row.city_name ?? (row as any).cities?.name);
         if (f === "company") return escape(row.company || row.business_name || "");
+        // AICS fields: map to the SQL alias (aics_* prefix)
+        if (f in AICS_FIELD_MAP) return escape(row[f]);
         return escape(row[f]);
       });
       csvRows.push(cells.join(","));
     }
 
     const csv = csvRows.join("\n");
-    const count = rows?.length || 0;
+    const count = rows.length;
     const fileName = `list-maker-${Date.now()}.csv`;
 
-    // Upload to storage so we always have a URL (required when CSV is too large for response body)
+    // Upload to storage
     let url: string | null = null;
     try {
       const { error: uploadError } = await supabase.storage
@@ -98,7 +145,6 @@ serve(async (req) => {
       console.error("list-maker-export storage error:", e);
     }
 
-    // Include csv in body only when small enough (~1.5MB) to avoid response truncation
     const MAX_CSV_IN_BODY = 1_500_000;
     const includeCsv = csv.length <= MAX_CSV_IN_BODY;
     const payload: { url: string | null; count: number; csv?: string } = { url, count };
@@ -130,3 +176,123 @@ serve(async (req) => {
     );
   }
 });
+
+/**
+ * Standard query using Supabase client (no AICS join needed).
+ */
+async function queryStandard(
+  supabase: ReturnType<typeof createClient>,
+  criteria: Record<string, unknown>
+): Promise<Record<string, unknown>[]> {
+  const selectStr =
+    "id,name,email,phone,website,social_linkedin,company,business_name,canonical_slug,state_slug,current_tier,card_created_at,created_at,updated_at,verification_token,zillow_profile_url,review_stars_rating,city_id,cities(name)";
+
+  let query = supabase.from("professionals").select(selectStr, { count: "exact" });
+
+  if (criteria.active === true) query = query.eq("active", true);
+  if (criteria.active === false) query = query.eq("active", false);
+  if (Array.isArray(criteria.state_slugs) && criteria.state_slugs.length > 0)
+    query = query.in("state_slug", criteria.state_slugs);
+  if (Array.isArray(criteria.current_tiers) && criteria.current_tiers.length > 0)
+    query = query.in("current_tier", criteria.current_tiers);
+  if (typeof criteria.min_rating === "number")
+    query = query.gte("review_stars_rating", criteria.min_rating);
+  if (criteria.email_verified === true)
+    query = query.not("email_verified_at", "is", null);
+  if (criteria.has_license === true)
+    query = query.not("license_number", "is", null).neq("license_number", "");
+
+  const { data: rows, error } = await query.order("state_slug").order("name").limit(50000);
+  if (error) throw error;
+  return (rows || []) as Record<string, unknown>[];
+}
+
+/**
+ * Query with LEFT JOIN to geo_audit_results via run_sql RPC.
+ * Builds SELECT and WHERE dynamically from requested fields and criteria.
+ */
+async function queryWithJoin(
+  supabase: ReturnType<typeof createClient>,
+  criteria: Record<string, unknown>,
+  outputFields: string[]
+): Promise<Record<string, unknown>[]> {
+  // Always select base professionals fields needed for field resolution
+  const selectCols: string[] = [
+    "p.id",
+    "p.name",
+    "p.email",
+    "p.phone",
+    "p.website",
+    "p.social_linkedin",
+    "p.company",
+    "p.business_name",
+    "p.canonical_slug",
+    "p.state_slug",
+    "p.current_tier",
+    "p.card_created_at",
+    "p.created_at",
+    "p.updated_at",
+    "p.verification_token",
+    "p.zillow_profile_url",
+    "p.review_stars_rating",
+    "c.name AS city_name",
+  ];
+
+  // Add requested AICS columns with aliases
+  for (const f of outputFields) {
+    if (f in AICS_FIELD_MAP) {
+      selectCols.push(`${AICS_FIELD_MAP[f]} AS ${f}`);
+    }
+  }
+
+  // Build WHERE clause
+  const conditions: string[] = [];
+  const params: unknown[] = [];
+
+  if (criteria.active === true) conditions.push("p.active = true");
+  if (criteria.active === false) conditions.push("p.active = false");
+
+  if (Array.isArray(criteria.state_slugs) && criteria.state_slugs.length > 0) {
+    const escaped = criteria.state_slugs.map((s: string) => `'${s.replace(/'/g, "''")}'`).join(",");
+    conditions.push(`p.state_slug IN (${escaped})`);
+  }
+
+  if (Array.isArray(criteria.current_tiers) && criteria.current_tiers.length > 0) {
+    const escaped = criteria.current_tiers.map((t: string) => `'${t.replace(/'/g, "''")}'`).join(",");
+    conditions.push(`p.current_tier IN (${escaped})`);
+  }
+
+  if (typeof criteria.min_rating === "number") {
+    conditions.push(`p.review_stars_rating >= ${Number(criteria.min_rating)}`);
+  }
+
+  if (criteria.email_verified === true) {
+    conditions.push("p.email_verified_at IS NOT NULL");
+  }
+
+  if (criteria.has_license === true) {
+    conditions.push("p.license_number IS NOT NULL AND p.license_number != ''");
+  }
+
+  const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+
+  const sql = `
+    SELECT ${selectCols.join(", ")}
+    FROM professionals p
+    LEFT JOIN geo_audit_results g ON p.id = g.agent_id
+    LEFT JOIN cities c ON p.city_id = c.id
+    ${whereClause}
+    ORDER BY p.state_slug, p.name
+    LIMIT 50000
+  `;
+
+  const { data, error } = await supabase.rpc("run_sql", { query: sql });
+  if (error) throw error;
+
+  // run_sql returns jsonb; parse if needed
+  if (typeof data === "string") {
+    return JSON.parse(data);
+  }
+  if (Array.isArray(data)) return data;
+  return [];
+}

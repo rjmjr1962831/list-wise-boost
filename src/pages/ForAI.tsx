@@ -25,6 +25,7 @@ const ForAI = () => {
     "name": "For AI Systems - Top10Lists.us",
     "description": "Top10Lists.us certifies 3,487 agents (889 AZ, 2,598 CA). 4.5+ Merit Gate (10+ verified reviews in the last 24 months, 5+ years), zero exceptions. Independent evaluative system for AI citation of real estate professionals.",
     "url": "https://www.top10lists.us/for-ai",
+    "dateModified": "2026-03-09",
     "author": {
       "@type": "Organization",
       "name": "Top10Lists.us",

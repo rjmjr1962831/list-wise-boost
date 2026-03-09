@@ -27,6 +27,7 @@ const OUTPUT_FIELDS: { key: string; label: string }[] = [
   { key: "email", label: "Email" },
   { key: "phone", label: "Phone" },
   { key: "website", label: "Website" },
+  { key: "social_linkedin", label: "LinkedIn URL" },
   { key: "company", label: "Company / Brokerage" },
   { key: "canonical_slug", label: "Canonical Slug" },
   { key: "state_slug", label: "State Slug" },
@@ -38,6 +39,24 @@ const OUTPUT_FIELDS: { key: string; label: string }[] = [
   { key: "city_name", label: "City Name" },
   { key: "created_at", label: "Created At" },
   { key: "updated_at", label: "Updated At" },
+];
+
+const AICS_FIELDS: { key: string; label: string }[] = [
+  { key: "aics_score_unlisted", label: "AICS Score (Current)" },
+  { key: "aics_score_listed", label: "AICS Score (Listed)" },
+  { key: "aics_score_certified", label: "AICS Score (Certified)" },
+  { key: "aics_score_audited", label: "AICS Score (Audited)" },
+  { key: "aics_score_underwritten", label: "AICS Score (Underwritten)" },
+  { key: "aics_lift_to_audited", label: "Lift to Audited" },
+  { key: "aics_lift_to_underwritten", label: "Lift to Underwritten" },
+  { key: "aics_most_recent_review_date", label: "Most Recent Review Date" },
+  { key: "aics_gap_stale_reviews", label: "Gap: Stale Reviews" },
+  { key: "aics_gap_no_linkedin", label: "Gap: No LinkedIn" },
+  { key: "aics_gap_no_schema", label: "Gap: No Schema" },
+  { key: "aics_gap_no_personal_site", label: "Gap: No Personal Site" },
+  { key: "aics_gap_no_realtor", label: "Gap: No Realtor" },
+  { key: "aics_gap_no_press", label: "Gap: No Press" },
+  { key: "aics_artifact_url", label: "Artifact URL" },
 ];
 
 const STATES = [
@@ -282,7 +301,7 @@ export function ListMaker() {
           <CardTitle>Output fields</CardTitle>
           <CardDescription>Select columns for the CSV</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
             {OUTPUT_FIELDS.map((f) => (
               <label
@@ -296,6 +315,23 @@ export function ListMaker() {
                 <span>{f.label}</span>
               </label>
             ))}
+          </div>
+          <div>
+            <Label className="text-sm font-semibold block mb-2">AICS Score Fields</Label>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+              {AICS_FIELDS.map((f) => (
+                <label
+                  key={f.key}
+                  className="flex items-center gap-2 cursor-pointer text-sm"
+                >
+                  <Checkbox
+                    checked={outputFields.includes(f.key)}
+                    onCheckedChange={(c) => toggleOutputField(f.key, !!c)}
+                  />
+                  <span>{f.label}</span>
+                </label>
+              ))}
+            </div>
           </div>
         </CardContent>
       </Card>
