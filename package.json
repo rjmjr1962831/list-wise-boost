@@ -26,7 +26,8 @@
     "verify-production-build": "bash scripts/verify-production-build.sh",
     "smoke-test": "tsx scripts/smoke-test.ts",
     "geo-audit": "tsx scripts/geo-audit.ts",
-    "merge-to-main": "powershell -ExecutionPolicy Bypass -File scripts/merge-to-main.ps1"
+    "merge-to-main": "powershell -ExecutionPolicy Bypass -File scripts/merge-to-main.ps1",
+    "register-sequencer-cron": "tsx scripts/register-sequencer-cron.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
