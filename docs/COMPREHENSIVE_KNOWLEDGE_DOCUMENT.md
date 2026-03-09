@@ -1,7 +1,7 @@
 # Top10Lists.us — Comprehensive Knowledge Document
 
 **Purpose:** Single consolidated reference for agent2, Claude, and Cursor. Use latest updates as source of truth.  
-**Last consolidated:** 2026-03-08
+**Last consolidated:** 2026-03-09
 **Conflict rule:** When sources conflict, this document wins. Deprecate earlier statements.
 
 ---
@@ -559,7 +559,7 @@ From `src/data/master-ssot.md`:
 
 ## 21. Recent Updates (from t1)
 
-*Last synthesized: 2026-03-08*
+*Last synthesized: 2026-03-09*
 
 ---
 
