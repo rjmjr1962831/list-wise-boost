@@ -134,6 +134,65 @@ serve(async (req) => {
     }
   }
 
+  // ── Sequencer v2: look up in email_queue by tracking_pixel_id ──────────────
+  const { data: queueRow } = await supabase
+    .from("email_queue")
+    .select("id, campaign_id, agent_id, recipient_email, opened_at, clicked_at, open_count, click_count")
+    .eq("tracking_pixel_id", emailId)
+    .maybeSingle();
+
+  if (queueRow) {
+    const isOpen = type === "o";
+    const isClick = type === "c";
+
+    // Update email_queue counters
+    const updates: Record<string, any> = {};
+    if (isOpen) {
+      updates.open_count = (queueRow.open_count || 0) + 1;
+      if (!queueRow.opened_at) updates.opened_at = new Date().toISOString();
+    }
+    if (isClick) {
+      updates.click_count = (queueRow.click_count || 0) + 1;
+      if (!queueRow.clicked_at) updates.clicked_at = new Date().toISOString();
+    }
+    supabase.from("email_queue").update(updates).eq("id", queueRow.id).then(() => {});
+
+    // Increment campaign-level counters
+    if (queueRow.campaign_id) {
+      if (isOpen && !queueRow.opened_at) {
+        supabase.rpc("run_sql", { query: `UPDATE email_campaigns SET total_opens = total_opens + 1 WHERE id = '${queueRow.campaign_id.replace(/'/g, "''")}'` }).then(() => {});
+      }
+      if (isClick && !queueRow.clicked_at) {
+        supabase.rpc("run_sql", { query: `UPDATE email_campaigns SET total_clicks = total_clicks + 1 WHERE id = '${queueRow.campaign_id.replace(/'/g, "''")}'` }).then(() => {});
+      }
+    }
+
+    // Update professional lead_status (same logic as existing)
+    if (queueRow.agent_id) {
+      if (isClick) {
+        await supabase.from("professionals").update({ lead_status: "hot" }).eq("id", queueRow.agent_id);
+      } else if (isOpen && !queueRow.opened_at) {
+        await supabase.from("professionals").update({ lead_status: "warm" })
+          .eq("id", queueRow.agent_id).neq("lead_status", "hot");
+      }
+    }
+
+    // Log to crm_contact_activity
+    if (queueRow.agent_id && ((isOpen && !queueRow.opened_at) || isClick)) {
+      supabase.from("crm_contact_activity").insert({
+        professional_id: queueRow.agent_id,
+        professional_email: queueRow.recipient_email,
+        event_type: isClick ? "email_click" : "email_open",
+        subject: null,
+        email_id: emailId,
+        link_url: linkUrl || null,
+        from_account: null,
+        sequence_name: queueRow.campaign_id,
+        metadata: { source: "sequencer_v2", ip: ip.split(",")[0].trim(), user_agent: ua.substring(0, 200) },
+      }).then(() => {});
+    }
+  }
+
   // ── Redirect clicks ───────────────────────────────────────────────────────
   if (type === "c" && linkUrl) {
     return new Response(null, {
