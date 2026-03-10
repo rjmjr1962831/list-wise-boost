@@ -41,6 +41,8 @@ type Tab = "builder" | "review" | "monitor";
 const SENDER_ACCOUNTS = [
   "hello@toptenlists.us",
   "robert@toptenlists.us",
+  "hello@top10lists.us",
+  "robert@top10lists.us",
 ];
 
 const SAMPLE_DATA: Record<string, string> = {
@@ -95,6 +97,14 @@ function StatusBadge({ status }: { status: string }) {
 // Campaign Builder
 // ---------------------------------------------------------------------------
 
+interface SequenceTemplate {
+  sequence_id: string;
+  sequence_name: string;
+  step_number: number;
+  subject: string;
+  body: string;
+}
+
 function CampaignBuilder({
   campaigns,
   loading,
@@ -109,6 +119,45 @@ function CampaignBuilder({
   const [body, setBody] = useState("");
   const [sender, setSender] = useState(SENDER_ACCOUNTS[0]);
   const [creating, setCreating] = useState(false);
+  const [templates, setTemplates] = useState<SequenceTemplate[]>([]);
+  const [loadingTemplates, setLoadingTemplates] = useState(false);
+
+  useEffect(() => {
+    loadTemplates();
+  }, []);
+
+  const loadTemplates = async () => {
+    setLoadingTemplates(true);
+    try {
+      const { data, error } = await supabase
+        .from("crm_sequence_steps" as any)
+        .select("sequence_id, step_number, subject, body, crm_sequences(name)")
+        .order("step_number", { ascending: true });
+      if (error) throw error;
+      setTemplates(
+        ((data as any[]) ?? []).map((d: any) => ({
+          sequence_id: d.sequence_id,
+          sequence_name: (d.crm_sequences as any)?.name ?? "Unknown",
+          step_number: d.step_number,
+          subject: d.subject ?? "",
+          body: d.body ?? "",
+        }))
+      );
+    } catch {
+      // silently fail — templates are optional
+    } finally {
+      setLoadingTemplates(false);
+    }
+  };
+
+  const handleSelectTemplate = (idx: number) => {
+    if (idx < 0) return;
+    const t = templates[idx];
+    setSubject(t.subject);
+    setBody(t.body);
+    if (!name.trim()) setName(t.sequence_name + " - Step " + t.step_number);
+    toast.info(`Loaded template: ${t.sequence_name} Step ${t.step_number}`);
+  };
 
   const handleCreate = async () => {
     if (!name.trim()) {
@@ -149,6 +198,28 @@ function CampaignBuilder({
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* Template selector */}
+          <div className="space-y-1">
+            <Label htmlFor="camp-template">Load from Existing Sequence</Label>
+            <select
+              id="camp-template"
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              defaultValue=""
+              onChange={(e) => handleSelectTemplate(parseInt(e.target.value))}
+              disabled={loadingTemplates}
+            >
+              <option value="">— Select a template (optional) —</option>
+              {templates.map((t, i) => (
+                <option key={`${t.sequence_id}-${t.step_number}`} value={i}>
+                  {t.sequence_name} — Step {t.step_number}: {t.subject.slice(0, 60)}
+                </option>
+              ))}
+            </select>
+            <p className="text-xs text-muted-foreground">
+              Populates subject and body from an existing sequence step. You can edit after loading.
+            </p>
+          </div>
+
           <div className="space-y-1">
             <Label htmlFor="camp-name">Campaign Name</Label>
             <Input

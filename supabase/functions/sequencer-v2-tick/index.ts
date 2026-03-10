@@ -26,7 +26,12 @@ const GMAIL_CLIENT_ID = Deno.env.get("GMAIL_CLIENT_ID")!;
 const GMAIL_CLIENT_SECRET = Deno.env.get("GMAIL_CLIENT_SECRET")!;
 
 const TRACK_BASE = "https://www.top10lists.us/api/t";
-const SENDER_ACCOUNTS = ["hello@toptenlists.us", "robert@toptenlists.us"];
+const SENDER_ACCOUNTS = [
+  "hello@toptenlists.us",
+  "robert@toptenlists.us",
+  "hello@top10lists.us",
+  "robert@top10lists.us",
+];
 const CAMPAIGN_START = new Date("2026-02-24T12:00:00Z"); // 5am MST
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { LogOut, Users, ClipboardList, Mail, Zap, BarChart2, List } from "lucide-react";
+import { LogOut, Users, ClipboardList, Mail, Zap, BarChart2, List, Send } from "lucide-react";
 import { EmailManager } from "@/components/crm/EmailManager";
 import { toast } from "sonner";
 import { ContactsManager } from "@/components/crm/ContactsManager";
@@ -10,8 +10,9 @@ import { TasksManager } from "@/components/crm/TasksManager";
 import SequenceDashboard from "@/pages/admin/crm/SequenceDashboard";
 import HotLeadsPanel from "@/pages/admin/crm/HotLeadsPanel";
 import { ListMaker } from "@/components/crm/ListMaker";
+import { CampaignManager } from "@/components/crm/CampaignManager";
 
-type View = "contacts" | "tasks" | "email" | "sequences" | "hot-leads" | "list-maker";
+type View = "contacts" | "tasks" | "email" | "sequences" | "hot-leads" | "list-maker" | "campaigns";
 
 interface InstantlySyncResult {
   stats?: { total: number; created: number; updated: number; errors: number };
@@ -117,6 +118,7 @@ const CRM = () => {
     { id: "sequences", label: "Sequences", icon: <BarChart2 className="h-5 w-5" /> },
     { id: "hot-leads", label: "Hot Leads", icon: <Zap className="h-5 w-5" /> },
     { id: "list-maker", label: "List Maker", icon: <List className="h-5 w-5" /> },
+    { id: "campaigns", label: "Campaigns", icon: <Send className="h-5 w-5" /> },
   ];
 
   return (
@@ -188,6 +190,7 @@ const CRM = () => {
           {activeView === "sequences" && <SequenceDashboard />}
           {activeView === "hot-leads" && <HotLeadsPanel />}
           {activeView === "list-maker" && <ListMaker />}
+          {activeView === "campaigns" && <CampaignManager />}
         </div>
       </main>
     </div>
