@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { buildCanonicalPayload, hashPayload, signPayload } from "../_shared/crypto-sign.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -35,7 +36,7 @@ serve(async (req) => {
       .from('professionals')
       .select(`
         id, name, email, phone, company, website,
-        rating, review_stars_rating, num_total_reviews,
+        review_stars_rating, num_total_reviews,
         years_experience, total_sales, license_number,
         specialty, certifications_verified, notable_achievements,
         community_roles, address, synthesized_bio,
@@ -91,10 +92,16 @@ serve(async (req) => {
       justification_url: `https://www.top10lists.us/artifact/${professional.id}/justification`,
     };
 
-    // 5. Generate hash and signature
-    const payloadString = JSON.stringify(payload, Object.keys(payload).sort());
-    const payloadHash = await hashPayload(payloadString);
-    const payloadSignature = await signPayload(payloadHash);
+    // 5. Generate hash and Ed25519 signature
+    const canonicalPayload = buildCanonicalPayload({
+      agent_id: professional.id,
+      tier,
+      status: "active",
+      issued_at: now.toISOString(),
+      markets: markets_covered,
+    });
+    const payloadHash = await hashPayload(canonicalPayload);
+    const payloadSignature = await signPayload(canonicalPayload);
 
     console.log(`[generate-certification] Generated hash and signature`);
 
@@ -102,7 +109,7 @@ serve(async (req) => {
     const { data: certification, error: certError } = await supabaseClient
       .from('certifications')
       .upsert({
-        agent_id: professional.id,
+        professional_id: professional.id,
         certification_tier: tier,
         certification_status: 'active',
         issued_at: now.toISOString(),
@@ -110,14 +117,12 @@ serve(async (req) => {
         next_verification_due: nextVerificationDue.toISOString(),
         markets_covered: markets_covered,
         neighborhoods_covered: neighborhoods_covered || [],
-        verified_transactions: verified_transactions || {},
         payload_hash: payloadHash,
         payload_signature: payloadSignature,
-        signing_key_id: 'top10-prod-v1',
         justification_data: justification,
         methodology_version: '1.0',
       }, {
-        onConflict: 'agent_id'
+        onConflict: 'professional_id'
       })
       .select()
       .single();
@@ -198,7 +203,7 @@ function buildJustificationFromExistingData(professional: any, markets: string[]
     selection_rationale: selectionRationale,
     evidence_reviewed: {
       client_reviews: {
-        rating: professional.rating || professional.review_stars_rating || 0,
+        rating: professional.review_stars_rating || 0,
         review_count: professional.num_total_reviews || 0,
         source: "Zillow verified reviews",
         last_verified: today
@@ -249,26 +254,3 @@ function buildJustificationFromExistingData(professional: any, markets: string[]
   };
 }
 
-async function hashPayload(payloadString: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(payloadString);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-  return hashHex;
-}
-
-async function signPayload(hash: string): Promise<string> {
-  // For now, return a placeholder signature
-  // In production, this would use Ed25519 private key from Supabase Vault
-  // TODO: Implement Ed25519 signing with private key from vault
-  const privateKey = Deno.env.get('ED25519_PRIVATE_KEY');
-  
-  if (!privateKey) {
-    console.warn('[generate-certification] No Ed25519 private key found, using placeholder signature');
-    return `placeholder_signature_${hash.substring(0, 16)}`;
-  }
-  
-  // In production, implement actual Ed25519 signing here
-  return `ed25519_signature_${hash.substring(0, 32)}`;
-}
