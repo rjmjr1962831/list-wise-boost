@@ -1,3 +1,4 @@
+// DEPRECATED — This edge function is no longer in active use. See docs/takeaways for context.
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const corsHeaders = {

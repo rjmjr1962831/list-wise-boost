@@ -1,3 +1,4 @@
+// DEPRECATED — This edge function is no longer in active use. See docs/takeaways for context.
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -128,14 +129,14 @@ serve(async (req) => {
 
     const proxyUsername = Deno.env.get('ROTATING_PROXY_USERNAME');
     const proxyPassword = Deno.env.get('ROTATING_PROXY_PASSWORD');
-    
-    // Build ProxyScrape proxy URL with username:password authentication
+
+    // Build proxy-cheap residential proxy URL with username:password authentication
     const proxyUrl = (proxyUsername && proxyPassword)
-      ? `http://${proxyUsername}:${proxyPassword}@rp.scrapegw.com:6060`
+      ? `http://${proxyUsername}:${proxyPassword}@proxy-us.proxy-cheap.com:5959`
       : null;
-    
+
     if (proxyUrl) {
-      console.log('Using ProxyScrape residential proxies (rp.scrapegw.com:6060)');
+      console.log('Using proxy-cheap residential proxies (proxy-us.proxy-cheap.com:5959)');
     } else {
       console.warn('ROTATING_PROXY_USERNAME or ROTATING_PROXY_PASSWORD not configured, using Apify proxy');
     }

@@ -1,3 +1,4 @@
+// DEPRECATED — This edge function is no longer in active use. See docs/takeaways for context.
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const CROSSMINT_API_KEY = "sk_production_6BGbDw5YKeSjs38vbHx6gzZHkNhxFLrBvZJXEkw32kbHhN6Bcp4EyPcYgW67zsTb71WdQc5QtzPXteDkD1gHvYKxsC1gfSkSD5rG5a3uepysgkYL2xuuN29FGB5pkmsTa1gcwUofpKonArVfmG92A1TbWjx7Rk6vFSoxALBAC3zv1acmMeQD6gLFS2k63yPF63LeaPHCnBBQMWQUk1yc9kx5";

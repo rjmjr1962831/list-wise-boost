@@ -1,3 +1,4 @@
+// DEPRECATED — This edge function is no longer in active use. See docs/takeaways for context.
 /**
  * pre-render-batch
  * Iterates active cities and/or neighborhoods, calls pre-render-page for each,

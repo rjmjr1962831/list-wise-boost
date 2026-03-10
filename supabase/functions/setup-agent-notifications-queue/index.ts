@@ -1,3 +1,4 @@
+// DEPRECATED — This edge function is no longer in active use. See docs/takeaways for context.
 /**
  * Setup Agent Notifications Queue via Cloudflare REST API
  * No wrangler required. Uses CLOUDFLARE_ACCOUNT_ID + CURSOR_API_KEY (same as update-cloudflare-worker).

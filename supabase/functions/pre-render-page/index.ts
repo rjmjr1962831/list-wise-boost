@@ -1,3 +1,4 @@
+// DEPRECATED — This edge function is no longer in active use. See docs/takeaways for context.
 /**
  * pre-render-page
  * Generates complete static HTML for a city or neighborhood page (CleanRoom-style).
