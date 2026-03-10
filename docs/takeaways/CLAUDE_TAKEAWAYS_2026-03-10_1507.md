@@ -35,3 +35,32 @@
 ## Deprecated or Removed
 - `sequence-processor` — fully replaced by sequencer-v2-tick; was already unscheduled
 - `sequence-processor-cron` pg_cron job — removed in migration
+
+---
+
+## Session: 2026-03-10 (afternoon)
+
+### Key Outcomes
+- Cancelled 353 active enrollments from sequence "AZ Listed - AI Challenge v2 (private domain)" (sequence_id: 3bed1ae8-61d9-49d8-8349-610e738c47d2)
+- Ran full GEO audit; found 2 failures on /for-ai and /transparency (deprecated "top 0.5%" language)
+- Fixed both failures by redeploying `serve-bot-content-html` edge function (source was already correct, just stale)
+- Confirmed: 0 instances of "top 0.5%" on /for-ai and /transparency post-fix
+
+### GEO Audit Results
+- PASS: for-ai, transparency, faq, llms.txt, sitemap.xml, robots.txt (all 200)
+- PASS: llms-full.txt, ai-content-index.json, coverage.json, sitemap-agents/cities/neighborhoods (all 200)
+- PASS: Bot rendering confirmed (Phoenix: 46 agents rendered to GPTBot)
+- PASS: robots.txt — all major AI crawlers explicitly allowed
+- FIXED: /for-ai — "top 0.5%" replaced with "fewer than 1%" (2 instances)
+- FIXED: /transparency — stat box and meta description corrected
+- WATCH: /methodology returns 308 to /ai-feed/certification-logic.md (resolves fine but adds redirect hop)
+- WATCH: FAQ city expansion dates still reference "February 2026" (stale by ~6 weeks)
+
+### Sequence Cancellation
+- Used Supabase REST API PATCH with service role key (HTTP 204 success)
+- bulk-update enrichment-api action does NOT work on crm_sequence_enrollments (professionals table only)
+- Correct pattern: PATCH /rest/v1/crm_sequence_enrollments?sequence_id=eq.{id}&status=eq.active with {"status":"cancelled"}
+
+### Notes
+- No code changes pushed to repo — edge function redeployment only
+- pts not applicable this session (no staging branch changes)
