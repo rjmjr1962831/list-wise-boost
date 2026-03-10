@@ -115,9 +115,9 @@ const CRM = () => {
     { id: "contacts",  label: "Contacts",  icon: <Users className="h-5 w-5" /> },
     { id: "tasks",     label: "Tasks",     icon: <ClipboardList className="h-5 w-5" />, badge: pendingTaskCount },
     { id: "email",     label: "Email",     icon: <Mail className="h-5 w-5" /> },
-    { id: "sequences", label: "Sequences", icon: <BarChart2 className="h-5 w-5" /> },
+    // { id: "sequences", label: "Sequences", icon: <BarChart2 className="h-5 w-5" /> }, // deprecated — use Campaigns
     { id: "hot-leads", label: "Hot Leads", icon: <Zap className="h-5 w-5" /> },
-    { id: "list-maker", label: "List Maker", icon: <List className="h-5 w-5" /> },
+    // { id: "list-maker", label: "List Maker", icon: <List className="h-5 w-5" /> }, // moved inside Campaigns
     { id: "campaigns", label: "Campaigns", icon: <Send className="h-5 w-5" /> },
   ];
 

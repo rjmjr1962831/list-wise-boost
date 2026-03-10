@@ -14,8 +14,10 @@ import {
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { ListMaker } from "./ListMaker";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -36,7 +38,7 @@ interface Campaign {
   total_clicks: number;
 }
 
-type Tab = "builder" | "review" | "monitor";
+type Tab = "list-maker" | "builder" | "review" | "monitor";
 
 const SENDER_ACCOUNTS = [
   "hello@toptenlists.us",
@@ -117,7 +119,7 @@ function CampaignBuilder({
   const [name, setName] = useState("");
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
-  const [sender, setSender] = useState(SENDER_ACCOUNTS[0]);
+  const [senders, setSenders] = useState<string[]>([SENDER_ACCOUNTS[0]]);
   const [creating, setCreating] = useState(false);
   const [templates, setTemplates] = useState<SequenceTemplate[]>([]);
   const [loadingTemplates, setLoadingTemplates] = useState(false);
@@ -162,6 +164,10 @@ function CampaignBuilder({
   const handleCreate = async () => {
     if (!name.trim()) {
       toast.error("Campaign name is required");
+      return;
+    }
+    if (senders.length === 0) {
+      toast.error("Select at least one sender account");
       return;
     }
     setCreating(true);
@@ -255,19 +261,25 @@ function CampaignBuilder({
           </div>
 
           <div className="space-y-1">
-            <Label htmlFor="camp-sender">Sender Account</Label>
-            <select
-              id="camp-sender"
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-              value={sender}
-              onChange={(e) => setSender(e.target.value)}
-            >
+            <Label>Sender Accounts</Label>
+            <div className="flex flex-wrap gap-3">
               {SENDER_ACCOUNTS.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
+                <label key={s} className="flex items-center gap-1.5 text-sm cursor-pointer">
+                  <Checkbox
+                    checked={senders.includes(s)}
+                    onCheckedChange={(checked) =>
+                      setSenders((prev) =>
+                        checked ? [...prev, s] : prev.filter((x) => x !== s)
+                      )
+                    }
+                  />
+                  <span>{s}</span>
+                </label>
               ))}
-            </select>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Select one or more. Emails will be distributed across selected senders.
+            </p>
           </div>
 
           <Button onClick={handleCreate} disabled={creating}>
@@ -277,10 +289,11 @@ function CampaignBuilder({
         </CardContent>
       </Card>
 
-      {/* Existing campaigns */}
+      {/* Existing campaigns — click to edit */}
       <Card>
         <CardHeader>
           <CardTitle>Existing Campaigns</CardTitle>
+          <CardDescription>Click a campaign to edit its template</CardDescription>
         </CardHeader>
         <CardContent>
           {loading ? (
@@ -292,25 +305,148 @@ function CampaignBuilder({
           ) : (
             <div className="space-y-2">
               {campaigns.map((c) => (
-                <div
-                  key={c.id}
-                  className="flex items-center justify-between border rounded px-3 py-2 text-sm"
-                >
-                  <div>
-                    <span className="font-medium">{c.name}</span>
-                    <span className="ml-2">
-                      <StatusBadge status={c.status} />
-                    </span>
-                  </div>
-                  <span className="text-muted-foreground text-xs">
-                    {new Date(c.created_at).toLocaleDateString()}
-                  </span>
-                </div>
+                <CampaignEditRow key={c.id} campaign={c} onRefresh={onRefresh} />
               ))}
             </div>
           )}
         </CardContent>
       </Card>
+    </div>
+  );
+}
+
+/** Inline-editable campaign row */
+function CampaignEditRow({ campaign: c, onRefresh }: { campaign: Campaign; onRefresh: () => void }) {
+  const [expanded, setExpanded] = useState(false);
+  const [editSubject, setEditSubject] = useState(c.template_subject ?? "");
+  const [editBody, setEditBody] = useState(c.template_html ?? "");
+  const [saving, setSaving] = useState(false);
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const { error } = await supabase
+        .from("email_campaigns" as any)
+        .update({
+          template_subject: editSubject || null,
+          template_html: editBody || null,
+        } as any)
+        .eq("id", c.id);
+      if (error) throw error;
+      toast.success("Campaign updated");
+      onRefresh();
+    } catch (err: any) {
+      toast.error(err.message ?? "Failed to save");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleStatusChange = async (newStatus: string) => {
+    setSaving(true);
+    try {
+      const updates: any = { status: newStatus };
+      if (newStatus === "approved") {
+        updates.reviewed_by = "admin";
+        updates.approved_at = new Date().toISOString();
+      }
+      const { error } = await supabase
+        .from("email_campaigns" as any)
+        .update(updates)
+        .eq("id", c.id);
+      if (error) throw error;
+      toast.success(`Campaign status → ${newStatus}`);
+      onRefresh();
+    } catch (err: any) {
+      toast.error(err.message ?? "Failed to update status");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="border rounded">
+      <button
+        className="w-full flex items-center justify-between px-3 py-2 text-sm hover:bg-muted/50 transition-colors"
+        onClick={() => setExpanded(!expanded)}
+      >
+        <div className="flex items-center gap-2">
+          <span className="font-medium">{c.name}</span>
+          <StatusBadge status={c.status} />
+        </div>
+        <span className="text-muted-foreground text-xs">
+          {new Date(c.created_at).toLocaleDateString()} {expanded ? "▲" : "▼"}
+        </span>
+      </button>
+      {expanded && (
+        <div className="px-3 pb-3 space-y-3 border-t pt-3">
+          <div className="space-y-1">
+            <Label className="text-xs">Subject</Label>
+            <Input
+              value={editSubject}
+              onChange={(e) => setEditSubject(e.target.value)}
+              disabled={c.status === "active" || c.status === "complete"}
+            />
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs">Body</Label>
+            <textarea
+              className="w-full min-h-[120px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              value={editBody}
+              onChange={(e) => setEditBody(e.target.value)}
+              disabled={c.status === "active" || c.status === "complete"}
+            />
+          </div>
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <span>Recipients: {c.total_recipients}</span>
+            <span>|</span>
+            <span>Sent: {c.total_sent}</span>
+          </div>
+          <div className="flex gap-2 flex-wrap">
+            {(c.status === "draft" || c.status === "pending_review" || c.status === "approved") && (
+              <Button size="sm" variant="outline" onClick={handleSave} disabled={saving}>
+                {saving && <Loader2 className="mr-1 h-3 w-3 animate-spin" />}
+                Save Changes
+              </Button>
+            )}
+            {c.status === "draft" && (
+              <Button size="sm" variant="secondary" onClick={() => handleStatusChange("pending_review")} disabled={saving}>
+                Submit for Review
+              </Button>
+            )}
+            {c.status === "pending_review" && (
+              <>
+                <Button size="sm" onClick={() => handleStatusChange("approved")} disabled={saving}>
+                  Approve
+                </Button>
+                <Button size="sm" variant="destructive" onClick={() => handleStatusChange("draft")} disabled={saving}>
+                  Reject
+                </Button>
+              </>
+            )}
+            {c.status === "approved" && (
+              <Button size="sm" className="bg-green-600 hover:bg-green-700" onClick={() => handleStatusChange("active")} disabled={saving}>
+                Start Campaign
+              </Button>
+            )}
+            {c.status === "active" && (
+              <Button size="sm" variant="outline" onClick={() => handleStatusChange("paused")} disabled={saving}>
+                Pause
+              </Button>
+            )}
+            {c.status === "paused" && (
+              <>
+                <Button size="sm" variant="outline" onClick={() => handleStatusChange("active")} disabled={saving}>
+                  Resume
+                </Button>
+                <Button size="sm" variant="secondary" onClick={() => handleStatusChange("complete")} disabled={saving}>
+                  Complete
+                </Button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -572,7 +708,7 @@ function CampaignMonitor({
 // ---------------------------------------------------------------------------
 
 export function CampaignManager() {
-  const [tab, setTab] = useState<Tab>("builder");
+  const [tab, setTab] = useState<Tab>("list-maker");
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -597,6 +733,7 @@ export function CampaignManager() {
   }, [fetchCampaigns]);
 
   const tabs: { key: Tab; label: string }[] = [
+    { key: "list-maker", label: "List Maker" },
     { key: "builder", label: "Campaign Builder" },
     { key: "review", label: "Review Queue" },
     { key: "monitor", label: "Campaign Monitor" },
@@ -619,6 +756,7 @@ export function CampaignManager() {
       </div>
 
       {/* Active panel */}
+      {tab === "list-maker" && <ListMaker />}
       {tab === "builder" && (
         <CampaignBuilder campaigns={campaigns} loading={loading} onRefresh={fetchCampaigns} />
       )}
