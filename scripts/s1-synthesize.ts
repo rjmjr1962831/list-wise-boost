@@ -17,7 +17,7 @@ import { resolve } from 'path';
 
 const TAKEAWAYS_DIR = resolve(process.cwd(), 'docs/takeaways');
 const COMPREHENSIVE_PATH = resolve(process.cwd(), 'docs/COMPREHENSIVE_KNOWLEDGE_DOCUMENT.md');
-const TAKEAWAYS_GLOB = /^[A-Z_]+_TAKEAWAYS_\d{4}-\d{2}-\d{2}\.md$/;
+const TAKEAWAYS_GLOB = /^[A-Z_]+_TAKEAWAYS_\d{4}-\d{2}-\d{2}(_\d{4})?\.md$/;
 
 function getTakeawaysFiles(): string[] {
   if (!existsSync(TAKEAWAYS_DIR)) return [];
@@ -29,7 +29,7 @@ function getTakeawaysFiles(): string[] {
 
 function parseTakeawaysFile(filePath: string): { ai: string; date: string; content: string } {
   const content = readFileSync(filePath, 'utf-8');
-  const match = filePath.match(/([A-Z_]+)_TAKEAWAYS_(\d{4}-\d{2}-\d{2})\.md$/);
+  const match = filePath.match(/([A-Z_]+)_TAKEAWAYS_(\d{4}-\d{2}-\d{2})(_\d{4})?\.md$/);
   const ai = match?.[1] ?? 'UNKNOWN';
   const date = match?.[2] ?? '';
   return { ai, date, content };
@@ -58,8 +58,8 @@ function updateComprehensive(synthesis: string): void {
     `**Last consolidated:** ${today}`
   );
 
-  // Remove existing "## 21. Recent Updates" section if present (to end of file)
-  doc = doc.replace(/\n---\n\n## 21\. Recent Updates \(from t1\)[\s\S]*$/, '');
+  // Remove ALL existing "## 21. Recent Updates" sections (may be duplicated from prior bugs)
+  doc = doc.replace(/\n---\s*\n+## 21\. Recent Updates \(from t1\)[\s\S]*$/, '');
 
   // Append new synthesis at end
   doc = doc.trimEnd() + '\n\n---\n\n' + synthesis.trim() + '\n';
