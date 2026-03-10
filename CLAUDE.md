@@ -38,9 +38,9 @@ Payment affects verification depth only — never inclusion or ranking.
 ## Commands
 
 ### ryt
-Fetch the Single Source of Truth (read-only). Uses the GitHub token from `.env` (`GH_TOKEN`):
+Fetch the Single Source of Truth (read-only):
 ```
-curl -s -H "Authorization: token $GH_TOKEN" "https://api.github.com/repos/rjmjr1962831/list-wise-boost/contents/docs/COMPREHENSIVE_KNOWLEDGE_DOCUMENT.md?ref=staging" | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{const j=JSON.parse(d);console.log(Buffer.from(j.content,'base64').toString())})"
+curl -s -H "Authorization: token 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" "https://api.github.com/repos/rjmjr1962831/list-wise-boost/contents/docs/COMPREHENSIVE_KNOWLEDGE_DOCUMENT.md?ref=staging" | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{const j=JSON.parse(d);console.log(Buffer.from(j.content,'base64').toString())})"
 ```
 Run at session start. Do not modify this file.
 
