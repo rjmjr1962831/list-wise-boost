@@ -315,12 +315,50 @@ function CampaignBuilder({
   );
 }
 
-/** Inline-editable campaign row */
+interface QueueEntry {
+  id: string;
+  recipient_email: string;
+  recipient_name: string | null;
+  sender_account: string;
+  subject: string;
+  status: string;
+  sent_at: string | null;
+}
+
+/** Inline-editable campaign row with recipient list management */
 function CampaignEditRow({ campaign: c, onRefresh }: { campaign: Campaign; onRefresh: () => void }) {
   const [expanded, setExpanded] = useState(false);
   const [editSubject, setEditSubject] = useState(c.template_subject ?? "");
   const [editBody, setEditBody] = useState(c.template_html ?? "");
   const [saving, setSaving] = useState(false);
+  const [queue, setQueue] = useState<QueueEntry[]>([]);
+  const [loadingQueue, setLoadingQueue] = useState(false);
+  const [showRecipients, setShowRecipients] = useState(false);
+  const [addEmail, setAddEmail] = useState("");
+  const [addName, setAddName] = useState("");
+  const [addSender, setAddSender] = useState(SENDER_ACCOUNTS[0]);
+  const [removing, setRemoving] = useState<string | null>(null);
+
+  const fetchQueue = useCallback(async () => {
+    setLoadingQueue(true);
+    try {
+      const { data, error } = await supabase
+        .from("email_queue" as any)
+        .select("id, recipient_email, recipient_name, sender_account, subject, status, sent_at")
+        .eq("campaign_id", c.id)
+        .order("created_at", { ascending: true });
+      if (error) throw error;
+      setQueue((data as unknown as QueueEntry[]) ?? []);
+    } catch (err: any) {
+      toast.error("Failed to load recipients: " + (err.message ?? ""));
+    } finally {
+      setLoadingQueue(false);
+    }
+  }, [c.id]);
+
+  useEffect(() => {
+    if (expanded && showRecipients) fetchQueue();
+  }, [expanded, showRecipients, fetchQueue]);
 
   const handleSave = async () => {
     setSaving(true);
@@ -364,6 +402,87 @@ function CampaignEditRow({ campaign: c, onRefresh }: { campaign: Campaign; onRef
     }
   };
 
+  const handleRemoveRecipient = async (queueId: string) => {
+    setRemoving(queueId);
+    try {
+      const { error } = await supabase
+        .from("email_queue" as any)
+        .delete()
+        .eq("id", queueId);
+      if (error) throw error;
+      setQueue((prev) => prev.filter((q) => q.id !== queueId));
+      toast.success("Recipient removed");
+      // Update recipient count
+      const uniqueEmails = new Set(queue.filter((q) => q.id !== queueId).map((q) => q.recipient_email.toLowerCase()));
+      await supabase.from("email_campaigns" as any).update({ total_recipients: uniqueEmails.size } as any).eq("id", c.id);
+      onRefresh();
+    } catch (err: any) {
+      toast.error(err.message ?? "Failed to remove");
+    } finally {
+      setRemoving(null);
+    }
+  };
+
+  const handleAddRecipient = async () => {
+    if (!addEmail.trim()) {
+      toast.error("Email is required");
+      return;
+    }
+    setSaving(true);
+    try {
+      const subjectLine = editSubject || c.template_subject || "No subject";
+      const bodyHtml = editBody || c.template_html || "";
+      const { error } = await supabase.from("email_queue" as any).insert({
+        campaign_id: c.id,
+        recipient_email: addEmail.trim().toLowerCase(),
+        recipient_name: addName.trim() || null,
+        sender_account: addSender,
+        subject: subjectLine,
+        html_body: bodyHtml,
+        status: "approved",
+      } as any);
+      if (error) throw error;
+      toast.success(`Added ${addEmail.trim()}`);
+      setAddEmail("");
+      setAddName("");
+      fetchQueue();
+      // Update recipient count
+      const allEmails = [...queue.map((q) => q.recipient_email.toLowerCase()), addEmail.trim().toLowerCase()];
+      const uniqueEmails = new Set(allEmails);
+      await supabase.from("email_campaigns" as any).update({ total_recipients: uniqueEmails.size } as any).eq("id", c.id);
+      onRefresh();
+    } catch (err: any) {
+      toast.error(err.message ?? "Failed to add recipient");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleClearUnsent = async () => {
+    if (!window.confirm("Remove all unsent emails from this campaign?")) return;
+    setSaving(true);
+    try {
+      const { error } = await supabase
+        .from("email_queue" as any)
+        .delete()
+        .eq("campaign_id", c.id)
+        .in("status", ["pending_review", "approved", "scheduled"]);
+      if (error) throw error;
+      toast.success("Unsent emails cleared");
+      fetchQueue();
+      onRefresh();
+    } catch (err: any) {
+      toast.error(err.message ?? "Failed to clear");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const canEdit = c.status !== "active" && c.status !== "complete";
+  const uniqueRecipients = new Set(queue.map((q) => q.recipient_email.toLowerCase())).size;
+  const pendingCount = queue.filter((q) => ["pending_review", "approved", "scheduled"].includes(q.status)).length;
+  const sentCount = queue.filter((q) => q.status === "sent").length;
+
   return (
     <div className="border rounded">
       <button
@@ -380,12 +499,13 @@ function CampaignEditRow({ campaign: c, onRefresh }: { campaign: Campaign; onRef
       </button>
       {expanded && (
         <div className="px-3 pb-3 space-y-3 border-t pt-3">
+          {/* Template editing */}
           <div className="space-y-1">
             <Label className="text-xs">Subject</Label>
             <Input
               value={editSubject}
               onChange={(e) => setEditSubject(e.target.value)}
-              disabled={c.status === "active" || c.status === "complete"}
+              disabled={!canEdit}
             />
           </div>
           <div className="space-y-1">
@@ -394,21 +514,32 @@ function CampaignEditRow({ campaign: c, onRefresh }: { campaign: Campaign; onRef
               className="w-full min-h-[120px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               value={editBody}
               onChange={(e) => setEditBody(e.target.value)}
-              disabled={c.status === "active" || c.status === "complete"}
+              disabled={!canEdit}
             />
           </div>
+
+          {/* Stats */}
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <span>Recipients: {c.total_recipients}</span>
             <span>|</span>
             <span>Sent: {c.total_sent}</span>
           </div>
+
+          {/* Action buttons */}
           <div className="flex gap-2 flex-wrap">
-            {(c.status === "draft" || c.status === "pending_review" || c.status === "approved") && (
+            {canEdit && (
               <Button size="sm" variant="outline" onClick={handleSave} disabled={saving}>
                 {saving && <Loader2 className="mr-1 h-3 w-3 animate-spin" />}
                 Save Changes
               </Button>
             )}
+            <Button
+              size="sm"
+              variant={showRecipients ? "default" : "outline"}
+              onClick={() => { setShowRecipients(!showRecipients); if (!showRecipients) fetchQueue(); }}
+            >
+              {showRecipients ? "Hide List" : "Manage List"}
+            </Button>
             {c.status === "draft" && (
               <Button size="sm" variant="secondary" onClick={() => handleStatusChange("pending_review")} disabled={saving}>
                 Submit for Review
@@ -445,6 +576,108 @@ function CampaignEditRow({ campaign: c, onRefresh }: { campaign: Campaign; onRef
               </>
             )}
           </div>
+
+          {/* Recipient list management */}
+          {showRecipients && (
+            <div className="border rounded p-3 space-y-3 bg-muted/20">
+              <div className="flex items-center justify-between">
+                <Label className="text-sm font-semibold">
+                  Email List — {uniqueRecipients} recipients, {queue.length} emails ({pendingCount} pending, {sentCount} sent)
+                </Label>
+                {canEdit && pendingCount > 0 && (
+                  <Button size="sm" variant="destructive" onClick={handleClearUnsent} disabled={saving}>
+                    Clear Unsent
+                  </Button>
+                )}
+              </div>
+
+              {/* Add recipient */}
+              {canEdit && (
+                <div className="flex gap-2 items-end flex-wrap">
+                  <div className="space-y-1">
+                    <Label className="text-xs">Email</Label>
+                    <Input
+                      className="w-56 h-8 text-sm"
+                      placeholder="email@example.com"
+                      value={addEmail}
+                      onChange={(e) => setAddEmail(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs">Name (optional)</Label>
+                    <Input
+                      className="w-40 h-8 text-sm"
+                      placeholder="Jane Doe"
+                      value={addName}
+                      onChange={(e) => setAddName(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs">Sender</Label>
+                    <select
+                      className="h-8 rounded-md border border-input bg-background px-2 text-xs"
+                      value={addSender}
+                      onChange={(e) => setAddSender(e.target.value)}
+                    >
+                      {SENDER_ACCOUNTS.map((s) => (
+                        <option key={s} value={s}>{s}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <Button size="sm" className="h-8" onClick={handleAddRecipient} disabled={saving}>
+                    Add
+                  </Button>
+                </div>
+              )}
+
+              {/* Queue table */}
+              {loadingQueue ? (
+                <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                  <Loader2 className="h-4 w-4 animate-spin" /> Loading list...
+                </div>
+              ) : queue.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No emails in queue. Add recipients above or use List Maker to build a list.</p>
+              ) : (
+                <div className="max-h-64 overflow-y-auto">
+                  <table className="w-full text-xs">
+                    <thead className="sticky top-0 bg-muted">
+                      <tr className="text-left">
+                        <th className="px-2 py-1">Recipient</th>
+                        <th className="px-2 py-1">Sender</th>
+                        <th className="px-2 py-1">Status</th>
+                        <th className="px-2 py-1 w-16"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {queue.map((q) => (
+                        <tr key={q.id} className="border-t">
+                          <td className="px-2 py-1">
+                            <span className="font-medium">{q.recipient_email}</span>
+                            {q.recipient_name && <span className="text-muted-foreground ml-1">({q.recipient_name})</span>}
+                          </td>
+                          <td className="px-2 py-1 text-muted-foreground">{q.sender_account}</td>
+                          <td className="px-2 py-1"><StatusBadge status={q.status} /></td>
+                          <td className="px-2 py-1">
+                            {["pending_review", "approved", "scheduled"].includes(q.status) && (
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-6 px-2 text-xs text-destructive hover:text-destructive"
+                                onClick={() => handleRemoveRecipient(q.id)}
+                                disabled={removing === q.id}
+                              >
+                                {removing === q.id ? "..." : "✕"}
+                              </Button>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
     </div>
