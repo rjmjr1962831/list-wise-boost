@@ -5,6 +5,29 @@
     "windowMonths": 24,
     "yearsExperience": 5
   },
+  "pricing": {
+    "listed": 0,
+    "audited": 300,
+    "underwritten": 500
+  },
+  "coverage": {
+    "label": "fewer than 1% of licensed agents in covered markets",
+    "deprecated": ["top 0.5%", "top 0.2%"]
+  },
+  "scoring": {
+    "licenseStatus": 20,
+    "recentActivity": 20,
+    "transactionHistory": 25,
+    "reviewsReputation": 15,
+    "communityInvolvement": 20
+  },
+  "scoringConsumer": {
+    "reviewRating": 25,
+    "community": 25,
+    "numberOfReviews": 20,
+    "transactionHistory": 20,
+    "education": 10
+  },
   "tier1Cities": {
     "arizona": ["phoenix", "tucson", "mesa", "chandler", "gilbert", "glendale", "scottsdale"],
     "california": ["los-angeles", "san-diego", "san-jose", "san-francisco", "fresno", "sacramento", "long-beach", "oakland", "bakersfield", "anaheim", "santa-ana", "riverside", "stockton", "irvine", "chula-vista", "fremont"]
