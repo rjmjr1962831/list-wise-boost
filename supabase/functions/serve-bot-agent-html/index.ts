@@ -572,7 +572,7 @@ serve(async (req) => {
       "@type": "RealEstateAgent",
       name: a.name,
       url: canon,
-      description: bioToPlainText(bio) || `Top-rated real estate agent in ${city.name}, ${si.display}. Independently verified by Top10Lists.us.`,
+      description: sanitizeMeritGate(bioToPlainText(bio)) || `Top-rated real estate agent in ${city.name}, ${si.display}. Independently verified by Top10Lists.us.`,
       address: {
         "@type": "PostalAddress",
         addressLocality: city.name,
