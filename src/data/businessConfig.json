@@ -28,6 +28,12 @@
     "transactionHistory": 20,
     "education": 10
   },
+  "neighborhoods": {
+    "pricing": "free",
+    "verification": "3+ transactions in past 18 months in neighborhood",
+    "pendingLabel": "Audit Pending",
+    "deprecated": ["$25/mo Main", "$50/mo Prime", "$75/mo Luxury", "per-zip pricing tiers"]
+  },
   "tier1Cities": {
     "arizona": ["phoenix", "tucson", "mesa", "chandler", "gilbert", "glendale", "scottsdale"],
     "california": ["los-angeles", "san-diego", "san-jose", "san-francisco", "fresno", "sacramento", "long-beach", "oakland", "bakersfield", "anaheim", "santa-ana", "riverside", "stockton", "irvine", "chula-vista", "fremont"]

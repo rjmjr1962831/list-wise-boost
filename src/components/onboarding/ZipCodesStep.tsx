@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { toast } from 'sonner';
-import { MapPin, DollarSign, Info } from 'lucide-react';
+import { MapPin, Info } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { OnboardingData } from '@/pages/AgentOnboarding';
 import { supabase } from '@/integrations/supabase/client';
@@ -25,26 +25,15 @@ interface CityWithZips {
   zipCodes: Array<{ code: string; tier: number }>;
 }
 
-const ZIP_PRICING: Record<number, number> = {
-  1: 15,
-  2: 30,
-  3: 40,
-  4: 75,
-  5: 100,
-};
+// Neighborhood zip selection is free. Expertise verified via manual audit
+// (3+ transactions in past 18 months). Shows "Audit Pending" until verified.
 
 export function ZipCodesStep({ data, updateData, onNext, onBack }: ZipCodesStepProps) {
   const [citiesWithZips, setCitiesWithZips] = useState<CityWithZips[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [estimatedCost, setEstimatedCost] = useState(0);
-
   useEffect(() => {
     fetchCitiesWithZips();
   }, [data.cities]);
-
-  useEffect(() => {
-    calculateEstimatedCost();
-  }, [data.zipCodes]);
 
   const fetchCitiesWithZips = async () => {
     try {
@@ -80,29 +69,6 @@ export function ZipCodesStep({ data, updateData, onNext, onBack }: ZipCodesStepP
     }
   };
 
-  const calculateEstimatedCost = () => {
-    let total = 0;
-    let isFirstZip = true;
-    
-    Object.entries(data.zipCodes || {}).forEach(([cityId, zips]) => {
-      const city = citiesWithZips.find((c) => c.id === cityId);
-      if (city) {
-        zips.forEach((zipCode) => {
-          const zipInfo = city.zipCodes.find((z) => z.code === zipCode);
-          if (zipInfo) {
-            // First zip is free, subsequent zips are priced by tier
-            if (isFirstZip) {
-              isFirstZip = false;
-            } else {
-              total += ZIP_PRICING[zipInfo.tier] || 15;
-            }
-          }
-        });
-      }
-    });
-    setEstimatedCost(total);
-  };
-
   const toggleZipCode = (cityId: string, zipCode: string) => {
     const currentZips = data.zipCodes || {};
     const cityZips = currentZips[cityId] || [];
@@ -136,12 +102,6 @@ export function ZipCodesStep({ data, updateData, onNext, onBack }: ZipCodesStepP
     }
   };
 
-  const calculateCityTotalCost = (cityId: string): number => {
-    const city = citiesWithZips.find((c) => c.id === cityId);
-    if (!city) return 0;
-    return city.zipCodes.reduce((sum, zip) => sum + (ZIP_PRICING[zip.tier] || 10), 0);
-  };
-
   const handleNext = () => {
     const totalZips = Object.values(data.zipCodes || {}).reduce(
       (sum, zips) => sum + zips.length,
@@ -171,40 +131,13 @@ export function ZipCodesStep({ data, updateData, onNext, onBack }: ZipCodesStepP
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Pricing Information */}
-          <Alert className="bg-primary/5 border-primary/20">
-            <Info className="h-4 w-4 text-primary" />
-            <AlertTitle className="text-primary font-semibold">Pricing Structure</AlertTitle>
-            <AlertDescription className="space-y-2 mt-2">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
-                <div className="flex items-center gap-2">
-                  <Badge variant="secondary" className="bg-green-100 text-green-700 border-green-200">FREE</Badge>
-                  <span>First zip code</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline">Tier 1</Badge>
-                  <span>$15/month per zip</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline">Tier 2</Badge>
-                  <span>$30/month per zip</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline">Tier 3</Badge>
-                  <span>$40/month per zip</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline">Tier 4</Badge>
-                  <span>$75/month per zip</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline">Tier 5</Badge>
-                  <span>$100/month per zip</span>
-                </div>
-              </div>
-              <p className="text-xs text-muted-foreground mt-3 pt-3 border-t">
-                Higher tiers represent zip codes with greater market value and agent competition.
-              </p>
+          {/* Neighborhood Selection Info */}
+          <Alert className="bg-green-50 border-green-200">
+            <Info className="h-4 w-4 text-green-600" />
+            <AlertTitle className="text-green-700 font-semibold">Neighborhood Expert — Free</AlertTitle>
+            <AlertDescription className="space-y-2 mt-2 text-sm text-muted-foreground">
+              <p>Select the zip codes where you have neighborhood expertise. There is no charge for neighborhood placement.</p>
+              <p>Your selections will show as <Badge variant="outline" className="text-xs mx-1">Audit Pending</Badge> until we verify at least 3 transactions in the past 18 months in each neighborhood.</p>
             </AlertDescription>
           </Alert>
 
@@ -246,12 +179,11 @@ export function ZipCodesStep({ data, updateData, onNext, onBack }: ZipCodesStepP
                           onClick={() => selectAllForCity(city.id)}
                           className="w-full"
                         >
-                          All zip codes in this city will cost: ${calculateCityTotalCost(city.id)}/month
+                          Select all zip codes in {city.name}
                         </Button>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                           {city.zipCodes.map((zip) => {
                             const isSelected = data.zipCodes?.[city.id]?.includes(zip.code);
-                            const price = ZIP_PRICING[zip.tier] || 15;
                             return (
                               <div
                                 key={zip.code}
@@ -259,8 +191,8 @@ export function ZipCodesStep({ data, updateData, onNext, onBack }: ZipCodesStepP
                                 className={`
                                   flex items-center justify-between gap-2 p-3 rounded-lg border cursor-pointer
                                   transition-all hover:shadow-md
-                                  ${isSelected 
-                                    ? 'bg-primary/10 border-primary' 
+                                  ${isSelected
+                                    ? 'bg-primary/10 border-primary'
                                     : 'bg-background border-border hover:border-primary/50'
                                   }
                                 `}
@@ -272,16 +204,10 @@ export function ZipCodesStep({ data, updateData, onNext, onBack }: ZipCodesStepP
                                     className="pointer-events-none"
                                   />
                                   <span className="font-mono text-sm">{zip.code}</span>
-                                  <Badge 
-                                    variant="outline" 
-                                    className="text-xs"
-                                  >
-                                    Tier {zip.tier}
-                                  </Badge>
                                 </div>
-                                <span className="text-sm font-semibold text-primary">
-                                  ${price}/mo
-                                </span>
+                                <Badge variant="secondary" className="text-xs bg-green-100 text-green-700 border-green-200">
+                                  Free
+                                </Badge>
                               </div>
                             );
                           })}

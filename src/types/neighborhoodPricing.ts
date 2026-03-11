@@ -3,11 +3,12 @@
 
 export type NeighborhoodTier = 'Main' | 'Prime' | 'Luxury';
 
-// Base tier prices (derived from pricing_configs table)
+// Neighborhood placement is free. Expertise verified via manual audit
+// (3+ transactions in past 18 months). Shows "Audit Pending" until verified.
 export const NEIGHBORHOOD_TIER_PRICES: Record<NeighborhoodTier, number> = {
-  Main: 25,
-  Prime: 50,
-  Luxury: 75
+  Main: 0,
+  Prime: 0,
+  Luxury: 0
 };
 
 // Tier styling configuration

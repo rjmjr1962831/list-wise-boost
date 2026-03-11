@@ -125,6 +125,16 @@ const deprecatedAudits = [
     severity: 'error',
   },
   {
+    label: 'DEPRECATED: neighborhood/zip pricing (neighborhoods are free)',
+    pattern: `\\$\\d+/month per zip|\\$\\d+/mo per zip|per zip.{0,5}\\$\\d+`,
+    severity: 'error',
+  },
+  {
+    label: 'DEPRECATED: neighborhood tier pricing (neighborhoods are free)',
+    pattern: `(Main|Prime|Luxury).{0,10}\\$\\d+.{0,5}(month|/mo)|earlyAdopter.{0,5}[1-9]\\d+|earlyAdopterPrice.{0,5}[1-9]`,
+    severity: 'error',
+  },
+  {
     label: 'DEPRECATED: old merit gate "4.8" as qualification',
     pattern: `4\\.8.{0,10}(qualification|qualif|gate|minimum|merit|require)|(minimum|gate|qualif|merit|require).{0,10}4\\.8`,
     severity: 'error',
