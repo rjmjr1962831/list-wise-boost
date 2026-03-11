@@ -207,6 +207,7 @@ serve(async (req) => {
     const lo  = t.toLowerCase();
     const isHigh   = ["underwritten", "audited", "accredited"].includes(lo);
     const isListed = lo === "listed";
+    const cycle = ac(t);
 
     // Core fields
     const nm    = esc(a.name || "Unknown");
@@ -457,7 +458,6 @@ serve(async (req) => {
     }
 
     // ---- Verification status (certified and above) ----
-    const cycle = ac(t);
     if (!isListed && cycle) {
       o += `<section>\n  <h2>Verification Status</h2>\n`;
       o += `  <p>Status: Active &middot; Last verified: ${TODAY_ISO} &middot; Update frequency: ${cycle} &middot; Certification tier: ${tl(t)}</p>\n`;
@@ -618,3 +618,4 @@ serve(async (req) => {
     });
   }
 });
+
