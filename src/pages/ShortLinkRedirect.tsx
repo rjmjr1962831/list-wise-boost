@@ -15,10 +15,10 @@ const ShortLinkRedirect = () => {
         return;
       }
 
-      // First try current short_code
+      // Short codes are deprecated — look up and redirect to canonical profile link or magic link
       let { data, error: queryError } = await supabase
         .from("professionals")
-        .select("id, verification_token")
+        .select("id, verification_token, profile_link")
         .eq("short_code", shortCode)
         .maybeSingle();
 
@@ -26,10 +26,10 @@ const ShortLinkRedirect = () => {
       if (!data && !queryError) {
         const { data: historyData, error: historyError } = await supabase
           .from("professionals")
-          .select("id, verification_token")
+          .select("id, verification_token, profile_link")
           .contains("previous_short_codes", [shortCode])
           .maybeSingle();
-        
+
         if (!historyError && historyData) {
           data = historyData;
         }
@@ -40,9 +40,19 @@ const ShortLinkRedirect = () => {
         return;
       }
 
-      // Redirect to profile page with verification token
-      const token = data.verification_token || data.id;
-      navigate(`/profile/${token}`, { replace: true });
+      // Redirect to canonical profile link if available, otherwise magic link
+      if (data.profile_link) {
+        // profile_link is a full URL — extract the path
+        try {
+          const url = new URL(data.profile_link);
+          navigate(url.pathname, { replace: true });
+        } catch {
+          navigate(`/dashboard/${data.verification_token || data.id}`, { replace: true });
+        }
+      } else {
+        const token = data.verification_token || data.id;
+        navigate(`/dashboard/${token}`, { replace: true });
+      }
     };
 
     lookupAndRedirect();
