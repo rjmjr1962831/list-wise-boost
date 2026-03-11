@@ -12,8 +12,8 @@ export interface CityPricingData {
   citySlug: string;
   region: Region;
   tier: PricingTier;
-  retailPrice: 0number;
-  earlyAdopterPrice: 0number;
+  retailPrice: number;
+  earlyAdopterPrice: number;
   spotsRemaining: number;
   isPremium: boolean;
   medianHomePrice?: number;
