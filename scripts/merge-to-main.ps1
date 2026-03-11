@@ -111,6 +111,27 @@ function Merge-StagingToMain {
             }
         }
 
+        # Ping IndexNow so search engines re-crawl key pages
+        if (Test-Path $envPath) {
+            $srkLine = Get-Content $envPath | Select-String '^SUPABASE_SERVICE_ROLE_KEY='
+            if ($srkLine) {
+                $srk = $srkLine.ToString().Split('=', 2)[1].Trim()
+                Write-Host ""
+                Write-Host "Pinging IndexNow..."
+                try {
+                    $resp = Invoke-RestMethod -Uri "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/push-indexnow" `
+                        -Method Post `
+                        -Headers @{ "Authorization" = "Bearer $srk"; "apikey" = $srk } `
+                        -ContentType "application/json" `
+                        -Body "{}" `
+                        -ErrorAction Stop
+                    Write-Host "IndexNow pinged: $($resp.urlsSubmitted) URLs submitted."
+                } catch {
+                    Write-Warning "IndexNow ping failed (non-fatal): $_"
+                }
+            }
+        }
+
         Write-Host ""
         Write-Host "Done. Main has been updated. Internal documents remain on staging only."
         Write-Host "To continue work on staging: git checkout staging"
