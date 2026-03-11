@@ -77,7 +77,7 @@ AI-facing pages (transparency, FAQ, for-ai, methodology) serve clean room HTML v
 
 ## 21. Recent Updates (from t1)
 
-*Last synthesized: 2026-03-10*
+*Last synthesized: 2026-03-11*
 
 ---
 
@@ -122,6 +122,111 @@ AI-facing pages (transparency, FAQ, for-ai, methodology) serve clean room HTML v
 - Certified option removed from `Step7Pricing.tsx` tier list
 - `DEFAULT_PRICES` in `Step7Pricing.tsx`: certified entry removed; audited 300, underwritten 500
 - Four-tier model language replaced with three-tier acquisition model in all marketing/FAQ copy
+
+---
+
+### CLAUDE — 2026-03-11
+
+# Claude Code Takeaways — 2026-03-11
+
+## Key Outcomes
+- Built and deployed GEO-aware `site-health-check` edge function that validates all 3,300+ pages for content quality, not just availability
+- Eliminated all deprecated language across production: "top 0.5%" replaced with "fewer than 1% of licensed agents in covered markets" in 39+ public HTML files, mcp.json, ai-feed markdown, serve-bot-agent-html, and CleanRoom.tsx
+- Fixed old tier pricing ($100/$150 → $300/$500) in mcp.json, .well-known/ai-content-index.json, generate-ai-feed.ts, and ranking-methodology page
+- Production health check: 602 errors → 0 real errors (3 transient cold-start 404s)
+- Deactivated 3 test records (Robert Maynard Test x2, Robert Aryah) with corrupted canonical slugs (e.g., `obert-est-0000` missing first letter)
+- `sanitizeMeritGate()` in serve-bot-agent-html now catches "top 0.5%/0.2%" in bios and JSON-LD schema descriptions from DB data
+- Vercel CDN cache purge must run after ptm — the merge-to-main script handles it, but if ptm aborts mid-merge (e.g., conflict), the purge is skipped
+
+## Config / Infrastructure
+- `site-health-check` edge function deployed to Supabase (wiotrvoirdgzfacuuiem)
+- Health check uses canonical `/:state/agents/:slug` URLs (clean room HTML via serve-bot-agent-html) instead of SPA profile_link URLs
+- Health check streams 16KB for HTML, 64KB for JSON to avoid OOM; handles truncated JSON gracefully
+- Health check saves results to `site_health_checks` table in Supabase
+- `archives/` added to .gitignore
+
+## New Rules or Docs
+- Coverage language: ALWAYS use "fewer than 1% of licensed agents in covered markets" — never "top 0.5%", "top 0.2%", or any specific sub-1% figure
+- Tier pricing: Audited = $300/mo, Underwritten = $500/mo (old $100/$150 fully purged)
+- Audited audit cycle: "Every Two Weeks" (was incorrectly "Monthly" in mcp.json)
+- `sanitizeMeritGate()` is the canonical function for cleaning deprecated merit gate language from DB content; it must be applied to ALL rendered text including JSON-LD schema fields
+- Agent profile_link URLs (`/:state/:city/top10realestateagents/:slug`) serve SPA shells — canonical clean room URL is `/:state/agents/:canonical_slug`
+- When ptm fails mid-merge, manually run: resolve conflict, commit, push main, `npx vercel cache purge --yes --token $VERCEL_TOKEN`, then `git checkout staging`
+
+## New Functions / Scripts
+- `supabase/functions/site-health-check/index.ts` — GEO audit of all active pages:
+  - Checks key pages, AI feeds, sitemaps, all agent profiles (paginated)
+  - Validates: deprecated language, merit gate signals, EE-A-T signals, JSON-LD schema, SPA shell detection, content presence, timing distribution
+  - Reports: p50/p95/p99 timing, top 20 slowest, deprecated language instances, error/warning breakdown
+  - Concurrency: 20 parallel requests
+
+## Deprecated or Removed
+- "top 0.5%" language — fully eliminated from all source files and production
+- Old tier pricing ($100/mo Audited, $150/mo Underwritten) — fully eliminated
+- 3 test records deactivated: Robert Maynard Test (obert-est-0000, obert-est-0000-504bd0a1), Robert Aryah (obert-ryah-0000)
+- `QUALIFICATION_THRESHOLD_PERCENT` constant changed from 0.5 to 1 in arizonaCityPricing.ts (unused but corrected)
+
+---
+
+### CLAUDE — 2026-03-10
+
+# Claude Code Takeaways — 2026-03-10
+
+## Key Outcomes
+- Rebuilt `geo-footprint-audit` edge function: replaced GPT/OpenAI with own data + website crawling + DeepSeek for AI perception queries and merge field generation
+- DeepSeek used for 3 calls per agent: named query, unpromoted query, merge field generation (subject_line, opening, action_items, diy_plan)
+- Enforced honest signal-strength framing in email copy — no guarantees about AI naming agents
+- Removed LinkedIn from gap detection — can't reliably verify without Apify enrichment (LinkedIn blocks all direct crawling)
+- Identified Apify LinkedIn actor (~$0.003/profile) as solution for LinkedIn data enrichment; not yet wired in
+- Identified company data quality issue: memo23/Zillow data had wrong company for David Crozier (said Russ Lyon Sotheby's, actually Coldwell Banker for 17 years per LinkedIn)
+- Smoke test completed: 20/20 emails sent via sequencer-v2-tick cron
+- Fixed `list-maker-export` edge function: was not deployed (404), deployed it and created missing `list-maker-exports` storage bucket
+- Fixed pagination bug in `list-maker-export`: `queryStandard` was hitting Supabase 1,000-row default cap; added proper pagination with `.range()` loop — now returns full result set (3,298 active agents)
+
+## Config / Infrastructure
+- Created `list-maker-exports` public storage bucket on Supabase for CSV download URLs
+- Deployed `run-ddl` edge function for executing DDL via `SUPABASE_DB_URL` (internal to edge functions)
+- Applied migration `20260310120000_geo_audit_crawl_columns.sql` via run-ddl: added columns to geo_audit_results for website crawl results, schema detection, Google Business/Homes.com gaps, email_body, gaps_found jsonb
+
+## New Rules or Docs
+- Supabase pagination rule confirmed critical: any query returning exactly 1,000 rows must be paginated
+- Email merge fields are plain text/HTML for Smartleads template system — function generates content blocks, Smartleads handles HTML rendering
+
+## New Functions / Scripts
+- `supabase/functions/geo-footprint-audit/index.ts` — complete rewrite (~720 lines): data+crawl+DeepSeek approach with 12-step pipeline, AICS scoring, website JSON-LD schema detection, AI perception Q&A, Smartleads merge field generation
+- `supabase/functions/run-ddl/index.ts` — utility for DDL execution from edge function (uses internal SUPABASE_DB_URL)
+- `supabase/functions/list-maker-export/index.ts` — fixed pagination in queryStandard, deployed, storage bucket created
+
+## Deprecated or Removed
+- GPT/OpenAI dependency removed from geo-footprint-audit (replaced by DeepSeek for AI perception + merge fields, own data + crawling for discovery)
+- LinkedIn gap detection temporarily removed until Apify enrichment is wired in
+
+---
+
+### CLAUDE — 2026-03-10
+
+# Claude Code Takeaways — 2026-03-10
+
+## Key Outcomes
+- Attempted to build `find-linkedin-url` edge function for enriching professional records with LinkedIn profile URLs
+- Exa.ai search rejected by Robert as unreliable/hallucinating LinkedIn URLs
+- Switched to Google Custom Search (CSE) API — deployed but hitting persistent 403 "project does not have access to Custom Search JSON API" despite API showing enabled in console
+- Google CSE approach currently blocked; function deployed but non-functional
+- LinkedIn URL enrichment is needed for CRM/campaign builder list maker exports, not as a standalone search feature
+
+## Config / Infrastructure
+- `GOOGLE_CSE_API_KEY` — added as Supabase secret (AIzaSyBTN1iR5Sk-fKBNfdqvSsPRSMdj7qAqgqA)
+- `GOOGLE_CSE_CX` — added as Supabase secret (935b179d3ad4c4951)
+- Google CSE API returns 403 despite being "enabled" in Google Cloud Console — likely a project-level API activation issue on Google's side
+
+## New Rules or Docs
+- (none this session)
+
+## New Functions / Scripts
+- `supabase/functions/find-linkedin-url/index.ts` — Google CSE-based LinkedIn URL lookup (single + batch mode, optional save to professionals.social_linkedin). Deployed but blocked by Google API 403.
+
+## Deprecated or Removed
+- Exa.ai approach for LinkedIn URL lookup — rejected as unreliable
 
 ---
 
