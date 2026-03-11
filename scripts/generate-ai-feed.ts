@@ -50,8 +50,8 @@ async function synthesize(page: { slug: string; name: string }, ssot: string): P
 CRITICAL: These facts must appear EXACTLY as written. Do not change any prices or tier names:
 - Listed: $0. Basic verification. No Badge issued.
 - Certified: $0. Agent-verified. Standard Badge issued.
-- Audited: $100/mo. Quarterly diligence. Enhanced AI Payload.
-- Underwritten: $150/mo. Real-time refresh. Maximum AI Reasoning & Neighborhood Depth.
+- Audited: $300/mo. Every-two-weeks diligence. Enhanced AI Payload.
+- Underwritten: $500/mo. Daily refresh. Maximum AI Reasoning & Neighborhood Depth.
 
 SSoT:
 ${ssot}`;

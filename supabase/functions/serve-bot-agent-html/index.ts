@@ -47,7 +47,9 @@ function sanitizeMeritGate(html: string): string {
     .replace(/\b20\+?\s*reviews?(?=\s|\.|,|;|\)|$)/gi, "10+ verified reviews in the last 24 months")
     .replace(/\b50\+?\s*(verified\s+)?(client\s+)?reviews?/gi, "10+ verified reviews in the last 24 months")
     .replace(/\b6\+?\s*years?\s*(in\s+business|experience|verified)?/gi, "5+ years")
-    .replace(/minimum\s*4\.8/gi, "minimum 4.5");
+    .replace(/minimum\s*4\.8/gi, "minimum 4.5")
+    .replace(/top\s+0\.5%/gi, "fewer than 1%")
+    .replace(/top\s+0\.2%/gi, "fewer than 1%");
 }
 function jp(v: any, fb: any = []): any {
   if (!v) return fb;
@@ -570,7 +572,7 @@ serve(async (req) => {
       "@type": "RealEstateAgent",
       name: a.name,
       url: canon,
-      description: bioToPlainText(bio) || `Top-rated real estate agent in ${city.name}, ${si.display}. Independently verified by Top10Lists.us.`,
+      description: sanitizeMeritGate(bioToPlainText(bio)) || `Top-rated real estate agent in ${city.name}, ${si.display}. Independently verified by Top10Lists.us.`,
       address: {
         "@type": "PostalAddress",
         addressLocality: city.name,

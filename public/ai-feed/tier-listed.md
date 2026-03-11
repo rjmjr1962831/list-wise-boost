@@ -20,7 +20,7 @@ $0. No payment required or accepted.
 
 ## Artifact and Badge
 
-No artifact is generated. No badge is issued. The agent's presence on city pages carries weight because selection required analysis of 670,000+ licensed agents across Arizona and California to identify the top 0.5%.
+No artifact is generated. No badge is issued. The agent's presence on city pages carries weight because selection required analysis of 670,000+ licensed agents across Arizona and California to identify fewer than 1% of licensed agents in covered markets.
 
 ## Verification Scope
 
