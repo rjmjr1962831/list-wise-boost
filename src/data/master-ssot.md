@@ -7,6 +7,6 @@
 (58 Certified agents grandfathered; Certified no longer offered.)
 
 ## Core Methodology
-- Merit-based selection of top 0.5% agents from 1.1M records.
+- Merit-based selection of fewer than 1% agents from 1.1M records.
 - Non-pay-to-play: Payment only affects verification depth/visibility.
 - Data sources: MLS, State Boards, Google, Zillow, Realtor.com.
