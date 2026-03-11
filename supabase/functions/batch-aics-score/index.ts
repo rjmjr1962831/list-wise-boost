@@ -105,7 +105,7 @@ serve(async (req) => {
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
     const body = await req.json();
-    const batchSize  = Math.min(body.batch_size  || 40, 60);
+    const batchSize  = Math.min(body.batch_size  || 100, 200);
     const stateFilter = body.state_slug || null;  // optional: 'arizona' | 'california'
 
     // ── 1. Find agents needing scoring via SQL (no pagination bugs) ──
@@ -156,173 +156,170 @@ serve(async (req) => {
       }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
-    // ── 2. Process each agent ─────────────────────────────────────────────────
+    // ── 2. Process agents concurrently (20 at a time) ────────────────────────
     const processed: any[] = [];
     const failed: any[]    = [];
+    const CONCURRENCY = 100;
 
-    for (const agent of agents) {
-      try {
-        const salesStats   = (agent.agent_sales_stats as Record<string, number>) || {};
-        const salesLast12  = salesStats.countLast12Months || 0;
-        const totalSales   = salesStats.countAllTime || agent.total_sales || 0;
+    async function processAgent(agent: any) {
+      const salesStats   = (agent.agent_sales_stats as Record<string, number>) || {};
+      const salesLast12  = salesStats.countLast12Months || 0;
+      const totalSales   = salesStats.countAllTime || agent.total_sales || 0;
 
-        // Best review date
-        let mostRecentDate: string | null = agent.most_recent_review_date;
-        if (!mostRecentDate) {
-          const pi      = (agent.professional_information as Record<string, any>) || {};
-          const reviews = (pi.recentReviews || []) as Array<Record<string, string>>;
-          const sorted  = reviews.filter((r: any) => r.date).sort((a: any, b: any) =>
-            new Date(b.date).getTime() - new Date(a.date).getTime());
-          if (sorted.length > 0) mostRecentDate = sorted[0].date;
+      let mostRecentDate: string | null = agent.most_recent_review_date;
+      if (!mostRecentDate) {
+        const pi      = (agent.professional_information as Record<string, any>) || {};
+        const reviews = (pi.recentReviews || []) as Array<Record<string, string>>;
+        const sorted  = reviews.filter((r: any) => r.date).sort((a: any, b: any) =>
+          new Date(b.date).getTime() - new Date(a.date).getTime());
+        if (sorted.length > 0) mostRecentDate = sorted[0].date;
+      }
+
+      const recency      = recencyScore(mostRecentDate);
+      const stateLabel   = agent.state_slug === 'california' ? 'California' : 'Arizona';
+      const websiteReal  = !!(agent.website && !agent.website.includes('zillow') &&
+                              !agent.website.includes('realtor.com') && agent.website.startsWith('http'));
+
+      const exaSources   = await exaSearch(agent.name, stateLabel, agent.company || '', EXA_API_KEY);
+      const sl           = exaSources.map((s: string) => s.toLowerCase());
+
+      const hasZillow    = sl.some((s: string) => s.includes('zillow'));
+      const hasRealtor   = sl.some((s: string) => s.includes('realtor.com'));
+      const hasLinkedin  = sl.some((s: string) => s.includes('linkedin'));
+      const hasFacebook  = sl.some((s: string) => s.includes('facebook'));
+      const hasHomelight = sl.some((s: string) => s.includes('homelight'));
+      const hasTop10     = sl.some((s: string) => s.includes('top10lists'));
+      let hasPersonalSite = false;
+      if (websiteReal) {
+        try {
+          const domain = new URL(agent.website).hostname.replace('www.', '');
+          hasPersonalSite = sl.some((s: string) => s.includes(domain));
+        } catch { /* ignore */ }
+      }
+      const pressMentions = sl.filter((s: string) =>
+        !['zillow','realtor','linkedin','facebook','homelight','top10lists','google'].some((x: string) => s.includes(x))
+      ).length;
+
+      let tierRec = recency;
+      if (agent.current_tier === 'underwritten') tierRec = 10;
+      else if (agent.current_tier === 'audited')  tierRec = 8;
+      else if (agent.current_tier === 'certified') tierRec = 3;
+
+      const sig = {
+        name:                agent.name,
+        license_number:      agent.license_number,
+        company:             agent.company,
+        years_experience:    agent.years_experience || 0,
+        total_sales:         totalSales,
+        sales_last_12mo:     salesLast12,
+        review_stars_rating: agent.review_stars_rating || 0,
+        num_total_reviews:   agent.num_total_reviews || 0,
+        description:         agent.description || '',
+        recencyScore:        recency,
+        hasPersonalSite,
+        websiteCrawlable:    hasPersonalSite,
+        hasSchemaMarkup:     false,
+        hasLinkedin,
+        hasFacebook,
+        hasRealtor,
+        hasHomelight,
+        hasGoogleBusiness:   false,
+        exaSourceCount:      Math.min(5, exaSources.length),
+        pressMentions,
+      };
+
+      const scores = {
+        unlisted:     computeScore(sig, recency, false, 0),
+        listed:       computeScore(sig, 2, true, 0),
+        certified:    computeScore(sig, 3, true, 0),
+        audited:      computeScore(sig, 8, true, 8),
+        underwritten: computeScore(sig, 10, true, 14),
+      };
+
+      const failures: string[] = [];
+      if ((agent.review_stars_rating || 0) < 4.5) failures.push(`Stars: ${agent.review_stars_rating} (need 4.5+)`);
+      if ((agent.num_total_reviews   || 0) < 10)  failures.push(`Reviews: ${agent.num_total_reviews} (need 10+)`);
+      if ((agent.years_experience    || 0) < 5)   failures.push(`Years: ${agent.years_experience} (need 5+)`);
+
+      const hasPress = sl.filter((s: string) =>
+        !['zillow','realtor','linkedin','facebook','homelight','top10lists','google'].some((x: string) => s.includes(x))
+      ).length > 0;
+
+      await supabase.from('geo_audit_results').upsert({
+        agent_id:              agent.id,
+        full_name:             agent.name,
+        brokerage:             agent.company,
+        state_slug:            agent.state_slug || null,
+        current_tier:          agent.current_tier || null,
+        artifact_url:          agent.short_code ? `https://www.top10lists.us/artifact/${agent.short_code}` : null,
+        audited_at:            new Date().toISOString(),
+        status:                'complete',
+        aics_version:          'v1',
+        score_current:         scores.unlisted.total,
+        score_unlisted:        scores.unlisted.total,
+        score_listed:          scores.listed.total,
+        score_certified:       scores.certified.total,
+        score_audited:         scores.audited.total,
+        score_underwritten:    scores.underwritten.total,
+        score_lift_to_audited:       scores.audited.total - scores.unlisted.total,
+        score_lift_to_underwritten:  scores.underwritten.total - scores.unlisted.total,
+        pillar_identity:       scores.unlisted.identity,
+        pillar_authority:      scores.unlisted.authority,
+        pillar_social:         scores.unlisted.social,
+        pillar_technical:      scores.unlisted.tech,
+        pillar_citability:     scores.unlisted.citable,
+        recency_score:         recency,
+        recency_label:         recency === 0 ? 'stale/no signal' : `${recency}/10`,
+        most_recent_signal:    mostRecentDate,
+        review_count:          agent.num_total_reviews,
+        review_rating:         agent.review_stars_rating,
+        exa_sources:           exaSources,
+        exa_source_count:      exaSources.length,
+        platforms_found:       exaSources,
+        has_zillow:            sl.some((s: string) => s.includes('zillow')),
+        has_realtor:           hasRealtor,
+        has_linkedin:          hasLinkedin,
+        has_facebook:          hasFacebook,
+        has_homelight:         hasHomelight,
+        has_top10:             hasTop10,
+        has_personal_site:     hasPersonalSite,
+        gap_stale_reviews:     recency < 4,
+        gap_no_linkedin:       !hasLinkedin,
+        gap_no_schema:         true,
+        gap_no_realtor:        !hasRealtor,
+        gap_no_homelight:      !hasHomelight,
+        gap_no_press:          !hasPress,
+        gap_no_personal_site:  !hasPersonalSite,
+        merit_gate_pass:       failures.length === 0,
+        merit_gate_failures:   failures,
+        updated_at:            new Date().toISOString(),
+      }, { onConflict: 'agent_id' });
+
+      return {
+        id:    agent.id,
+        name:  agent.name,
+        tier:  agent.current_tier,
+        state: agent.state_slug,
+        score_unlisted: scores.unlisted.total,
+        score_audited:  scores.audited.total,
+        exa_count:      exaSources.length,
+        band:           band(scores.unlisted.total),
+      };
+    }
+
+    // Run in chunks of CONCURRENCY
+    for (let i = 0; i < agents.length; i += CONCURRENCY) {
+      const chunk = agents.slice(i, i + CONCURRENCY);
+      const results = await Promise.allSettled(chunk.map(a => processAgent(a)));
+      for (let j = 0; j < results.length; j++) {
+        const r = results[j];
+        if (r.status === 'fulfilled') {
+          processed.push(r.value);
+        } else {
+          const msg = r.reason instanceof Error ? r.reason.message : 'unknown';
+          failed.push({ id: chunk[j].id, name: chunk[j].name, error: msg });
+          console.error(`Failed ${chunk[j].name}: ${msg}`);
         }
-
-        const recency      = recencyScore(mostRecentDate);
-        const stateLabel   = agent.state_slug === 'california' ? 'California' : 'Arizona';
-        const websiteReal  = !!(agent.website && !agent.website.includes('zillow') &&
-                                !agent.website.includes('realtor.com') && agent.website.startsWith('http'));
-
-        // Exa URL-only search
-        const exaSources   = await exaSearch(agent.name, stateLabel, agent.company || '', EXA_API_KEY);
-        const sl           = exaSources.map((s: string) => s.toLowerCase());
-
-        const hasZillow    = sl.some((s: string) => s.includes('zillow'));
-        const hasRealtor   = sl.some((s: string) => s.includes('realtor.com'));
-        const hasLinkedin  = sl.some((s: string) => s.includes('linkedin'));
-        const hasFacebook  = sl.some((s: string) => s.includes('facebook'));
-        const hasHomelight = sl.some((s: string) => s.includes('homelight'));
-        const hasTop10     = sl.some((s: string) => s.includes('top10lists'));
-        let hasPersonalSite = false;
-        if (websiteReal) {
-          try {
-            const domain = new URL(agent.website).hostname.replace('www.', '');
-            hasPersonalSite = sl.some((s: string) => s.includes(domain));
-          } catch { /* ignore */ }
-        }
-        const pressMentions = sl.filter((s: string) =>
-          !['zillow','realtor','linkedin','facebook','homelight','top10lists','google'].some((x: string) => s.includes(x))
-        ).length;
-
-        // Determine tier recency
-        let tierRec = recency;  // default: use actual organic recency for unlisted
-        if (agent.current_tier === 'underwritten') tierRec = 10;
-        else if (agent.current_tier === 'audited')  tierRec = 8;
-        else if (agent.current_tier === 'certified') tierRec = 3;
-
-        const sig = {
-          name:                agent.name,
-          license_number:      agent.license_number,
-          company:             agent.company,
-          years_experience:    agent.years_experience || 0,
-          total_sales:         totalSales,
-          sales_last_12mo:     salesLast12,
-          review_stars_rating: agent.review_stars_rating || 0,
-          num_total_reviews:   agent.num_total_reviews || 0,
-          description:         agent.description || '',
-          recencyScore:        recency,
-          hasPersonalSite,
-          websiteCrawlable:    hasPersonalSite,
-          hasSchemaMarkup:     false,
-          hasLinkedin,
-          hasFacebook,
-          hasRealtor,
-          hasHomelight,
-          hasGoogleBusiness:   false,
-          exaSourceCount:      Math.min(5, exaSources.length),
-          pressMentions,
-        };
-
-        // Tier bonuses
-        const tierBonus = agent.current_tier === 'underwritten' ? 14 :
-                          agent.current_tier === 'audited' ? 8 : 0;
-
-        const scores = {
-          unlisted:     computeScore(sig, recency, false, 0),
-          listed:       computeScore(sig, 2, true, 0),
-          certified:    computeScore(sig, 3, true, 0),
-          audited:      computeScore(sig, 8, true, 8),
-          underwritten: computeScore(sig, 10, true, 14),
-        };
-
-        // Merit gate check
-        const failures: string[] = [];
-        if ((agent.review_stars_rating || 0) < 4.5) failures.push(`Stars: ${agent.review_stars_rating} (need 4.5+)`);
-        if ((agent.num_total_reviews   || 0) < 10)  failures.push(`Reviews: ${agent.num_total_reviews} (need 10+)`);
-        if ((agent.years_experience    || 0) < 5)   failures.push(`Years: ${agent.years_experience} (need 5+)`);
-
-        // Upsert to geo_audit_results
-        // Derive platform booleans from Exa URLs
-        const hasPress = sl.filter((s: string) =>
-          !['zillow','realtor','linkedin','facebook','homelight','top10lists','google'].some((x: string) => s.includes(x))
-        ).length > 0;
-
-        await supabase.from('geo_audit_results').upsert({
-          agent_id:              agent.id,
-          full_name:             agent.name,
-          brokerage:             agent.company,
-          state_slug:            agent.state_slug || null,
-          current_tier:          agent.current_tier || null,
-          artifact_url:          agent.short_code ? `https://www.top10lists.us/artifact/${agent.short_code}` : null,
-          audited_at:            new Date().toISOString(),
-          status:                'complete',
-          aics_version:          'v1',
-          score_current:         scores.unlisted.total,
-          score_unlisted:        scores.unlisted.total,
-          score_listed:          scores.listed.total,
-          score_certified:       scores.certified.total,
-          score_audited:         scores.audited.total,
-          score_underwritten:    scores.underwritten.total,
-          score_lift_to_audited:       scores.audited.total - scores.unlisted.total,
-          score_lift_to_underwritten:  scores.underwritten.total - scores.unlisted.total,
-          pillar_identity:       scores.unlisted.identity,
-          pillar_authority:      scores.unlisted.authority,
-          pillar_social:         scores.unlisted.social,
-          pillar_technical:      scores.unlisted.tech,
-          pillar_citability:     scores.unlisted.citable,
-          recency_score:         recency,
-          recency_label:         recency === 0 ? 'stale/no signal' : `${recency}/10`,
-          most_recent_signal:    mostRecentDate,
-          review_count:          agent.num_total_reviews,
-          review_rating:         agent.review_stars_rating,
-          exa_sources:           exaSources,
-          exa_source_count:      exaSources.length,
-          platforms_found:       exaSources,
-          // Platform presence
-          has_zillow:            sl.some((s: string) => s.includes('zillow')),
-          has_realtor:           hasRealtor,
-          has_linkedin:          hasLinkedin,
-          has_facebook:          hasFacebook,
-          has_homelight:         hasHomelight,
-          has_top10:             hasTop10,
-          has_personal_site:     hasPersonalSite,
-          // Gap flags (true = action needed)
-          gap_stale_reviews:     recency < 4,
-          gap_no_linkedin:       !hasLinkedin,
-          gap_no_schema:         true,   // always true -- we cannot verify schema from URL-only Exa
-          gap_no_realtor:        !hasRealtor,
-          gap_no_homelight:      !hasHomelight,
-          gap_no_press:          !hasPress,
-          gap_no_personal_site:  !hasPersonalSite,
-          // Merit gate
-          merit_gate_pass:       failures.length === 0,
-          merit_gate_failures:   failures,
-          updated_at:            new Date().toISOString(),
-        }, { onConflict: 'agent_id' });
-
-        processed.push({
-          id:    agent.id,
-          name:  agent.name,
-          tier:  agent.current_tier,
-          state: agent.state_slug,
-          score_unlisted: scores.unlisted.total,
-          score_audited:  scores.audited.total,
-          exa_count:      exaSources.length,
-          band:           band(scores.unlisted.total),
-        });
-
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : 'unknown';
-        failed.push({ id: agent.id, name: agent.name, error: msg });
-        console.error(`Failed ${agent.name}: ${msg}`);
       }
     }
 

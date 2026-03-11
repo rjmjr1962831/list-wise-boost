@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { Loader2, Download, RefreshCw } from "lucide-react";
+import { Loader2, Download, RefreshCw, Users, Save, Trash2 } from "lucide-react";
 
 export interface ListMakerCriteria {
   active?: boolean | "all"; // true=active only, false=inactive only, "all"=both
@@ -19,6 +19,28 @@ export interface ListMakerCriteria {
   min_rating?: number;
   email_verified?: boolean;
   has_license?: boolean;
+}
+
+export interface SavedListTemplate {
+  id: string;
+  name: string;
+  criteria: ListMakerCriteria;
+  savedAt: string;
+}
+
+const SAVED_LISTS_KEY = "top10-saved-list-templates";
+
+export function getSavedListTemplates(): SavedListTemplate[] {
+  try {
+    const raw = localStorage.getItem(SAVED_LISTS_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveLists(lists: SavedListTemplate[]) {
+  localStorage.setItem(SAVED_LISTS_KEY, JSON.stringify(lists));
 }
 
 const OUTPUT_FIELDS: { key: string; label: string }[] = [
@@ -77,6 +99,21 @@ const TIERS = [
   { value: "underwritten", label: "Underwritten" },
 ];
 
+const SENDER_ACCOUNTS = [
+  "hello@toptenlists.us",
+  "robert@toptenlists.us",
+  "hello@top10lists.us",
+  "robert@top10lists.us",
+];
+
+interface CampaignOption {
+  id: string;
+  name: string;
+  status: string;
+  template_subject: string | null;
+  template_html: string | null;
+}
+
 export function ListMaker() {
   const [criteria, setCriteria] = useState<ListMakerCriteria>({
     active: true,
@@ -90,6 +127,20 @@ export function ListMaker() {
   const [count, setCount] = useState<number | null>(null);
   const [loadingCount, setLoadingCount] = useState(false);
   const [exporting, setExporting] = useState(false);
+
+  // Add to Campaign state
+  const [showCampaignPanel, setShowCampaignPanel] = useState(false);
+  const [campaignOptions, setCampaignOptions] = useState<CampaignOption[]>([]);
+  const [loadingCampaigns, setLoadingCampaigns] = useState(false);
+  const [selectedCampaignId, setSelectedCampaignId] = useState<string>("");
+  const [newCampaignName, setNewCampaignName] = useState("");
+  const [campaignSenders, setCampaignSenders] = useState<string[]>([SENDER_ACCOUNTS[0]]);
+  const [addingToCampaign, setAddingToCampaign] = useState(false);
+
+  // Saved list templates
+  const [savedLists, setSavedLists] = useState<SavedListTemplate[]>(getSavedListTemplates);
+  const [saveListName, setSaveListName] = useState("");
+  const [showSaveInput, setShowSaveInput] = useState(false);
 
   const buildQuery = useCallback(() => {
     let q = supabase.from("professionals").select("id", { count: "exact", head: true });
@@ -128,6 +179,183 @@ export function ListMaker() {
   const handleRefine = () => {
     fetchCount();
     toast.info("Refined criteria; count updated.");
+  };
+
+  const handleSaveList = () => {
+    if (!saveListName.trim()) {
+      toast.error("Enter a name for this list");
+      return;
+    }
+    const template: SavedListTemplate = {
+      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+      name: saveListName.trim(),
+      criteria: { ...criteria },
+      savedAt: new Date().toISOString(),
+    };
+    const updated = [template, ...savedLists];
+    saveLists(updated);
+    setSavedLists(updated);
+    setSaveListName("");
+    setShowSaveInput(false);
+    toast.success(`List "${template.name}" saved`);
+  };
+
+  const handleLoadList = (id: string) => {
+    const found = savedLists.find((l) => l.id === id);
+    if (found) {
+      setCriteria({ ...found.criteria });
+      toast.info(`Loaded list: ${found.name}`);
+    }
+  };
+
+  const handleDeleteList = (id: string) => {
+    const updated = savedLists.filter((l) => l.id !== id);
+    saveLists(updated);
+    setSavedLists(updated);
+    toast.success("List deleted");
+  };
+
+  const fetchCampaigns = async () => {
+    setLoadingCampaigns(true);
+    try {
+      const { data, error } = await supabase
+        .from("email_campaigns" as any)
+        .select("id, name, status, template_subject, template_html")
+        .in("status", ["draft", "pending_review", "approved", "paused"])
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      setCampaignOptions((data as unknown as CampaignOption[]) ?? []);
+    } catch (err: any) {
+      toast.error("Failed to load campaigns: " + (err.message ?? ""));
+    } finally {
+      setLoadingCampaigns(false);
+    }
+  };
+
+  const handleOpenCampaignPanel = () => {
+    setShowCampaignPanel(true);
+    fetchCampaigns();
+  };
+
+  const handleAddToCampaign = async () => {
+    if (campaignSenders.length === 0) {
+      toast.error("Select at least one sender account");
+      return;
+    }
+
+    let campaignId = selectedCampaignId;
+
+    // Create new campaign if needed
+    if (!campaignId) {
+      if (!newCampaignName.trim()) {
+        toast.error("Select an existing campaign or enter a name for a new one");
+        return;
+      }
+      const id =
+        newCampaignName
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/(^-|-$)/g, "")
+          .slice(0, 64) +
+        "-" +
+        Date.now().toString(36);
+      const { error } = await supabase.from("email_campaigns" as any).insert({
+        id,
+        name: newCampaignName.trim(),
+        status: "draft",
+      } as any);
+      if (error) {
+        toast.error("Failed to create campaign: " + error.message);
+        return;
+      }
+      campaignId = id;
+      toast.success(`Campaign "${newCampaignName.trim()}" created`);
+    }
+
+    setAddingToCampaign(true);
+    try {
+      // Fetch matching agents with email (paginated)
+      const pageSize = 1000;
+      let offset = 0;
+      let allAgents: { id: string; name: string; email: string }[] = [];
+
+      while (true) {
+        let q = supabase
+          .from("professionals")
+          .select("id, name, email")
+          .not("email", "is", null)
+          .neq("email", "")
+          .range(offset, offset + pageSize - 1);
+
+        if (criteria.active === true) q = q.eq("active", true);
+        if (criteria.active === false) q = q.eq("active", false);
+        if (Array.isArray(criteria.state_slugs) && criteria.state_slugs.length > 0)
+          q = q.in("state_slug", criteria.state_slugs);
+        if (Array.isArray(criteria.current_tiers) && criteria.current_tiers.length > 0)
+          q = q.in("current_tier", criteria.current_tiers);
+        if (criteria.min_rating != null && criteria.min_rating > 0)
+          q = q.gte("review_stars_rating", criteria.min_rating);
+        if (criteria.email_verified) q = q.not("email_verified_at", "is", null);
+        if (criteria.has_license)
+          q = q.not("license_number", "is", null).neq("license_number", "");
+
+        const { data, error } = await q;
+        if (error) throw error;
+        const rows = (data ?? []) as unknown as { id: string; name: string; email: string }[];
+        allAgents = allAgents.concat(rows);
+        if (rows.length < pageSize) break;
+        offset += pageSize;
+      }
+
+      if (allAgents.length === 0) {
+        toast.error("No agents with email addresses match the current criteria");
+        setAddingToCampaign(false);
+        return;
+      }
+
+      // Get campaign template for subject/body
+      const campaign = campaignOptions.find((c) => c.id === campaignId);
+      const templateSubject = campaign?.template_subject ?? "No subject";
+      const templateHtml = campaign?.template_html ?? "";
+
+      // Build queue entries, distributing across senders round-robin
+      const queueRows = allAgents.map((agent, i) => ({
+        campaign_id: campaignId,
+        agent_id: agent.id,
+        recipient_email: agent.email.trim().toLowerCase(),
+        recipient_name: agent.name || null,
+        sender_account: campaignSenders[i % campaignSenders.length],
+        subject: templateSubject,
+        html_body: templateHtml,
+        status: "pending_review",
+      }));
+
+      // Insert in batches of 500
+      const batchSize = 500;
+      let inserted = 0;
+      for (let i = 0; i < queueRows.length; i += batchSize) {
+        const batch = queueRows.slice(i, i + batchSize);
+        const { error } = await supabase.from("email_queue" as any).insert(batch as any);
+        if (error) throw error;
+        inserted += batch.length;
+      }
+
+      // Update campaign recipient count
+      const uniqueEmails = new Set(queueRows.map((r) => r.recipient_email));
+      await supabase
+        .from("email_campaigns" as any)
+        .update({ total_recipients: uniqueEmails.size } as any)
+        .eq("id", campaignId);
+
+      toast.success(`Added ${inserted} emails (${uniqueEmails.size} unique recipients) to campaign`);
+      setShowCampaignPanel(false);
+      setSelectedCampaignId("");
+      setNewCampaignName("");
+    } catch (err: any) {
+      toast.error("Failed to add to campaign: " + (err.message ?? ""));
+    } finally {
+      setAddingToCampaign(false);
+    }
   };
 
   const handleDownloadCsv = async () => {
@@ -188,6 +416,32 @@ export function ListMaker() {
           <CardDescription>Filter agents by these conditions</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* Load saved list */}
+          {savedLists.length > 0 && (
+            <div className="flex items-center gap-2 flex-wrap">
+              <Label className="text-sm whitespace-nowrap">Saved Lists:</Label>
+              {savedLists.map((l) => (
+                <div key={l.id} className="flex items-center gap-1">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 text-xs"
+                    onClick={() => handleLoadList(l.id)}
+                  >
+                    {l.name}
+                  </Button>
+                  <button
+                    className="text-muted-foreground hover:text-destructive transition-colors p-0.5"
+                    onClick={() => handleDeleteList(l.id)}
+                    title="Delete saved list"
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
           <div className="flex flex-wrap gap-4 items-center">
             <div className="flex items-center gap-2">
               <Label className="text-sm whitespace-nowrap">Active</Label>
@@ -373,7 +627,129 @@ export function ListMaker() {
               )}
               Download CSV
             </Button>
+
+            <Button
+              size="sm"
+              variant={showCampaignPanel ? "default" : "secondary"}
+              onClick={handleOpenCampaignPanel}
+              disabled={count === 0 || count === null}
+            >
+              <Users className="h-4 w-4 mr-2" />
+              Add to Campaign
+            </Button>
+
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setShowSaveInput(!showSaveInput)}
+            >
+              <Save className="h-4 w-4 mr-2" />
+              Save List
+            </Button>
           </div>
+
+          {/* Save list input */}
+          {showSaveInput && (
+            <div className="flex items-center gap-2">
+              <Input
+                className="w-64 h-8 text-sm"
+                placeholder="e.g. AZ Listed Active"
+                value={saveListName}
+                onChange={(e) => setSaveListName(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSaveList()}
+                autoFocus
+              />
+              <Button size="sm" className="h-8" onClick={handleSaveList}>
+                Save
+              </Button>
+              <Button size="sm" variant="ghost" className="h-8" onClick={() => setShowSaveInput(false)}>
+                Cancel
+              </Button>
+            </div>
+          )}
+
+          {/* Add to Campaign panel */}
+          {showCampaignPanel && (
+            <div className="border rounded p-4 space-y-4 bg-muted/20">
+              <div className="flex items-center justify-between">
+                <Label className="text-sm font-semibold">Add {count} matching agents to a campaign</Label>
+                <Button size="sm" variant="ghost" onClick={() => setShowCampaignPanel(false)}>
+                  Close
+                </Button>
+              </div>
+
+              {/* Select existing campaign */}
+              <div className="space-y-1">
+                <Label className="text-xs">Select Existing Campaign</Label>
+                {loadingCampaigns ? (
+                  <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                    <Loader2 className="h-3 w-3 animate-spin" /> Loading campaigns...
+                  </div>
+                ) : (
+                  <select
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    value={selectedCampaignId}
+                    onChange={(e) => {
+                      setSelectedCampaignId(e.target.value);
+                      if (e.target.value) setNewCampaignName("");
+                    }}
+                  >
+                    <option value="">— Create new campaign instead —</option>
+                    {campaignOptions.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name} ({c.status.replace("_", " ")})
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </div>
+
+              {/* Or create new */}
+              {!selectedCampaignId && (
+                <div className="space-y-1">
+                  <Label className="text-xs">New Campaign Name</Label>
+                  <Input
+                    placeholder="e.g. Q1 AZ Listed Outreach"
+                    value={newCampaignName}
+                    onChange={(e) => setNewCampaignName(e.target.value)}
+                  />
+                </div>
+              )}
+
+              {/* Sender accounts */}
+              <div className="space-y-1">
+                <Label className="text-xs">Sender Accounts (round-robin distribution)</Label>
+                <div className="flex flex-wrap gap-3">
+                  {SENDER_ACCOUNTS.map((s) => (
+                    <label key={s} className="flex items-center gap-1.5 text-sm cursor-pointer">
+                      <Checkbox
+                        checked={campaignSenders.includes(s)}
+                        onCheckedChange={(checked) =>
+                          setCampaignSenders((prev) =>
+                            checked ? [...prev, s] : prev.filter((x) => x !== s)
+                          )
+                        }
+                      />
+                      <span>{s}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <Button
+                onClick={handleAddToCampaign}
+                disabled={addingToCampaign || campaignSenders.length === 0}
+              >
+                {addingToCampaign && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {addingToCampaign
+                  ? "Adding..."
+                  : `Add ${count ?? 0} Agents to Campaign`}
+              </Button>
+              <p className="text-xs text-muted-foreground">
+                Only agents with email addresses will be added. Emails are queued as "pending review".
+              </p>
+            </div>
+          )}
 
         </CardContent>
       </Card>

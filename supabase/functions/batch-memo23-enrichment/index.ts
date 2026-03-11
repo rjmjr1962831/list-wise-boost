@@ -12,11 +12,12 @@ serve(async (req) => {
   }
 
   try {
-    const { 
+    const {
       stateSlug = 'arizona',
       batchSize = 5,
       offset = 0,
-      skipRecentlyEnriched = false 
+      skipRecentlyEnriched = false,
+      missingEmailOnly = false
     } = await req.json();
 
     console.log(`🚀 Starting batch memo23 enrichment for ${stateSlug}`);
@@ -27,22 +28,34 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     // Get total count
-    const { count: totalCount } = await supabase
+    let countQuery = supabase
       .from('professionals')
       .select('id', { count: 'exact', head: true })
       .eq('active', true)
       .eq('state_slug', stateSlug)
       .not('zillow_profile_url', 'is', null);
 
-    console.log(`📊 Total agents with Zillow URLs in ${stateSlug}: ${totalCount}`);
+    if (missingEmailOnly) {
+      countQuery = countQuery.or('email.is.null,email.eq.,email.eq.N/A');
+    }
+
+    const { count: totalCount } = await countQuery;
+
+    console.log(`📊 Total agents ${missingEmailOnly ? '(missing email) ' : ''}with Zillow URLs in ${stateSlug}: ${totalCount}`);
 
     // Fetch batch of agents ordered by zillow_data_fetched_at (nulls first = never enriched)
-    const { data: agents, error: agentsError } = await supabase
+    let agentsQuery = supabase
       .from('professionals')
       .select('id, name, zillow_profile_url, zillow_data_fetched_at')
       .eq('active', true)
       .eq('state_slug', stateSlug)
-      .not('zillow_profile_url', 'is', null)
+      .not('zillow_profile_url', 'is', null);
+
+    if (missingEmailOnly) {
+      agentsQuery = agentsQuery.or('email.is.null,email.eq.,email.eq.N/A');
+    }
+
+    const { data: agents, error: agentsError } = await agentsQuery
       .order('zillow_data_fetched_at', { ascending: true, nullsFirst: true })
       .range(offset, offset + batchSize - 1);
 

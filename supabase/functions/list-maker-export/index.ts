@@ -187,24 +187,40 @@ async function queryStandard(
   const selectStr =
     "id,name,email,phone,website,social_linkedin,company,business_name,canonical_slug,state_slug,current_tier,card_created_at,created_at,updated_at,verification_token,zillow_profile_url,review_stars_rating,city_id,cities(name)";
 
-  let query = supabase.from("professionals").select(selectStr, { count: "exact" });
+  const PAGE_SIZE = 1000;
+  const allRows: Record<string, unknown>[] = [];
+  let offset = 0;
 
-  if (criteria.active === true) query = query.eq("active", true);
-  if (criteria.active === false) query = query.eq("active", false);
-  if (Array.isArray(criteria.state_slugs) && criteria.state_slugs.length > 0)
-    query = query.in("state_slug", criteria.state_slugs);
-  if (Array.isArray(criteria.current_tiers) && criteria.current_tiers.length > 0)
-    query = query.in("current_tier", criteria.current_tiers);
-  if (typeof criteria.min_rating === "number")
-    query = query.gte("review_stars_rating", criteria.min_rating);
-  if (criteria.email_verified === true)
-    query = query.not("email_verified_at", "is", null);
-  if (criteria.has_license === true)
-    query = query.not("license_number", "is", null).neq("license_number", "");
+  while (true) {
+    let query = supabase.from("professionals").select(selectStr);
 
-  const { data: rows, error } = await query.order("state_slug").order("name").limit(50000);
-  if (error) throw error;
-  return (rows || []) as Record<string, unknown>[];
+    if (criteria.active === true) query = query.eq("active", true);
+    if (criteria.active === false) query = query.eq("active", false);
+    if (Array.isArray(criteria.state_slugs) && criteria.state_slugs.length > 0)
+      query = query.in("state_slug", criteria.state_slugs);
+    if (Array.isArray(criteria.current_tiers) && criteria.current_tiers.length > 0)
+      query = query.in("current_tier", criteria.current_tiers);
+    if (typeof criteria.min_rating === "number")
+      query = query.gte("review_stars_rating", criteria.min_rating);
+    if (criteria.email_verified === true)
+      query = query.not("email_verified_at", "is", null);
+    if (criteria.has_license === true)
+      query = query.not("license_number", "is", null).neq("license_number", "");
+
+    const { data: rows, error } = await query
+      .order("state_slug")
+      .order("name")
+      .range(offset, offset + PAGE_SIZE - 1);
+    if (error) throw error;
+
+    const batch = (rows || []) as Record<string, unknown>[];
+    allRows.push(...batch);
+
+    if (batch.length < PAGE_SIZE) break; // last page
+    offset += PAGE_SIZE;
+  }
+
+  return allRows;
 }
 
 /**

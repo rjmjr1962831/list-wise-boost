@@ -32,6 +32,15 @@ const SENDER_ACCOUNTS = [
   "hello@top10lists.us",
   "robert@top10lists.us",
 ];
+
+const SENDER_DISPLAY_NAMES: Record<string, string> = {
+  "hello@toptenlists.us": "Robert Maynard",
+  "robert@toptenlists.us": "Robert Maynard",
+  "mark@toptenlists.us": "Mark Garland",
+  "hello@top10lists.us": "Robert Maynard",
+  "robert@top10lists.us": "Robert Maynard",
+};
+
 const CAMPAIGN_START = new Date("2026-02-24T12:00:00Z"); // 5am MST
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
@@ -277,6 +286,7 @@ async function processAccount(senderAccount: string): Promise<AccountResult> {
 
     const rawMessage = buildRawMimeMessage({
       from: senderAccount,
+      fromName: SENDER_DISPLAY_NAMES[senderAccount] ?? undefined,
       to: queueItem.recipient_email,
       toName: queueItem.recipient_name ?? undefined,
       subject: queueItem.subject,
