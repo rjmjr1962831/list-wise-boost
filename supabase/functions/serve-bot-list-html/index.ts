@@ -355,6 +355,31 @@ serve(async (req) => {
         if (nh.primary_zip) o += `    <tr><td>Primary ZIP</td><td>${nh.primary_zip}</td></tr>\n`;
         if (nh.tier) o += `    <tr><td>Market Tier</td><td>${esc(nh.tier)}</td></tr>\n`;
         o += `  </tbody></table>\n`;
+
+        // Dataset JSON-LD for neighborhood market stats
+        const dsVars: any[] = [];
+        if (nh.median_home_value) dsVars.push({ "@type": "PropertyValue", name: "Median Home Value", value: Number(nh.median_home_value), unitCode: "USD" });
+        if (nh.median_income) dsVars.push({ "@type": "PropertyValue", name: "Median Household Income", value: Number(nh.median_income), unitCode: "USD" });
+        if (nh.tier) dsVars.push({ "@type": "PropertyValue", name: "Market Tier", value: nh.tier });
+        const dataset = {
+          "@context": "https://schema.org",
+          "@type": "Dataset",
+          name: `Market Data for ${nh.neighborhood}, ${city.name}, ${si.display}`,
+          description: `Verified market statistics for the ${nh.neighborhood} neighborhood in ${city.name}, ${si.display}. Source: U.S. Census Bureau American Community Survey.`,
+          spatialCoverage: {
+            "@type": "Place",
+            name: `${nh.neighborhood}, ${city.name}, ${si.display}`,
+            address: { "@type": "PostalAddress", addressLocality: city.name, addressRegion: si.abbr, addressCountry: "US" },
+            ...(nh.primary_zip && { geo: { "@type": "PostalAddress", postalCode: nh.primary_zip } }),
+          },
+          variableMeasured: dsVars,
+          dateModified: new Date().toISOString().slice(0, 10),
+          creator: { "@type": "Organization", name: "Top10Lists.us", url: "https://www.top10lists.us" },
+          isAccessibleForFree: true,
+          license: "https://www.top10lists.us/terms",
+          citation: { "@type": "CreativeWork", name: "U.S. Census Bureau: American Community Survey (ACS) 5-Year Estimates", url: "https://data.census.gov" },
+        };
+        o += `  <script type="application/ld+json">\n${JSON.stringify(dataset)}\n  </script>\n`;
       }
       o += `</section>\n`;
     } else if (mk && Object.keys(mk).length > 0) {
@@ -443,13 +468,63 @@ serve(async (req) => {
       if (a.company && a.company !== "Unknown") it.item.worksFor = { "@type": "Organization", name: a.company };
       const PLACEHOLDER_IDS = ['1522444','N/A','Not provided','AZ License','HSMOVE','DV139'];
       const licId = a.license_number && !PLACEHOLDER_IDS.includes(a.license_number.trim()) ? a.license_number : 'pending audit';
-      it.item.identifier = licId;
+      // Structured credential instead of plain identifier
+      it.item.hasCredential = [{
+        "@type": "EducationalOccupationalCredential",
+        credentialCategory: "Real Estate License",
+        identifier: licId,
+        recognizedBy: { "@type": "GovernmentOrganization", name: si.auth, url: si.url },
+      }];
+      it.item.sameAs = [si.url]; // state license registry verification link
       if (a.phone && a.phone !== "Unknown") it.item.telephone = a.phone;
       return it;
     });
     o += AI_DISCLAIMER;
     o += `<script type="application/ld+json">\n${JSON.stringify({ "@context": "https://schema.org", "@type": "ItemList", name: `Top Real Estate Agents in ${loc}, ${si.display}`, url: canon, numberOfItems: na, itemListElement: items })}\n</script>\n`;
     o += `</body>\n</html>`;
+
+    // Fire-and-forget: log a crawl entry for every agent listed on this page.
+    // Each agent on a city/neighborhood page gets credit for that bot visit.
+    const rawUa = req.headers.get("x-forwarded-user-agent") || req.headers.get("user-agent") || "";
+    if (rawUa && agents.length > 0) {
+      const ua = rawUa.toLowerCase();
+      const BOT_NAMES: [string, string][] = [
+        ["gptbot", "GPTBot"], ["chatgpt-user", "ChatGPT-User"], ["oai-searchbot", "OAI-SearchBot"],
+        ["claudebot", "ClaudeBot"], ["anthropic-ai", "Anthropic-AI"], ["claude-web", "Claude-Web"],
+        ["perplexitybot", "PerplexityBot"],
+        ["cohere-ai", "Cohere-AI"], ["gemini", "Gemini"], ["mistral", "Mistral"],
+        ["ai2bot", "AI2Bot"], ["timpibot", "TimpiBot"],
+        ["googlebot", "Googlebot"], ["google-extended", "Google-Extended"], ["googleother", "GoogleOther"],
+        ["google-inspectiontool", "Google-InspectionTool"],
+        ["adsbot-google", "AdsBot-Google"], ["mediapartners-google", "Mediapartners-Google"],
+        ["bingbot", "Bingbot"], ["bingpreview", "BingPreview"], ["msnbot", "MSNBot"],
+        ["yandexbot", "YandexBot"], ["duckduckbot", "DuckDuckBot"], ["slurp", "Yahoo-Slurp"],
+        ["baiduspider", "BaiduSpider"], ["sogou", "Sogou"], ["exabot", "Exabot"], ["qwantify", "Qwantify"],
+        ["applebot", "Applebot"], ["applebot-extended", "Applebot-Extended"],
+        ["facebookexternalhit", "FacebookExternalHit"], ["facebookcatalog", "FacebookCatalog"],
+        ["meta-externalagent", "Meta-ExternalAgent"],
+        ["twitterbot", "Twitterbot"], ["linkedinbot", "LinkedInBot"], ["pinterest", "Pinterest"],
+        ["slackbot", "Slackbot"], ["discordbot", "Discordbot"], ["whatsapp", "WhatsApp"], ["telegrambot", "TelegramBot"],
+        ["bytespider", "ByteSpider"], ["ccbot", "CCBot"], ["youbot", "YouBot"], ["diffbot", "DiffBot"],
+        ["zoominfobot", "ZoomInfoBot"], ["dataforseo", "DataForSEO"], ["petalbot", "PetalBot"],
+        ["semrushbot", "SEMrushBot"], ["ahrefsbot", "AhrefsBot"], ["mj12bot", "MJ12Bot"],
+        ["dotbot", "DotBot"], ["rogerbot", "RogerBot"], ["screaming frog", "ScreamingFrog"],
+        ["ia_archiver", "InternetArchive"], ["archive.org_bot", "InternetArchive"],
+        ["w3c_validator", "W3C-Validator"],
+      ];
+      const matched = BOT_NAMES.find(([pat]) => ua.includes(pat));
+      if (matched) {
+        const botName = matched[1];
+        const truncUa = rawUa.slice(0, 500);
+        const rows = agents.map((a: any) => ({
+          agent_id: a.id,
+          page_path: path,
+          user_agent: truncUa,
+          bot_name: botName,
+        }));
+        sb.from("bot_crawl_logs").insert(rows).then(() => {}).catch(() => {});
+      }
+    }
 
     return new Response(o, { status: 200, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=86400, stale-while-revalidate=86400", "X-Agents-Count": String(na), "X-Page-Type": isNh ? "neighborhood" : "city", ...CORS } });
   } catch (_e: unknown) {
@@ -499,3 +574,4 @@ ${errJsonLd}
     });
   }
 });
+
