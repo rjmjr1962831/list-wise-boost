@@ -65,6 +65,8 @@ export default async function handler(req, res) {
       headers: {
         Authorization: `Bearer ${key}`,
         apikey: key,
+        // Forward original user-agent so edge functions can identify bot crawlers
+        "x-forwarded-user-agent": req.headers["user-agent"] || "",
       },
     });
     const html = await upstream.text();
@@ -94,3 +96,4 @@ export default async function handler(req, res) {
     res.status(502).json({ error: 'Upstream fetch failed', detail: err.message });
   }
 }
+
