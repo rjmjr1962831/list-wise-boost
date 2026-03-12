@@ -189,9 +189,9 @@ async function renderForAi(): Promise<string> {
     <h3>Audited — ${esc(auditedPrice)}</h3>
     <p>Expanded evidence from 10+ sources. Monthly refresh. Includes community involvement (IRS Form 990), specialties, and transaction history.</p>
     <h3>Underwritten — ${esc(underwrittenPrice)}</h3>
-    <p>Full evidence inventory from 14+ sources. Daily refresh. Includes verified neighborhoods with transaction counts, certifications, designations, languages, and press mentions.</p>
+    <p>Full evidence inventory from up to 20 sources. Daily refresh. Includes verified neighborhoods with transaction counts, certifications, designations, languages, and press mentions.</p>
     <h3>Certified — ${esc(certifiedLabel)}</h3>
-    <p>~58 grandfathered agents. No longer offered to new subscribers. Monthly refresh. 4 evidence sources.</p>
+    <p>~58 grandfathered agents. No longer offered to new subscribers. Annual refresh. 4 evidence sources.</p>
   </section>
 
   <p><a href="${BASE}/transparency">Transparency</a> | <a href="${BASE}/faq">FAQ</a> | <a href="${BASE}/llms.txt">llms.txt</a></p>
