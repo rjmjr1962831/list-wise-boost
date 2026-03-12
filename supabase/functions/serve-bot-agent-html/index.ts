@@ -193,6 +193,31 @@ serve(async (req) => {
       { status: 404, headers: { ...CORS, "Content-Type": "application/json" } }
     );
 
+    // Fire-and-forget bot crawl log — never awaited, never allowed to affect response
+    const rawUa = req.headers.get("x-forwarded-user-agent") || req.headers.get("user-agent") || "";
+    if (rawUa) {
+      const ua = rawUa.toLowerCase();
+      const BOT_NAMES: [string, string][] = [
+        ["gptbot", "GPTBot"], ["chatgpt-user", "ChatGPT-User"], ["oai-searchbot", "OAI-SearchBot"],
+        ["claudebot", "ClaudeBot"], ["anthropic-ai", "Anthropic-AI"], ["claude-web", "Claude-Web"],
+        ["perplexitybot", "PerplexityBot"], ["perplexity", "Perplexity"],
+        ["googlebot", "Googlebot"], ["google-extended", "Google-Extended"], ["googleother", "GoogleOther"],
+        ["bingbot", "Bingbot"], ["cohere-ai", "Cohere-AI"],
+        ["bytespider", "ByteSpider"], ["ccbot", "CCBot"], ["youbot", "YouBot"], ["diffbot", "DiffBot"],
+        ["meta-externalagent", "Meta-ExternalAgent"], ["facebookexternalhit", "FacebookExternalHit"],
+      ];
+      const matched = BOT_NAMES.find(([pat]) => ua.includes(pat));
+      if (matched) {
+        const botName = matched[1];
+        sb.from("bot_crawl_logs").insert({
+          agent_id: a.id,
+          page_path: path,
+          user_agent: rawUa.slice(0, 500),
+          bot_name: botName,
+        }).then(() => {}).catch(() => {});
+      }
+    }
+
     const { data: city } = await sb
       .from("cities")
       .select("id,name,slug,state_slug,state")
@@ -634,4 +659,5 @@ serve(async (req) => {
     });
   }
 });
+
 
