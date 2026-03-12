@@ -306,3 +306,4 @@ export function formatLastUpdated(isoDate: string): string {
     day: 'numeric'
   });
 }
+/* build trigger */
