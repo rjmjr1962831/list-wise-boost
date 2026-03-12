@@ -52,58 +52,64 @@ export default function BotAnalyticsDashboard() {
     const daysAgo = dateRange === "24h" ? 1 : dateRange === "7d" ? 7 : 30;
     const startDate = new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000).toISOString();
 
-    // Bot breakdown from bot_crawl_logs
-    const { data: botData } = await supabase
-      .from("bot_crawl_logs")
-      .select("bot_name, agent_id, page_path, crawled_at, user_agent")
-      .gte("crawled_at", startDate)
-      .order("crawled_at", { ascending: false })
-      .limit(5000);
+    // All aggregation done server-side via run_sql to avoid PostgREST 1000-row cap
 
-    if (botData && botData.length > 0) {
-      // Aggregate by bot_name
-      const byBot = botData.reduce((acc, r) => {
-        const k = r.bot_name || "Unknown";
-        acc[k] = (acc[k] || 0) + 1;
-        return acc;
-      }, {} as Record<string, number>);
+    // 1. Summary counts
+    const { data: summaryRaw } = await supabase.rpc("run_sql", { query: `
+      SELECT
+        COUNT(*)::int                                          AS total_visits,
+        COUNT(DISTINCT bot_name)::int                         AS unique_bots,
+        COUNT(DISTINCT agent_id) FILTER (
+          WHERE page_path LIKE '%/agents/%'
+        )::int                                                AS unique_agents
+      FROM bot_crawl_logs
+      WHERE crawled_at >= '${startDate}'
+    ` });
+    const s = Array.isArray(summaryRaw) ? summaryRaw[0] : null;
+    setSummary({
+      total_bot_visits: s?.total_visits ?? 0,
+      unique_bots:       s?.unique_bots  ?? 0,
+      unique_agents_viewed: s?.unique_agents ?? 0,
+      cache_hit_rate: 0,
+    });
 
-      const stats: BotStat[] = Object.entries(byBot)
-        .map(([bot_name, total_visits]) => ({ bot_name, total_visits }))
-        .sort((a, b) => b.total_visits - a.total_visits);
+    // 2. Bot breakdown
+    const { data: botBreakdown } = await supabase.rpc("run_sql", { query: `
+      SELECT bot_name, COUNT(*)::int AS total_visits
+      FROM bot_crawl_logs
+      WHERE crawled_at >= '${startDate}'
+      GROUP BY bot_name
+      ORDER BY total_visits DESC
+    ` });
+    setBotStats(
+      (Array.isArray(botBreakdown) ? botBreakdown : []).map((r: any) => ({
+        bot_name: r.bot_name || "Unknown",
+        total_visits: r.total_visits,
+      }))
+    );
 
-      setBotStats(stats);
-
-      // Agent views
-      const views: AgentView[] = botData
-        .map(r => {
-          const agent_slug = getAgentSlugFromPath(r.page_path);
-          if (!agent_slug) return null;
-          return {
-            agent_slug,
-            bot_name: r.bot_name || "Unknown",
-            viewed_at: r.crawled_at,
-            user_agent: r.user_agent || "",
-          } as AgentView;
-        })
-        .filter((v): v is AgentView => v !== null);
-
-      setAgentViews(views);
-
-      const uniqueAgents = new Set(views.map(v => v.agent_slug)).size;
-      const uniqueBots = Object.keys(byBot).length;
-
-      setSummary({
-        total_bot_visits: botData.length,
-        unique_bots: uniqueBots,
-        unique_agents_viewed: uniqueAgents,
-        cache_hit_rate: 0,
-      });
-    } else {
-      setBotStats([]);
-      setAgentViews([]);
-      setSummary({ total_bot_visits: 0, unique_bots: 0, unique_agents_viewed: 0, cache_hit_rate: 0 });
-    }
+    // 3. Recent agent profile views (capped at 200 -- display only)
+    const { data: recentRaw } = await supabase.rpc("run_sql", { query: `
+      SELECT
+        b.bot_name,
+        b.page_path,
+        b.crawled_at,
+        b.user_agent,
+        p.canonical_slug AS agent_slug
+      FROM bot_crawl_logs b
+      JOIN professionals p ON p.id = b.agent_id
+      WHERE b.crawled_at >= '${startDate}'
+        AND b.page_path LIKE '%/agents/%'
+      ORDER BY b.crawled_at DESC
+      LIMIT 200
+    ` });
+    const views: AgentView[] = (Array.isArray(recentRaw) ? recentRaw : []).map((r: any) => ({
+      agent_slug: r.agent_slug || r.page_path,
+      bot_name: r.bot_name || "Unknown",
+      viewed_at: r.crawled_at,
+      user_agent: r.user_agent || "",
+    }));
+    setAgentViews(views);
 
     setLoading(false);
   };
