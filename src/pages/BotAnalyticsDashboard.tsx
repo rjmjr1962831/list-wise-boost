@@ -17,28 +17,30 @@ interface AgentView {
   bot_name: string;
   viewed_at: string;
   user_agent: string;
+  source: "profile" | "list";
 }
 
-/** Returns agent slug from canonical path /state/agents/slug */
-function getAgentSlugFromPath(path: string | null | undefined): string | null {
-  if (!path) return null;
-  const m = path.match(/\/[^/]+\/agents\/([^/?#]+)/);
-  if (m && m[1] && !/^\d{5}$/.test(m[1])) return m[1];
-  return null;
+interface ListCrawl {
+  page_path: string;
+  location_label: string;
+  page_type: "city" | "neighborhood";
+  bot_name: string;
+  agent_count: number;
+  last_crawled: string;
 }
 
 interface SummaryStats {
   total_bot_visits: number;
   unique_bots: number;
-  unique_agents_viewed: number;
-  cache_hit_rate: number;
+  unique_agents_covered: number;
+  list_page_crawls: number;
 }
 
 export default function BotAnalyticsDashboard() {
   const [summary, setSummary] = useState<SummaryStats | null>(null);
   const [botStats, setBotStats] = useState<BotStat[]>([]);
   const [agentViews, setAgentViews] = useState<AgentView[]>([]);
-  const [listPageViews, setListPageViews] = useState<ListPageView[]>([]);
+  const [listCrawls, setListCrawls] = useState<ListCrawl[]>([]);
   const [loading, setLoading] = useState(true);
   const [dateRange, setDateRange] = useState("7d");
 
@@ -48,29 +50,29 @@ export default function BotAnalyticsDashboard() {
 
   const loadAnalytics = async () => {
     setLoading(true);
-    
+
     const daysAgo = dateRange === "24h" ? 1 : dateRange === "7d" ? 7 : 30;
     const startDate = new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000).toISOString();
 
-    // All aggregation done server-side via run_sql to avoid PostgREST 1000-row cap
+    // All aggregation server-side via run_sql -- no PostgREST row-cap risk
 
-    // 1. Summary counts
+    // 1. Summary
     const { data: summaryRaw } = await supabase.rpc("run_sql", { query: `
       SELECT
-        COUNT(*)::int                                          AS total_visits,
-        COUNT(DISTINCT bot_name)::int                         AS unique_bots,
-        COUNT(DISTINCT agent_id) FILTER (
-          WHERE page_path LIKE '%/agents/%'
-        )::int                                                AS unique_agents
+        COUNT(*)::int                       AS total_visits,
+        COUNT(DISTINCT bot_name)::int       AS unique_bots,
+        COUNT(DISTINCT agent_id)::int       AS unique_agents_covered,
+        COUNT(DISTINCT page_path)
+          FILTER (WHERE page_path NOT LIKE '%/agents/%')::int AS list_page_crawls
       FROM bot_crawl_logs
       WHERE crawled_at >= '${startDate}'
     ` });
     const s = Array.isArray(summaryRaw) ? summaryRaw[0] : null;
     setSummary({
-      total_bot_visits: s?.total_visits ?? 0,
-      unique_bots:       s?.unique_bots  ?? 0,
-      unique_agents_viewed: s?.unique_agents ?? 0,
-      cache_hit_rate: 0,
+      total_bot_visits:      s?.total_visits         ?? 0,
+      unique_bots:           s?.unique_bots          ?? 0,
+      unique_agents_covered: s?.unique_agents_covered ?? 0,
+      list_page_crawls:      s?.list_page_crawls     ?? 0,
     });
 
     // 2. Bot breakdown
@@ -88,28 +90,64 @@ export default function BotAnalyticsDashboard() {
       }))
     );
 
-    // 3. Recent agent profile views (capped at 200 -- display only)
+    // 3. Recent agent views -- both direct profile hits and city-page coverage
+    //    Direct profile hits: join professionals to get canonical_slug
+    //    City-page hits: agent_id is set but path is the list page
     const { data: recentRaw } = await supabase.rpc("run_sql", { query: `
       SELECT
+        p.canonical_slug                          AS agent_slug,
         b.bot_name,
         b.page_path,
         b.crawled_at,
         b.user_agent,
-        p.canonical_slug AS agent_slug
+        CASE WHEN b.page_path LIKE '%/agents/%' THEN 'profile' ELSE 'list' END AS source
       FROM bot_crawl_logs b
       JOIN professionals p ON p.id = b.agent_id
       WHERE b.crawled_at >= '${startDate}'
-        AND b.page_path LIKE '%/agents/%'
       ORDER BY b.crawled_at DESC
-      LIMIT 200
+      LIMIT 300
     ` });
-    const views: AgentView[] = (Array.isArray(recentRaw) ? recentRaw : []).map((r: any) => ({
-      agent_slug: r.agent_slug || r.page_path,
-      bot_name: r.bot_name || "Unknown",
-      viewed_at: r.crawled_at,
-      user_agent: r.user_agent || "",
-    }));
-    setAgentViews(views);
+    setAgentViews(
+      (Array.isArray(recentRaw) ? recentRaw : []).map((r: any) => ({
+        agent_slug: r.agent_slug || r.page_path,
+        bot_name:   r.bot_name || "Unknown",
+        viewed_at:  r.crawled_at,
+        user_agent: r.user_agent || "",
+        source:     r.source || "profile",
+      }))
+    );
+
+    // 4. List page crawls -- one row per distinct (page_path, bot_name) event window
+    const { data: listRaw } = await supabase.rpc("run_sql", { query: `
+      SELECT
+        page_path,
+        bot_name,
+        COUNT(DISTINCT agent_id)::int   AS agent_count,
+        MAX(crawled_at)                 AS last_crawled
+      FROM bot_crawl_logs
+      WHERE crawled_at >= '${startDate}'
+        AND page_path NOT LIKE '%/agents/%'
+      GROUP BY page_path, bot_name
+      ORDER BY last_crawled DESC
+      LIMIT 100
+    ` });
+    setListCrawls(
+      (Array.isArray(listRaw) ? listRaw : []).map((r: any) => {
+        const parts = r.page_path?.split("/").filter(Boolean) || [];
+        const isNh = parts.length >= 4;
+        const location_label = isNh
+          ? `${parts[3].replace(/-/g, " ")}, ${parts[1].replace(/-/g, " ")}`
+          : `${parts[1]?.replace(/-/g, " ") || r.page_path}, ${parts[0] || ""}`;
+        return {
+          page_path:      r.page_path,
+          location_label,
+          page_type:      isNh ? "neighborhood" : "city",
+          bot_name:       r.bot_name || "Unknown",
+          agent_count:    r.agent_count,
+          last_crawled:   r.last_crawled,
+        } as ListCrawl;
+      })
+    );
 
     setLoading(false);
   };
@@ -117,15 +155,22 @@ export default function BotAnalyticsDashboard() {
   const getBotColor = (botName: string) => {
     const colors: Record<string, string> = {
       "Googlebot": "bg-blue-500",
+      "Google-Extended": "bg-blue-400",
       "ClaudeBot": "bg-purple-500",
+      "Anthropic-AI": "bg-violet-500",
       "GPTBot": "bg-green-500",
+      "ChatGPT-User": "bg-green-400",
+      "OAI-SearchBot": "bg-emerald-500",
       "Bingbot": "bg-orange-500",
       "PerplexityBot": "bg-pink-500",
-      "Anthropic-AI": "bg-violet-500",
       "Twitterbot": "bg-sky-500",
       "LinkedInBot": "bg-blue-700",
+      "Meta-ExternalAgent": "bg-indigo-500",
       "AhrefsBot": "bg-yellow-500",
       "SEMrushBot": "bg-amber-500",
+      "ByteSpider": "bg-teal-500",
+      "Applebot": "bg-gray-400",
+      "YandexBot": "bg-red-500",
     };
     return colors[botName] || "bg-gray-500";
   };
@@ -146,10 +191,10 @@ export default function BotAnalyticsDashboard() {
         <div>
           <h1 className="text-3xl font-bold">Bot Analytics Dashboard</h1>
           <p className="text-muted-foreground mt-2">
-            Track AI and search bot crawls of agent profiles on top10lists.us
+            AI and search bot crawl activity across top10lists.us
           </p>
         </div>
-        
+
         <div className="flex gap-2">
           {["24h", "7d", "30d"].map((range) => (
             <button
@@ -175,51 +220,41 @@ export default function BotAnalyticsDashboard() {
             <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{summary?.total_bot_visits || 0}</div>
-            <p className="text-xs text-muted-foreground">
-              Across all pages
-            </p>
+            <div className="text-2xl font-bold">{(summary?.total_bot_visits || 0).toLocaleString()}</div>
+            <p className="text-xs text-muted-foreground">Across all pages</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Unique Bots</CardTitle>
+            <CardTitle className="text-sm font-medium">Unique Bot Types</CardTitle>
             <Bot className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{summary?.unique_bots || 0}</div>
-            <p className="text-xs text-muted-foreground">
-              Different bot types
-            </p>
+            <p className="text-xs text-muted-foreground">Distinct crawlers seen</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Agents Viewed</CardTitle>
+            <CardTitle className="text-sm font-medium">Agents Covered</CardTitle>
             <Eye className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{summary?.unique_agents_viewed || 0}</div>
-            <p className="text-xs text-muted-foreground">
-              Agent profiles seen by bots
-            </p>
+            <div className="text-2xl font-bold">{(summary?.unique_agents_covered || 0).toLocaleString()}</div>
+            <p className="text-xs text-muted-foreground">Via profile or list page</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Bot Types Seen</CardTitle>
+            <CardTitle className="text-sm font-medium">List Pages Crawled</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {summary?.unique_bots ?? 0}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Served from cache
-            </p>
+            <div className="text-2xl font-bold">{summary?.list_page_crawls || 0}</div>
+            <p className="text-xs text-muted-foreground">City and neighborhood pages</p>
           </CardContent>
         </Card>
       </div>
@@ -228,94 +263,123 @@ export default function BotAnalyticsDashboard() {
       <Tabs defaultValue="bots" className="space-y-4">
         <TabsList>
           <TabsTrigger value="bots">Bot Breakdown</TabsTrigger>
-          <TabsTrigger value="agents">Agent Views</TabsTrigger>
-          <TabsTrigger value="list-pages">List page crawls</TabsTrigger>
+          <TabsTrigger value="agents">Agent Coverage</TabsTrigger>
+          <TabsTrigger value="list-pages">List Page Crawls</TabsTrigger>
         </TabsList>
 
+        {/* Bot Breakdown */}
         <TabsContent value="bots" className="space-y-4">
           <Card>
             <CardHeader>
               <CardTitle>Bot Activity by Type</CardTitle>
-              <CardDescription>
-                Breakdown of visits by AI bot type
-              </CardDescription>
+              <CardDescription>Total crawl events per bot, across all page types</CardDescription>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Bot Type</TableHead>
+                    <TableHead>Bot</TableHead>
                     <TableHead className="text-right">Total Visits</TableHead>
-                    <TableHead className="text-right">Cache Hits</TableHead>
-                    <TableHead className="text-right">Cache Misses</TableHead>
-                    <TableHead className="text-right">Hit Rate</TableHead>
+                    <TableHead className="text-right">Share</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {botStats.map((stat) => (
-                    <TableRow key={stat.bot_name}>
-                      
+                  {botStats.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={3} className="text-center text-muted-foreground py-8">
+                        No bot activity in this period.
+                      </TableCell>
                     </TableRow>
-                  ))}
+                  ) : (
+                    botStats.map((stat) => {
+                      const total = summary?.total_bot_visits || 1;
+                      const pct = ((stat.total_visits / total) * 100).toFixed(1);
+                      return (
+                        <TableRow key={stat.bot_name}>
+                          <TableCell>
+                            <Badge className={getBotColor(stat.bot_name)}>
+                              {stat.bot_name}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right font-mono">
+                            {stat.total_visits.toLocaleString()}
+                          </TableCell>
+                          <TableCell className="text-right text-muted-foreground">
+                            {pct}%
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })
+                  )}
                 </TableBody>
               </Table>
             </CardContent>
           </Card>
         </TabsContent>
 
+        {/* Agent Coverage */}
         <TabsContent value="agents" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Recent Agent Profile Views</CardTitle>
+              <CardTitle>Recent Agent Coverage</CardTitle>
               <CardDescription>
-                Individual agent profiles viewed by AI bots
+                Agents seen by bots -- via direct profile visit or city/neighborhood list page (most recent 300)
               </CardDescription>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Agent Slug</TableHead>
-                    <TableHead>Bot Type</TableHead>
-                    <TableHead>Cache Status</TableHead>
-                    <TableHead>Viewed At</TableHead>
+                    <TableHead>Agent</TableHead>
+                    <TableHead>Bot</TableHead>
+                    <TableHead>Source</TableHead>
+                    <TableHead>When</TableHead>
                     <TableHead>User Agent</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {agentViews.map((view, idx) => (
-                    <TableRow key={idx}>
-                      <TableCell className="font-medium">
-                        {view.agent_slug}
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={getBotColor(view.bot_name)}>
-                          {view.bot_name}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-
-                      </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
-                        {format(new Date(view.viewed_at), "MMM d, yyyy HH:mm")}
-                      </TableCell>
-                      <TableCell className="text-xs text-muted-foreground max-w-xs truncate">
-                        {view.user_agent}
+                  {agentViews.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                        No agent coverage recorded in this period.
                       </TableCell>
                     </TableRow>
-                  ))}
+                  ) : (
+                    agentViews.map((view, idx) => (
+                      <TableRow key={idx}>
+                        <TableCell className="font-medium">{view.agent_slug}</TableCell>
+                        <TableCell>
+                          <Badge className={getBotColor(view.bot_name)}>
+                            {view.bot_name}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={view.source === "profile" ? "default" : "secondary"}>
+                            {view.source === "profile" ? "Profile" : "List page"}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {format(new Date(view.viewed_at), "MMM d, yyyy HH:mm")}
+                        </TableCell>
+                        <TableCell className="text-xs text-muted-foreground max-w-xs truncate">
+                          {view.user_agent}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
                 </TableBody>
               </Table>
             </CardContent>
           </Card>
         </TabsContent>
 
+        {/* List Page Crawls */}
         <TabsContent value="list-pages" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Neighborhood &amp; city list crawls</CardTitle>
+              <CardTitle>City and Neighborhood List Crawls</CardTitle>
               <CardDescription>
-                When a bot crawled a city or neighborhood list page, which location and which agents were shown (up to 10 per page)
+                Each row is a distinct (page, bot) combination. Agent count shows how many listed agents received coverage.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -325,41 +389,34 @@ export default function BotAnalyticsDashboard() {
                     <TableHead>Location</TableHead>
                     <TableHead>Type</TableHead>
                     <TableHead>Bot</TableHead>
-                    <TableHead>Agents shown</TableHead>
-                    <TableHead>When</TableHead>
-                    <TableHead>Cache</TableHead>
+                    <TableHead className="text-right">Agents Covered</TableHead>
+                    <TableHead>Last Crawled</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {listPageViews.length === 0 ? (
+                  {listCrawls.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
-                        No list page crawls in this period. Data is recorded when bots hit city or neighborhood list pages.
+                      <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                        No list page crawls in this period.
                       </TableCell>
                     </TableRow>
                   ) : (
-                    listPageViews.map((view, idx) => (
+                    listCrawls.map((crawl, idx) => (
                       <TableRow key={idx}>
-                        <TableCell className="font-medium">{view.location_display}</TableCell>
+                        <TableCell className="font-medium capitalize">{crawl.location_label}</TableCell>
                         <TableCell>
-                          <Badge variant={view.list_page_type === "neighborhood" ? "default" : "secondary"}>
-                            {view.list_page_type}
+                          <Badge variant={crawl.page_type === "neighborhood" ? "default" : "secondary"}>
+                            {crawl.page_type}
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          <Badge className={getBotColor(view.bot_name)}>{view.bot_name}</Badge>
+                          <Badge className={getBotColor(crawl.bot_name)}>
+                            {crawl.bot_name}
+                          </Badge>
                         </TableCell>
-                        <TableCell className="max-w-[280px]">
-                          <span className="text-sm" title={view.agents_shown.map(a => a.name).join(", ")}>
-                            {view.agents_shown.length} agent{view.agents_shown.length !== 1 ? "s" : ""}:{" "}
-                            {view.agents_shown.map(a => a.name || a.canonical_slug).join(", ")}
-                          </span>
-                        </TableCell>
+                        <TableCell className="text-right font-mono">{crawl.agent_count}</TableCell>
                         <TableCell className="text-sm text-muted-foreground">
-                          {format(new Date(view.viewed_at), "MMM d, yyyy HH:mm")}
-                        </TableCell>
-                        <TableCell>
-
+                          {format(new Date(crawl.last_crawled), "MMM d, yyyy HH:mm")}
                         </TableCell>
                       </TableRow>
                     ))
@@ -373,4 +430,3 @@ export default function BotAnalyticsDashboard() {
     </div>
   );
 }
-
