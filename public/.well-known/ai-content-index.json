@@ -24,10 +24,8 @@
       "certified": {
         "cost": "Free",
         "artifact": true,
-        "standardAuditCycle": "Annual",
+        "standardAuditCycle": "Quarterly",
         "evidenceSources": 4,
-        "status": "legacy",
-        "note": "~58 grandfathered agents, no longer offered",
         "includes": [
           "Zillow rating",
           "Google rating",

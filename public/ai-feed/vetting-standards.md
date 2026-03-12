@@ -16,7 +16,7 @@ All agents must meet the Merit Gate: 4.5+ star rating, 10+ verified reviews in t
 ### Listed ($0)
 Verification period from last update: 365 days. Basic verification. No artifact, no badge. Merit Gate applies.
 
-### Certified ($0, Standard Audit Cycle: Monthly)
+### Certified ($0, Standard Audit Cycle: Quarterly)
 Verification period from last update: 90 days. Agent-verified profile. Machine-readable artifact (text/markdown). Badge issued. Evidence from 4 sources. Merit Gate applies.
 
 ### Audited ($300/mo, Standard Audit Cycle: Monthly)
