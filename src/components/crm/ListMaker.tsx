@@ -79,6 +79,8 @@ const AICS_FIELDS: { key: string; label: string }[] = [
   { key: "aics_gap_no_realtor", label: "Gap: No Realtor" },
   { key: "aics_gap_no_press", label: "Gap: No Press" },
   { key: "aics_artifact_url", label: "Artifact URL" },
+  { key: "footprint_band", label: "Footprint Band" },
+  { key: "footprint_context", label: "Footprint Context" },
 ];
 
 const STATES = [
@@ -571,7 +573,24 @@ export function ListMaker() {
             ))}
           </div>
           <div>
-            <Label className="text-sm font-semibold block mb-2">AICS Score Fields</Label>
+            <div className="flex items-center gap-3 mb-2">
+              <Label className="text-sm font-semibold">AICS Score Fields</Label>
+              <button
+                type="button"
+                className="text-xs text-blue-500 hover:text-blue-700 underline"
+                onClick={() => {
+                  const allAicsKeys = AICS_FIELDS.map((f) => f.key);
+                  const allSelected = allAicsKeys.every((k) => outputFields.includes(k));
+                  if (allSelected) {
+                    setOutputFields((prev) => prev.filter((k) => !allAicsKeys.includes(k)));
+                  } else {
+                    setOutputFields((prev) => [...new Set([...prev, ...allAicsKeys])]);
+                  }
+                }}
+              >
+                {AICS_FIELDS.every((f) => outputFields.includes(f.key)) ? "Deselect all" : "Select all"}
+              </button>
+            </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
               {AICS_FIELDS.map((f) => (
                 <label

@@ -94,7 +94,7 @@ export function generateVerifiedAgentSchema(
       ratingValue: agent.aggregatedRating.weightedAverage.toFixed(1),
       bestRating: '5',
       worstRating: '1',
-      reviewCount: agent.aggregatedRating.totalReviews,
+      reviewCount: `${Math.max(0, Math.floor((agent.aggregatedRating.totalReviews - 5) / 5) * 5)}+`,
       dateModified: agent.aggregatedRating.lastCalculated,
     };
 
@@ -269,6 +269,16 @@ export function generatePersonSchema(
   if (sameAs.length > 0) schema.sameAs = sameAs;
   if (agent.brokerage) {
     schema.worksFor = { '@type': 'Organization', name: agent.brokerage.value };
+  }
+  // Add aggregateRating to Person entity for comprehensive crawler extraction
+  if (agent.aggregatedRating) {
+    schema.aggregateRating = {
+      '@type': 'AggregateRating',
+      ratingValue: agent.aggregatedRating.weightedAverage.toFixed(1),
+      bestRating: '5',
+      worstRating: '1',
+      reviewCount: `${Math.max(0, Math.floor((agent.aggregatedRating.totalReviews - 5) / 5) * 5)}+`,
+    };
   }
   return schema;
 }

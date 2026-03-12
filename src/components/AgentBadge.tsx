@@ -287,7 +287,8 @@ export const AgentBadge = ({
     ...(licenseNumber && {
       "hasCredential": {
         "@type": "EducationalOccupationalCredential",
-        "credentialId": licenseNumber
+        "credentialCategory": "Real Estate License",
+        "identifier": licenseNumber
       }
     }),
     "additionalProperty": [
