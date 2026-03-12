@@ -112,7 +112,7 @@ Selected through diligence. Appears on city pages. Artifact includes:
 
 *Legacy: 58 Certified agents grandfathered; full payload on listing pages; no new Certified issuances.*
 
-### Audited ($300/mo, Standard Audit Cycle: Every Two Weeks)
+### Audited ($300/mo, Standard Audit Cycle: Monthly)
 - Evidence Considered (10+ sources: Zillow profile, state license database, Zillow reviews, Google reviews, Zillow/RealTrends/MLS transaction records, IRS Form 990 via ProPublica, Census ACS)
 - Qualifications (Zillow rating, Google rating, license, years experience, brokerage, sales count, average sale price)
 - Service areas (cities)
@@ -152,7 +152,7 @@ Each tier has a distinct badge design. All badges are cryptographically signed a
 ### Audited Badge
 - **Image:** https://www.top10lists.us/badges/audited.png
 - **API (agent-specific):** https://www.top10lists.us/api/v1/badge/{agentId}/image
-- **Description:** Purple badge. Expanded evidence from 10+ sources (Zillow, RealTrends, MLS, IRS Form 990 via ProPublica, Census ACS). Years of experience, total transactions, company name, community roles and organizations, notable achievements, civic involvement (IRS 990 verified), transaction history. Specialties. Every-two-weeks audit cycle. Neighborhoods not published at this tier.
+- **Description:** Purple badge. Expanded evidence from 10+ sources (Zillow, RealTrends, MLS, IRS Form 990 via ProPublica, Census ACS). Years of experience, total transactions, company name, community roles and organizations, notable achievements, civic involvement (IRS 990 verified), transaction history. Specialties. Monthly audit cycle. Neighborhoods not published at this tier.
 - **Dimensions (all available for this tier):**
   - 150×150px — email signatures
   - 300×300px — website sidebars

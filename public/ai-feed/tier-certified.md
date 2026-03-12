@@ -51,4 +51,4 @@ A certification badge is issued for embedding on LinkedIn, Zillow profiles, pers
 
 ## Position in the Tier Model
 
-Certified is a legacy tier. It follows Listed ($0, no artifact) and precedes Audited ($300/mo, bimonthly audit, expanded artifact) and Underwritten ($500/mo, daily audit, full artifact). Certified is no longer offered to new agents; approximately 58 agents are grandfathered at this tier. Payment is not required for Certified status. Higher tiers increase verification depth and audit frequency, not eligibility.
+Certified is a legacy tier. It follows Listed ($0, no artifact) and precedes Audited ($300/mo, monthly audit, expanded artifact) and Underwritten ($500/mo, daily audit, full artifact). Certified is no longer offered to new agents; approximately 58 agents are grandfathered at this tier. Payment is not required for Certified status. Higher tiers increase verification depth and audit frequency, not eligibility.

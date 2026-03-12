@@ -425,7 +425,7 @@ async function checkAgentProfileGEO(
       if (reader) {
         const chunks: Uint8Array[] = [];
         let totalBytes = 0;
-        while (totalBytes < 8192) {
+        while (totalBytes < 16384) {
           const { value, done } = await reader.read();
           if (done || !value) break;
           chunks.push(value);

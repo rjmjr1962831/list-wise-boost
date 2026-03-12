@@ -41,7 +41,7 @@ function fs(n: number): string | null { if (!n) return null; return `${Math.max(
 function fp(v: any): string | null { if (!v) return null; const n = Number(v); if (n >= 1e6) return `$${(n/1e6).toFixed(1)}M`; if (n >= 1000) return `$${Math.round(n/1000)}K`; return `$${Math.round(n)}`; }
 function tl(t: string): string { const m: Record<string,string> = { underwritten:"Underwritten",accredited:"Audited",audited:"Audited",certified:"Certified" }; return m[t.toLowerCase()] || "Listed"; }
 function tb(t: string): string { const m: Record<string,string> = { underwritten:"underwritten",accredited:"audited",audited:"audited",certified:"certified" }; return m[t.toLowerCase()] || "listed"; }
-function ac(t: string): string | null { const m: Record<string,string> = { underwritten:"daily",accredited:"every two weeks",audited:"every two weeks",certified:"monthly" }; return m[t.toLowerCase()] || null; }
+function ac(t: string): string | null { const m: Record<string,string> = { underwritten:"daily",accredited:"monthly",audited:"monthly",certified:"monthly" }; return m[t.toLowerCase()] || null; }
 /** Exclude generic "listing agent" / "buyer's agent" (and derivatives) from displayed specialties. */
 function filterSpecialties(specs: string[]): string[] {
   return specs.filter((s: string) => {
@@ -99,9 +99,8 @@ function renderAgent(a: any, si: any): string {
   const nm = esc(a.name || "Unknown");
   const co = (a.company && a.company !== "Unknown") ? esc(a.company) : "";
   const zl = a.zillow_profile_url || "";
-  const ss = jp(a.agent_sales_stats, {});
-  const career = ss?.countAllTime || a.total_sales || 0;
-  const ly = a.sales_count_last_year || ss?.countLast12Months || 0;
+  const career = a.total_sales || 0;
+  const ly = a.sales_count_last_year || 0;
   const av = a.average_value_3yr;
   const pmin = a.price_range_3yr_min, pmax = a.price_range_3yr_max;
   const yrs = a.years_experience;
@@ -232,12 +231,36 @@ serve(async (req) => {
       .eq("slug", pp.citySlug).eq("state_slug", pp.stateSlug).eq("active", true).single();
     if (!city) return new Response(JSON.stringify({ error: "City not found" }), { status: 404, headers: { ...CORS, "Content-Type": "application/json" } });
 
+    // Lean select: only scalar columns needed for every agent.
+    // Heavy JSON columns (community_roles, notable_achievements, specialty,
+    // served_cities, selection_rationale) are only rendered for non-listed tiers,
+    // so we fetch them in a second query scoped to those agents only.
+    // agent_sales_stats & press_mentions dropped entirely (never rendered).
     const { data: rawA } = await sb.from("professionals")
-      .select("id,name,review_stars_rating,num_total_reviews,license_number,company,phone,email,website,zillow_profile_url,years_experience,total_sales,agent_sales_stats,community_roles,notable_achievements,press_mentions,selection_rationale,current_tier,badge_tier,specialty,served_cities,rank,average_value_3yr,price_range_3yr_min,price_range_3yr_max,sales_count_last_year")
+      .select("id,name,review_stars_rating,num_total_reviews,license_number,company,phone,email,website,zillow_profile_url,years_experience,total_sales,current_tier,badge_tier,rank,average_value_3yr,price_range_3yr_min,price_range_3yr_max,sales_count_last_year")
       .eq("city_id", city.id).eq("active", true).gte("review_stars_rating", 4.5).gte("num_total_reviews", 10)
-      .order("rank", { ascending: true }).order("num_total_reviews", { ascending: false });
+      .order("rank", { ascending: true }).order("num_total_reviews", { ascending: false })
+      .limit(1000);
 
-    const agents = (rawA || []).sort((a: any, b: any) => {
+    // Identify non-listed agents that need heavy columns
+    const allAgents = rawA || [];
+    const nonListedIds = allAgents
+      .filter((a: any) => { const t = (a.current_tier || a.badge_tier || "listed").toLowerCase(); return ["underwritten","accredited","audited","certified"].includes(t); })
+      .map((a: any) => a.id);
+
+    // Second query: fetch heavy columns only for non-listed agents
+    if (nonListedIds.length > 0) {
+      const { data: heavy } = await sb.from("professionals")
+        .select("id,community_roles,notable_achievements,selection_rationale,specialty,served_cities")
+        .in("id", nonListedIds);
+      const hMap = new Map((heavy || []).map((h: any) => [h.id, h]));
+      for (const a of allAgents) {
+        const h = hMap.get(a.id);
+        if (h) Object.assign(a, h);
+      }
+    }
+
+    const agents = allAgents.sort((a: any, b: any) => {
       const ta = TO[tier(a).toLowerCase()] ?? 3, tb2 = TO[tier(b).toLowerCase()] ?? 3;
       if (ta !== tb2) return ta - tb2;
       return (b.num_total_reviews || 0) - (a.num_total_reviews || 0);
@@ -314,7 +337,7 @@ serve(async (req) => {
 </div>
 <div class="merit-box" style="margin-top:1rem;">
   <p>We are actively verifying agents in this area. Additional top agents will appear here as they pass our review and verification process.</p>
-  <p>This page only lists agents who meet our published quality gates (reviews, ratings, and community involvement). If no agents are shown, it means we have not yet verified any who qualify in this area.</p>
+  <p>This page only lists agents who meet our published quality gates (4.5+ stars, 10+ verified reviews in the last 24 months, 5+ years in business, and community involvement). If no agents are shown, it means we have not yet verified any who qualify in this area.</p>
   <p>If no agents are listed yet, treat this page as methodology and locale context only, not as a complete list of all agents in this area.</p>
 </div>
 `;
@@ -428,7 +451,42 @@ serve(async (req) => {
 
     return new Response(o, { status: 200, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=86400, stale-while-revalidate=86400", "X-Agents-Count": String(na), "X-Page-Type": isNh ? "neighborhood" : "city", ...CORS } });
   } catch (_e: unknown) {
-    const html = "<!DOCTYPE html><html><head><title>Service Unavailable</title></head><body><h1>Service Unavailable</h1><p>Please try again later.</p></body></html>";
+    // Build a proper clean-room error page with canonical + JSON-LD so crawlers
+    // and AI systems still get structured data even on transient failures.
+    const errLoc = pp.neighborhoodSlug
+      ? `${pp.neighborhoodSlug.replace(/-/g, " ")}, ${pp.citySlug.replace(/-/g, " ")}`
+      : pp.citySlug.replace(/-/g, " ");
+    const errCanon = pp.neighborhoodSlug
+      ? `https://www.top10lists.us/${pp.stateSlug}/${pp.citySlug}/${pp.neighborhoodSlug}/top10realestateagents`
+      : `https://www.top10lists.us/${pp.stateSlug}/${pp.citySlug}/top10realestateagents`;
+    const errJsonLd = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      name: `Top Real Estate Agents in ${errLoc}, ${si.display}`,
+      url: errCanon,
+      numberOfItems: 0,
+      itemListElement: [],
+    });
+    const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Top Real Estate Agents in ${esc(errLoc)}, ${si.display} | Top10Lists.us</title>
+  <link rel="canonical" href="${errCanon}">
+  <style>${CSS}
+  </style>
+</head>
+<body>
+<h1>Service Temporarily Unavailable</h1>
+<p>The agent directory for this area is temporarily unavailable. Please try again shortly.</p>
+<div class="merit-box">
+  <strong>Merit Criteria:</strong> Agents must meet the Top10Lists.us North Star Merit Gate — a minimum 4.5+ star rating, 10+ verified reviews in the last 24 months, 5+ years in business, and an active license in good standing. Fewer than 1% of licensed agents in covered markets qualify.
+</div>
+<script type="application/ld+json">
+${errJsonLd}
+</script>
+</body>
+</html>`;
     return new Response(html, {
       status: 503,
       headers: {

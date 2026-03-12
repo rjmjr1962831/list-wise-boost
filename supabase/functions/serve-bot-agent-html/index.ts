@@ -89,7 +89,7 @@ function tb(t: string): string {
   return m[t.toLowerCase()] || "listed";
 }
 function ac(t: string): string | null {
-  const m: Record<string, string> = { underwritten: "daily", accredited: "every two weeks", audited: "every two weeks", certified: "monthly" };
+  const m: Record<string, string> = { underwritten: "daily", accredited: "monthly", audited: "monthly", certified: "monthly" };
   return m[t.toLowerCase()] || null;
 }
 function tierOf(a: any): string { return a.current_tier || a.badge_tier || "listed"; }
@@ -248,6 +248,47 @@ serve(async (req) => {
     const bio    = a.synthesized_bio || "";
     const rat    = a.selection_rationale || "";
 
+    // ---- JSON-LD structured data builder (embedded in <head>) ----
+    function buildJsonLd(): string {
+      const schema: any = {
+        "@context": "https://schema.org",
+        "@type": "RealEstateAgent",
+        name: a.name,
+        url: canon,
+        description: sanitizeMeritGate(bioToPlainText(bio)) || sanitizeMeritGate(`Top-rated real estate agent in ${city.name}, ${si.display}. Independently verified by Top10Lists.us.`),
+        address: {
+          "@type": "PostalAddress",
+          addressLocality: city.name,
+          addressRegion: si.abbr,
+          addressCountry: "US",
+        },
+        aggregateRating: {
+          "@type": "AggregateRating",
+          ratingValue: a.review_stars_rating || 0,
+          reviewCount: a.num_total_reviews || 0,
+          bestRating: 5,
+        },
+      };
+      if (a.image_url) schema.image = a.image_url;
+      if (co) schema.memberOf = { "@type": "Organization", name: sanitizeMeritGate(a.company) };
+      if (a.license_number) schema.identifier = a.license_number;
+      if (ph) schema.telephone = ph;
+      if (em) schema.email = em;
+      if (ws) schema.sameAs = [ws];
+      if (served.length > 0) {
+        schema.areaServed = served.map((c: any) => {
+          const raw = typeof c === "object" ? (c.name || String(c)) : String(c);
+          // Title-case slug-style city names: "west-hollywood" → "West Hollywood"
+          const titled = raw.replace(/-/g, " ").replace(/\b\w/g, (ch: string) => ch.toUpperCase());
+          return {
+            "@type": "City",
+            name: sanitizeMeritGate(titled),
+          };
+        });
+      }
+      return `<script type="application/ld+json">\n${JSON.stringify(schema, null, 2)}\n  </script>`;
+    }
+
     // ----------------------------------------------------------------
     // BUILD HTML
     // ----------------------------------------------------------------
@@ -264,6 +305,7 @@ serve(async (req) => {
   <meta property="og:description" content="Independently verified. ${a.review_stars_rating || 0} stars, ${normNum(a.num_total_reviews || 0) || "0+"} reviews.">
   <meta property="og:type" content="profile">
   <meta property="og:url" content="${canon}">
+  ${buildJsonLd()}
   <style>${CSS}</style>
 </head>
 <body>
@@ -566,34 +608,6 @@ serve(async (req) => {
 
 `;
 
-    // ---- JSON-LD schema ----
-    const schema: any = {
-      "@context": "https://schema.org",
-      "@type": "RealEstateAgent",
-      name: a.name,
-      url: canon,
-      description: sanitizeMeritGate(bioToPlainText(bio)) || `Top-rated real estate agent in ${city.name}, ${si.display}. Independently verified by Top10Lists.us.`,
-      address: {
-        "@type": "PostalAddress",
-        addressLocality: city.name,
-        addressRegion: si.abbr,
-        addressCountry: "US",
-      },
-      aggregateRating: {
-        "@type": "AggregateRating",
-        ratingValue: a.review_stars_rating || 0,
-        reviewCount: a.num_total_reviews || 0,
-        bestRating: 5,
-      },
-    };
-    if (co) schema.worksFor = { "@type": "Organization", name: a.company };
-    if (a.license_number) schema.identifier = a.license_number;
-    if (ph) schema.telephone = ph;
-    if (em) schema.email = em;
-    if (ws) schema.sameAs = [ws];
-    // Profile images deprecated (old Supabase instance); omit from schema
-
-    o += `<script type="application/ld+json">\n${JSON.stringify(schema, null, 2)}\n</script>\n`;
     o += `</body>\n</html>`;
 
     return new Response(o, {

@@ -66,7 +66,7 @@ const TIER_META: Record<CertificationTier, { name: string; icon: typeof BadgeChe
     icon: Shield,
     features: [
       'Richer data payload',
-      'Every Two Weeks refresh',
+      'Monthly refresh',
       'Community involvement, transaction stats',
     ],
   },

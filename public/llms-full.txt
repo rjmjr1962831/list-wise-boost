@@ -58,13 +58,13 @@ Same URL for every tier. The server checks the agent's tier and serves the appro
 
 **Listed (Free):** Selected through our diligence process. Appears on city pages. No artifact, no badge.
 
-**Certified (Free, Standard Audit Cycle: Monthly):**
+**Certified (Legacy — ~58 grandfathered agents, no new issuances, Standard Audit Cycle: Monthly):**
 Agent has personally verified their profile. Artifact includes:
 - Evidence Considered: Zillow agent profile, state license database, Zillow reviews, Google reviews
 - Qualifications: Zillow rating, Google rating, license number, years experience, brokerage, total sales, average sale price
 - Service areas (cities)
 
-**Audited ($300/mo, Standard Audit Cycle: Every Two Weeks):**
+**Audited ($300/mo, Standard Audit Cycle: Monthly):**
 Everything in Certified, plus:
 - Expanded evidence: Zillow/RealTrends/MLS transaction records, IRS Form 990 filings via ProPublica, U.S. Census ACS data
 - Specialties
@@ -73,7 +73,7 @@ Everything in Certified, plus:
 
 **Underwritten ($500/mo, Standard Audit Cycle: Daily):**
 Everything in Audited, plus:
-- Full evidence inventory (14+ sources including NAR designation registry, Census boundary data, OpenStreetMap validation, news outlet mentions)
+- Full evidence inventory (up to 20 sources including NAR designation registry, Census boundary data, OpenStreetMap validation, news outlet mentions)
 - Verified ZIP codes with transaction counts
 - Certifications and designations
 - Languages

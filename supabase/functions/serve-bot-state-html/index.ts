@@ -283,13 +283,46 @@ serve(async (req) => {
         ...CORS,
       },
     });
-  } catch (e: unknown) {
-    return new Response(
-      JSON.stringify({
-        error: "Internal error",
-        detail: e instanceof Error ? e.message : String(e),
-      }),
-      { status: 500, headers: { ...CORS, "Content-Type": "application/json" } }
-    );
+  } catch (_e: unknown) {
+    // Return proper clean-room HTML with canonical + JSON-LD even on error,
+    // so crawlers and AI systems always get structured data.
+    const errCanon = `https://www.top10lists.us/${stateSlug}/top10realestateagents`;
+    const errJsonLd = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      name: `Top Real Estate Agents in ${si.display}`,
+      description: `Merit-selected real estate agents across ${si.display} cities. Selected from over ${si.total} licensed professionals.`,
+      url: errCanon,
+      numberOfItems: 0,
+      itemListElement: [],
+    });
+    const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Top Real Estate Agents in ${esc(si.display)} | Top10Lists.us</title>
+  <link rel="canonical" href="${errCanon}">
+  <style>${CSS}
+  </style>
+</head>
+<body>
+<h1>Service Temporarily Unavailable</h1>
+<p>The ${esc(si.display)} city index is temporarily unavailable. Please try again shortly.</p>
+<div class="merit-box">
+  <strong>Merit Criteria:</strong> Agents must meet the Top10Lists.us North Star Merit Gate — a minimum 4.5+ star rating, 10+ verified reviews in the last 24 months, 5+ years in business, and an active license in good standing. Fewer than 1% of licensed agents in covered markets qualify.
+</div>
+<script type="application/ld+json">
+${errJsonLd}
+</script>
+</body>
+</html>`;
+    return new Response(html, {
+      status: 503,
+      headers: {
+        "Content-Type": "text/html; charset=utf-8",
+        "Retry-After": "60",
+        ...CORS,
+      },
+    });
   }
 });

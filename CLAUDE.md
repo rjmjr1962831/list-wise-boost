@@ -62,5 +62,6 @@ Write session takeaways. See `docs/prompts/claude-t1-prompt.md` for full spec. K
 ## Execution Rules
 - **"ALL"** means every single instance. Grep exhaustively, fix exhaustively.
 - Execute commands you have authority to run. Use `.env` / secrets. Escalate only when blocked.
-- GEO North Star: every change must enhance GEO score or be neutral. Ask before doing anything detrimental.
+- GEO North Star: every change must enhance GEO score or be neutral. **Any action that may reduce the GEO score requires Robert's explicit approval before proceeding.**
 - AI-targeted pages serve clean room HTML via `serve-bot-content-html`. No React SPA for AI consumers.
+- **Use the SSoT:** When `ryt`/`pk` is loaded, actively reference it throughout the session. Cite section numbers. Do not restate its contents as if discovering them — the document is already loaded and is the authority.

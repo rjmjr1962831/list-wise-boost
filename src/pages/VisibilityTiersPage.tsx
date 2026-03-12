@@ -62,7 +62,7 @@ const TIERS: TierConfig[] = [
     icon: Shield,
     features: [
       'Richer data payload',
-      'Every Two Weeks refresh',
+      'Monthly refresh',
       'Community involvement, transaction stats',
     ],
   },

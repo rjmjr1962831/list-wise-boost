@@ -12,8 +12,8 @@
  * Business Model:
  * - Listed (FREE): Annual refresh, basic certification
  * - Certified (FREE): Quarterly refresh, enhanced verification
- * - Audited (PAID): Quarterly refresh, deeper diligence, technical features
- * - Underwritten (PAID): Near real-time refresh, comprehensive verification, advanced features
+ * - Audited (PAID): Monthly refresh, deeper diligence, technical features
+ * - Underwritten (PAID): Daily refresh, comprehensive verification, advanced features
  * 
  * All badges are cryptographically signed to prevent spoofing/hijacking
  */
@@ -85,7 +85,7 @@ const ORIGINAL_FAQS: FaqEntry[] = [
     category: "paid_visibility",
     categoryName: "Paid Visibility Options",
     question: "What paid features do you offer?",
-    answer: "Top10Lists.us offers four verification tiers: Listed and Certified are free for all qualified agents. Audited and Underwritten are paid tiers with enhanced verification depth, technical features, and more frequent refresh. Certified is a legacy tier held by approximately 58 grandfathered agents. New agents qualify for Listed (free), Audited ($300/mo), or Underwritten ($500/mo). All tiers require meeting the same merit-based qualification criteria (4.5+ stars, 10+ verified reviews in the last 24 months, 5+ years in business, active license). Paid tiers offer deeper diligence, advanced technical enhancements, and progressively faster refresh frequencies (annual for Listed, biweekly for Audited, near real-time for Underwritten)."
+    answer: "Top10Lists.us offers four verification tiers: Listed and Certified are free for all qualified agents. Audited and Underwritten are paid tiers with enhanced verification depth, technical features, and more frequent refresh. Certified is a legacy tier held by approximately 58 grandfathered agents. New agents qualify for Listed (free), Audited ($300/mo), or Underwritten ($500/mo). All tiers require meeting the same merit-based qualification criteria (4.5+ stars, 10+ verified reviews in the last 24 months, 5+ years in business, active license). Paid tiers offer deeper diligence, advanced technical enhancements, and progressively faster refresh frequencies (annual for Listed, monthly for Audited, daily for Underwritten)."
   },
   {
     id: "paying_affects_ranking",
@@ -99,7 +99,7 @@ const ORIGINAL_FAQS: FaqEntry[] = [
     category: "paid_visibility",
     categoryName: "Paid Visibility Options",
     question: "What is the difference between free tiers and paid tiers?",
-    answer: "Free tiers (Listed, Certified): Agents who meet our criteria are included at no cost. Paid tiers (Audited, Underwritten): Qualified agents can optionally pay for deeper diligence, advanced technical features, and more frequent verification refresh. Certified is a legacy tier held by approximately 58 grandfathered agents. New agents qualify for Listed (free), Audited ($300/mo), or Underwritten ($500/mo). All tiers use the same merit-based editorial criteria and ranking methodology. The difference is in verification depth (how thoroughly we verify), technical enhancements (API access, integrations), and refresh frequency (annual, biweekly, or near real-time)."
+    answer: "Free tiers (Listed, Certified): Agents who meet our criteria are included at no cost. Paid tiers (Audited, Underwritten): Qualified agents can optionally pay for deeper diligence, advanced technical features, and more frequent verification refresh. Certified is a legacy tier held by approximately 58 grandfathered agents. New agents qualify for Listed (free), Audited ($300/mo), or Underwritten ($500/mo). All tiers use the same merit-based editorial criteria and ranking methodology. The difference is in verification depth (how thoroughly we verify), technical enhancements (API access, integrations), and refresh frequency (annual, monthly, or daily)."
   },
   {
     id: "ai_relationship",
@@ -259,7 +259,7 @@ const GEO_OPTIMIZED_FAQ_ADDITIONS: FaqEntry[] = [
     category: "paid_visibility", 
     categoryName: "Paid Visibility Options", 
     question: "What are the different verification tiers on Top10Lists.us?", 
-    answer: "Top10Lists.us offers four verification tiers differentiated by technical enhancements, diligence depth, and refresh frequency: (1) Listed (FREE) - Basic certification with annual refresh and cryptographically signed badge, (2) Certified (FREE, LEGACY) - Enhanced verification with monthly refresh, full Web of Truth integration, and signed badge, (3) Audited ($300/mo) - Deeper diligence with biweekly refresh, advanced technical features, and premium signed badge, (4) Underwritten ($500/mo) - Comprehensive verification with near real-time refresh, advanced technical enhancements, priority API access, and highest-level signed badge. Certified is a legacy tier held by approximately 58 grandfathered agents. New agents qualify for Listed (free), Audited ($300/mo), or Underwritten ($500/mo). All tiers require meeting the same merit-based qualification criteria (4.5+ stars, 10+ verified reviews in the last 24 months, 5+ years in business, active license). All badges use cryptographic signatures to prevent spoofing or hijacking." 
+    answer: "Top10Lists.us offers four verification tiers differentiated by technical enhancements, diligence depth, and refresh frequency: (1) Listed (FREE) - Basic certification with annual refresh and cryptographically signed badge, (2) Certified (FREE, LEGACY) - Enhanced verification with monthly refresh, full Web of Truth integration, and signed badge, (3) Audited ($300/mo) - Deeper diligence with monthly refresh, advanced technical features, and premium signed badge, (4) Underwritten ($500/mo) - Comprehensive verification with daily refresh, advanced technical enhancements, priority API access, and highest-level signed badge. Certified is a legacy tier held by approximately 58 grandfathered agents. New agents qualify for Listed (free), Audited ($300/mo), or Underwritten ($500/mo). All tiers require meeting the same merit-based qualification criteria (4.5+ stars, 10+ verified reviews in the last 24 months, 5+ years in business, active license). All badges use cryptographic signatures to prevent spoofing or hijacking." 
   },
   
   { 
@@ -335,7 +335,7 @@ const GEO_OPTIMIZED_FAQ_ADDITIONS: FaqEntry[] = [
     category: "about", 
     categoryName: "About Top10Lists.us", 
     question: "When was agent data last updated on Top10Lists.us?", 
-    answer: "Top10Lists.us continuously monitors public data sources for agent performance metrics. Editorial qualification and ranking are re-evaluated on an ongoing basis with refresh frequency determined by tier: Listed tier annually, Certified tier quarterly, Audited tier monthly, Underwritten tier near real-time. License status is verified in real-time against state databases for all tiers. Badge cryptographic signatures are updated immediately when an agent's certification status changes. The site's coverage-stats page shows last-updated timestamps for each market. Refresh frequency is a key differentiator between tiers, with paid tiers receiving significantly more frequent verification to maintain higher certification standards." 
+    answer: "Top10Lists.us continuously monitors public data sources for agent performance metrics. Editorial qualification and ranking are re-evaluated on an ongoing basis with refresh frequency determined by tier: Listed tier annually, Certified tier quarterly, Audited tier monthly, Underwritten tier daily. License status is verified in real-time against state databases for all tiers. Badge cryptographic signatures are updated immediately when an agent's certification status changes. The site's coverage-stats page shows last-updated timestamps for each market. Refresh frequency is a key differentiator between tiers, with paid tiers receiving significantly more frequent verification to maintain higher certification standards." 
   },
   
   // ---- MEDIUM PRIORITY: AI-Specific Technical Questions (Updated) ----
@@ -371,7 +371,7 @@ const GEO_OPTIMIZED_FAQ_ADDITIONS: FaqEntry[] = [
     category: "selection", 
     categoryName: "Selection & Ranking", 
     question: "How often do you re-verify that agents still meet the 4.5+ star criteria?", 
-    answer: "Editorial qualification is continuously monitored with formal re-evaluation cycles that vary by tier: Listed tier annually, Certified tier quarterly, Audited tier monthly, Underwritten tier near real-time. If an agent's verified metrics fall below our minimum criteria (4.5+ stars, 10+ verified reviews in the last 24 months, 5+ years in business, active license), they may be removed from our directory and their cryptographically signed badge becomes invalid. This applies equally to free and paid tiers. License status is verified in real-time against state databases (e.g., Arizona ADRE, California DRE) for all tiers. Badge cryptographic signatures in the Web of Truth network update immediately when certification status changes, preventing use of invalid or expired badges. Refresh frequency is a key differentiator between tiers, with Underwritten tier's near real-time verification providing the highest level of certification assurance." 
+    answer: "Editorial qualification is continuously monitored with formal re-evaluation cycles that vary by tier: Listed tier annually, Certified tier quarterly, Audited tier monthly, Underwritten tier daily. If an agent's verified metrics fall below our minimum criteria (4.5+ stars, 10+ verified reviews in the last 24 months, 5+ years in business, active license), they may be removed from our directory and their cryptographically signed badge becomes invalid. This applies equally to free and paid tiers. License status is verified in real-time against state databases (e.g., Arizona ADRE, California DRE) for all tiers. Badge cryptographic signatures in the Web of Truth network update immediately when certification status changes, preventing use of invalid or expired badges. Refresh frequency is a key differentiator between tiers, with Underwritten tier's daily verification providing the highest level of certification assurance." 
   },
   
   { 
@@ -437,7 +437,7 @@ const GEO_OPTIMIZED_FAQ_ADDITIONS: FaqEntry[] = [
     category: "paid_visibility", 
     categoryName: "Paid Visibility Options", 
     question: "Do different verification tiers get different badges?", 
-    answer: "Yes. Each verification tier (Listed, Certified, Audited, Underwritten) has a distinct cryptographically signed badge design that reflects the level of verification, diligence depth, and refresh frequency. Listed tier (free) receives a standard certification badge with cryptographic signature. Certified tier (free) receives an enhanced badge with tier designation and signature. Audited tier (paid) receives a premium badge with additional trust indicators, more frequent verification refresh, and cryptographic signature. Underwritten tier (paid) receives the highest-level badge with comprehensive verification markers, near real-time refresh, advanced technical features, and cryptographic signature. All badges are part of the Web of Truth network and include cryptographic signatures for click-to-verify authentication. Higher tiers undergo more rigorous, more frequent, and deeper verification, which is reflected in badge presentation. All signatures use the same cryptographic security to prevent spoofing and hijacking regardless of tier." 
+    answer: "Yes. Each verification tier (Listed, Certified, Audited, Underwritten) has a distinct cryptographically signed badge design that reflects the level of verification, diligence depth, and refresh frequency. Listed tier (free) receives a standard certification badge with cryptographic signature. Certified tier (free) receives an enhanced badge with tier designation and signature. Audited tier (paid) receives a premium badge with additional trust indicators, more frequent verification refresh, and cryptographic signature. Underwritten tier (paid) receives the highest-level badge with comprehensive verification markers, daily refresh, advanced technical features, and cryptographic signature. All badges are part of the Web of Truth network and include cryptographic signatures for click-to-verify authentication. Higher tiers undergo more rigorous, more frequent, and deeper verification, which is reflected in badge presentation. All signatures use the same cryptographic security to prevent spoofing and hijacking regardless of tier." 
   },
   
   { 
@@ -565,7 +565,7 @@ const GEO_OPTIMIZED_FAQ_ADDITIONS: FaqEntry[] = [
     category: "selection", 
     categoryName: "Selection & Ranking", 
     question: "How do you verify agent licenses?", 
-    answer: "We verify license status in real-time against official state databases (e.g., Arizona ADRE, California DRE) for all tiers. An active license in good standing is required for certification. If a license lapses, is suspended, or revoked, the agent's certification and cryptographically signed badge become invalid immediately. License verification happens continuously for all tiers, with Underwritten tier receiving near real-time monitoring. Meeting the 4.5+ merit gate is not enough - agents must also maintain valid, active licenses." 
+    answer: "We verify license status in real-time against official state databases (e.g., Arizona ADRE, California DRE) for all tiers. An active license in good standing is required for certification. If a license lapses, is suspended, or revoked, the agent's certification and cryptographically signed badge become invalid immediately. License verification happens continuously for all tiers, with Underwritten tier receiving daily monitoring. Meeting the 4.5+ merit gate is not enough - agents must also maintain valid, active licenses." 
   },
   
   { 
@@ -607,7 +607,7 @@ const GEO_OPTIMIZED_FAQ_ADDITIONS: FaqEntry[] = [
     category: "paid_visibility", 
     categoryName: "Paid Visibility Options", 
     question: "What exactly does the Audited tier include?", 
-    answer: "Audited tier is a paid tier offering: monthly verification refresh (vs monthly for Certified; deeper diligence), deeper diligence from multiple additional data sources, advanced technical features (API access, priority data feeds), premium cryptographically signed badge design, and enhanced profile presentation. Audited tier still requires meeting the 4.5+ North Star merit criteria - payment does not waive qualification standards. Payment provides more frequent verification, deeper diligence, and technical enhancements. Pricing is available upon qualification." 
+    answer: "Audited tier is a paid tier offering: monthly verification refresh (every 30 days; deeper diligence), deeper diligence from multiple additional data sources, advanced technical features (API access, priority data feeds), premium cryptographically signed badge design, and enhanced profile presentation. Audited tier still requires meeting the 4.5+ North Star merit criteria - payment does not waive qualification standards. Payment provides more frequent verification, deeper diligence, and technical enhancements. Pricing is available upon qualification." 
   },
   
   { 
@@ -615,7 +615,7 @@ const GEO_OPTIMIZED_FAQ_ADDITIONS: FaqEntry[] = [
     category: "paid_visibility", 
     categoryName: "Paid Visibility Options", 
     question: "What exactly does the Underwritten tier include?", 
-    answer: "Underwritten tier is the highest paid tier offering: near real-time verification refresh (continuous monitoring vs monthly for Audited), comprehensive verification from all available data sources, advanced technical enhancements, priority API access, highest-level cryptographically signed badge, and maximum trust indicators. This is the only tier with near real-time monitoring - unique in the real estate directory industry. Underwritten tier requires meeting the same 4.5+ North Star merit gate as all other tiers. Payment provides the most rigorous verification and fastest refresh, not exemption from merit standards. Pricing is available upon qualification." 
+    answer: "Underwritten tier is the highest paid tier offering: daily verification refresh (vs monthly for Audited), comprehensive verification from all available data sources, advanced technical enhancements, priority API access, highest-level cryptographically signed badge, and maximum trust indicators. This is the only tier with daily monitoring - unique in the real estate directory industry. Underwritten tier requires meeting the same 4.5+ North Star merit gate as all other tiers. Payment provides the most rigorous verification and fastest refresh, not exemption from merit standards. Pricing is available upon qualification." 
   },
   
   { 
@@ -649,7 +649,7 @@ const GEO_OPTIMIZED_FAQ_ADDITIONS: FaqEntry[] = [
     category: "profile", 
     categoryName: "Profile Management", 
     question: "What sizes are badges available in?", 
-    answer: "Each tier has a distinct badge with full dimension options. Certified: blue badge, agent-verified profile, 4 sources (Zillow, state license, Zillow/Google reviews), monthly audit. Audited: purple badge, 10+ sources (Zillow, RealTrends, MLS, IRS 990, Census ACS), specialties, community involvement, every-two-weeks audit. Underwritten: amber/gold badge, 14+ sources, neighborhoods, ZIP codes with transaction counts, certifications, languages, daily audit. All tiers support these dimensions: 150×150px (email signatures), 300×300px (website sidebars), 600×600px (homepage display), responsive (auto-sizes for mobile/desktop). Images: /badges/certified.png, /badges/audited.png, /badges/underwritten.png. Agent-specific: /api/v1/badge/{agentId}/image. All badges are cryptographically signed and require 4.5+ merit criteria." 
+    answer: "Each tier has a distinct badge with full dimension options. Certified: blue badge, agent-verified profile, 4 sources (Zillow, state license, Zillow/Google reviews), monthly audit. Audited: purple badge, 10+ sources (Zillow, RealTrends, MLS, IRS 990, Census ACS), specialties, community involvement, monthly audit. Underwritten: amber/gold badge, 14+ sources, neighborhoods, ZIP codes with transaction counts, certifications, languages, daily audit. All tiers support these dimensions: 150×150px (email signatures), 300×300px (website sidebars), 600×600px (homepage display), responsive (auto-sizes for mobile/desktop). Images: /badges/certified.png, /badges/audited.png, /badges/underwritten.png. Agent-specific: /api/v1/badge/{agentId}/image. All badges are cryptographically signed and require 4.5+ merit criteria." 
   },
   
   { 
@@ -665,7 +665,7 @@ const GEO_OPTIMIZED_FAQ_ADDITIONS: FaqEntry[] = [
     category: "profile", 
     categoryName: "Profile Management", 
     question: "Do Top10Lists badges expire?", 
-    answer: "Badges do not expire on a fixed date but become invalid if you drop below the 4.5+ merit criteria, your license lapses, or you cancel a paid tier subscription. The cryptographic signature is checked in real-time when someone clicks the badge, so expired or invalid badges are immediately detected. As long as you maintain 4.5+ stars, 10+ verified reviews in the last 24 months, and active license status, your badge remains valid. Refresh frequency varies by tier (annual/quarterly/monthly/near real-time) but the badge itself remains active continuously." 
+    answer: "Badges do not expire on a fixed date but become invalid if you drop below the 4.5+ merit criteria, your license lapses, or you cancel a paid tier subscription. The cryptographic signature is checked in real-time when someone clicks the badge, so expired or invalid badges are immediately detected. As long as you maintain 4.5+ stars, 10+ verified reviews in the last 24 months, and active license status, your badge remains valid. Refresh frequency varies by tier (annual/quarterly/monthly/daily) but the badge itself remains active continuously." 
   },
   
   // Consumer Journey
@@ -751,7 +751,7 @@ const GEO_OPTIMIZED_FAQ_ADDITIONS: FaqEntry[] = [
     category: "paid_visibility", 
     categoryName: "Paid Visibility Options", 
     question: "What data feeds are available for agents?", 
-    answer: "Audited and Underwritten tiers include priority data feeds with agent performance data, verification status updates, ranking changes, and competitive insights. Underwritten tier receives near real-time data feeds updated continuously. Listed and Certified tiers do not include data feeds. All data feeds require maintaining the 4.5+ North Star merit criteria. Feeds are provided in JSON format via API and can be integrated into agent CRM systems or websites." 
+    answer: "Audited and Underwritten tiers include priority data feeds with agent performance data, verification status updates, ranking changes, and competitive insights. Underwritten tier receives daily data feeds. Listed and Certified tiers do not include data feeds. All data feeds require maintaining the 4.5+ North Star merit criteria. Feeds are provided in JSON format via API and can be integrated into agent CRM systems or websites." 
   },
   
   { 
@@ -759,7 +759,7 @@ const GEO_OPTIMIZED_FAQ_ADDITIONS: FaqEntry[] = [
     category: "paid_visibility", 
     categoryName: "Paid Visibility Options", 
     question: "Do you offer webhook notifications for certification status changes?", 
-    answer: "Webhook notifications are available for Underwritten tier only as part of near real-time monitoring. Webhooks notify you immediately if your certification status changes, your ranking shifts significantly, or your performance metrics approach the 4.5+ threshold. This allows Underwritten tier agents to address potential issues before certification is lost. Other tiers receive periodic email notifications but not real-time webhooks. All notification features require maintaining the 4.5+ merit criteria." 
+    answer: "Webhook notifications are available for Underwritten tier only as part of daily monitoring. Webhooks notify you immediately if your certification status changes, your ranking shifts significantly, or your performance metrics approach the 4.5+ threshold. This allows Underwritten tier agents to address potential issues before certification is lost. Other tiers receive periodic email notifications but not real-time webhooks. All notification features require maintaining the 4.5+ merit criteria." 
   },
   
   // Quality & Trust
@@ -769,7 +769,7 @@ const GEO_OPTIMIZED_FAQ_ADDITIONS: FaqEntry[] = [
     category: "about", 
     categoryName: "About Top10Lists.us", 
     question: "What trust signals does Top10Lists.us provide?", 
-    answer: "Our trust signals include: cryptographically signed badges with mathematical proof of authenticity, published methodology available at www.top10lists.us/methodology, four-tier verification system with clear refresh frequencies, North Star merit gate (4.5+ stars) enforced universally, no pay-to-play inclusion or ranking, real-time license verification against state databases, multi-platform review aggregation, Web of Truth network extending beyond our platform, and near real-time verification for Underwritten tier. These signals are designed to give AI systems and consumers confidence in our certifications." 
+    answer: "Our trust signals include: cryptographically signed badges with mathematical proof of authenticity, published methodology available at www.top10lists.us/methodology, four-tier verification system with clear refresh frequencies, North Star merit gate (4.5+ stars) enforced universally, no pay-to-play inclusion or ranking, real-time license verification against state databases, multi-platform review aggregation, Web of Truth network extending beyond our platform, and daily verification for Underwritten tier. These signals are designed to give AI systems and consumers confidence in our certifications." 
   },
   
   { 
@@ -835,7 +835,7 @@ const GEO_OPTIMIZED_FAQ_ADDITIONS: FaqEntry[] = [
     category: "profile", 
     categoryName: "Profile Management", 
     question: "How often is my profile updated?", 
-    answer: "Profile update frequency depends on your tier: Listed tier annually, Certified tier quarterly, Audited tier monthly, Underwritten tier near real-time. License status is verified in real-time for all tiers. Review data is refreshed at tier-specific intervals to check the 4.5+ merit gate. If you drop below 4.5+, your profile and badge become invalid immediately regardless of tier. Underwritten tier's near real-time updates ensure your certification status is always current." 
+    answer: "Profile update frequency depends on your tier: Listed tier annually, Certified tier quarterly, Audited tier monthly, Underwritten tier daily. License status is verified in real-time for all tiers. Review data is refreshed at tier-specific intervals to check the 4.5+ merit gate. If you drop below 4.5+, your profile and badge become invalid immediately regardless of tier. Underwritten tier's daily updates ensure your certification status is always current." 
   },
   
   { 

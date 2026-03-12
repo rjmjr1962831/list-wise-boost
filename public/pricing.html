@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Top10Lists.us — AI Certification for Real Estate Professionals</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #1A3A5C;
+    --dknavy: #0D2640;
+    --xdknavy: #061520;
+    --gold: #C9A84C;
+    --amber: #B85C00;
+    --blue: #2E75B6;
+    --light: #D5E8F0;
+    --pale: #F0F6FB;
+    --green: #1A7A4A;
+    --white: #ffffff;
+    --offwhite: #F7F9FC;
+    --gray: #888888;
+    --text: #1a1a2e;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--offwhite);
+    color: var(--text);
+    overflow-x: hidden;
+  }
+
+  header {
+    background: var(--xdknavy);
+    padding: 0;
+    position: relative;
+    overflow: hidden;
+  }
+
+  header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: 
+      radial-gradient(ellipse 80% 60% at 50% -10%, rgba(46,117,182,0.25) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 40% at 80% 50%, rgba(201,168,76,0.08) 0%, transparent 50%);
+    pointer-events: none;
+  }
+
+  .header-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 60px 40px 50px;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+  }
+
+  .logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 42px;
+    font-weight: 900;
+    color: var(--white);
+    letter-spacing: -1px;
+    margin-bottom: 8px;
+  }
+
+  .logo span { color: var(--gold); }
+
+  .header-sub {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--light);
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+
+  .header-tagline {
+    font-size: 13px;
+    color: rgba(213,232,240,0.6);
+    font-style: italic;
+    margin-bottom: 32px;
+  }
+
+  .policy-bar {
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    flex-wrap: wrap;
+    border: 1px solid rgba(46,117,182,0.4);
+    border-radius: 8px;
+    overflow: hidden;
+    max-width: 680px;
+    margin: 0 auto;
+  }
+
+  .policy-item {
+    flex: 1;
+    min-width: 140px;
+    padding: 10px 16px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--light);
+    text-align: center;
+    background: rgba(46,117,182,0.1);
+    border-right: 1px solid rgba(46,117,182,0.3);
+  }
+
+  .policy-item:last-child { border-right: none; }
+
+  .early-banner {
+    background: linear-gradient(135deg, var(--amber) 0%, #D4720A 100%);
+    padding: 14px 40px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .early-banner::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      45deg, transparent, transparent 10px,
+      rgba(255,255,255,0.03) 10px, rgba(255,255,255,0.03) 20px
+    );
+  }
+
+  .early-banner-text {
+    font-size: 14px;
+    font-weight: 700;
+    color: white;
+    position: relative;
+    z-index: 1;
+  }
+
+  .early-banner-text span {
+    background: rgba(255,255,255,0.2);
+    padding: 2px 10px;
+    border-radius: 20px;
+    margin-left: 8px;
+    font-size: 12px;
+  }
+
+  main { max-width: 1100px; margin: 0 auto; padding: 50px 40px; }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--blue);
+    margin-bottom: 10px;
+  }
+
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 6px;
+  }
+
+  .section-desc {
+    font-size: 13.5px;
+    color: var(--gray);
+    margin-bottom: 32px;
+    line-height: 1.6;
+  }
+
+  .tiers {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 14px;
+  }
+
+  .tier-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 16px rgba(26,58,92,0.08);
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: 2px solid transparent;
+    position: relative;
+  }
+
+  .tier-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 32px rgba(26,58,92,0.15);
+  }
+
+  .tier-card.selected {
+    border-color: var(--gold);
+    box-shadow: 0 8px 32px rgba(201,168,76,0.25);
+  }
+
+  .tier-card.selected::after {
+    content: '✓ Selected';
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: var(--gold);
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 20px;
+  }
+
+  .tier-header {
+    padding: 22px 20px 18px;
+    background: var(--navy);
+    position: relative;
+  }
+
+  .tier-header.audited { background: #0D2A45; }
+  .tier-header.underwritten { background: var(--dknavy); }
+
+  .tier-accent {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--blue);
+  }
+
+  .tier-accent.underwritten { background: var(--gold); }
+
+  .tier-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 4px;
+  }
+
+  .tier-price {
+    font-size: 32px;
+    font-weight: 700;
+    color: white;
+    line-height: 1;
+  }
+
+  .tier-price sup { font-size: 16px; vertical-align: top; margin-top: 6px; display: inline-block; }
+  .tier-price sub { font-size: 13px; font-weight: 400; color: rgba(255,255,255,0.6); }
+
+  .tier-annual {
+    font-size: 11.5px;
+    color: var(--green);
+    font-weight: 600;
+    margin-top: 5px;
+  }
+
+  .tier-body { padding: 18px 20px; }
+
+  .tier-onetime {
+    background: var(--pale);
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 14px;
+  }
+
+  .tier-onetime-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--navy);
+    margin-bottom: 8px;
+  }
+
+  .tier-onetime-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12.5px;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  .tier-onetime-row .strike {
+    text-decoration: line-through;
+    color: var(--gray);
+    font-size: 11px;
+    margin-right: 4px;
+  }
+
+  .tier-onetime-row .disc { color: var(--green); font-weight: 700; }
+
+  .tier-onetime-total {
+    border-top: 1px solid var(--light);
+    margin-top: 6px;
+    padding-top: 6px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--navy);
+  }
+
+  .tier-cta {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--navy);
+    color: white;
+  }
+
+  .tier-card.underwritten-card .tier-cta {
+    background: var(--gold);
+    color: var(--xdknavy);
+  }
+
+  .tier-cta:hover { opacity: 0.88; transform: translateY(-1px); }
+
+  .tier-badge {
+    font-size: 11px;
+    color: var(--gold);
+    font-weight: 600;
+    text-align: center;
+    margin-top: 8px;
+  }
+
+  .tagline-bar {
+    text-align: center;
+    font-style: italic;
+    font-size: 13px;
+    color: var(--navy);
+    font-weight: 500;
+    padding: 10px 0 40px;
+    border-bottom: 1px solid var(--light);
+    margin-bottom: 48px;
+  }
+
+  .enterprise-section {
+    background: var(--xdknavy);
+    border-radius: 16px;
+    padding: 40px;
+    margin-bottom: 48px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .enterprise-section::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 60% 80% at 100% 50%, rgba(201,168,76,0.07) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .enterprise-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 8px;
+  }
+
+  .enterprise-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 6px;
+  }
+
+  .enterprise-desc {
+    font-size: 13px;
+    color: rgba(213,232,240,0.7);
+    margin-bottom: 30px;
+    line-height: 1.6;
+    max-width: 680px;
+  }
+
+  .phases {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+
+  .phase {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(201,168,76,0.2);
+    border-radius: 10px;
+    padding: 20px;
+    border-top: 3px solid var(--gold);
+  }
+
+  .phase:nth-child(2) { border-top-color: #88BBDD; }
+  .phase:nth-child(3) { border-top-color: var(--amber); }
+
+  .phase-num {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 4px;
+  }
+
+  .phase:nth-child(2) .phase-num { color: #88BBDD; }
+  .phase:nth-child(3) .phase-num { color: var(--amber); }
+
+  .phase-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 17px;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 6px;
+  }
+
+  .phase-price {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--gold);
+    margin-bottom: 4px;
+  }
+
+  .phase:nth-child(2) .phase-price { color: #88BBDD; }
+  .phase:nth-child(3) .phase-price { color: var(--amber); }
+
+  .phase-sub {
+    font-size: 10.5px;
+    color: rgba(213,232,240,0.5);
+    margin-bottom: 10px;
+  }
+
+  .phase-desc {
+    font-size: 12px;
+    color: rgba(213,232,240,0.7);
+    line-height: 1.55;
+  }
+
+  .enterprise-cta {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+  }
+
+  .btn-primary {
+    padding: 14px 32px;
+    background: var(--gold);
+    color: var(--xdknavy);
+    border: none;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-block;
+  }
+
+  .btn-primary:hover { background: #d4b05a; transform: translateY(-2px); }
+
+  .enterprise-cta-note {
+    font-size: 12px;
+    color: rgba(213,232,240,0.5);
+    line-height: 1.5;
+  }
+
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(6,21,32,0.85);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+  }
+
+  .modal-overlay.active { display: flex; }
+
+  .modal {
+    background: white;
+    border-radius: 16px;
+    padding: 40px;
+    max-width: 480px;
+    width: 90%;
+    position: relative;
+    animation: modalIn 0.25s ease;
+  }
+
+  @keyframes modalIn {
+    from { opacity: 0; transform: translateY(20px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .modal-close {
+    position: absolute;
+    top: 16px; right: 20px;
+    background: none; border: none;
+    font-size: 22px; cursor: pointer;
+    color: var(--gray);
+  }
+
+  .modal-tier-badge {
+    display: inline-block;
+    background: var(--navy);
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 14px;
+  }
+
+  .modal-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 6px;
+  }
+
+  .modal-desc {
+    font-size: 13px;
+    color: var(--gray);
+    margin-bottom: 22px;
+    line-height: 1.6;
+  }
+
+  .modal-summary {
+    background: var(--pale);
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 22px;
+  }
+
+  .modal-summary-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+
+  .modal-summary-row.total {
+    border-top: 1px solid var(--light);
+    padding-top: 8px;
+    margin-top: 4px;
+    font-weight: 700;
+    color: var(--navy);
+    font-size: 14px;
+  }
+
+  .modal-summary-row .disc { color: var(--green); font-weight: 600; }
+
+  .modal-early {
+    background: #FFF4E6;
+    border: 1px solid var(--amber);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 12px;
+    color: var(--amber);
+    font-weight: 600;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+
+  .form-group { margin-bottom: 14px; }
+
+  .form-group label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--navy);
+    margin-bottom: 5px;
+  }
+
+  .form-group input {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1.5px solid var(--light);
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13.5px;
+    color: var(--text);
+    transition: border-color 0.2s;
+    outline: none;
+  }
+
+  .form-group input:focus { border-color: var(--blue); }
+
+  .btn-enroll {
+    width: 100%;
+    padding: 15px;
+    background: var(--navy);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 10px;
+  }
+
+  .btn-enroll:hover { background: var(--dknavy); }
+  .btn-enroll.gold { background: var(--gold); color: var(--xdknavy); }
+  .btn-enroll.gold:hover { background: #d4b05a; }
+
+  .modal-fine {
+    font-size: 11px;
+    color: var(--gray);
+    text-align: center;
+    line-height: 1.5;
+  }
+
+  .site-footer {
+    background: var(--xdknavy);
+    padding: 24px 40px;
+    text-align: center;
+  }
+
+  .site-footer p {
+    font-size: 11.5px;
+    color: rgba(213,232,240,0.4);
+    line-height: 1.8;
+  }
+
+  .site-footer a { color: rgba(213,232,240,0.6); text-decoration: none; }
+
+  .merit-callout {
+    background: var(--navy);
+    border-radius: 12px;
+    padding: 22px 32px;
+    text-align: center;
+    margin-bottom: 48px;
+  }
+
+  .merit-callout p {
+    font-size: 14px;
+    font-style: italic;
+    color: var(--light);
+    line-height: 1.6;
+  }
+
+  .merit-callout strong { color: var(--gold); font-style: normal; }
+
+  @media (max-width: 768px) {
+    .tiers { grid-template-columns: 1fr; }
+    .phases { grid-template-columns: 1fr; }
+    .header-inner { padding: 40px 24px 36px; }
+    main { padding: 32px 24px; }
+    .enterprise-section { padding: 28px 24px; }
+    .logo { font-size: 32px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="logo">top10lists<span>.us</span></div>
+    <div class="header-sub">AI Certification for Real Estate Professionals</div>
+    <div class="header-tagline">The only independent certification built for the way AI systems select and name agents.</div>
+    <div class="policy-bar">
+      <div class="policy-item">7-Day Free Trial</div>
+      <div class="policy-item">Prorated Refund — Always</div>
+      <div class="policy-item">Cancel Anytime</div>
+      <div class="policy-item">No Lock-In Contracts</div>
+    </div>
+  </div>
+</header>
+
+<div class="early-banner">
+  <div class="early-banner-text">
+    Early Enrollment — 50% Off One-Time Investments
+    <span id="countdown-inline">Ends April 30, 2026</span>
+  </div>
+</div>
+
+<main>
+
+  <div class="section-label">Individual Agent Certification</div>
+  <div class="section-title">Choose Your Certification Tier</div>
+  <div class="section-desc">Every tier requires a one-time Initiation and Audit investment before ongoing certification begins. Both are fully earned upon delivery. Enroll before May 1, 2026 to lock in 50% off.</div>
+
+  <div class="tiers">
+
+    <div class="tier-card" id="card-listed" onclick="selectTier('listed')">
+      <div class="tier-header">
+        <div class="tier-accent"></div>
+        <div class="tier-name">Listed</div>
+        <div class="tier-price"><sup>$</sup>249<sub>/mo</sub></div>
+        <div class="tier-annual">or $2,490/yr — save $498</div>
+      </div>
+      <div class="tier-body">
+        <div class="tier-onetime">
+          <div class="tier-onetime-label">One-Time Investments</div>
+          <div class="tier-onetime-row">
+            <span>Initiation</span>
+            <span><span class="strike">$299</span><span class="disc"> $150</span></span>
+          </div>
+          <div class="tier-onetime-row">
+            <span>Audit</span>
+            <span><span class="strike">$249</span><span class="disc"> $125</span></span>
+          </div>
+          <div class="tier-onetime-total">
+            <span>Total Today</span>
+            <span>$275 <span style="color:var(--gray);font-weight:400;font-size:11px">(was $548)</span></span>
+          </div>
+        </div>
+        <button class="tier-cta" onclick="openModal('listed', event)">Enroll in Listed</button>
+      </div>
+    </div>
+
+    <div class="tier-card" id="card-audited" onclick="selectTier('audited')">
+      <div class="tier-header audited">
+        <div class="tier-accent"></div>
+        <div class="tier-name">Audited</div>
+        <div class="tier-price"><sup>$</sup>497<sub>/mo</sub></div>
+        <div class="tier-annual">or $4,970/yr — save $994</div>
+      </div>
+      <div class="tier-body">
+        <div class="tier-onetime">
+          <div class="tier-onetime-label">One-Time Investments</div>
+          <div class="tier-onetime-row">
+            <span>Initiation</span>
+            <span><span class="strike">$499</span><span class="disc"> $250</span></span>
+          </div>
+          <div class="tier-onetime-row">
+            <span>Audit</span>
+            <span><span class="strike">$497</span><span class="disc"> $249</span></span>
+          </div>
+          <div class="tier-onetime-total">
+            <span>Total Today</span>
+            <span>$499 <span style="color:var(--gray);font-weight:400;font-size:11px">(was $996)</span></span>
+          </div>
+        </div>
+        <button class="tier-cta" onclick="openModal('audited', event)">Enroll in Audited</button>
+      </div>
+    </div>
+
+    <div class="tier-card underwritten-card" id="card-underwritten" onclick="selectTier('underwritten')">
+      <div class="tier-header underwritten">
+        <div class="tier-accent underwritten"></div>
+        <div class="tier-name">Underwritten</div>
+        <div class="tier-price"><sup>$</sup>797<sub>/mo</sub></div>
+        <div class="tier-annual">or $7,970/yr — save $1,594</div>
+      </div>
+      <div class="tier-body">
+        <div class="tier-onetime">
+          <div class="tier-onetime-label">One-Time Investments</div>
+          <div class="tier-onetime-row">
+            <span>Initiation</span>
+            <span><span class="strike">$999</span><span class="disc"> $500</span></span>
+          </div>
+          <div class="tier-onetime-row">
+            <span>Audit</span>
+            <span><span class="strike">$797</span><span class="disc"> $399</span></span>
+          </div>
+          <div class="tier-onetime-total">
+            <span>Total Today</span>
+            <span>$899 <span style="color:var(--gray);font-weight:400;font-size:11px">(was $1,796)</span></span>
+          </div>
+        </div>
+        <button class="tier-cta" onclick="openModal('underwritten', event)">Enroll in Underwritten</button>
+        <div class="tier-badge">&#9733; Max 3 agents per ZIP — Certified Badge Included</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="tagline-bar">Listed gets you in. &nbsp;|&nbsp; Audited gets you noticed. &nbsp;|&nbsp; Underwritten gets you the market.</div>
+
+  <div class="enterprise-section">
+    <div class="enterprise-label">Brokerages, Teams &amp; Franchise Groups</div>
+    <div class="enterprise-title">The AI Discovery Investment</div>
+    <div class="enterprise-desc">A three-phase professional engagement. Each phase is fully earned upon delivery — no contingency, no refund exposure. The ongoing investment is confirmed on the discovery call and is not published.</div>
+
+    <div class="phases">
+      <div class="phase">
+        <div class="phase-num">Phase 1</div>
+        <div class="phase-name">Initiation</div>
+        <div class="phase-price">6% of First-Year Value</div>
+        <div class="phase-sub">one-time — calculated at enrollment</div>
+        <div class="phase-desc">Discovery call, market analysis, and brokerage onboarding. Investment is 6% of your first-year certified agent value. Reserves your market position.</div>
+      </div>
+      <div class="phase">
+        <div class="phase-num">Phase 2</div>
+        <div class="phase-name">Audit</div>
+        <div class="phase-price">$1,500</div>
+        <div class="phase-sub">flat investment</div>
+        <div class="phase-desc">Independent verification of your agent roster against the merit gate. Produces a certification eligibility report before any ongoing commitment is made.</div>
+      </div>
+      <div class="phase">
+        <div class="phase-num">Phase 3</div>
+        <div class="phase-name">Underwritten</div>
+        <div class="phase-price">By Agreement</div>
+        <div class="phase-sub">ongoing monthly — confirmed on call</div>
+        <div class="phase-desc">Full Underwritten certification for every agent who clears the merit gate. Custom brokerage badge. ZIP exclusivity. Priority data refresh. Rate confirmed after audit — not published.</div>
+      </div>
+    </div>
+
+    <div class="enterprise-cta">
+      <a href="https://top10us.link/enterprise" class="btn-primary" target="_blank">Schedule Your Discovery Call</a>
+      <div class="enterprise-cta-note">Positions are limited per market.<br>Phase 1 investment = 6% of your first-year certified agent value.</div>
+    </div>
+  </div>
+
+  <div class="merit-callout">
+    <p><strong>Agents cannot buy inclusion.</strong> The merit standard never changes. Payment determines data depth, refresh speed, and market exclusivity — nothing else.</p>
+  </div>
+
+</main>
+
+<div class="modal-overlay" id="modal-overlay" onclick="closeModalOutside(event)">
+  <div class="modal" id="modal">
+    <button class="modal-close" onclick="closeModal()">&#215;</button>
+    <div class="modal-tier-badge" id="modal-tier-badge">Listed</div>
+    <div class="modal-title" id="modal-title">Start Your Enrollment</div>
+    <div class="modal-desc" id="modal-desc">Complete your information below. Your one-time investments will be processed via Stripe. Your 7-day free trial begins after the audit is complete.</div>
+    <div class="modal-early">Early Enrollment Pricing Active — 50% Off One-Time Investments Through April 30, 2026</div>
+    <div class="modal-summary" id="modal-summary"></div>
+    <div class="form-group"><label>Full Name</label><input type="text" id="field-name" placeholder="Jane Smith"></div>
+    <div class="form-group"><label>Email Address</label><input type="email" id="field-email" placeholder="jane@realty.com"></div>
+    <div class="form-group"><label>Phone Number</label><input type="tel" id="field-phone" placeholder="(555) 000-0000"></div>
+    <div class="form-group"><label>Brokerage Name</label><input type="text" id="field-brokerage" placeholder="Your Brokerage"></div>
+    <div class="form-group"><label>Primary ZIP Code</label><input type="text" id="field-zip" placeholder="85001" maxlength="5"></div>
+    <button class="btn-enroll" id="btn-enroll" onclick="processEnrollment()">Pay &amp; Start Enrollment</button>
+    <div class="modal-fine">Secure payment via Stripe. Your one-time investment is fully earned upon delivery of your Initiation and Audit. Ongoing monthly investment begins after your 7-day free trial. Cancel anytime — prorated refund calculated daily.</div>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <p>
+    <a href="https://top10lists.us">top10lists.us</a> &nbsp;|&nbsp;
+    <a href="https://top10us.link">top10us.link</a> &nbsp;|&nbsp;
+    Enterprise: <a href="https://top10us.link/enterprise">top10us.link/enterprise</a>
+  </p>
+  <p>Pricing effective 2026. Early enrollment offer expires April 30, 2026. Individual tier refunds prorated daily from cancellation date.</p>
+</footer>
+
+<script>
+const TIERS = {
+  listed:      { name: 'Listed',      mo: 249,  yr: 2490,  init: 299, audit: 249, initDisc: 150, auditDisc: 125, total: 548, totalDisc: 275 },
+  audited:     { name: 'Audited',     mo: 497,  yr: 4970,  init: 499, audit: 497, initDisc: 250, auditDisc: 249, total: 996, totalDisc: 499 },
+  underwritten:{ name: 'Underwritten',mo: 797,  yr: 7970,  init: 999, audit: 797, initDisc: 500, auditDisc: 399, total: 1796, totalDisc: 899 },
+};
+
+let selectedTier = null;
+
+function selectTier(tier) {
+  document.querySelectorAll('.tier-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('card-' + tier).classList.add('selected');
+  selectedTier = tier;
+}
+
+function openModal(tier, e) {
+  if (e) e.stopPropagation();
+  selectTier(tier);
+  const t = TIERS[tier];
+  document.getElementById('modal-tier-badge').textContent = t.name;
+  document.getElementById('modal-title').textContent = 'Enroll in ' + t.name;
+  document.getElementById('modal-summary').innerHTML = `
+    <div class="modal-summary-row"><span>Initiation Investment</span><span><span style="text-decoration:line-through;color:#888;font-size:11px;margin-right:4px">$${t.init}</span><span class="disc">$${t.initDisc}</span></span></div>
+    <div class="modal-summary-row"><span>Audit Investment</span><span><span style="text-decoration:line-through;color:#888;font-size:11px;margin-right:4px">$${t.audit}</span><span class="disc">$${t.auditDisc}</span></span></div>
+    <div class="modal-summary-row total"><span>Due Today</span><span>$${t.totalDisc} <span style="color:#888;font-weight:400;font-size:11px">(saved $${t.total - t.totalDisc})</span></span></div>
+    <div class="modal-summary-row" style="font-size:12px;color:#888;margin-top:6px"><span>Then $${t.mo}/mo after 7-day free trial</span></div>
+  `;
+  const btn = document.getElementById('btn-enroll');
+  btn.textContent = 'Pay $' + t.totalDisc + ' & Start Enrollment';
+  if (tier === 'underwritten') { btn.classList.add('gold'); } else { btn.classList.remove('gold'); }
+  document.getElementById('modal-overlay').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+function closeModalOutside(e) {
+  if (e.target === document.getElementById('modal-overlay')) closeModal();
+}
+
+function processEnrollment() {
+  const name = document.getElementById('field-name').value.trim();
+  const email = document.getElementById('field-email').value.trim();
+  const phone = document.getElementById('field-phone').value.trim();
+  const zip = document.getElementById('field-zip').value.trim();
+  if (!name || !email || !phone || !zip) { alert('Please complete all required fields before proceeding.'); return; }
+  const t = TIERS[selectedTier];
+  alert('Thank you, ' + name + '!\n\nYour ' + t.name + ' enrollment is being processed.\nDue today: $' + t.totalDisc + '\n\nYou will receive a confirmation at ' + email + ' within minutes.');
+  closeModal();
+}
+
+function updateCountdown() {
+  const deadline = new Date('2026-04-30T23:59:59');
+  const now = new Date();
+  const diff = deadline - now;
+  if (diff <= 0) { document.getElementById('countdown-inline').textContent = 'Offer Expired'; return; }
+  const days = Math.floor(diff / (1000*60*60*24));
+  const hrs  = Math.floor((diff % (1000*60*60*24)) / (1000*60*60));
+  const mins = Math.floor((diff % (1000*60*60)) / (1000*60));
+  document.getElementById('countdown-inline').textContent = days + 'd ' + hrs + 'h ' + mins + 'm remaining';
+}
+updateCountdown();
+setInterval(updateCountdown, 30000);
+</script>
+</body>
+</html>

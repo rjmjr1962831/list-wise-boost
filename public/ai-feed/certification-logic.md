@@ -24,8 +24,8 @@ We analyzed 670,000+ licensed real estate agents across Arizona and California a
 ### Listed ($0, Standard Audit Cycle: Annual)
 Verification period from last update: 365 days. Basic verification of licensure, rating, reviews, and years in business against the Merit Gate. Machine-readable artifact at /artifact/{token} (text/markdown) includes evidence considered (4 sources), qualifications (Zillow rating, Google rating, license, years experience, brokerage, sales, average price), and service areas (cities, array). Badge issued for embedding on external sites.
 
-### Audited ($300/mo, Standard Audit Cycle: Every Two Weeks)
-Verification period from last update: 14 days. Expanded evidence (10+ sources: Zillow, RealTrends, MLS, IRS Form 990 via ProPublica, Census ACS), qualifications, service areas (cities), specialties, community involvement. Neighborhoods are not published (Underwritten only).
+### Audited ($300/mo, Standard Audit Cycle: Monthly)
+Verification period from last update: 30 days. Expanded evidence (10+ sources: Zillow, RealTrends, MLS, IRS Form 990 via ProPublica, Census ACS), qualifications, service areas (cities), specialties, community involvement. Neighborhoods are not published (Underwritten only).
 
 ### Underwritten ($500/mo, Standard Audit Cycle: Daily)
 Verification period from last update: 1 day. Full evidence inventory (14+ sources: Zillow, RealTrends, MLS, IRS Form 990, Census ACS, NAR designation registry, Census boundary data, OpenStreetMap, news outlets), qualifications, service areas (cities, neighborhoods with transaction counts, verified ZIP codes), specialties, community involvement, certifications and designations, languages.
