@@ -7,6 +7,7 @@
  * 2. Consolidates them by date and AI source
  * 3. Updates docs/COMPREHENSIVE_KNOWLEDGE_DOCUMENT.md:
  *    - Sets "Last consolidated" to today
+ *    - Updates live agent counts from Supabase (Section 1 coverage line)
  *    - Adds/updates "## 21. Recent Updates (from t1)" with synthesized content
  *    - Preserves all other sections
  * 4. pts: commits and pushes updated COMPREHENSIVE to staging
@@ -14,6 +15,16 @@
 import { readFileSync, writeFileSync, readdirSync, existsSync } from 'fs';
 import { execSync } from 'child_process';
 import { resolve } from 'path';
+import { createClient } from '@supabase/supabase-js';
+
+// Load .env manually (no dotenv dependency)
+const envPath = resolve(process.cwd(), '.env');
+if (existsSync(envPath)) {
+  for (const line of readFileSync(envPath, 'utf-8').split('\n')) {
+    const m = line.match(/^([A-Z_]+)=(.+)$/);
+    if (m && !process.env[m[1]]) process.env[m[1]] = m[2].trim();
+  }
+}
 
 const TAKEAWAYS_DIR = resolve(process.cwd(), 'docs/takeaways');
 const COMPREHENSIVE_PATH = resolve(process.cwd(), 'docs/COMPREHENSIVE_KNOWLEDGE_DOCUMENT.md');
@@ -48,7 +59,33 @@ function synthesizeTakeaways(files: string[]): string {
   return sections.join('---\n\n');
 }
 
-function updateComprehensive(synthesis: string): void {
+async function getLiveCounts(): Promise<{ total: number; az: number; ca: number } | null> {
+  try {
+    const url = process.env.VITE_SUPABASE_URL || 'https://wiotrvoirdgzfacuuiem.supabase.co';
+    const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!key) { console.warn('s1: SUPABASE_SERVICE_ROLE_KEY not set, skipping live count update'); return null; }
+    const sb = createClient(url, key);
+    const { data, error } = await sb.rpc('run_sql', {
+      query: `SELECT
+        count(*) FILTER (WHERE active = true) AS total,
+        count(*) FILTER (WHERE active = true AND state_slug = 'arizona') AS az,
+        count(*) FILTER (WHERE active = true AND state_slug = 'california') AS ca
+      FROM professionals`
+    });
+    if (error || !data?.[0]) { console.warn('s1: DB query failed, skipping live count update'); return null; }
+    const r = data[0];
+    return { total: Number(r.total), az: Number(r.az), ca: Number(r.ca) };
+  } catch (e) {
+    console.warn('s1: Could not fetch live counts:', e);
+    return null;
+  }
+}
+
+function fmt(n: number): string {
+  return n.toLocaleString('en-US');
+}
+
+async function updateComprehensive(synthesis: string): Promise<void> {
   let doc = readFileSync(COMPREHENSIVE_PATH, 'utf-8');
   const today = new Date().toISOString().slice(0, 10);
 
@@ -57,6 +94,16 @@ function updateComprehensive(synthesis: string): void {
     /\*\*Last consolidated:\*\* .+/,
     `**Last consolidated:** ${today}`
   );
+
+  // Update live agent counts in Section 1 coverage line
+  const counts = await getLiveCounts();
+  if (counts) {
+    doc = doc.replace(
+      /[\d,]+ active \([\d,]+ AZ \+ [\d,]+ CA\)/,
+      `${fmt(counts.total)} active (${fmt(counts.az)} AZ + ${fmt(counts.ca)} CA)`
+    );
+    console.log(`s1: Updated coverage counts → ${fmt(counts.total)} active (${fmt(counts.az)} AZ + ${fmt(counts.ca)} CA)`);
+  }
 
   // Remove ALL existing "## 21. Recent Updates" sections (may be duplicated from prior bugs)
   doc = doc.replace(/\n---\s*\n+## 21\. Recent Updates \(from t1\)[\s\S]*$/, '');
@@ -67,7 +114,7 @@ function updateComprehensive(synthesis: string): void {
   writeFileSync(COMPREHENSIVE_PATH, doc, 'utf-8');
 }
 
-function main() {
+async function main() {
   const files = getTakeawaysFiles();
   if (files.length === 0) {
     console.log('No t1 takeaways files found in docs/takeaways/. Run "t1" on each AI first.');
@@ -77,7 +124,7 @@ function main() {
 
   console.log(`Found ${files.length} takeaways: ${files.join(', ')}`);
   const synthesis = synthesizeTakeaways(files);
-  updateComprehensive(synthesis);
+  await updateComprehensive(synthesis);
   console.log(`Updated docs/COMPREHENSIVE_KNOWLEDGE_DOCUMENT.md with synthesis from ${files.length} AI(s).`);
 
   // pts: push to staging
