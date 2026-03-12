@@ -58,7 +58,7 @@ Same URL for every tier. The server checks the agent's tier and serves the appro
 
 **Listed (Free):** Selected through our diligence process. Appears on city pages. No artifact, no badge.
 
-**Certified (Legacy — ~58 grandfathered agents, no new issuances, Standard Audit Cycle: Monthly):**
+**Certified (Legacy — ~58 grandfathered agents, no new issuances, Standard Audit Cycle: Annual):**
 Agent has personally verified their profile. Artifact includes:
 - Evidence Considered: Zillow agent profile, state license database, Zillow reviews, Google reviews
 - Qualifications: Zillow rating, Google rating, license number, years experience, brokerage, total sales, average sale price

@@ -30,7 +30,7 @@ const DEPRECATED_LANGUAGE = [
   { pattern: /top 0\.2%/i, fix: "Use 'fewer than 1% of licensed agents in covered markets'" },
   { pattern: /4\.8\+\s*stars/i, fix: "Merit gate is 4.5+ stars" },
   { pattern: /(?:require|minimum|merit|gate|needs?)\s+20\+?\s*(?:verified\s+)?reviews/i, fix: "Merit gate is 10+ reviews" },
-  { pattern: /6\+\s*years/i, fix: "Merit gate is 5+ years" },
+  { pattern: /(?<!\d)6\+\s*years/i, fix: "Merit gate is 5+ years" },
   { pattern: /\$100\/mo/i, fix: "Audited is $300/mo" },
   { pattern: /\$150\/mo/i, fix: "Underwritten is $500/mo" },
   { pattern: /bgdtekbhelormzbymkhh/i, fix: "Dead Supabase project ref — must be wiotrvoirdgzfacuuiem" },

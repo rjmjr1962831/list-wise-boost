@@ -50,8 +50,14 @@ function computeScore(a: any, tierRec: number, hasTop10: boolean, bonus: number)
   let social = 0;
   const rc = a.num_total_reviews || 0;
   const rr = a.review_stars_rating || 0;
-  social += Math.round(Math.min(10, rc) * (tierRec / 10));
-  if (rr) social += Math.round(Math.max(0, rr - 3.5) * 5.3 * (tierRec / 10));
+  // Base: review volume and quality always contribute, independent of recency
+  const reviewVolume  = Math.min(20, Math.round(Math.log2(rc + 1) * 2));
+  const reviewQuality = rr >= 3.5 ? Math.round((rr - 3.5) * 6.67) : 0;
+  social += reviewVolume + reviewQuality;
+  // Recency adds separately as a bonus (0-10), does not gate the base
+  social += a.recencyScore;
+  // Tier amplification scales the combined social score (floor 0.5 so unlisted agents still count)
+  social = Math.round(social * (0.5 + 0.5 * (tierRec / 10)));
   if (a.hasRealtor)    social += 4;
   if (a.hasHomelight)  social += 3;
 
@@ -69,7 +75,7 @@ function computeScore(a: any, tierRec: number, hasTop10: boolean, bonus: number)
   if (hasTop10) citable += 7;
   citable = Math.round(citable * (0.4 + 0.6 * (tierRec / 10)));
 
-  const total = Math.min(99, identity + authority + social + tech + citable + bonus);
+  const total = Math.min(95, identity + authority + social + tech + citable + bonus);
   return { identity, authority, social, tech, citable, bonuses: bonus, total };
 }
 
@@ -107,28 +113,43 @@ serve(async (req) => {
     const body = await req.json();
     const batchSize  = Math.min(body.batch_size  || 100, 200);
     const stateFilter = body.state_slug || null;  // optional: 'arizona' | 'california'
+    const forceRescore = body.force_rescore || false;  // re-score all, ignoring audit freshness
+    const agentIds = body.agent_ids || null;  // optional: array of specific agent UUIDs to re-score
 
     // ── 1. Find agents needing scoring via SQL (no pagination bugs) ──
     const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString();
     const stateWhere = stateFilter ? `AND p.state_slug = '${stateFilter}'` : '';
 
-    // Use run_sql to get candidate IDs: agents with no audit, or paid-tier agents due for 30-day refresh
-    const { data: candidateIds, error: sqlErr } = await supabase.rpc('run_sql', {
-      query: `
-        SELECT p.id FROM professionals p
-        LEFT JOIN geo_audit_results g ON g.agent_id = p.id
-        WHERE p.active = true ${stateWhere}
-          AND (
-            g.agent_id IS NULL
-            OR (g.current_tier IN ('audited','underwritten') AND g.audited_at < '${thirtyDaysAgo}')
-          )
-        ORDER BY p.id
-        LIMIT ${batchSize}
-      `
-    });
-    if (sqlErr) throw new Error(`Candidate query failed: ${sqlErr.message}`);
+    let ids: string[];
 
-    const ids = (candidateIds || []).map((r: any) => r.id);
+    if (agentIds && Array.isArray(agentIds) && agentIds.length > 0) {
+      // Targeted rescore: specific agent IDs
+      ids = agentIds;
+    } else {
+      // Use run_sql to get candidate IDs: agents with no audit, paid-tier agents due for 30-day refresh, or all if force_rescore
+      const rescoreAfter = body.rescore_after || null;  // ISO timestamp: only rescore agents audited before this time
+      const rescoreWhere = forceRescore && rescoreAfter
+        ? `AND (g.agent_id IS NULL OR g.audited_at < '${rescoreAfter}')`
+        : '';
+      const candidateQuery = forceRescore
+        ? `SELECT p.id FROM professionals p LEFT JOIN geo_audit_results g ON g.agent_id = p.id WHERE p.active = true ${stateWhere} ${rescoreWhere} ORDER BY p.id LIMIT ${batchSize}`
+        : `SELECT p.id FROM professionals p
+           LEFT JOIN geo_audit_results g ON g.agent_id = p.id
+           WHERE p.active = true ${stateWhere}
+             AND (
+               g.agent_id IS NULL
+               OR (g.current_tier IN ('audited','underwritten') AND g.audited_at < '${thirtyDaysAgo}')
+             )
+           ORDER BY p.id
+           LIMIT ${batchSize}`;
+
+      const { data: candidateIds, error: sqlErr } = await supabase.rpc('run_sql', {
+        query: candidateQuery
+      });
+      if (sqlErr) throw new Error(`Candidate query failed: ${sqlErr.message}`);
+
+      ids = (candidateIds || []).map((r: any) => r.id);
+    }
 
     if (ids.length === 0) {
       // Count total scored for status
@@ -156,6 +177,18 @@ serve(async (req) => {
       }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
+    // ── 1b. Fetch cached Exa results from geo_audit_results ──────────────────
+    const { data: cachedAudits } = await supabase
+      .from('geo_audit_results')
+      .select('agent_id,exa_sources,has_zillow,has_realtor,has_linkedin,has_facebook,has_homelight,has_top10,has_personal_site')
+      .in('agent_id', ids);
+    const cachedByAgent: Record<string, any> = {};
+    for (const row of (cachedAudits || [])) {
+      if (row.exa_sources && Array.isArray(row.exa_sources) && row.exa_sources.length > 0) {
+        cachedByAgent[row.agent_id] = row;
+      }
+    }
+
     // ── 2. Process agents concurrently (20 at a time) ────────────────────────
     const processed: any[] = [];
     const failed: any[]    = [];
@@ -180,17 +213,23 @@ serve(async (req) => {
       const websiteReal  = !!(agent.website && !agent.website.includes('zillow') &&
                               !agent.website.includes('realtor.com') && agent.website.startsWith('http'));
 
-      const exaSources   = await exaSearch(agent.name, stateLabel, agent.company || '', EXA_API_KEY);
+      // Use cached Exa results if available, otherwise run fresh search
+      const cached = cachedByAgent[agent.id];
+      let exaSources: string[];
+      if (cached) {
+        exaSources = cached.exa_sources;
+      } else {
+        exaSources = await exaSearch(agent.name, stateLabel, agent.company || '', EXA_API_KEY);
+      }
       const sl           = exaSources.map((s: string) => s.toLowerCase());
-
-      const hasZillow    = sl.some((s: string) => s.includes('zillow'));
-      const hasRealtor   = sl.some((s: string) => s.includes('realtor.com'));
-      const hasLinkedin  = sl.some((s: string) => s.includes('linkedin'));
-      const hasFacebook  = sl.some((s: string) => s.includes('facebook'));
-      const hasHomelight = sl.some((s: string) => s.includes('homelight'));
-      const hasTop10     = sl.some((s: string) => s.includes('top10lists'));
-      let hasPersonalSite = false;
-      if (websiteReal) {
+      const hasZillow    = cached?.has_zillow    ?? sl.some((s: string) => s.includes('zillow'));
+      const hasRealtor   = cached?.has_realtor   ?? sl.some((s: string) => s.includes('realtor.com'));
+      const hasLinkedin  = cached?.has_linkedin  ?? sl.some((s: string) => s.includes('linkedin'));
+      const hasFacebook  = cached?.has_facebook  ?? sl.some((s: string) => s.includes('facebook'));
+      const hasHomelight = cached?.has_homelight ?? sl.some((s: string) => s.includes('homelight'));
+      const hasTop10     = cached?.has_top10     ?? sl.some((s: string) => s.includes('top10lists'));
+      let hasPersonalSite = cached?.has_personal_site ?? false;
+      if (!cached && websiteReal) {
         try {
           const domain = new URL(agent.website).hostname.replace('www.', '');
           hasPersonalSite = sl.some((s: string) => s.includes(domain));
