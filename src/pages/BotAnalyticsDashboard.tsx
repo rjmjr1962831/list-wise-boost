@@ -8,49 +8,22 @@ import { Bot, TrendingUp, Eye, Activity } from "lucide-react";
 import { format } from "date-fns";
 
 interface BotStat {
-  bot_type: string;
+  bot_name: string;
   total_visits: number;
-  cache_hits: number;
-  cache_misses: number;
 }
 
 interface AgentView {
   agent_slug: string;
-  bot_type: string;
+  bot_name: string;
   viewed_at: string;
-  cache_status: string;
   user_agent: string;
 }
 
-interface ListPageView {
-  location_display: string;
-  list_page_type: "city" | "neighborhood";
-  bot_type: string;
-  viewed_at: string;
-  cache_status: string;
-  agents_shown: { canonical_slug: string; name: string }[];
-}
-
-// Report only MAIN (www.top10lists.us). Staging has no crawl / noindex.
-const MAIN_HOST = "www.top10lists.us";
-
-/** Returns agent slug only when path is an agent profile URL (canonical or legacy); otherwise null. */
+/** Returns agent slug from canonical path /state/agents/slug */
 function getAgentSlugFromPath(path: string | null | undefined): string | null {
   if (!path) return null;
-  // Canonical: /state/agents/canonical-slug
-  const canonicalMatch = path.match(/\/[^/]+\/agents\/([^/?#]+)/);
-  if (canonicalMatch) {
-    const slug = canonicalMatch[1];
-    if (slug && !/^\d{5}$/.test(slug)) return slug;
-    return null;
-  }
-  // Legacy: /state/city/top10realestateagents/agent-slug
-  const legacyMatch = path.match(/\/[^/]+\/[^/]+\/top10realestateagents\/([^/?#]+)/);
-  if (legacyMatch) {
-    const slug = legacyMatch[1];
-    if (!slug || slug === "top10realestateagents" || /^\d{5}$/.test(slug)) return null;
-    return slug;
-  }
+  const m = path.match(/\/[^/]+\/agents\/([^/?#]+)/);
+  if (m && m[1] && !/^\d{5}$/.test(m[1])) return m[1];
   return null;
 }
 
@@ -79,105 +52,76 @@ export default function BotAnalyticsDashboard() {
     const daysAgo = dateRange === "24h" ? 1 : dateRange === "7d" ? 7 : 30;
     const startDate = new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000).toISOString();
 
-    // Bot type breakdown (MAIN only) – same filter as summary
-    const { data: botData } = await supabase.rpc('get_bot_stats', {
-      start_date: startDate
-    });
+    // Bot breakdown from bot_crawl_logs
+    const { data: botData } = await supabase
+      .from("bot_crawl_logs")
+      .select("bot_name, agent_id, page_path, crawled_at, user_agent")
+      .gte("crawled_at", startDate)
+      .order("crawled_at", { ascending: false })
+      .limit(5000);
 
-    if (botData) {
-      setBotStats(botData);
-      // Derive summary from same data so summary and table always match (no separate get_bot_summary RPC)
-      const total = botData.reduce((s, r) => s + Number(r.total_visits ?? 0), 0);
-      const hits = botData.reduce((s, r) => s + Number(r.cache_hits ?? 0), 0);
-      const misses = botData.reduce((s, r) => s + Number(r.cache_misses ?? 0), 0);
-      const hitRate = hits + misses > 0 ? (100 * hits / (hits + misses)) : 0;
-      setSummary(prev => ({
-        total_bot_visits: total,
-        unique_bots: botData.length,
-        unique_agents_viewed: prev?.unique_agents_viewed ?? 0, // set below from agentData
-        cache_hit_rate: hitRate,
-      }));
-    } else {
-      setSummary({ total_bot_visits: 0, unique_bots: 0, unique_agents_viewed: 0, cache_hit_rate: 0 });
-    }
+    if (botData && botData.length > 0) {
+      // Aggregate by bot_name
+      const byBot = botData.reduce((acc, r) => {
+        const k = r.bot_name || "Unknown";
+        acc[k] = (acc[k] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
 
-    // Agent-specific views (MAIN only): only paths that are agent profile URLs
-    // Use same host filter as get_bot_stats: host = www OR (host IS NULL and url contains www)
-    const { data: agentData } = await supabase
-      .from("cloudflare_request_logs")
-      .select("path, bot_type, timestamp, cache_status, user_agent, host, url")
-      .eq("is_bot", true)
-      .gte("timestamp", startDate)
-      .or("path.ilike.%/agents/%,path.ilike.%/top10realestateagents/%")
-      .order("timestamp", { ascending: false })
-      .limit(500);
+      const stats: BotStat[] = Object.entries(byBot)
+        .map(([bot_name, total_visits]) => ({ bot_name, total_visits }))
+        .sort((a, b) => b.total_visits - a.total_visits);
 
-    if (agentData) {
-      // Restrict to MAIN (www) in JS so we match get_bot_stats when host column is NULL
-      const mainData = agentData.filter(
-        r => r.host === MAIN_HOST || (r.host == null && r.url?.toLowerCase().includes('www.top10lists.us'))
-      );
-      const views = mainData
-        .map(record => {
-          const agent_slug = getAgentSlugFromPath(record.path);
+      setBotStats(stats);
+
+      // Agent views
+      const views: AgentView[] = botData
+        .map(r => {
+          const agent_slug = getAgentSlugFromPath(r.page_path);
           if (!agent_slug) return null;
           return {
             agent_slug,
-            bot_type: record.bot_type || 'unknown',
-            viewed_at: record.timestamp,
-            cache_status: record.cache_status || 'UNKNOWN',
-            user_agent: record.user_agent || '',
+            bot_name: r.bot_name || "Unknown",
+            viewed_at: r.crawled_at,
+            user_agent: r.user_agent || "",
           } as AgentView;
         })
         .filter((v): v is AgentView => v !== null);
 
       setAgentViews(views);
+
       const uniqueAgents = new Set(views.map(v => v.agent_slug)).size;
-      setSummary(prev => prev ? { ...prev, unique_agents_viewed: uniqueAgents } : { total_bot_visits: 0, unique_bots: 0, unique_agents_viewed: uniqueAgents, cache_hit_rate: 0 });
-    }
+      const uniqueBots = Object.keys(byBot).length;
 
-    // List page crawls (MAIN only): same host filter as get_bot_stats
-    const { data: listPageRaw } = await supabase
-      .from("cloudflare_request_logs")
-      .select("list_page_type, location_display, agents_shown, bot_type, timestamp, cache_status, host, url")
-      .eq("is_bot", true)
-      .gte("timestamp", startDate)
-      .not("list_page_type", "is", null)
-      .order("timestamp", { ascending: false })
-      .limit(100);
-
-    if (listPageRaw) {
-      const listPageData = listPageRaw.filter(
-        r => r.host === MAIN_HOST || (r.host == null && r.url?.toLowerCase().includes('www.top10lists.us'))
-      );
-      setListPageViews(
-        listPageData
-          .filter((r): r is typeof r & { location_display: string; list_page_type: "city" | "neighborhood" } =>
-            r.list_page_type != null && r.location_display != null
-          )
-          .map(r => ({
-            location_display: r.location_display,
-            list_page_type: r.list_page_type,
-            bot_type: r.bot_type || "unknown",
-            viewed_at: r.timestamp,
-            cache_status: r.cache_status || "UNKNOWN",
-            agents_shown: Array.isArray(r.agents_shown) ? r.agents_shown : [],
-          }))
-      );
+      setSummary({
+        total_bot_visits: botData.length,
+        unique_bots: uniqueBots,
+        unique_agents_viewed: uniqueAgents,
+        cache_hit_rate: 0,
+      });
+    } else {
+      setBotStats([]);
+      setAgentViews([]);
+      setSummary({ total_bot_visits: 0, unique_bots: 0, unique_agents_viewed: 0, cache_hit_rate: 0 });
     }
 
     setLoading(false);
   };
 
-  const getBotColor = (botType: string) => {
+  const getBotColor = (botName: string) => {
     const colors: Record<string, string> = {
-      googlebot: "bg-blue-500",
-      claudebot: "bg-purple-500",
-      gptbot: "bg-green-500",
-      bingbot: "bg-orange-500",
-      perplexitybot: "bg-pink-500",
+      "Googlebot": "bg-blue-500",
+      "ClaudeBot": "bg-purple-500",
+      "GPTBot": "bg-green-500",
+      "Bingbot": "bg-orange-500",
+      "PerplexityBot": "bg-pink-500",
+      "Anthropic-AI": "bg-violet-500",
+      "Twitterbot": "bg-sky-500",
+      "LinkedInBot": "bg-blue-700",
+      "AhrefsBot": "bg-yellow-500",
+      "SEMrushBot": "bg-amber-500",
     };
-    return colors[botType] || "bg-gray-500";
+    return colors[botName] || "bg-gray-500";
   };
 
   if (loading) {
@@ -196,7 +140,7 @@ export default function BotAnalyticsDashboard() {
         <div>
           <h1 className="text-3xl font-bold">Bot Analytics Dashboard</h1>
           <p className="text-muted-foreground mt-2">
-            Track AI bot visits and cache hits on MAIN (www.top10lists.us) only
+            Track AI and search bot crawls of agent profiles on top10lists.us
           </p>
         </div>
         
@@ -260,12 +204,12 @@ export default function BotAnalyticsDashboard() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Cache Hit Rate</CardTitle>
+            <CardTitle className="text-sm font-medium">Bot Types Seen</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {(summary?.cache_hit_rate ?? 0).toFixed(1)}%
+              {summary?.unique_bots ?? 0}
             </div>
             <p className="text-xs text-muted-foreground">
               Served from cache
@@ -303,22 +247,8 @@ export default function BotAnalyticsDashboard() {
                 </TableHeader>
                 <TableBody>
                   {botStats.map((stat) => (
-                    <TableRow key={stat.bot_type}>
-                      <TableCell>
-                        <Badge className={getBotColor(stat.bot_type)}>
-                          {stat.bot_type || "unknown"}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right font-medium">
-                        {stat.total_visits}
-                      </TableCell>
-                      <TableCell className="text-right">{stat.cache_hits}</TableCell>
-                      <TableCell className="text-right">{stat.cache_misses}</TableCell>
-                      <TableCell className="text-right">
-                        {stat.total_visits > 0
-                          ? ((stat.cache_hits / stat.total_visits) * 100).toFixed(1)
-                          : 0}%
-                      </TableCell>
+                    <TableRow key={stat.bot_name}>
+                      
                     </TableRow>
                   ))}
                 </TableBody>
@@ -353,14 +283,12 @@ export default function BotAnalyticsDashboard() {
                         {view.agent_slug}
                       </TableCell>
                       <TableCell>
-                        <Badge className={getBotColor(view.bot_type)}>
-                          {view.bot_type}
+                        <Badge className={getBotColor(view.bot_name)}>
+                          {view.bot_name}
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <Badge variant={view.cache_status === 'HIT' ? 'default' : 'secondary'}>
-                          {view.cache_status}
-                        </Badge>
+
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
                         {format(new Date(view.viewed_at), "MMM d, yyyy HH:mm")}
@@ -413,7 +341,7 @@ export default function BotAnalyticsDashboard() {
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          <Badge className={getBotColor(view.bot_type)}>{view.bot_type}</Badge>
+                          <Badge className={getBotColor(view.bot_name)}>{view.bot_name}</Badge>
                         </TableCell>
                         <TableCell className="max-w-[280px]">
                           <span className="text-sm" title={view.agents_shown.map(a => a.name).join(", ")}>
@@ -425,9 +353,7 @@ export default function BotAnalyticsDashboard() {
                           {format(new Date(view.viewed_at), "MMM d, yyyy HH:mm")}
                         </TableCell>
                         <TableCell>
-                          <Badge variant={view.cache_status === "HIT" ? "default" : "secondary"}>
-                            {view.cache_status}
-                          </Badge>
+
                         </TableCell>
                       </TableRow>
                     ))
@@ -441,3 +367,4 @@ export default function BotAnalyticsDashboard() {
     </div>
   );
 }
+
