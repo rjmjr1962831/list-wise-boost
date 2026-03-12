@@ -107,6 +107,7 @@ const TIER_FEATURES: Record<CertificationTier, { name: string; icon: typeof Shie
     evidenceSources: '4 sources',
     refreshFrequency: 'Quarterly',
     features: [
+      'Data refreshed every 90 days',
       'Machine-readable artifact',
       'Cryptographically signed badge',
       'Zillow + Google + license verification',
@@ -119,6 +120,7 @@ const TIER_FEATURES: Record<CertificationTier, { name: string; icon: typeof Shie
     evidenceSources: '10+ sources',
     refreshFrequency: 'Monthly',
     features: [
+      'Data refreshed every 30 days (AI trusts data < 30 days old)',
       'Community involvement (IRS 990 verified)',
       'Transaction stats and history',
       'Specialties published to AI',
@@ -131,6 +133,7 @@ const TIER_FEATURES: Record<CertificationTier, { name: string; icon: typeof Shie
     evidenceSources: 'Up to 20 sources',
     refreshFrequency: 'Daily',
     features: [
+      'Data refreshed daily (maximum freshness signal)',
       'Everything in Audited',
       'Full neighborhood endorsement',
       'Press mentions and awards',
