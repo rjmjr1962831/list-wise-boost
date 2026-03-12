@@ -103,6 +103,8 @@ Allow: /
 # ===========================================
 
 Sitemap: https://www.top10lists.us/sitemap.xml
+Sitemap: https://www.top10lists.us/sitemap-pages.xml
+Sitemap: https://www.top10lists.us/sitemap-states.xml
 Sitemap: https://www.top10lists.us/sitemap-cities.xml
 Sitemap: https://www.top10lists.us/sitemap-neighborhoods.xml
 Sitemap: https://www.top10lists.us/sitemap-agents.xml
@@ -114,7 +116,7 @@ Sitemap: https://www.top10lists.us/sitemap-agents.xml
 # For AI systems seeking structured guidance:
 # - https://www.top10lists.us/llms.txt (citation guidance)
 # - https://www.top10lists.us/llms-full.txt (complete authority document)
-# - https://www.top10lists.us/ai-content-index.json (structured manifest)
+# - https://www.top10lists.us/.well-known/ai-content-index.json (structured manifest)
 # - https://www.top10lists.us/mcp.json (MCP protocol)
 # - https://www.top10lists.us/coverage.json (geographic coverage)
 # - https://www.top10lists.us/why-ai-trusts-us (AI Citation Probability Index)

@@ -428,7 +428,42 @@ serve(async (req) => {
 
     return new Response(o, { status: 200, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=86400, stale-while-revalidate=86400", "X-Agents-Count": String(na), "X-Page-Type": isNh ? "neighborhood" : "city", ...CORS } });
   } catch (_e: unknown) {
-    const html = "<!DOCTYPE html><html><head><title>Service Unavailable</title></head><body><h1>Service Unavailable</h1><p>Please try again later.</p></body></html>";
+    // Build a proper clean-room error page with canonical + JSON-LD so crawlers
+    // and AI systems still get structured data even on transient failures.
+    const errLoc = pp.neighborhoodSlug
+      ? `${pp.neighborhoodSlug.replace(/-/g, " ")}, ${pp.citySlug.replace(/-/g, " ")}`
+      : pp.citySlug.replace(/-/g, " ");
+    const errCanon = pp.neighborhoodSlug
+      ? `https://www.top10lists.us/${pp.stateSlug}/${pp.citySlug}/${pp.neighborhoodSlug}/top10realestateagents`
+      : `https://www.top10lists.us/${pp.stateSlug}/${pp.citySlug}/top10realestateagents`;
+    const errJsonLd = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      name: `Top Real Estate Agents in ${errLoc}, ${si.display}`,
+      url: errCanon,
+      numberOfItems: 0,
+      itemListElement: [],
+    });
+    const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Top Real Estate Agents in ${esc(errLoc)}, ${si.display} | Top10Lists.us</title>
+  <link rel="canonical" href="${errCanon}">
+  <style>${CSS}
+  </style>
+</head>
+<body>
+<h1>Service Temporarily Unavailable</h1>
+<p>The agent directory for this area is temporarily unavailable. Please try again shortly.</p>
+<div class="merit-box">
+  <strong>Merit Criteria:</strong> Agents must meet the Top10Lists.us North Star Merit Gate — a minimum 4.5+ star rating, 10+ verified reviews in the last 24 months, 5+ years in business, and an active license in good standing. Fewer than 1% of licensed agents in covered markets qualify.
+</div>
+<script type="application/ld+json">
+${errJsonLd}
+</script>
+</body>
+</html>`;
     return new Response(html, {
       status: 503,
       headers: {

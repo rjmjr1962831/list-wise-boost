@@ -26,6 +26,8 @@
         "artifact": true,
         "standardAuditCycle": "Monthly",
         "evidenceSources": 4,
+        "status": "legacy",
+        "note": "~58 grandfathered agents, no longer offered",
         "includes": ["Zillow rating", "Google rating", "license", "years experience", "brokerage", "sales count", "average sale price", "cities"]
       },
       "audited": {

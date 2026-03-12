@@ -76,7 +76,7 @@
     {
       "name": "ai-content-index",
       "description": "Structured LLM discovery manifest with sample queries, citation guidance, tier system, and coverage data",
-      "url": "https://www.top10lists.us/ai-content-index.json",
+      "url": "https://www.top10lists.us/.well-known/ai-content-index.json",
       "mimeType": "application/json",
       "refreshInterval": "weekly"
     },
@@ -175,7 +175,7 @@
   },
   "certificationTiers": {
     "listed": {"cost": "Free", "artifact": false, "auditCycle": "None"},
-    "certified": {"cost": "Free", "artifact": true, "standardAuditCycle": "Annual", "evidenceSources": 4},
+    "certified": {"cost": "Free", "artifact": true, "standardAuditCycle": "Annual", "evidenceSources": 4, "status": "legacy", "note": "~58 grandfathered agents, no longer offered"},
     "audited": {"cost": "$300/month", "artifact": true, "standardAuditCycle": "Every Two Weeks", "evidenceSources": "10+"},
     "underwritten": {"cost": "$500/month", "artifact": true, "standardAuditCycle": "Daily", "evidenceSources": "14+"}
   },
