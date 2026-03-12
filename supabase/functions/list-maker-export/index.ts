@@ -29,6 +29,7 @@ const AICS_FIELD_MAP: Record<string, string> = {
   aics_gap_no_realtor: "g.gap_no_realtor",
   aics_gap_no_press: "g.gap_no_press",
   aics_artifact_url: "g.artifact_url",
+  bot_crawl_count: "(SELECT COUNT(*)::int FROM bot_crawl_logs WHERE agent_id = p.id)",
 };
 
 // Friendly CSV header names matching the UI labels
@@ -66,6 +67,7 @@ const FIELD_LABELS: Record<string, string> = {
   aics_gap_no_realtor: "Gap: No Realtor",
   aics_gap_no_press: "Gap: No Press",
   aics_artifact_url: "Artifact URL",
+  bot_crawl_count: "AI Crawl Count",
 };
 
 serve(async (req) => {
@@ -312,3 +314,4 @@ async function queryWithJoin(
   if (Array.isArray(data)) return data;
   return [];
 }
+
