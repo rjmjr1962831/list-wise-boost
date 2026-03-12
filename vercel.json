@@ -60,6 +60,26 @@
       "source": "/MASTER_KNOWLEDGE_DOCUMENT",
       "destination": "/404",
       "permanent": false
+    },
+    {
+      "source": "/arizona",
+      "destination": "/arizona/top10realestateagents",
+      "permanent": true
+    },
+    {
+      "source": "/california",
+      "destination": "/california/top10realestateagents",
+      "permanent": true
+    },
+    {
+      "source": "/arizona/:city((?!agents|top10realestateagents)[a-z0-9-]+)",
+      "destination": "/arizona/:city/top10realestateagents",
+      "permanent": true
+    },
+    {
+      "source": "/california/:city((?!agents|top10realestateagents)[a-z0-9-]+)",
+      "destination": "/california/:city/top10realestateagents",
+      "permanent": true
     }
   ],
   "rewrites": [

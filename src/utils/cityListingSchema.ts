@@ -119,7 +119,7 @@ export function generateCityListingSchema(listing: CityListingData): object[] {
         "description": `Ranked #${index + 1} real estate agent in ${listing.neighborhoodName || listing.city}, ${listing.stateAbbrev}. ${agent.yearsExperience ? `${agent.yearsExperience} years experience.` : ''} Verified by Top10Lists.us.`,
         ...(agent.brokerage && {
           "parentOrganization": {
-            "@type": "RealEstateAgent",
+            "@type": "Organization",
             "name": agent.brokerage
           }
         }),
@@ -127,7 +127,7 @@ export function generateCityListingSchema(listing: CityListingData): object[] {
           "aggregateRating": {
             "@type": "AggregateRating",
             "ratingValue": agent.ratingValue.toString(),
-            "reviewCount": agent.reviewCount.toString(),
+            "reviewCount": `${Math.max(0, Math.floor((agent.reviewCount - 5) / 5) * 5)}+`,
             "bestRating": "5",
             "worstRating": "1"
           }

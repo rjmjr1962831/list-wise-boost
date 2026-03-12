@@ -8,6 +8,8 @@
     "dev": "vite",
     "build": "vite build && node scripts/post-build.mjs",
     "generate:faq": "tsx scripts/generate-faq-json.ts",
+    "generate:sitemaps": "tsx scripts/generate-static-sitemaps.ts",
+    "generate:counts": "tsx scripts/generate-dynamic-counts.ts",
     "prebuild": "npm run generate:faq",
     "build:dev": "vite build --mode development",
     "lint": "eslint . --max-warnings -1",

@@ -68,7 +68,7 @@ export function generateAgentSchema(
     "aggregateRating": {
       "@type": "AggregateRating",
       "ratingValue": professional.rating || 0,
-      "reviewCount": professional.reviews || 0,
+      "reviewCount": `${Math.max(0, Math.floor(((professional.reviews || 0) - 5) / 5) * 5)}+`,
       "bestRating": 5
     },
     "areaServed": {
@@ -198,8 +198,8 @@ export function generateCitationBlock(
   return parts.join('\n');
 }
 
-/** Site-wide "last updated" date (YYYY-MM-DD). Update when doing a site-wide refresh. */
-export const SITE_LAST_UPDATED = "2026-03-06";
+/** Site-wide "last updated" date (YYYY-MM-DD). Dynamically set to current build date. */
+export const SITE_LAST_UPDATED = new Date().toISOString().split('T')[0];
 
 /**
  * Get the last updated timestamp for freshness signals (meta, JSON-LD, etc.)

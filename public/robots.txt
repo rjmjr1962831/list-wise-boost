@@ -1,5 +1,5 @@
 # robots.txt for Top10Lists.us
-# Last Updated: March 6, 2026
+# Last Updated: March 2026
 
 User-agent: *
 Allow: /

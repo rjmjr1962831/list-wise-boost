@@ -15,7 +15,7 @@ Sitemap: https://www.top10lists.us/sitemap.xml
 `;
 
 const PRODUCTION_BODY = `# robots.txt for Top10Lists.us (Production)
-# Last Updated: February 2026
+# Last Updated: March 2026
 
 User-agent: *
 Allow: /

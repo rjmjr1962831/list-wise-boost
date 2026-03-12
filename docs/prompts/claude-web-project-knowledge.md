@@ -77,7 +77,7 @@ AI-facing pages (transparency, FAQ, for-ai, methodology) serve clean room HTML v
 
 ## 21. Recent Updates (from t1)
 
-*Last synthesized: 2026-03-11*
+*Last synthesized: 2026-03-12*
 
 ---
 
@@ -125,6 +125,126 @@ AI-facing pages (transparency, FAQ, for-ai, methodology) serve clean room HTML v
 
 ---
 
+### CLAUDE — 2026-03-12
+
+# Claude Code Takeaways — 2026-03-12
+
+## Key Outcomes
+- Fixed `run_sql` endpoint in enrichment-api: replaced broken raw postgres connection (stale DB password) with Supabase JS client `.rpc('run_sql')` — now works reliably
+- Rewrote social pillar in `batch-aics-score` scoring model:
+  - Decoupled review volume/quality from recency — unlisted agents with strong reviews no longer zeroed out
+  - Tier amplification now has a 0.5 floor so unlisted agents still earn social credit
+  - Switched reviewVolume from linear cap (`min(10, floor(rc/5))`) to log scale (`min(20, round(log2(rc+1)*2))`) — agents with 1,000+ reviews now properly outscore agents with 50
+- Capped max AICS score at 95 (was 99)
+- Added Exa result caching: `batch-aics-score` now reads cached `exa_sources` from `geo_audit_results` instead of calling Exa API on every run — scores are deterministic
+- Added `agent_ids` parameter to `batch-aics-score` for targeted re-scoring of specific agents
+- Added `force_rescore` and `rescore_after` parameters for bulk re-scoring without manual DB resets
+- Re-scored all 3,262 active agents (872 AZ + 2,390 CA) with the new model
+
+## Config / Infrastructure
+- Updated Supabase secret `DB_URL` on project `wiotrvoirdgzfacuuiem` (set to correct direct postgres connection string)
+- Updated Supabase secret `DATABASE_URL` on project `wiotrvoirdgzfacuuiem`
+- Enrichment-api SQL endpoint now uses Supabase RPC instead of deno-postgres Pool
+
+## New Rules or Docs
+- CLAUDE.md: Added GEO approval gate — any action that may reduce GEO score requires Robert's explicit approval
+- CLAUDE.md: Added SSoT usage rule — actively reference pk document throughout session, cite section numbers
+- CLAUDE.md: Documented both SQL access methods (enrichment-api POST and Supabase REST RPC)
+- Auto-memory: Added post-pk rules check (4 questions to answer after loading pk document)
+
+## New Functions / Scripts
+- No new edge functions created
+- `batch-aics-score` significantly enhanced:
+  - `agent_ids` param: array of UUIDs for targeted re-scoring
+  - `force_rescore` param: re-score all agents ignoring audit freshness
+  - `rescore_after` param: ISO timestamp to skip agents already re-scored after that time
+  - Exa caching: reads `geo_audit_results.exa_sources` before calling Exa API
+
+## Deprecated or Removed
+- Old social pillar formula (`Math.round(Math.min(10, rc) * (tierRec / 10))`) replaced — tierRec no longer gates review credit
+- Old reviewVolume linear formula (`min(10, floor(rc/5))`) replaced with log scale
+- Raw deno-postgres connection in enrichment-api SQL handler removed (was broken due to stale DB password)
+
+---
+
+### CLAUDE — 2026-03-12
+
+# Claude Code Takeaways — 2026-03-12
+
+## Key Outcomes
+- Completed deep GEO audit of production: scored 78/100 with 7 errors, 9 warnings, 25 passed checks
+- **Root cause found: 344 stale static HTML files in `public/` were overriding live edge function rewrites.** Vercel serves static files before evaluating rewrites, so stale pre-rendered pages with fake data (Best Realty, Dream Realty, Example Realty, 555 phone numbers) were being served to AI crawlers instead of the live edge function output. All 344 files removed.
+- Fixed cross-file consistency issues across 6 AI discovery files (llms.txt, llms-full.txt, mcp.json, ai-content-index.json, for-ai, serve-bot-content-html)
+- Fixed 2 agent image_url refs pointing to dead Supabase project `bgdtekbhelormzbymkhh` (Eileen Taggart, Robert Maynard) — updated to `wiotrvoirdgzfacuuiem`
+- Added title-casing for city names in areaServed JSON-LD (e.g., "west-hollywood" → "West Hollywood")
+- Re-activated 4 agents (Hope Beneteau, Marsee Wilhems, Stacy Klibanoff, Deborah Potestio) that were incorrectly flagged for "555" in brokerage phone numbers, not personal phones
+- Current active agent counts: 3,274 total (AZ: 872, CA: 2,390)
+- Agent profile uncached load time: ~500ms average (470ms–650ms range)
+
+## Config / Infrastructure
+- **Vercel cache purged** and force-deployed to clear stale CDN entries
+- **3 edge functions deployed:** serve-bot-agent-html, serve-bot-content-html, site-health-check
+- Vercel proxy (`api/serve-clean-html.js`) already sets `Vercel-CDN-Cache-Control: s-maxage=0` — Vercel CDN should not cache API responses, but browser cache is 5 min (`max-age=300, stale-while-revalidate=3600`)
+- Edge function `serve-bot-list-html` returns `Cache-Control: public, max-age=86400` — this is the Supabase response header, overridden by the Vercel proxy
+
+## New Rules or Docs
+- **Certified tier refresh = Annual** (not Monthly). Certified is legacy (~58 grandfathered agents, no new issuances). Resolved conflicting references across 6 files.
+- **Evidence sources = "up to 20"** (not "12" or "14+"). Enrichment checks ~1,000 places, cites only when relevant, max 20 sources per agent.
+- **Listed tier auditCycle = Annual** (not "None"). Fixed in mcp.json.
+- **Static HTML in `public/` will override vercel.json rewrites.** Never place static files at paths that should be handled by edge function rewrites. This is a Vercel behavior: static files take priority over rewrites.
+
+## New Functions / Scripts
+- No new functions or scripts created this session.
+
+## Deprecated or Removed
+- **344 stale static city/neighborhood HTML files removed** from `public/arizona/*/top10realestateagents/` and `public/california/*/top10realestateagents/`. These were pre-rendered pages from an obsolete build step that contained fake/placeholder data. All city and neighborhood pages now served exclusively via `serve-bot-list-html` edge function through vercel.json rewrites.
+- **Health check regex updated:** `6+\s*years` → `(?<!\d)6+\s*years` to prevent false positives on "26+ years" matching "6+ years"
+
+---
+
+### CLAUDE — 2026-03-12
+
+# Claude Code Takeaways — 2026-03-12
+
+## Key Outcomes
+- Implemented Vercel Ignored Build Step to skip builds when only non-deployable files change — estimated to cut $185/mo build minutes roughly in half
+- Built and reviewed business config audit script (`audit-business-config.cjs`) — found and fixed 6 issues in the original implementation (scan scope, false positives, missing deprecated patterns)
+- Eliminated all neighborhood/zip pricing across codebase — neighborhoods are now free, verified via manual audit (3+ transactions in 18 months), shows "Audit Pending" until verified
+- Fixed deprecated values found by audit: `public/for-ai.txt` "top 0.5%", `public/terms/index.html` "4.8+ Merit Gate" and "20+ verified reviews"
+- Deprecated `profile_link` field — nulled all 51,061 rows in professionals table; short codes (`/p/xxxxx`) no longer used
+- Deployed `push-indexnow` edge function (was never deployed, every ptm IndexNow ping was silently failing with 404)
+- Confirmed Serper.dev API keys in `.env` are unused — zero codebase references
+
+## Config / Infrastructure
+- `vercel.json`: added `ignoreCommand: "bash scripts/vercel-ignore-build.sh"` — skips builds for docs/, supabase/, scripts/, archives/, .claude/ changes
+- `push-indexnow` edge function deployed to Supabase (was missing since it was added to ptm)
+- `professionals.profile_link` column: all values nulled (51,061 rows), field deprecated
+- DB confirmed clean: `certification_pricing_config` has correct tier pricing ($0/$300/$500), `agent_neighborhood_subscriptions` has 0 rows, no separate pricing_configs table exists
+- Serper.dev: `SERPER_API_KEY` and `SERPER_API_KEY_2` in `.env` but zero code references — can be removed
+
+## New Rules or Docs
+- Neighborhood Expert is free — no charge for neighborhood placement
+- Neighborhood verification: agent self-declares expertise, then manual review confirms 3+ transactions in past 18 months in that neighborhood
+- Until verified, neighborhood listing shows "Audit Pending"
+- Short code profile links (`/p/xxxxx`) are dead — use canonical URLs: `/{state}/agents/{slug}` (clean room) or `/{state}/{city}/top10realestateagents/{slug}` (long-tail)
+- Coverage language deprecated list now includes "top 0.5%" (was missing from audit)
+
+## New Functions / Scripts
+- `scripts/vercel-ignore-build.sh` — Vercel Ignored Build Step: checks `git diff` between deploys, exits 0 (skip) if only non-deployable files changed
+- `scripts/audit-business-config.cjs` — scans codebase for hardcoded business constants against `businessConfig.json` source of truth; 3 modes: full, --brief, --check (CI gate)
+  - Scans all of `public/`, `src/`, `supabase/functions/`
+  - 7 active value patterns (merit gate, pricing, coverage language)
+  - 8 deprecated patterns (top 0.5%, top 0.2%, old pricing, old merit gate, neighborhood pricing)
+
+## Deprecated or Removed
+- Neighborhood/zip pricing — all zeroed: `neighborhoodPricing.ts`, `pricingConfig.json`, `arizonaCityPricing.ts` (53 cities), `TIER_PRICING` constants
+- `ZipCodesStep.tsx` — removed paid tier UI ($15-$100/mo per zip), replaced with "Free" badges and audit pending messaging
+- `Chatbot.tsx` — removed early adopter/retail pricing sections, replaced with free neighborhood model
+- `professionals.profile_link` — all 51,061 values nulled, short codes deprecated
+- Serper.dev API keys — confirmed unused, candidate for removal from `.env`
+
+---
+
 ### CLAUDE — 2026-03-11
 
 # Claude Code Takeaways — 2026-03-11
@@ -148,7 +268,7 @@ AI-facing pages (transparency, FAQ, for-ai, methodology) serve clean room HTML v
 ## New Rules or Docs
 - Coverage language: ALWAYS use "fewer than 1% of licensed agents in covered markets" — never "top 0.5%", "top 0.2%", or any specific sub-1% figure
 - Tier pricing: Audited = $300/mo, Underwritten = $500/mo (old $100/$150 fully purged)
-- Audited audit cycle: "Monthly" (30 days)
+- Audited audit cycle: "Every Two Weeks" (was incorrectly "Monthly" in mcp.json)
 - `sanitizeMeritGate()` is the canonical function for cleaning deprecated merit gate language from DB content; it must be applied to ALL rendered text including JSON-LD schema fields
 - Agent profile_link URLs (`/:state/:city/top10realestateagents/:slug`) serve SPA shells — canonical clean room URL is `/:state/agents/:canonical_slug`
 - When ptm fails mid-merge, manually run: resolve conflict, commit, push main, `npx vercel cache purge --yes --token $VERCEL_TOKEN`, then `git checkout staging`
@@ -165,6 +285,68 @@ AI-facing pages (transparency, FAQ, for-ai, methodology) serve clean room HTML v
 - Old tier pricing ($100/mo Audited, $150/mo Underwritten) — fully eliminated
 - 3 test records deactivated: Robert Maynard Test (obert-est-0000, obert-est-0000-504bd0a1), Robert Aryah (obert-ryah-0000)
 - `QUALIFICATION_THRESHOLD_PERCENT` constant changed from 0.5 to 1 in arizonaCityPricing.ts (unused but corrected)
+
+---
+
+### CLAUDE — 2026-03-11
+
+# Claude Code Takeaways — 2026-03-11
+
+## Key Outcomes
+- Reviewed Google Places enrichment logs from Feb 19 big run (13,897 agents processed, 13,143 found, 754 not found, 103 errors, 12,976 phones replaced)
+- Archived all Google Places data from Feb 19 run (13,912 records) to local JSON, then nulled all google_* columns in DB, then restored from archive to verify round-trip integrity. Archive subsequently deleted — data confirmed safe in DB.
+- Evaluated screenshot services for capturing Google SERP pages. Selected ScreenshotOne (screenshotone.com) over Apify actors due to cost. Free tier: 100 screenshots/mo, paid starts at $17/mo for 2,000.
+- Captured and analyzed SERP screenshots for "real estate agent scottsdale mark beauvais" (Top10Lists.us at position 9, page 1) and "mark beauvais google business listing" (not on page 1, no GBP knowledge panel appeared)
+- Built business config centralization system: expanded businessConfig.json as single source of truth + audit script to find all hardcoded values across codebase (509 file occurrences across 7 patterns, 0 deprecated values)
+- Robert and another AI instance further refined the audit script: added neighborhood pricing config, expanded deprecated checks (old pricing tiers, per-zip pricing, top 0.5%), broadened scan to all of public/, tightened experience regex
+
+## Config / Infrastructure
+- ScreenshotOne API keys added (access_key: Bq4hwVMMZmlotQ, secret: 0ZWUSVrNZ3btXw) — not yet stored in .env
+- `push-indexnow` edge function now triggered automatically in merge-to-main flow after Vercel cache purge
+
+## New Rules or Docs
+- businessConfig.json is the reference source of truth for all business constants (merit gate, pricing, coverage language, scoring weights, neighborhood pricing)
+- Audit script is the mechanism for finding/updating hardcoded values — not runtime imports (to avoid production risk to AI crawler-facing edge functions)
+
+## New Functions / Scripts
+- `scripts/audit-business-config.cjs` — scans codebase for hardcoded business constants via git grep. 3 modes: full report, --brief (counts only), --check (CI-friendly exit code 1 on deprecated values). Checks 7 active patterns + 8 deprecated patterns.
+- `scripts/merge-to-main.ps1` — updated to invoke `push-indexnow` Supabase edge function after Vercel cache purge (non-fatal on failure)
+
+## Deprecated or Removed
+- Confirmed "top 0.5%" added to deprecated coverage language list in businessConfig.json (alongside existing "top 0.2%")
+- Old neighborhood per-zip pricing tiers ($25/mo Main, $50/mo Prime, $75/mo Luxury) documented as deprecated in businessConfig.json — neighborhoods are now free
+
+---
+
+### CLAUDE — 2026-03-11
+
+# t1 Takeaways — CLAUDE — 2026-03-11
+
+## Key Outcomes
+- Fixed agent profile 503 bug in `serve-bot-agent-html`: JavaScript temporal dead zone (TDZ) — `const cycle = ac(t)` declared on line 460 but used on line 277. Moved declaration to line 210. All 3,286 agent profiles now return 200 (were 503 for 15 days, Feb 24 – Mar 11).
+- Fixed `serve-bot-state-html` stale deploy: `/arizona/top10realestateagents` and `/california/top10realestateagents` returning 404. Redeployed edge function; both now return 200.
+- Fixed `cleanup-expired-grace-periods` cron: was downgrading lapsed agents to `badge_tier = 'certified'` (legacy tier). Updated live pg_cron job and `grace_period_cron.sql` to downgrade to `badge_tier = 'listed'` instead.
+- Regenerated all sitemaps with `lastmod: 2026-03-11`. Added 11 ai-feed/ pages to sitemap-pages.xml (were missing entirely). Added state hub pages to sitemap-states.xml. sitemap-agents.xml rebuilt from DB (3,286 canonical URLs, was 3,477 stale).
+- Fixed FAQ stale dates: replaced 9 instances of "As of February 2026" with "As of March 2026" in `src/data/faqFull.ts` and 18 instances in `public/api/faq/full.json`.
+- ptm completed for all bug fixes and sitemap changes.
+- FAQ date fix committed to staging only (not ptm'd — Robert to run ptm when ready).
+
+## Config / Infrastructure
+- Active crons confirmed (4): `cleanup-expired-grace-periods` (daily midnight), `batch-aics-score-run` (every 1 min), `gmail-sync` (every 5 min), `sequencer-v2-tick` (every 2 min).
+- Vercel rewrite confirmed: `/:state/agents/:slug` → `serve-bot-agent-html` edge function (not SPA).
+- State hub Vercel rewrite confirmed: `/arizona/top10realestateagents` and `/california/top10realestateagents` → `serve-bot-state-html`.
+- ptm uses GitHub Merge API (not PowerShell script) when running from Claude Web environment.
+
+## New Rules or Docs
+- **CRITICAL RULE: Claude never runs ptm without Robert's explicit instruction.** All commits go to staging only. ptm requires express permission each time.
+- Agent canonical URL pattern is `/:stateSlug/agents/:canonicalSlug` — legacy `/:city/:slug` pattern hits CityLanding (Coming Soon), do not use.
+- When ptm creates a divergence between staging and main (e.g., internal doc removal commits on main), use GitHub Contents API to push individual files directly to main rather than attempting a merge.
+
+## New Functions / Scripts
+- None this session.
+
+## Deprecated or Removed
+- Nothing deprecated this session.
 
 ---
 
@@ -468,41 +650,3 @@ Wave 1 (parallel): Prompts 1, 3, 4 | Wave 2: Prompt 2 (needs 1) | Wave 3: Prompt
 - `warm-top-markets-cache` cron — removed (dead project reference)
 - `city-content-enrichment-cron`, `ca-city-writeups-cron`, `enrich-selection-rationale-cron` — removed (finished)
 - Email outreach now uses Smartleads for bulk mail
-
----
-
-### CLAUDE — 2026-03-12
-
-## Key Outcomes
-- Implemented Vercel Ignored Build Step to skip builds when only non-deployable files change — estimated to cut $185/mo build minutes roughly in half
-- Built and reviewed business config audit script (`audit-business-config.cjs`) — found and fixed 6 issues in the original implementation (scan scope, false positives, missing deprecated patterns)
-- Eliminated all neighborhood/zip pricing across codebase — neighborhoods are now free, verified via manual audit (3+ transactions in 18 months), shows "Audit Pending" until verified
-- Fixed deprecated values found by audit: `public/for-ai.txt` "top 0.5%", `public/terms/index.html` "4.8+ Merit Gate" and "20+ verified reviews"
-- Deprecated `profile_link` field — nulled all 51,061 rows in professionals table; short codes (`/p/xxxxx`) no longer used
-- Deployed `push-indexnow` edge function (was never deployed, every ptm IndexNow ping was silently failing with 404)
-- Confirmed Serper.dev API keys in `.env` are unused — zero codebase references
-
-## Config / Infrastructure
-- `vercel.json`: added `ignoreCommand: "bash scripts/vercel-ignore-build.sh"` — skips builds for docs/, supabase/, scripts/, archives/, .claude/ changes
-- `push-indexnow` edge function deployed to Supabase (was missing since it was added to ptm)
-- `professionals.profile_link` column: all values nulled (51,061 rows), field deprecated
-- DB confirmed clean: `certification_pricing_config` has correct tier pricing ($0/$300/$500), `agent_neighborhood_subscriptions` has 0 rows, no separate pricing_configs table exists
-- Serper.dev: `SERPER_API_KEY` and `SERPER_API_KEY_2` in `.env` but zero code references — can be removed
-
-## New Rules or Docs
-- Neighborhood Expert is free — no charge for neighborhood placement
-- Neighborhood verification: agent self-declares expertise, then manual review confirms 3+ transactions in past 18 months in that neighborhood
-- Until verified, neighborhood listing shows "Audit Pending"
-- Short code profile links (`/p/xxxxx`) are dead — use canonical URLs: `/{state}/agents/{slug}` (clean room) or `/{state}/{city}/top10realestateagents/{slug}` (long-tail)
-- Coverage language deprecated list now includes "top 0.5%" (was missing from audit)
-
-## New Functions / Scripts
-- `scripts/vercel-ignore-build.sh` — Vercel Ignored Build Step: checks `git diff` between deploys, exits 0 (skip) if only non-deployable files changed
-- `scripts/audit-business-config.cjs` — scans codebase for hardcoded business constants against `businessConfig.json` source of truth; 3 modes: full, --brief, --check (CI gate)
-
-## Deprecated or Removed
-- Neighborhood/zip pricing — all zeroed: `neighborhoodPricing.ts`, `pricingConfig.json`, `arizonaCityPricing.ts` (53 cities), `TIER_PRICING` constants
-- `ZipCodesStep.tsx` — removed paid tier UI ($15-$100/mo per zip), replaced with "Free" badges and audit pending messaging
-- `Chatbot.tsx` — removed early adopter/retail pricing sections, replaced with free neighborhood model
-- `professionals.profile_link` — all 51,061 values nulled, short codes deprecated
-- Serper.dev API keys — confirmed unused, candidate for removal from `.env`
