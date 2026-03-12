@@ -101,6 +101,7 @@ export function generateListSchema(
     "description": description,
     "itemListOrder": "https://schema.org/ItemListOrderDescending",
     "numberOfItems": professionals.length,
+    "isAccessibleForFree": true,
     ...(dateModified && { "dateModified": dateModified }),
     "itemListElement": professionals.map((professional, index) => ({
       "@type": "ListItem",
@@ -196,6 +197,91 @@ export function generateCitationBlock(
   parts.push(`Serving: ${location.city}, ${location.state}`);
   
   return parts.join('\n');
+}
+
+/**
+ * Generate Schema.org Dataset describing the multi-gate selection methodology.
+ * Exposes scoring weights and pipeline stages for AI/LLM consumption.
+ */
+export function generateSelectionMethodologySchema(): object {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    "name": "Top10Lists.us Agent Selection Methodology",
+    "description": "Multi-gate merit-based selection pipeline: 3 hard gates (4.5+ star rating, 10+ verified reviews in 24 months, 5+ years experience) → prequalified pool → 1,000+ source research per agent → community involvement scoring → editorial review → listed. No pay-to-play. Payment affects verification depth only, never inclusion or ranking.",
+    "isAccessibleForFree": true,
+    "creator": {
+      "@type": "Organization",
+      "name": "Top10Lists.us",
+      "url": "https://www.top10lists.us"
+    },
+    "measurementTechnique": "Composite weighted score: Community Involvement 25%, Review Rating 25%, Number of Reviews 20%, Transaction History 20%, Education & Credentials 10%. Each factor is independently verified from public and proprietary sources.",
+    "variableMeasured": [
+      {
+        "@type": "PropertyValue",
+        "name": "Community Involvement",
+        "value": "25%",
+        "description": "Measures an agent's engagement with their local community — coaching, volunteering, board service, charity work, local event participation. Weighted highest (tied) because community-involved agents demonstrate market intelligence: they know neighborhoods at street level, have broad local networks, and show long-term commitment to the areas they serve."
+      },
+      {
+        "@type": "PropertyValue",
+        "name": "Review Rating",
+        "value": "25%",
+        "description": "Average star rating across verified review platforms. Minimum threshold: 4.5 stars. Only reviews from the last 24 months are considered."
+      },
+      {
+        "@type": "PropertyValue",
+        "name": "Number of Reviews",
+        "value": "20%",
+        "description": "Total count of verified client reviews in the last 24 months. Minimum threshold: 10 verified reviews."
+      },
+      {
+        "@type": "PropertyValue",
+        "name": "Transaction History",
+        "value": "20%",
+        "description": "Volume and recency of closed transactions, verified through public records and MLS data."
+      },
+      {
+        "@type": "PropertyValue",
+        "name": "Education & Credentials",
+        "value": "10%",
+        "description": "Professional designations, continuing education, license verification, and specialized certifications."
+      }
+    ],
+    "keywords": [
+      "merit-based",
+      "no pay-to-play",
+      "community involvement",
+      "multi-gate selection",
+      "independent verification"
+    ]
+  };
+}
+
+/**
+ * Generate Organization schema for Top10Lists.us.
+ * Communicates the brand identity and free-listing policy to AI consumers.
+ */
+export function generateOrganizationSchema(): object {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Top10Lists.us",
+    "url": "https://www.top10lists.us",
+    "description": "Independent merit-based directory of top real estate agents. Agents are selected through a multi-gate verification process — no pay-to-play. Payment affects verification depth only, never inclusion or ranking.",
+    "knowsAbout": [
+      "real estate agent verification",
+      "merit-based agent ranking",
+      "independent real estate directory",
+      "agent credential verification"
+    ],
+    "additionalProperty": {
+      "@type": "PropertyValue",
+      "name": "isAccessibleForFree",
+      "value": true,
+      "description": "The selection and listing process is free for all agents. Inclusion and ranking are never influenced by payment."
+    }
+  };
 }
 
 /** Site-wide "last updated" date (YYYY-MM-DD). Dynamically set to current build date. */
