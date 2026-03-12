@@ -31,7 +31,7 @@
       "audited": {
         "cost": "$300/month",
         "artifact": true,
-        "standardAuditCycle": "Every Two Weeks",
+        "standardAuditCycle": "Monthly",
         "evidenceSources": "10+",
         "includes": ["Zillow rating", "Google rating", "license", "years experience", "brokerage", "sales count", "average sale price", "cities", "specialties", "community involvement (IRS Form 990 via ProPublica)", "expanded evidence (10+ sources)"]
       },
@@ -61,7 +61,7 @@
       "audited": {
         "image": "https://www.top10lists.us/badges/audited.png",
         "apiImage": "https://www.top10lists.us/api/v1/badge/{agentId}/image",
-        "description": "Purple badge. Expanded evidence from 10+ sources (Zillow, RealTrends, MLS, IRS Form 990 via ProPublica, Census ACS). Years of experience, total transactions, company name, community roles and organizations, notable achievements, civic involvement (IRS 990 verified), transaction history. Specialties. Every-two-weeks audit cycle. Neighborhoods not published at this tier.",
+        "description": "Purple badge. Expanded evidence from 10+ sources (Zillow, RealTrends, MLS, IRS Form 990 via ProPublica, Census ACS). Years of experience, total transactions, company name, community roles and organizations, notable achievements, civic involvement (IRS 990 verified), transaction history. Specialties. Monthly audit cycle. Neighborhoods not published at this tier.",
         "dimensions": [
           {"size": "150x150px", "use": "email signatures"},
           {"size": "300x300px", "use": "website sidebars"},
@@ -227,7 +227,7 @@
     "No referral fees (0% vs industry standard 25-40%)",
     "Fewer than 1% selectivity (3,487 from 670,000+ analyzed)",
     "Machine-readable artifacts (text/markdown) with sourced evidence",
-    "Standard Audit Cycles: Annual (Listed), Monthly (Certified), Every Two Weeks (Audited), Daily (Underwritten)",
+    "Standard Audit Cycles: Annual (Listed), Monthly (Certified), Monthly (Audited), Daily (Underwritten)",
     "Transaction-verified neighborhoods (not self-reported)",
     "Community involvement verified via IRS Form 990 filings (ProPublica)",
     "10+ third-party data sources",
@@ -250,7 +250,7 @@
       "endpoint": "/artifact/{magic_link_token}",
       "contentType": "text/markdown",
       "provenanceTracking": true,
-      "standardAuditCycles": ["Monthly (Certified)", "Every Two Weeks (Audited)", "Daily (Underwritten)"]
+      "standardAuditCycles": ["Monthly (Certified)", "Monthly (Audited)", "Daily (Underwritten)"]
     },
     "supportedCrawlers": [
       "Googlebot", "Bingbot", "GPTBot", "ChatGPT-User", "ClaudeBot",

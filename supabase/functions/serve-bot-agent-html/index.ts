@@ -89,7 +89,7 @@ function tb(t: string): string {
   return m[t.toLowerCase()] || "listed";
 }
 function ac(t: string): string | null {
-  const m: Record<string, string> = { underwritten: "daily", accredited: "every two weeks", audited: "every two weeks", certified: "monthly" };
+  const m: Record<string, string> = { underwritten: "daily", accredited: "monthly", audited: "monthly", certified: "monthly" };
   return m[t.toLowerCase()] || null;
 }
 function tierOf(a: any): string { return a.current_tier || a.badge_tier || "listed"; }
@@ -303,8 +303,8 @@ serve(async (req) => {
   <meta property="og:description" content="Independently verified. ${a.review_stars_rating || 0} stars, ${normNum(a.num_total_reviews || 0) || "0+"} reviews.">
   <meta property="og:type" content="profile">
   <meta property="og:url" content="${canon}">
-  <style>${CSS}</style>
   ${buildJsonLd()}
+  <style>${CSS}</style>
 </head>
 <body>
 

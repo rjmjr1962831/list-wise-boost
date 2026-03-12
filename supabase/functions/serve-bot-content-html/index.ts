@@ -342,7 +342,7 @@ function renderMethodology(): string {
     <h2>Verification Tiers</h2>
     <h3>Listed (Free) — Annual Refresh</h3>
     <p>Core credentials: license, rating, reviews. 4 evidence sources.</p>
-    <h3>Audited ($300/mo) — Biweekly Refresh</h3>
+    <h3>Audited ($300/mo) — Monthly Refresh</h3>
     <p>Expanded: transactions, community involvement, 10+ sources.</p>
     <h3>Underwritten ($500/mo) — Daily Refresh</h3>
     <p>Complete profile: neighborhood-level detail, 14+ sources, continuous monitoring.</p>

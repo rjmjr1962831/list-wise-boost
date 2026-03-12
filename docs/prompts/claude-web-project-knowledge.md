@@ -148,7 +148,7 @@ AI-facing pages (transparency, FAQ, for-ai, methodology) serve clean room HTML v
 ## New Rules or Docs
 - Coverage language: ALWAYS use "fewer than 1% of licensed agents in covered markets" — never "top 0.5%", "top 0.2%", or any specific sub-1% figure
 - Tier pricing: Audited = $300/mo, Underwritten = $500/mo (old $100/$150 fully purged)
-- Audited audit cycle: "Every Two Weeks" (was incorrectly "Monthly" in mcp.json)
+- Audited audit cycle: "Monthly" (30 days)
 - `sanitizeMeritGate()` is the canonical function for cleaning deprecated merit gate language from DB content; it must be applied to ALL rendered text including JSON-LD schema fields
 - Agent profile_link URLs (`/:state/:city/top10realestateagents/:slug`) serve SPA shells — canonical clean room URL is `/:state/agents/:canonical_slug`
 - When ptm fails mid-merge, manually run: resolve conflict, commit, push main, `npx vercel cache purge --yes --token $VERCEL_TOKEN`, then `git checkout staging`

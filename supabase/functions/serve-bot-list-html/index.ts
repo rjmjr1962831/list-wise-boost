@@ -41,7 +41,7 @@ function fs(n: number): string | null { if (!n) return null; return `${Math.max(
 function fp(v: any): string | null { if (!v) return null; const n = Number(v); if (n >= 1e6) return `$${(n/1e6).toFixed(1)}M`; if (n >= 1000) return `$${Math.round(n/1000)}K`; return `$${Math.round(n)}`; }
 function tl(t: string): string { const m: Record<string,string> = { underwritten:"Underwritten",accredited:"Audited",audited:"Audited",certified:"Certified" }; return m[t.toLowerCase()] || "Listed"; }
 function tb(t: string): string { const m: Record<string,string> = { underwritten:"underwritten",accredited:"audited",audited:"audited",certified:"certified" }; return m[t.toLowerCase()] || "listed"; }
-function ac(t: string): string | null { const m: Record<string,string> = { underwritten:"daily",accredited:"every two weeks",audited:"every two weeks",certified:"monthly" }; return m[t.toLowerCase()] || null; }
+function ac(t: string): string | null { const m: Record<string,string> = { underwritten:"daily",accredited:"monthly",audited:"monthly",certified:"monthly" }; return m[t.toLowerCase()] || null; }
 /** Exclude generic "listing agent" / "buyer's agent" (and derivatives) from displayed specialties. */
 function filterSpecialties(specs: string[]): string[] {
   return specs.filter((s: string) => {
@@ -99,9 +99,8 @@ function renderAgent(a: any, si: any): string {
   const nm = esc(a.name || "Unknown");
   const co = (a.company && a.company !== "Unknown") ? esc(a.company) : "";
   const zl = a.zillow_profile_url || "";
-  const ss = jp(a.agent_sales_stats, {});
-  const career = ss?.countAllTime || a.total_sales || 0;
-  const ly = a.sales_count_last_year || ss?.countLast12Months || 0;
+  const career = a.total_sales || 0;
+  const ly = a.sales_count_last_year || 0;
   const av = a.average_value_3yr;
   const pmin = a.price_range_3yr_min, pmax = a.price_range_3yr_max;
   const yrs = a.years_experience;
@@ -232,12 +231,36 @@ serve(async (req) => {
       .eq("slug", pp.citySlug).eq("state_slug", pp.stateSlug).eq("active", true).single();
     if (!city) return new Response(JSON.stringify({ error: "City not found" }), { status: 404, headers: { ...CORS, "Content-Type": "application/json" } });
 
+    // Lean select: only scalar columns needed for every agent.
+    // Heavy JSON columns (community_roles, notable_achievements, specialty,
+    // served_cities, selection_rationale) are only rendered for non-listed tiers,
+    // so we fetch them in a second query scoped to those agents only.
+    // agent_sales_stats & press_mentions dropped entirely (never rendered).
     const { data: rawA } = await sb.from("professionals")
-      .select("id,name,review_stars_rating,num_total_reviews,license_number,company,phone,email,website,zillow_profile_url,years_experience,total_sales,agent_sales_stats,community_roles,notable_achievements,press_mentions,selection_rationale,current_tier,badge_tier,specialty,served_cities,rank,average_value_3yr,price_range_3yr_min,price_range_3yr_max,sales_count_last_year")
+      .select("id,name,review_stars_rating,num_total_reviews,license_number,company,phone,email,website,zillow_profile_url,years_experience,total_sales,current_tier,badge_tier,rank,average_value_3yr,price_range_3yr_min,price_range_3yr_max,sales_count_last_year")
       .eq("city_id", city.id).eq("active", true).gte("review_stars_rating", 4.5).gte("num_total_reviews", 10)
-      .order("rank", { ascending: true }).order("num_total_reviews", { ascending: false });
+      .order("rank", { ascending: true }).order("num_total_reviews", { ascending: false })
+      .limit(1000);
 
-    const agents = (rawA || []).sort((a: any, b: any) => {
+    // Identify non-listed agents that need heavy columns
+    const allAgents = rawA || [];
+    const nonListedIds = allAgents
+      .filter((a: any) => { const t = (a.current_tier || a.badge_tier || "listed").toLowerCase(); return ["underwritten","accredited","audited","certified"].includes(t); })
+      .map((a: any) => a.id);
+
+    // Second query: fetch heavy columns only for non-listed agents
+    if (nonListedIds.length > 0) {
+      const { data: heavy } = await sb.from("professionals")
+        .select("id,community_roles,notable_achievements,selection_rationale,specialty,served_cities")
+        .in("id", nonListedIds);
+      const hMap = new Map((heavy || []).map((h: any) => [h.id, h]));
+      for (const a of allAgents) {
+        const h = hMap.get(a.id);
+        if (h) Object.assign(a, h);
+      }
+    }
+
+    const agents = allAgents.sort((a: any, b: any) => {
       const ta = TO[tier(a).toLowerCase()] ?? 3, tb2 = TO[tier(b).toLowerCase()] ?? 3;
       if (ta !== tb2) return ta - tb2;
       return (b.num_total_reviews || 0) - (a.num_total_reviews || 0);
