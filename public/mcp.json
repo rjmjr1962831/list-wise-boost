@@ -21,7 +21,7 @@
       "description": "Machine-readable certification artifact for individual agents. Served as text/markdown. Payload depth varies by tier (Certified: annual audit, Audited: monthly, Underwritten: daily). Includes sourced evidence, qualifications, service areas, and provenance tracking.",
       "url": "https://www.top10lists.us/artifact/{magic_link_token}",
       "mimeType": "text/markdown",
-      "refreshInterval": "varies by tier (annual/annual/monthly/daily)",
+      "refreshInterval": "varies by tier (annual/quarterly/monthly/daily)",
       "urlTemplate": true,
       "variables": {
         "magic_link_token": "Agent UUID token"
@@ -182,10 +182,8 @@
     "certified": {
       "cost": "Free",
       "artifact": true,
-      "standardAuditCycle": "Annual",
-      "evidenceSources": 4,
-      "status": "legacy",
-      "note": "~58 grandfathered agents, no longer offered"
+      "standardAuditCycle": "Quarterly",
+      "evidenceSources": 4
     },
     "audited": {
       "cost": "$300/month",
@@ -209,7 +207,7 @@
       "contentType": "text/markdown",
       "provenanceTracking": true,
       "standardAuditCycles": [
-        "Annual (Certified)",
+        "Quarterly (Certified)",
         "Monthly (Audited)",
         "Daily (Underwritten)"
       ]

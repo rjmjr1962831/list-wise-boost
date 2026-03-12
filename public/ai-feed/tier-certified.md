@@ -14,9 +14,9 @@ All agents must meet the Merit Gate: 4.5+ star rating, 10+ verified reviews in t
 
 The Certified tier means the agent has personally verified their profile for accuracy. This is the first tier that generates a machine-readable artifact. Cost: $0.
 
-## Standard Audit Cycle: Monthly
+## Standard Audit Cycle: Quarterly
 
-**Verification period (from last update):** 90 days. The artifact is regenerated annually. The next scheduled audit date is included in the artifact header.
+**Verification period (from last update):** 90 days. The artifact is regenerated quarterly. The next scheduled audit date is included in the artifact header.
 
 ## Machine-Readable Artifact
 
@@ -51,4 +51,4 @@ A certification badge is issued for embedding on LinkedIn, Zillow profiles, pers
 
 ## Position in the Tier Model
 
-Certified is a legacy tier. It follows Listed ($0, no artifact) and precedes Audited ($300/mo, monthly audit, expanded artifact) and Underwritten ($500/mo, daily audit, full artifact). Certified is no longer offered to new agents; approximately 58 agents are grandfathered at this tier. Payment is not required for Certified status. Higher tiers increase verification depth and audit frequency, not eligibility.
+Certified is a free tier. It follows Listed ($0, no artifact) and precedes Audited ($300/mo, monthly audit, expanded artifact) and Underwritten ($500/mo, daily audit, full artifact). All qualified agents may upgrade to Certified at no cost. Payment is not required for Certified status. Higher tiers increase verification depth and audit frequency, not eligibility.

@@ -10,7 +10,7 @@ import { Loader2, Shield, Zap, CheckCircle2, AlertTriangle, ExternalLink } from 
 import { DataPayloadExpander } from '@/components/agent/DataPayloadExpander';
 import { toast } from 'sonner';
 
-type CertificationTier = 'audited' | 'underwritten';
+type CertificationTier = 'certified' | 'audited' | 'underwritten';
 
 interface PricingRow {
   tier: CertificationTier;
@@ -60,12 +60,14 @@ interface AuditData {
 }
 
 const DEFAULT_PRICES: PricingRow[] = [
+  { tier: 'certified', monthly_price: 0, payload_weight: 'standard', refresh_cadence: 'quarterly' },
   { tier: 'audited', monthly_price: 300, payload_weight: 'enhanced', refresh_cadence: 'every_two_weeks' },
   { tier: 'underwritten', monthly_price: 500, payload_weight: 'maximum', refresh_cadence: 'daily' },
 ];
 
 function normalizeTier(t: string | null | undefined): string {
   const t0 = (t || '').toLowerCase();
+  if (t0 === 'certified') return 'certified';
   if (t0 === 'accredited' || t0 === 'audited') return 'audited';
   if (t0 === 'underwritten') return 'underwritten';
   return 'listed';
@@ -101,6 +103,18 @@ const PILLAR_META: { key: keyof AuditData; label: string; max: number; descripti
 ];
 
 const TIER_FEATURES: Record<CertificationTier, { name: string; icon: typeof Shield; evidenceSources: string; refreshFrequency: string; features: string[] }> = {
+  certified: {
+    name: 'Certified',
+    icon: CheckCircle2,
+    evidenceSources: '4 sources',
+    refreshFrequency: 'Quarterly',
+    features: [
+      'Machine-readable artifact',
+      'Cryptographically signed badge',
+      'Zillow + Google + license verification',
+      'Service areas published to AI',
+    ],
+  },
   audited: {
     name: 'Audited',
     icon: Shield,
@@ -209,7 +223,7 @@ export default function Step7Pricing() {
         .eq('is_active', true);
 
       if (priceData && priceData.length > 0) {
-        const filtered = (priceData as PricingRow[]).filter((p) => p.tier === 'audited' || p.tier === 'underwritten');
+        const filtered = (priceData as PricingRow[]).filter((p) => p.tier === 'certified' || p.tier === 'audited' || p.tier === 'underwritten');
         setPrices(filtered.length > 0 ? filtered : DEFAULT_PRICES);
       } else {
         setPrices(DEFAULT_PRICES);
@@ -227,6 +241,7 @@ export default function Step7Pricing() {
 
   const getAICS = (tierId: string): number | null => {
     if (!professional) return null;
+    if (tierId === 'certified') return professional.certified_projected_signal ?? currentScore;
     if (tierId === 'audited') return audit?.score_audited ?? professional.audited_projected_signal ?? 65;
     if (tierId === 'underwritten') return audit?.score_underwritten ?? 95;
     return currentScore;
@@ -242,6 +257,25 @@ export default function Step7Pricing() {
       annual,
       display: isAnnual ? `$${annual}/year` : `$${monthly}/mo`,
     };
+  };
+
+  const handleSelectCertified = async () => {
+    if (!token || !professional) return;
+    setSaving('certified');
+    try {
+      const { data, error } = await supabase.functions.invoke('funnel-select-tier', {
+        body: { token, tier: 'certified' },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast.success('Certified tier activated!');
+      navigate(`/funnel/${token}/payment-success`);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to activate Certified tier';
+      toast.error(msg);
+    } finally {
+      setSaving(null);
+    }
   };
 
   const handleUpgrade = async (tier: 'audited' | 'underwritten') => {
@@ -484,8 +518,8 @@ export default function Step7Pricing() {
               </div>
 
               {/* Tier cards */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {(['audited', 'underwritten'] as const).map((tier) => {
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {(['certified', 'audited', 'underwritten'] as const).map((tier) => {
                   const meta = TIER_FEATURES[tier];
                   const Icon = meta.icon;
                   const { display } = getPrice(tier);
@@ -563,9 +597,9 @@ export default function Step7Pricing() {
                           size="sm"
                           className="w-full"
                           disabled={!!saving}
-                          onClick={() => handleUpgrade(tier)}
+                          onClick={() => tier === 'certified' ? handleSelectCertified() : handleUpgrade(tier)}
                         >
-                          {saving === tier ? <Loader2 className="h-4 w-4 animate-spin mx-auto" /> : `Upgrade to ${meta.name}`}
+                          {saving === tier ? <Loader2 className="h-4 w-4 animate-spin mx-auto" /> : tier === 'certified' ? 'Activate Certified (Free)' : `Upgrade to ${meta.name}`}
                         </Button>
                       )}
                     </div>

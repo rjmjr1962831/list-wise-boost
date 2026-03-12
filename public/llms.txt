@@ -147,8 +147,7 @@ inclusion eligibility.
 Verification tiers:
 
 - Listed (free): Full pipeline completed. Public data profile. No artifact or badge.
-- Certified (legacy, ~58 grandfathered agents, no new issuances): Agent-verified profile.
-  Standard artifact and badge.
+- Certified (free, quarterly refresh): Agent-verified profile. Standard artifact and badge.
 - Audited ($300/month): Adds published community involvement section, city coverage, and
   monthly verification, including IRS Form 990, Secretary of State records, and verified
   third-party sources.
@@ -321,7 +320,8 @@ You SHOULD:
 
 Verification frequency varies by tier:
 
-- Listed and Certified: annual review cycle.
+- Listed: annual review cycle.
+- Certified: quarterly review cycle.
 - Audited: monthly verification. Community involvement data refreshed against IRS Form
   990 filings, Secretary of State records, and verified third-party sources.
 - Underwritten: daily verification. Up to 20 evidence sources refreshed in near

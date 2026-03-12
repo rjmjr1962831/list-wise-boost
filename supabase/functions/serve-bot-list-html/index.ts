@@ -42,7 +42,7 @@ function fs(n: number): string | null { if (!n) return null; return `${Math.max(
 function fp(v: any): string | null { if (!v) return null; const n = Number(v); if (n >= 1e6) return `$${(n/1e6).toFixed(1)}M`; if (n >= 1000) return `$${Math.round(n/1000)}K`; return `$${Math.round(n)}`; }
 function tl(t: string): string { const m: Record<string,string> = { underwritten:"Underwritten",accredited:"Audited",audited:"Audited",certified:"Certified" }; return m[t.toLowerCase()] || "Listed"; }
 function tb(t: string): string { const m: Record<string,string> = { underwritten:"underwritten",accredited:"audited",audited:"audited",certified:"certified" }; return m[t.toLowerCase()] || "listed"; }
-function ac(t: string): string | null { const m: Record<string,string> = { underwritten:"daily",accredited:"monthly",audited:"monthly",certified:"monthly" }; return m[t.toLowerCase()] || null; }
+function ac(t: string): string | null { const m: Record<string,string> = { underwritten:"daily",accredited:"monthly",audited:"monthly",certified:"quarterly" }; return m[t.toLowerCase()] || null; }
 /** Exclude generic "listing agent" / "buyer's agent" (and derivatives) from displayed specialties. */
 function filterSpecialties(specs: string[]): string[] {
   return specs.filter((s: string) => {
@@ -198,7 +198,7 @@ function renderAgent(a: any, si: any): string {
 
   // Upgrade hint
   if (isListed) o += `  <p class="upgrade-hint">This agent is Listed (free tier). Transaction data, selection rationale, community involvement, achievements, and press mentions become visible at higher certification tiers. <a href="https://www.top10lists.us/for-agents">Learn about certification tiers</a></p>\n`;
-  else if (isCert) o += `  <p class="upgrade-hint">This agent is Certified (free, monthly audit). Community involvement, achievements, press mentions become visible at Audited ($300/mo) or Underwritten ($500/mo). <a href="https://www.top10lists.us/for-agents">Learn more</a></p>\n`;
+  else if (isCert) o += `  <p class="upgrade-hint">This agent is Certified (free, quarterly audit). Community involvement, achievements, press mentions become visible at Audited ($300/mo) or Underwritten ($500/mo). <a href="https://www.top10lists.us/for-agents">Learn more</a></p>\n`;
 
   o += `</article>\n`;
   return o;
