@@ -451,6 +451,49 @@ serve(async (req) => {
     o += `<script type="application/ld+json">\n${JSON.stringify({ "@context": "https://schema.org", "@type": "ItemList", name: `Top Real Estate Agents in ${loc}, ${si.display}`, url: canon, numberOfItems: na, itemListElement: items })}\n</script>\n`;
     o += `</body>\n</html>`;
 
+    // Fire-and-forget: log a crawl entry for every agent listed on this page.
+    // Each agent on a city/neighborhood page gets credit for that bot visit.
+    const rawUa = req.headers.get("x-forwarded-user-agent") || req.headers.get("user-agent") || "";
+    if (rawUa && agents.length > 0) {
+      const ua = rawUa.toLowerCase();
+      const BOT_NAMES: [string, string][] = [
+        ["gptbot", "GPTBot"], ["chatgpt-user", "ChatGPT-User"], ["oai-searchbot", "OAI-SearchBot"],
+        ["claudebot", "ClaudeBot"], ["anthropic-ai", "Anthropic-AI"], ["claude-web", "Claude-Web"],
+        ["perplexitybot", "PerplexityBot"],
+        ["cohere-ai", "Cohere-AI"], ["gemini", "Gemini"], ["mistral", "Mistral"],
+        ["ai2bot", "AI2Bot"], ["timpibot", "TimpiBot"],
+        ["googlebot", "Googlebot"], ["google-extended", "Google-Extended"], ["googleother", "GoogleOther"],
+        ["google-inspectiontool", "Google-InspectionTool"],
+        ["adsbot-google", "AdsBot-Google"], ["mediapartners-google", "Mediapartners-Google"],
+        ["bingbot", "Bingbot"], ["bingpreview", "BingPreview"], ["msnbot", "MSNBot"],
+        ["yandexbot", "YandexBot"], ["duckduckbot", "DuckDuckBot"], ["slurp", "Yahoo-Slurp"],
+        ["baiduspider", "BaiduSpider"], ["sogou", "Sogou"], ["exabot", "Exabot"], ["qwantify", "Qwantify"],
+        ["applebot", "Applebot"], ["applebot-extended", "Applebot-Extended"],
+        ["facebookexternalhit", "FacebookExternalHit"], ["facebookcatalog", "FacebookCatalog"],
+        ["meta-externalagent", "Meta-ExternalAgent"],
+        ["twitterbot", "Twitterbot"], ["linkedinbot", "LinkedInBot"], ["pinterest", "Pinterest"],
+        ["slackbot", "Slackbot"], ["discordbot", "Discordbot"], ["whatsapp", "WhatsApp"], ["telegrambot", "TelegramBot"],
+        ["bytespider", "ByteSpider"], ["ccbot", "CCBot"], ["youbot", "YouBot"], ["diffbot", "DiffBot"],
+        ["zoominfobot", "ZoomInfoBot"], ["dataforseo", "DataForSEO"], ["petalbot", "PetalBot"],
+        ["semrushbot", "SEMrushBot"], ["ahrefsbot", "AhrefsBot"], ["mj12bot", "MJ12Bot"],
+        ["dotbot", "DotBot"], ["rogerbot", "RogerBot"], ["screaming frog", "ScreamingFrog"],
+        ["ia_archiver", "InternetArchive"], ["archive.org_bot", "InternetArchive"],
+        ["w3c_validator", "W3C-Validator"],
+      ];
+      const matched = BOT_NAMES.find(([pat]) => ua.includes(pat));
+      if (matched) {
+        const botName = matched[1];
+        const truncUa = rawUa.slice(0, 500);
+        const rows = agents.map((a: any) => ({
+          agent_id: a.id,
+          page_path: path,
+          user_agent: truncUa,
+          bot_name: botName,
+        }));
+        sb.from("bot_crawl_logs").insert(rows).then(() => {}).catch(() => {});
+      }
+    }
+
     return new Response(o, { status: 200, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=86400, stale-while-revalidate=86400", "X-Agents-Count": String(na), "X-Page-Type": isNh ? "neighborhood" : "city", ...CORS } });
   } catch (_e: unknown) {
     // Build a proper clean-room error page with canonical + JSON-LD so crawlers
@@ -499,3 +542,4 @@ ${errJsonLd}
     });
   }
 });
+
