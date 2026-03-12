@@ -355,6 +355,31 @@ serve(async (req) => {
         if (nh.primary_zip) o += `    <tr><td>Primary ZIP</td><td>${nh.primary_zip}</td></tr>\n`;
         if (nh.tier) o += `    <tr><td>Market Tier</td><td>${esc(nh.tier)}</td></tr>\n`;
         o += `  </tbody></table>\n`;
+
+        // Dataset JSON-LD for neighborhood market stats
+        const dsVars: any[] = [];
+        if (nh.median_home_value) dsVars.push({ "@type": "PropertyValue", name: "Median Home Value", value: Number(nh.median_home_value), unitCode: "USD" });
+        if (nh.median_income) dsVars.push({ "@type": "PropertyValue", name: "Median Household Income", value: Number(nh.median_income), unitCode: "USD" });
+        if (nh.tier) dsVars.push({ "@type": "PropertyValue", name: "Market Tier", value: nh.tier });
+        const dataset = {
+          "@context": "https://schema.org",
+          "@type": "Dataset",
+          name: `Market Data for ${nh.neighborhood}, ${city.name}, ${si.display}`,
+          description: `Verified market statistics for the ${nh.neighborhood} neighborhood in ${city.name}, ${si.display}. Source: U.S. Census Bureau American Community Survey.`,
+          spatialCoverage: {
+            "@type": "Place",
+            name: `${nh.neighborhood}, ${city.name}, ${si.display}`,
+            address: { "@type": "PostalAddress", addressLocality: city.name, addressRegion: si.abbr, addressCountry: "US" },
+            ...(nh.primary_zip && { geo: { "@type": "PostalAddress", postalCode: nh.primary_zip } }),
+          },
+          variableMeasured: dsVars,
+          dateModified: new Date().toISOString().slice(0, 10),
+          creator: { "@type": "Organization", name: "Top10Lists.us", url: "https://www.top10lists.us" },
+          isAccessibleForFree: true,
+          license: "https://www.top10lists.us/terms",
+          citation: { "@type": "CreativeWork", name: "U.S. Census Bureau: American Community Survey (ACS) 5-Year Estimates", url: "https://data.census.gov" },
+        };
+        o += `  <script type="application/ld+json">\n${JSON.stringify(dataset)}\n  </script>\n`;
       }
       o += `</section>\n`;
     } else if (mk && Object.keys(mk).length > 0) {
@@ -443,7 +468,14 @@ serve(async (req) => {
       if (a.company && a.company !== "Unknown") it.item.worksFor = { "@type": "Organization", name: a.company };
       const PLACEHOLDER_IDS = ['1522444','N/A','Not provided','AZ License','HSMOVE','DV139'];
       const licId = a.license_number && !PLACEHOLDER_IDS.includes(a.license_number.trim()) ? a.license_number : 'pending audit';
-      it.item.identifier = licId;
+      // Structured credential instead of plain identifier
+      it.item.hasCredential = [{
+        "@type": "EducationalOccupationalCredential",
+        credentialCategory: "Real Estate License",
+        identifier: licId,
+        recognizedBy: { "@type": "GovernmentOrganization", name: si.auth, url: si.url },
+      }];
+      it.item.sameAs = [si.url]; // state license registry verification link
       if (a.phone && a.phone !== "Unknown") it.item.telephone = a.phone;
       return it;
     });

@@ -319,12 +319,30 @@ serve(async (req) => {
 
     // ---- JSON-LD structured data builder (embedded in <head>) ----
     function buildJsonLd(): string {
+      // Build description: rationale snippet for all tiers, bio fallback
+      let desc = "";
+      if (rat) {
+        desc = sanitizeMeritGate(rat);
+      } else if (bio) {
+        desc = sanitizeMeritGate(bioToPlainText(bio));
+      }
+      if (!desc) {
+        desc = `Top-rated real estate agent in ${city.name}, ${si.display}. Independently verified by Top10Lists.us.`;
+      }
+      // Append selection context for all tiers
+      const reviewStr = a.num_total_reviews ? `${normNum(a.num_total_reviews)} reviews` : "";
+      const yrsStr = a.years_experience ? `${a.years_experience}+ years experience` : "";
+      const meritParts = [reviewStr, yrsStr].filter(Boolean).join(" and ");
+      if (meritParts) {
+        desc += ` Selected by Top10Lists.us: cleared 4.5+ Merit Gate with ${meritParts}.`;
+      }
+
       const schema: any = {
         "@context": "https://schema.org",
         "@type": "RealEstateAgent",
         name: a.name,
         url: canon,
-        description: sanitizeMeritGate(bioToPlainText(bio)) || sanitizeMeritGate(`Top-rated real estate agent in ${city.name}, ${si.display}. Independently verified by Top10Lists.us.`),
+        description: desc,
         address: {
           "@type": "PostalAddress",
           addressLocality: city.name,
@@ -340,10 +358,73 @@ serve(async (req) => {
       };
       if (a.image_url) schema.image = a.image_url;
       if (co) schema.memberOf = { "@type": "Organization", name: sanitizeMeritGate(a.company) };
-      if (a.license_number) schema.identifier = a.license_number;
       if (ph) schema.telephone = ph;
       if (em) schema.email = em;
-      if (ws) schema.sameAs = [ws];
+
+      // hasCredential: structured license credential (replaces plain identifier)
+      if (a.license_number) {
+        schema.hasCredential = [{
+          "@type": "EducationalOccupationalCredential",
+          credentialCategory: "Real Estate License",
+          name: `${si.display} Real Estate License`,
+          identifier: a.license_number,
+          recognizedBy: {
+            "@type": "GovernmentOrganization",
+            name: si.auth,
+            url: si.url,
+          },
+          ...(a.license_issued_at && { validFrom: String(a.license_issued_at).slice(0, 10) }),
+          ...(a.license_expires_at && { validUntil: String(a.license_expires_at).slice(0, 10) }),
+        }];
+      }
+
+      // sameAs: license registry, website, social profiles
+      const sameAs: string[] = [];
+      if (a.license_number) sameAs.push(si.url); // state license registry
+      if (ws) sameAs.push(ws);
+      if (a.social_linkedin) sameAs.push(a.social_linkedin);
+      if (a.social_facebook) sameAs.push(a.social_facebook);
+      if (a.social_instagram) sameAs.push(a.social_instagram);
+      if (zl) sameAs.push(zl); // Zillow profile
+      if (sameAs.length > 0) schema.sameAs = sameAs;
+
+      // subjectOf: evidence source citations (tier-gated, matching HTML footnotes)
+      const sources: any[] = [];
+      // All tiers: Zillow, Google, State License
+      sources.push({
+        "@type": "CreativeWork",
+        name: "Zillow Consumer Reviews",
+        description: "Star rating, review count, transaction history",
+        ...(zl ? { url: zl } : { url: "https://www.zillow.com/professionals/" }),
+      });
+      sources.push({
+        "@type": "CreativeWork",
+        name: "Google Business Profile",
+        description: "Star rating, review count, business address",
+        url: "https://www.google.com/maps",
+      });
+      sources.push({
+        "@type": "CreativeWork",
+        name: si.auth,
+        description: "License number, status, type, issue date, years active",
+        url: si.url,
+      });
+      // Certified+: MLS
+      if (!isListed) {
+        sources.push({
+          "@type": "CreativeWork",
+          name: "MLS Transaction Records",
+          description: "Career transaction count, recent sales, price ranges",
+        });
+      }
+      // Audited+: RealTrends, IRS 990, Census, Secretary of State
+      if (isHigh) {
+        sources.push({ "@type": "CreativeWork", name: "RealTrends Transaction Data", description: "Independently verified transaction volume", url: "https://www.realtrends.com" });
+        sources.push({ "@type": "CreativeWork", name: "IRS Form 990 via ProPublica Nonprofit Explorer", description: "Nonprofit board membership, community involvement", url: "https://projects.propublica.org/nonprofits/" });
+        sources.push({ "@type": "CreativeWork", name: "U.S. Census Bureau: American Community Survey (ACS)", description: "Market demographics, median home values, income levels", url: "https://data.census.gov" });
+      }
+      schema.subjectOf = sources;
+
       if (served.length > 0) {
         schema.areaServed = served.map((c: any) => {
           const raw = typeof c === "object" ? (c.name || String(c)) : String(c);
