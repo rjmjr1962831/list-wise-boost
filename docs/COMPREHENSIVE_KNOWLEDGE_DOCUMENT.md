@@ -323,6 +323,83 @@ From `src/data/master-ssot.md`:
 # Claude Code Takeaways — 2026-03-12
 
 ## Key Outcomes
+- Fixed `run_sql` endpoint in enrichment-api: replaced broken raw postgres connection (stale DB password) with Supabase JS client `.rpc('run_sql')` — now works reliably
+- Rewrote social pillar in `batch-aics-score` scoring model:
+  - Decoupled review volume/quality from recency — unlisted agents with strong reviews no longer zeroed out
+  - Tier amplification now has a 0.5 floor so unlisted agents still earn social credit
+  - Switched reviewVolume from linear cap (`min(10, floor(rc/5))`) to log scale (`min(20, round(log2(rc+1)*2))`) — agents with 1,000+ reviews now properly outscore agents with 50
+- Capped max AICS score at 95 (was 99)
+- Added Exa result caching: `batch-aics-score` now reads cached `exa_sources` from `geo_audit_results` instead of calling Exa API on every run — scores are deterministic
+- Added `agent_ids` parameter to `batch-aics-score` for targeted re-scoring of specific agents
+- Added `force_rescore` and `rescore_after` parameters for bulk re-scoring without manual DB resets
+- Re-scored all 3,262 active agents (872 AZ + 2,390 CA) with the new model
+
+## Config / Infrastructure
+- Updated Supabase secret `DB_URL` on project `wiotrvoirdgzfacuuiem` (set to correct direct postgres connection string)
+- Updated Supabase secret `DATABASE_URL` on project `wiotrvoirdgzfacuuiem`
+- Enrichment-api SQL endpoint now uses Supabase RPC instead of deno-postgres Pool
+
+## New Rules or Docs
+- CLAUDE.md: Added GEO approval gate — any action that may reduce GEO score requires Robert's explicit approval
+- CLAUDE.md: Added SSoT usage rule — actively reference pk document throughout session, cite section numbers
+- CLAUDE.md: Documented both SQL access methods (enrichment-api POST and Supabase REST RPC)
+- Auto-memory: Added post-pk rules check (4 questions to answer after loading pk document)
+
+## New Functions / Scripts
+- No new edge functions created
+- `batch-aics-score` significantly enhanced:
+  - `agent_ids` param: array of UUIDs for targeted re-scoring
+  - `force_rescore` param: re-score all agents ignoring audit freshness
+  - `rescore_after` param: ISO timestamp to skip agents already re-scored after that time
+  - Exa caching: reads `geo_audit_results.exa_sources` before calling Exa API
+
+## Deprecated or Removed
+- Old social pillar formula (`Math.round(Math.min(10, rc) * (tierRec / 10))`) replaced — tierRec no longer gates review credit
+- Old reviewVolume linear formula (`min(10, floor(rc/5))`) replaced with log scale
+- Raw deno-postgres connection in enrichment-api SQL handler removed (was broken due to stale DB password)
+
+---
+
+### CLAUDE — 2026-03-12
+
+# Claude Code Takeaways — 2026-03-12
+
+## Key Outcomes
+- Completed deep GEO audit of production: scored 78/100 with 7 errors, 9 warnings, 25 passed checks
+- **Root cause found: 344 stale static HTML files in `public/` were overriding live edge function rewrites.** Vercel serves static files before evaluating rewrites, so stale pre-rendered pages with fake data (Best Realty, Dream Realty, Example Realty, 555 phone numbers) were being served to AI crawlers instead of the live edge function output. All 344 files removed.
+- Fixed cross-file consistency issues across 6 AI discovery files (llms.txt, llms-full.txt, mcp.json, ai-content-index.json, for-ai, serve-bot-content-html)
+- Fixed 2 agent image_url refs pointing to dead Supabase project `bgdtekbhelormzbymkhh` (Eileen Taggart, Robert Maynard) — updated to `wiotrvoirdgzfacuuiem`
+- Added title-casing for city names in areaServed JSON-LD (e.g., "west-hollywood" → "West Hollywood")
+- Re-activated 4 agents (Hope Beneteau, Marsee Wilhems, Stacy Klibanoff, Deborah Potestio) that were incorrectly flagged for "555" in brokerage phone numbers, not personal phones
+- Current active agent counts: 3,274 total (AZ: 872, CA: 2,390)
+- Agent profile uncached load time: ~500ms average (470ms–650ms range)
+
+## Config / Infrastructure
+- **Vercel cache purged** and force-deployed to clear stale CDN entries
+- **3 edge functions deployed:** serve-bot-agent-html, serve-bot-content-html, site-health-check
+- Vercel proxy (`api/serve-clean-html.js`) already sets `Vercel-CDN-Cache-Control: s-maxage=0` — Vercel CDN should not cache API responses, but browser cache is 5 min (`max-age=300, stale-while-revalidate=3600`)
+- Edge function `serve-bot-list-html` returns `Cache-Control: public, max-age=86400` — this is the Supabase response header, overridden by the Vercel proxy
+
+## New Rules or Docs
+- **Certified tier refresh = Annual** (not Monthly). Certified is legacy (~58 grandfathered agents, no new issuances). Resolved conflicting references across 6 files.
+- **Evidence sources = "up to 20"** (not "12" or "14+"). Enrichment checks ~1,000 places, cites only when relevant, max 20 sources per agent.
+- **Listed tier auditCycle = Annual** (not "None"). Fixed in mcp.json.
+- **Static HTML in `public/` will override vercel.json rewrites.** Never place static files at paths that should be handled by edge function rewrites. This is a Vercel behavior: static files take priority over rewrites.
+
+## New Functions / Scripts
+- No new functions or scripts created this session.
+
+## Deprecated or Removed
+- **344 stale static city/neighborhood HTML files removed** from `public/arizona/*/top10realestateagents/` and `public/california/*/top10realestateagents/`. These were pre-rendered pages from an obsolete build step that contained fake/placeholder data. All city and neighborhood pages now served exclusively via `serve-bot-list-html` edge function through vercel.json rewrites.
+- **Health check regex updated:** `6+\s*years` → `(?<!\d)6+\s*years` to prevent false positives on "26+ years" matching "6+ years"
+
+---
+
+### CLAUDE — 2026-03-12
+
+# Claude Code Takeaways — 2026-03-12
+
+## Key Outcomes
 - Implemented Vercel Ignored Build Step to skip builds when only non-deployable files change — estimated to cut $185/mo build minutes roughly in half
 - Built and reviewed business config audit script (`audit-business-config.cjs`) — found and fixed 6 issues in the original implementation (scan scope, false positives, missing deprecated patterns)
 - Eliminated all neighborhood/zip pricing across codebase — neighborhoods are now free, verified via manual audit (3+ transactions in 18 months), shows "Audit Pending" until verified
@@ -384,7 +461,7 @@ From `src/data/master-ssot.md`:
 ## New Rules or Docs
 - Coverage language: ALWAYS use "fewer than 1% of licensed agents in covered markets" — never "top 0.5%", "top 0.2%", or any specific sub-1% figure
 - Tier pricing: Audited = $300/mo, Underwritten = $500/mo (old $100/$150 fully purged)
-- Audited audit cycle: "Monthly" (30 days)
+- Audited audit cycle: "Every Two Weeks" (was incorrectly "Monthly" in mcp.json)
 - `sanitizeMeritGate()` is the canonical function for cleaning deprecated merit gate language from DB content; it must be applied to ALL rendered text including JSON-LD schema fields
 - Agent profile_link URLs (`/:state/:city/top10realestateagents/:slug`) serve SPA shells — canonical clean room URL is `/:state/agents/:canonical_slug`
 - When ptm fails mid-merge, manually run: resolve conflict, commit, push main, `npx vercel cache purge --yes --token $VERCEL_TOKEN`, then `git checkout staging`
