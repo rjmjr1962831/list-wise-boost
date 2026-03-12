@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Email Preview — Top10Lists.us</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* Preview shell */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #1a1a1a;
+    font-family: 'DM Sans', sans-serif;
+    padding: 40px 20px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .preview-label {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: #555;
+    margin-bottom: 24px;
+  }
+
+  /* Email wrapper */
+  .email-wrap {
+    width: 100%;
+    max-width: 620px;
+    background: #ffffff;
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.5);
+  }
+
+  /* ── HEADER ── */
+  .email-header {
+    background: #061520;
+    padding: 32px 48px 28px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .email-header::before {
+    content: '';
+    position: absolute;
+    top: -40px; left: -40px;
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, rgba(46,117,182,0.18) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .email-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #C9A84C 0%, #2E75B6 60%, transparent 100%);
+  }
+
+  .logo-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 6px;
+  }
+
+  .logo-mark {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #0d1e2e;
+    border: 1.5px solid #2E75B6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  /* HAL eye mini */
+  .logo-mark::before {
+    content: '';
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 38% 38%, #60A5FA, #2563EB, #1D4ED8);
+    position: absolute;
+    box-shadow: 0 0 6px rgba(96,165,250,0.6);
+  }
+
+  .logo-text {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-weight: 900;
+    color: #ffffff;
+    letter-spacing: -0.5px;
+  }
+
+  .logo-text span { color: #C9A84C; }
+
+  .header-tagline {
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(213,232,240,0.45);
+    padding-left: 40px;
+  }
+
+  /* ── HERO BAND ── */
+  .hero-band {
+    background: linear-gradient(135deg, #0D2640 0%, #061520 100%);
+    padding: 36px 48px 32px;
+    border-bottom: 1px solid #0f2035;
+  }
+
+  .salutation {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 14px;
+  }
+
+  .salutation .merge {
+    color: #C9A84C;
+    font-style: italic;
+  }
+
+  .intro-text {
+    font-size: 14px;
+    line-height: 1.75;
+    color: rgba(213,232,240,0.75);
+  }
+
+  .intro-text .highlight {
+    color: #60A5FA;
+    font-weight: 600;
+  }
+
+  /* ── STAT BLOCK ── */
+  .stat-block {
+    background: #ffffff;
+    padding: 36px 48px;
+    border-bottom: 1px solid #e8eef4;
+  }
+
+  .stat-number {
+    font-family: 'Playfair Display', serif;
+    font-size: 72px;
+    font-weight: 900;
+    color: #1A3A5C;
+    line-height: 1;
+    letter-spacing: -2px;
+    margin-bottom: 4px;
+    position: relative;
+    display: inline-block;
+  }
+
+  .stat-number::after {
+    content: '';
+    position: absolute;
+    bottom: 8px;
+    left: 0;
+    right: 0;
+    height: 6px;
+    background: #C9A84C;
+    opacity: 0.25;
+    border-radius: 2px;
+  }
+
+  .stat-label {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #2E75B6;
+    margin-bottom: 24px;
+  }
+
+  .bullet-list {
+    list-style: none;
+    padding: 0;
+    border-left: 2px solid #C9A84C;
+    padding-left: 20px;
+    margin-bottom: 0;
+  }
+
+  .bullet-list li {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #1a2e40;
+    padding: 5px 0;
+  }
+
+  .bullet-list li strong {
+    color: #1A3A5C;
+    font-weight: 700;
+  }
+
+  /* ── BODY COPY ── */
+  .body-section {
+    background: #F7F9FC;
+    padding: 32px 48px;
+    border-bottom: 1px solid #e0eaf4;
+  }
+
+  .body-text {
+    font-size: 14px;
+    line-height: 1.8;
+    color: #2a3a48;
+    margin-bottom: 16px;
+  }
+
+  .body-text:last-child { margin-bottom: 0; }
+
+  /* ── SIGNAL PANEL ── */
+  .signal-panel {
+    background: #061520;
+    padding: 32px 48px;
+    border-bottom: 1px solid #0d1e2e;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .signal-panel::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, rgba(201,168,76,0.08) 0%, transparent 70%);
+  }
+
+  .signal-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: #C9A84C;
+    margin-bottom: 16px;
+  }
+
+  .signal-row {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    margin-bottom: 20px;
+  }
+
+  .signal-box {
+    flex: 1;
+    padding: 18px 22px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(46,117,182,0.25);
+  }
+
+  .signal-box:first-child {
+    border-radius: 8px 0 0 8px;
+  }
+
+  .signal-arrow {
+    display: flex;
+    align-items: center;
+    padding: 0 14px;
+    color: #C9A84C;
+    font-size: 20px;
+    background: rgba(255,255,255,0.02);
+    border-top: 1px solid rgba(46,117,182,0.25);
+    border-bottom: 1px solid rgba(46,117,182,0.25);
+  }
+
+  .signal-box:last-child {
+    border-radius: 0 8px 8px 0;
+    border-color: rgba(201,168,76,0.4);
+    background: rgba(201,168,76,0.07);
+  }
+
+  .signal-box-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(213,232,240,0.4);
+    margin-bottom: 6px;
+  }
+
+  .signal-box:last-child .signal-box-label {
+    color: rgba(201,168,76,0.7);
+  }
+
+  .signal-score {
+    font-family: 'Playfair Display', serif;
+    font-size: 36px;
+    font-weight: 900;
+    color: #60A5FA;
+    line-height: 1;
+  }
+
+  .signal-box:last-child .signal-score {
+    color: #C9A84C;
+  }
+
+  .signal-score-sub {
+    font-size: 10px;
+    color: rgba(213,232,240,0.4);
+    margin-top: 3px;
+  }
+
+  .signal-desc {
+    font-size: 12.5px;
+    color: rgba(213,232,240,0.6);
+    line-height: 1.6;
+  }
+
+  /* ── CTA ── */
+  .cta-section {
+    background: #ffffff;
+    padding: 36px 48px;
+    text-align: center;
+    border-bottom: 1px solid #e8eef4;
+  }
+
+  .cta-button {
+    display: inline-block;
+    background: #1A3A5C;
+    color: #ffffff;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    padding: 16px 40px;
+    border-radius: 6px;
+    text-decoration: none;
+    margin-bottom: 12px;
+  }
+
+  .cta-sub {
+    font-size: 11px;
+    color: #8899aa;
+    margin-top: 8px;
+  }
+
+  /* ── SIGN-OFF ── */
+  .signoff {
+    background: #F7F9FC;
+    padding: 28px 48px;
+    border-bottom: 1px solid #e0eaf4;
+  }
+
+  .signoff-text {
+    font-size: 13.5px;
+    color: #4a5a6a;
+    line-height: 1.7;
+    margin-bottom: 20px;
+  }
+
+  .signoff-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 17px;
+    font-weight: 700;
+    color: #1A3A5C;
+    margin-bottom: 2px;
+  }
+
+  .signoff-title {
+    font-size: 11.5px;
+    color: #2E75B6;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+  }
+
+  .signoff-contact {
+    margin-top: 12px;
+    font-size: 12px;
+    color: #8899aa;
+  }
+
+  .signoff-contact a {
+    color: #2E75B6;
+    text-decoration: none;
+  }
+
+  /* ── FOOTER ── */
+  .email-footer {
+    background: #061520;
+    padding: 20px 48px;
+    text-align: center;
+  }
+
+  .footer-text {
+    font-size: 10.5px;
+    color: rgba(213,232,240,0.3);
+    line-height: 1.8;
+  }
+
+  .footer-text a {
+    color: rgba(213,232,240,0.5);
+    text-decoration: none;
+  }
+
+  .footer-divider {
+    width: 40px;
+    height: 1px;
+    background: rgba(201,168,76,0.3);
+    margin: 12px auto;
+  }
+</style>
+</head>
+<body>
+
+<div class="preview-label">Email Preview — Signal Upsell</div>
+
+<div class="email-wrap">
+
+  <!-- HEADER -->
+  <div class="email-header">
+    <div class="logo-row">
+      <div class="logo-mark"></div>
+      <div class="logo-text">top10lists<span>.us</span></div>
+    </div>
+    <div class="header-tagline">AI Certification for Real Estate Professionals</div>
+  </div>
+
+  <!-- HERO -->
+  <div class="hero-band">
+    <div class="salutation">Hi <span class="merge">{{first_name}}</span> &mdash;</div>
+    <div class="intro-text">
+      Since you confirmed your profile on <span class="highlight">top10lists.us</span> on <span class="highlight">{{date_first_listed}}</span>, you have been presented to AI as a top agent&nbsp;&mdash;
+    </div>
+  </div>
+
+  <!-- STAT BLOCK -->
+  <div class="stat-block">
+    <div class="stat-number">2,200</div>
+    <div class="stat-label">Times AI has been crawling your profile</div>
+    <ul class="bullet-list">
+      <li><strong>2,200&times;</strong> more than your competitors.</li>
+      <li><strong>2,200&times;</strong> that AI is learning about you.</li>
+      <li><strong>2,200&times;</strong> that AI is becoming more comfortable naming you.</li>
+    </ul>
+  </div>
+
+  <!-- BODY COPY -->
+  <div class="body-section">
+    <p class="body-text">
+      No one can tell you exactly how many times you have been named. What we can tell you is that it is <strong>more than your competitors.</strong>
+    </p>
+    <p class="body-text">
+      We're willing to bet that you've been hearing leads tell you they got your name from AI. That is a direct result of your status here.
+    </p>
+    <p class="body-text">
+      Now we need to raise your profile's <strong>Signal</strong> to accelerate the likelihood that AI will name you when asked for a referral. It won't get you crawled more &mdash; but it will <em>dramatically</em> increase your probability of being named.
+    </p>
+  </div>
+
+  <!-- SIGNAL PANEL -->
+  <div class="signal-panel">
+    <div class="signal-label">Your AI Signal Score</div>
+    <div class="signal-row">
+      <div class="signal-box">
+        <div class="signal-box-label">Current Signal</div>
+        <div class="signal-score">{{AICS_Score_Current}}</div>
+        <div class="signal-score-sub">out of 100</div>
+      </div>
+      <div class="signal-arrow">&#8594;</div>
+      <div class="signal-box">
+        <div class="signal-box-label">Underwritten Signal</div>
+        <div class="signal-score">{{AICS_Score_Underwritten}}</div>
+        <div class="signal-score-sub">out of 100</div>
+      </div>
+    </div>
+    <div class="signal-desc">
+      A higher Signal means AI systems have more evidence to name you with confidence. We build that evidence through deeper verification, broader citation coverage, and real-time data refresh.
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-section">
+    <a href="{{magic_link}}" class="cta-button">Go to Your Dashboard &rarr;</a>
+    <div class="cta-sub">See exactly what we can do and what it costs &mdash; a fraction of your other marketing channels.</div>
+  </div>
+
+  <!-- SIGN-OFF -->
+  <div class="signoff">
+    <p class="signoff-text">
+      Feel free to email or call me directly if you have any questions. I'm happy to walk you through what moving the needle on your Signal actually looks like in practice.
+    </p>
+    <div class="signoff-name">Robert Maynard</div>
+    <div class="signoff-title">Founder, Top10Lists.us</div>
+    <div class="signoff-contact">
+      <a href="mailto:robert@aryah.ai">robert@aryah.ai</a>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="email-footer">
+    <div class="footer-divider"></div>
+    <div class="footer-text">
+      You are receiving this because you have a verified profile on <a href="https://www.top10lists.us">top10lists.us</a>.<br>
+      <a href="{{unsubscribe_link}}">Unsubscribe</a> &nbsp;&middot;&nbsp; <a href="https://www.top10lists.us/privacy">Privacy Policy</a>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
