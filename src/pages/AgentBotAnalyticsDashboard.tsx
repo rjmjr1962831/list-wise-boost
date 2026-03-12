@@ -10,17 +10,14 @@ import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 
 interface BotStat {
-  bot_type: string;
+  bot_name: string;
   total_visits: number;
-  cache_hits: number;
-  cache_misses: number;
 }
 
 interface BotVisit {
-  timestamp: string;
-  bot_type: string;
-  path: string;
-  cache_status: string;
+  crawled_at: string;
+  bot_name: string;
+  page_path: string;
   user_agent: string;
 }
 
@@ -114,51 +111,39 @@ export default function AgentBotAnalyticsDashboard() {
     const daysAgo = dateRange === "24h" ? 1 : dateRange === "7d" ? 7 : 30;
     const startDate = new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000).toISOString();
 
-    // Get bot visits for this agent (MAIN only; staging has no crawl / noindex)
+    // Get bot visits for this agent from bot_crawl_logs
     const { data: visits } = await supabase
-      .from("cloudflare_request_logs")
-      .select("*")
+      .from("bot_crawl_logs")
+      .select("bot_name, page_path, crawled_at, user_agent")
       .eq("agent_id", agentId)
-      .eq("is_bot", true)
-      .eq("host", "www.top10lists.us")
-      .gte("timestamp", startDate)
-      .order("timestamp", { ascending: false });
+      .gte("crawled_at", startDate)
+      .order("crawled_at", { ascending: false });
 
     if (visits) {
-      const hits = visits.filter(r => r.cache_status === 'HIT').length;
       const total = visits.length;
-      const profileVisits = visits.filter(r => r.path?.includes('/agents/')).length;
-      const artifactVisits = visits.filter(r => r.path?.includes('/artifact/')).length;
+      const profileVisits = visits.filter(r => r.page_path?.includes('/agents/')).length;
 
       setSummary({
         total_bot_visits: total,
-        unique_bots: new Set(visits.map(r => r.bot_type)).size,
+        unique_bots: new Set(visits.map(r => r.bot_name)).size,
         profile_visits: profileVisits,
-        artifact_visits: artifactVisits,
-        cache_hit_rate: total > 0 ? (hits / total) * 100 : 0,
+        artifact_visits: 0,
+        cache_hit_rate: 0,
       });
 
-      // Group by bot type
-      const botTypeGroups = visits.reduce((acc, visit) => {
-        const bot = visit.bot_type || 'unknown';
-        if (!acc[bot]) {
-          acc[bot] = { total: 0, hits: 0, misses: 0 };
-        }
-        acc[bot].total++;
-        if (visit.cache_status === 'HIT') acc[bot].hits++;
-        if (visit.cache_status === 'MISS') acc[bot].misses++;
+      // Group by bot_name
+      const byBot = visits.reduce((acc, visit) => {
+        const bot = visit.bot_name || 'Unknown';
+        acc[bot] = (acc[bot] || 0) + 1;
         return acc;
-      }, {} as Record<string, { total: number; hits: number; misses: number }>);
+      }, {} as Record<string, number>);
 
-      const stats: BotStat[] = Object.entries(botTypeGroups).map(([bot_type, data]) => ({
-        bot_type,
-        total_visits: data.total,
-        cache_hits: data.hits,
-        cache_misses: data.misses,
-      }));
+      const stats: BotStat[] = Object.entries(byBot)
+        .map(([bot_name, total_visits]) => ({ bot_name, total_visits }))
+        .sort((a, b) => b.total_visits - a.total_visits);
 
       setBotStats(stats);
-      setRecentVisits(visits.slice(0, 50));
+      setRecentVisits(visits.slice(0, 50) as BotVisit[]);
     }
 
     setLoading(false);
@@ -343,10 +328,10 @@ export default function AgentBotAnalyticsDashboard() {
                 </TableHeader>
                 <TableBody>
                   {botStats.map((stat) => (
-                    <TableRow key={stat.bot_type}>
+                    <TableRow key={stat.bot_name}>
                       <TableCell>
-                        <Badge className={getBotColor(stat.bot_type)}>
-                          {stat.bot_type || "unknown"}
+                        <Badge className={getBotColor(stat.bot_name)}>
+                          {stat.bot_name || "unknown"}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right font-medium">
@@ -389,20 +374,17 @@ export default function AgentBotAnalyticsDashboard() {
                   {recentVisits.map((visit, idx) => (
                     <TableRow key={idx}>
                       <TableCell>
-                        <Badge className={getBotColor(visit.bot_type)}>
-                          {visit.bot_type}
+                        <Badge className={getBotColor(visit.bot_name)}>
+                          {visit.bot_name}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-sm">
-                        {visit.path?.includes('/artifact/') ? '📜 Artifact' : '👤 Profile'}
+                        {visit.page_path?.includes('/artifact/') ? '📜 Artifact' : '👤 Profile'}
                       </TableCell>
                       <TableCell>
-                        <Badge variant={visit.cache_status === 'HIT' ? 'default' : 'secondary'}>
-                          {visit.cache_status}
-                        </Badge>
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
-                        {format(new Date(visit.timestamp), "MMM d, yyyy HH:mm")}
+                        {format(new Date(visit.crawled_at), "MMM d, yyyy HH:mm")}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -415,3 +397,4 @@ export default function AgentBotAnalyticsDashboard() {
     </div>
   );
 }
+
