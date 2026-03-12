@@ -28,9 +28,7 @@ interface Professional {
   num_total_reviews: number | null;
   review_stars_rating: number | null;
   license_number: string | null;
-  license_state: string | null;
   state_slug: string | null;
-  community_involvement_score: number | null;
   community_roles: unknown[] | null;
   agent_sales_stats: { countLastYear?: number; countAllTime?: number } | null;
   current_tier?: string | null;
@@ -184,7 +182,7 @@ export default function Step7Pricing() {
         }
         prof = profWithSignals;
       } else {
-        const profSelect = 'id, name, email, years_experience, total_sales, num_total_reviews, review_stars_rating, license_number, license_state, state_slug, community_involvement_score, community_roles, agent_sales_stats, current_tier, badge_tier, signal_score, certified_projected_signal, audited_projected_signal';
+        const profSelect = 'id, name, email, years_experience, total_sales, num_total_reviews, review_stars_rating, license_number, state_slug, community_roles, agent_sales_stats, current_tier, badge_tier, signal_score, certified_projected_signal, audited_projected_signal';
         const isUuid = /^[0-9a-f-]{36}$/i.test(token);
 
         if (isUuid) {
