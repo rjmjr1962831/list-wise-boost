@@ -187,7 +187,7 @@ async function renderForAi(): Promise<string> {
     <h3>Listed — ${esc(listedPrice)}</h3>
     <p>Core credentials verified. Appears on city pages. Annual refresh. 4 evidence sources.</p>
     <h3>Audited — ${esc(auditedPrice)}</h3>
-    <p>Expanded evidence from 10+ sources. Biweekly refresh. Includes community involvement (IRS Form 990), specialties, and transaction history.</p>
+    <p>Expanded evidence from 10+ sources. Monthly refresh. Includes community involvement (IRS Form 990), specialties, and transaction history.</p>
     <h3>Underwritten — ${esc(underwrittenPrice)}</h3>
     <p>Full evidence inventory from 14+ sources. Daily refresh. Includes verified neighborhoods with transaction counts, certifications, designations, languages, and press mentions.</p>
     <h3>Certified — ${esc(certifiedLabel)}</h3>
