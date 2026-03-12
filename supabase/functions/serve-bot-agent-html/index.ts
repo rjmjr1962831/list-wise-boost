@@ -278,9 +278,11 @@ serve(async (req) => {
       if (served.length > 0) {
         schema.areaServed = served.map((c: any) => {
           const raw = typeof c === "object" ? (c.name || String(c)) : String(c);
+          // Title-case slug-style city names: "west-hollywood" → "West Hollywood"
+          const titled = raw.replace(/-/g, " ").replace(/\b\w/g, (ch: string) => ch.toUpperCase());
           return {
             "@type": "City",
-            name: sanitizeMeritGate(raw),
+            name: sanitizeMeritGate(titled),
           };
         });
       }
