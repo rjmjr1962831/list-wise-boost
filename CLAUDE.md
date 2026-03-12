@@ -31,7 +31,7 @@
 | Listed | Free | Basic verification |
 | Audited | $300/mo | Expanded evidence, API access |
 | Underwritten | $500/mo | Full evidence, near real-time |
-| Certified | Legacy | ~58 grandfathered agents, no new issuances |
+| Certified | Free | Quarterly refresh, open to all qualified agents |
 
 Payment affects verification depth only — never inclusion or ranking.
 
