@@ -337,7 +337,7 @@ serve(async (req) => {
 </div>
 <div class="merit-box" style="margin-top:1rem;">
   <p>We are actively verifying agents in this area. Additional top agents will appear here as they pass our review and verification process.</p>
-  <p>This page only lists agents who meet our published quality gates (reviews, ratings, and community involvement). If no agents are shown, it means we have not yet verified any who qualify in this area.</p>
+  <p>This page only lists agents who meet our published quality gates (4.5+ stars, 10+ verified reviews in the last 24 months, 5+ years in business, and community involvement). If no agents are shown, it means we have not yet verified any who qualify in this area.</p>
   <p>If no agents are listed yet, treat this page as methodology and locale context only, not as a complete list of all agents in this area.</p>
 </div>
 `;
