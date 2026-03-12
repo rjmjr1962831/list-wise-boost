@@ -198,13 +198,56 @@ serve(async (req) => {
     if (rawUa) {
       const ua = rawUa.toLowerCase();
       const BOT_NAMES: [string, string][] = [
+        // AI assistants and LLM crawlers
         ["gptbot", "GPTBot"], ["chatgpt-user", "ChatGPT-User"], ["oai-searchbot", "OAI-SearchBot"],
         ["claudebot", "ClaudeBot"], ["anthropic-ai", "Anthropic-AI"], ["claude-web", "Claude-Web"],
-        ["perplexitybot", "PerplexityBot"], ["perplexity", "Perplexity"],
+        ["perplexitybot", "PerplexityBot"],
+        ["cohere-ai", "Cohere-AI"],
+        ["gemini", "Gemini"], ["google-gemini", "Google-Gemini"],
+        ["mistral", "Mistral"],
+        ["ai2bot", "AI2Bot"],
+        ["timpibot", "TimpiBot"],
+        // Search engines
         ["googlebot", "Googlebot"], ["google-extended", "Google-Extended"], ["googleother", "GoogleOther"],
-        ["bingbot", "Bingbot"], ["cohere-ai", "Cohere-AI"],
-        ["bytespider", "ByteSpider"], ["ccbot", "CCBot"], ["youbot", "YouBot"], ["diffbot", "DiffBot"],
-        ["meta-externalagent", "Meta-ExternalAgent"], ["facebookexternalhit", "FacebookExternalHit"],
+        ["google-inspectiontool", "Google-InspectionTool"],
+        ["adsbot-google", "AdsBot-Google"], ["mediapartners-google", "Mediapartners-Google"],
+        ["bingbot", "Bingbot"], ["bingpreview", "BingPreview"], ["msnbot", "MSNBot"],
+        ["yandexbot", "YandexBot"],
+        ["duckduckbot", "DuckDuckBot"],
+        ["slurp", "Yahoo-Slurp"],
+        ["baiduspider", "BaiduSpider"],
+        ["sogou", "Sogou"],
+        ["exabot", "Exabot"],
+        ["qwantify", "Qwantify"],
+        ["applebot", "Applebot"], ["applebot-extended", "Applebot-Extended"],
+        // Social and content platforms
+        ["facebookexternalhit", "FacebookExternalHit"], ["facebookcatalog", "FacebookCatalog"],
+        ["meta-externalagent", "Meta-ExternalAgent"],
+        ["twitterbot", "Twitterbot"],
+        ["linkedinbot", "LinkedInBot"],
+        ["pinterest", "Pinterest"],
+        ["slackbot", "Slackbot"],
+        ["discordbot", "Discordbot"],
+        ["whatsapp", "WhatsApp"],
+        ["telegrambot", "TelegramBot"],
+        // Data and research crawlers
+        ["bytespider", "ByteSpider"],
+        ["ccbot", "CCBot"],
+        ["youbot", "YouBot"],
+        ["diffbot", "DiffBot"],
+        ["zoominfobot", "ZoomInfoBot"],
+        ["dataforseo", "DataForSEO"],
+        ["petalbot", "PetalBot"],
+        // SEO tools
+        ["semrushbot", "SEMrushBot"],
+        ["ahrefsbot", "AhrefsBot"],
+        ["mj12bot", "MJ12Bot"],
+        ["dotbot", "DotBot"],
+        ["rogerbot", "RogerBot"],
+        ["screaming frog", "ScreamingFrog"],
+        // Archive and validators
+        ["ia_archiver", "InternetArchive"], ["archive.org_bot", "InternetArchive"],
+        ["w3c_validator", "W3C-Validator"],
       ];
       const matched = BOT_NAMES.find(([pat]) => ua.includes(pat));
       if (matched) {
