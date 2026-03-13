@@ -77,7 +77,7 @@ AI-facing pages (transparency, FAQ, for-ai, methodology) serve clean room HTML v
 
 ## 21. Recent Updates (from t1)
 
-*Last synthesized: 2026-03-12*
+*Last synthesized: 2026-03-13*
 
 ---
 
