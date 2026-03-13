@@ -103,7 +103,7 @@ const BAND_TOOLTIPS: Record<string, string> = {
   'Citable in general queries':
     "AI systems have enough verified data to proactively recommend you in broad queries like ‘top agents in Arizona.’ You appear in general referrals but local specificity is still limited.",
   'Citable in specific local queries':
-    "AI systems will confidently recommend you by name for city and neighborhood queries. You appear in targeted local referrals without hedging.",
+    "AI systems will regularly recommend you by name for city and neighborhood queries. You appear in targeted local referrals without significant hedging.",
   'Authoritative citation candidate':
     "AI systems treat you as a primary authoritative source. You are named proactively in competitive queries across multiple markets with no hedging.",
 };
@@ -178,7 +178,7 @@ function BandLabel({ score }: { score: number }) {
             <Info className="h-3 w-3 opacity-60" />
           </span>
         </TooltipTrigger>
-        <TooltipContent className="max-w-xs text-xs leading-relaxed">
+        <TooltipContent className="max-w-xs text-xs leading-relaxed text-center">
           {tip}
         </TooltipContent>
       </Tooltip>
@@ -357,7 +357,7 @@ export default function Step7Pricing() {
     );
   }
 
-  const scoreMarkerPct = currentScore != null ? Math.min(100, Math.round((currentScore / 95) * 100)) : null;
+  const scoreMarkerPct = currentScore != null ? Math.min(100, Math.round((currentScore / 100) * 100)) : null;
 
   return (
     <>
@@ -426,7 +426,7 @@ export default function Step7Pricing() {
                     <span className={`text-7xl font-black tabular-nums ${bandColor(currentScore)}`}>
                       {currentScore}
                     </span>
-                    <span className="text-2xl text-muted-foreground mb-2">/ 95</span>
+                    <span className="text-2xl text-muted-foreground mb-2">/ 100</span>
                   </div>
                   <div className="mt-1">
                     <BandLabel score={currentScore} />
@@ -489,22 +489,7 @@ export default function Step7Pricing() {
               </div>
             )}
 
-            {/* Gaps */}
-            {gaps.length > 0 && (
-              <div className="inline-block text-left rounded-lg border border-orange-200 bg-orange-50 dark:border-orange-900 dark:bg-orange-950/30 px-4 py-3 mt-1">
-                <p className="text-xs font-semibold text-orange-700 dark:text-orange-400 flex items-center gap-1.5 mb-1.5">
-                  <AlertTriangle className="h-3.5 w-3.5" />
-                  What AI can&rsquo;t verify about you yet
-                </p>
-                <ul className="text-xs text-orange-600 dark:text-orange-400/80 space-y-1">
-                  {gaps.map((g, i) => (
-                    <li key={i} className="flex items-start gap-1.5">
-                      <span className="mt-0.5">&bull;</span>{g}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
+
 
             {/* Gates passed -- compact trust strip */}
             <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 pt-2 border-t">
@@ -534,7 +519,10 @@ export default function Step7Pricing() {
               <h2 className="text-xl font-bold">Amplify what you&rsquo;ve earned</h2>
               <p className="text-sm text-muted-foreground max-w-lg mx-auto">
                 Paid tiers publish more of your verified data to AI systems and refresh it more often.
-                More evidence means more for AI to cite when it decides who to name.
+                More evidence, more often increases your probability of being named.
+              </p>
+              <p className="text-sm text-muted-foreground max-w-lg mx-auto mt-2">
+                <span className="font-medium text-foreground">Note:</span> No one can guarantee that you will always be named. There are many factors that go into an AI&rsquo;s referral reasoning. Our Underwritten tier is the biggest step you can take to make it more likely that they will.
               </p>
             </div>
 
@@ -609,7 +597,7 @@ export default function Step7Pricing() {
                           <span className={`text-3xl font-black ${currentScore != null ? bandColor(currentScore) : 'text-muted-foreground'}`}>
                             {currentScore ?? '—'}
                           </span>
-                          <span className="text-sm text-muted-foreground">/ 95</span>
+                          <span className="text-sm text-muted-foreground">/ 100</span>
                         </div>
                         {currentScore != null && (
                           <div className="mt-0.5"><BandLabel score={currentScore} /></div>
@@ -625,7 +613,7 @@ export default function Step7Pricing() {
                             </div>
                             <div
                               className={`absolute -top-0.5 -translate-x-1/2 w-3 h-3 rounded-full border-2 border-white shadow ${bandBg(currentScore)}`}
-                              style={{ left: `${Math.min(100, Math.round((currentScore / 95) * 100))}%` }}
+                              style={{ left: `${Math.min(100, Math.round((currentScore / 100) * 100))}%` }}
                             />
                           </div>
                         )}
@@ -639,7 +627,7 @@ export default function Step7Pricing() {
                               <span className={`text-3xl font-black ${aics != null ? bandColor(aics) : 'text-muted-foreground'}`}>
                                 {aics ?? '—'}
                               </span>
-                              <span className="text-sm text-muted-foreground">/ 95</span>
+                              <span className="text-sm text-muted-foreground">/ 100</span>
                             </div>
                             {aics != null && (
                               <div className="mt-0.5"><BandLabel score={aics} /></div>
@@ -663,7 +651,7 @@ export default function Step7Pricing() {
                             </div>
                             <div
                               className={`absolute -top-0.5 -translate-x-1/2 w-3 h-3 rounded-full border-2 border-white shadow ${bandBg(aics)}`}
-                              style={{ left: `${Math.min(100, Math.round((aics / 95) * 100))}%` }}
+                              style={{ left: `${Math.min(100, Math.round((aics / 100) * 100))}%` }}
                             />
                           </div>
                         )}
@@ -779,4 +767,5 @@ export default function Step7Pricing() {
     </>
   );
 }
+
 
