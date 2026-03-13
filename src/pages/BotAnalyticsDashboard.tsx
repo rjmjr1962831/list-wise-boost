@@ -14,10 +14,11 @@ interface BotStat {
 
 interface AgentView {
   agent_slug: string;
-  bot_name: string;
-  viewed_at: string;
-  user_agent: string;
-  source: "profile" | "list";
+  total_crawls: number;
+  profile_hits: number;
+  list_hits: number;
+  bots: string[];         // distinct bot names
+  last_seen: string;
 }
 
 interface ListCrawl {
@@ -90,30 +91,30 @@ export default function BotAnalyticsDashboard() {
       }))
     );
 
-    // 3. Recent agent views -- both direct profile hits and city-page coverage
-    //    Direct profile hits: join professionals to get canonical_slug
-    //    City-page hits: agent_id is set but path is the list page
+    // 3. Agent coverage -- one row per agent, aggregated
     const { data: recentRaw } = await supabase.rpc("run_sql", { query: `
       SELECT
-        p.canonical_slug                          AS agent_slug,
-        b.bot_name,
-        b.page_path,
-        b.crawled_at,
-        b.user_agent,
-        CASE WHEN b.page_path LIKE '%/agents/%' THEN 'profile' ELSE 'list' END AS source
+        p.canonical_slug                                              AS agent_slug,
+        COUNT(*)::int                                                 AS total_crawls,
+        COUNT(*) FILTER (WHERE b.page_path LIKE '%/agents/%')::int   AS profile_hits,
+        COUNT(*) FILTER (WHERE b.page_path NOT LIKE '%/agents/%')::int AS list_hits,
+        array_agg(DISTINCT b.bot_name)                               AS bots,
+        MAX(b.crawled_at)                                            AS last_seen
       FROM bot_crawl_logs b
       JOIN professionals p ON p.id = b.agent_id
       WHERE b.crawled_at >= '${startDate}'
-      ORDER BY b.crawled_at DESC
+      GROUP BY p.canonical_slug
+      ORDER BY total_crawls DESC
       LIMIT 300
     ` });
     setAgentViews(
       (Array.isArray(recentRaw) ? recentRaw : []).map((r: any) => ({
-        agent_slug: r.agent_slug || r.page_path,
-        bot_name:   r.bot_name || "Unknown",
-        viewed_at:  r.crawled_at,
-        user_agent: r.user_agent || "",
-        source:     r.source || "profile",
+        agent_slug:   r.agent_slug || "unknown",
+        total_crawls: r.total_crawls,
+        profile_hits: r.profile_hits,
+        list_hits:    r.list_hits,
+        bots:         Array.isArray(r.bots) ? r.bots.filter(Boolean) : [],
+        last_seen:    r.last_seen,
       }))
     );
 
@@ -338,7 +339,7 @@ export default function BotAnalyticsDashboard() {
             <CardHeader>
               <CardTitle>Recent Agent Coverage</CardTitle>
               <CardDescription>
-                Agents seen by bots -- via direct profile visit or city/neighborhood list page (most recent 300)
+                One row per agent. Profile = direct profile visit. List = appeared on a city or neighborhood page. Sorted by total crawls.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -346,38 +347,38 @@ export default function BotAnalyticsDashboard() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Agent</TableHead>
-                    <TableHead>Bot</TableHead>
-                    <TableHead>Source</TableHead>
-                    <TableHead>When</TableHead>
-                    <TableHead>User Agent</TableHead>
+                    <TableHead className="text-right">Total</TableHead>
+                    <TableHead className="text-right">Profile</TableHead>
+                    <TableHead className="text-right">List</TableHead>
+                    <TableHead>Bots</TableHead>
+                    <TableHead>Last Seen</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {agentViews.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                      <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
                         No agent coverage recorded in this period.
                       </TableCell>
                     </TableRow>
                   ) : (
-                    agentViews.map((view, idx) => (
-                      <TableRow key={idx}>
-                        <TableCell className="font-medium">{view.agent_slug}</TableCell>
+                    agentViews.map((view) => (
+                      <TableRow key={view.agent_slug}>
+                        <TableCell className="font-medium text-sm">{view.agent_slug}</TableCell>
+                        <TableCell className="text-right font-mono font-semibold">{view.total_crawls}</TableCell>
+                        <TableCell className="text-right text-muted-foreground text-sm">{view.profile_hits}</TableCell>
+                        <TableCell className="text-right text-muted-foreground text-sm">{view.list_hits}</TableCell>
                         <TableCell>
-                          <Badge style={getBotBadgeStyle(view.bot_name)}>
-                            {view.bot_name}
-                          </Badge>
+                          <div className="flex flex-wrap gap-1">
+                            {view.bots.map((bot) => (
+                              <Badge key={bot} style={getBotBadgeStyle(bot)} className="text-[10px] px-1.5 py-0">
+                                {bot}
+                              </Badge>
+                            ))}
+                          </div>
                         </TableCell>
-                        <TableCell>
-                          <Badge variant={view.source === "profile" ? "default" : "secondary"}>
-                            {view.source === "profile" ? "Profile" : "List page"}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-sm text-muted-foreground">
-                          {format(new Date(view.viewed_at), "MMM d, yyyy HH:mm")}
-                        </TableCell>
-                        <TableCell className="text-xs text-muted-foreground max-w-xs truncate">
-                          {view.user_agent}
+                        <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
+                          {format(new Date(view.last_seen), "MMM d, HH:mm")}
                         </TableCell>
                       </TableRow>
                     ))
@@ -445,3 +446,4 @@ export default function BotAnalyticsDashboard() {
     </div>
   );
 }
+
