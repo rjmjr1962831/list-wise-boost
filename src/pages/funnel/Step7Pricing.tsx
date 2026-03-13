@@ -5,7 +5,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Loader2, Shield, Zap, CheckCircle2, AlertTriangle, ExternalLink } from 'lucide-react';
+import { Loader2, Shield, Zap, CheckCircle2, AlertTriangle, ExternalLink, Info } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { DataPayloadExpander } from '@/components/agent/DataPayloadExpander';
 import { toast } from 'sonner';
 
@@ -94,6 +95,14 @@ function bandBg(score: number): string {
   return 'bg-green-500';
 }
 
+const BAND_TOOLTIPS: Record<string, string> = {
+  'Invisible to AI':                    "AI systems have almost no verifiable data about you. If asked, they would either skip you entirely or add heavy caveats.",
+  'Discoverable, not citable':          "AI systems can find information about you, but not enough to cite you confidently by name. They may mention you but will often hedge or prevaricate.",
+  'Citable in general queries':         "AI systems have enough verified data to recommend you in broad queries like 'top agents in Arizona.' Local specificity is still limited.",
+  'Citable in specific local queries':  "AI systems will comfortably recommend you for city and neighborhood queries. You appear in targeted local searches with confidence.",
+  'Authoritative citation candidate':   "AI systems treat you as a primary source. You are cited by name in competitive queries with minimal or no hedging.",
+};
+
 function annualPrice(monthly: number): number {
   return monthly * 10;
 }
@@ -126,6 +135,7 @@ const TIER_FEATURES: Record<CertificationTier, { name: string; icon: typeof Shie
     evidenceSources: '10+ sources',
     refreshFrequency: 'Monthly',
     features: [
+      'Everything in Certified',
       'Data refreshed every 30 days (AI trusts data < 30 days old)',
       'Community involvement (IRS 990 verified)',
       'Transaction stats and history',
@@ -149,17 +159,41 @@ const TIER_FEATURES: Record<CertificationTier, { name: string; icon: typeof Shie
   },
 };
 
+function BandLabel({ score }: { score: number }) {
+  const label = bandLabel(score);
+  const tip = BAND_TOOLTIPS[label];
+  const colorClass = bandColor(score);
+  if (!tip) return <span className={`text-sm font-semibold ${colorClass}`}>{label}</span>;
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span className={`text-sm font-semibold ${colorClass} inline-flex items-center gap-1 cursor-help`}>
+            {label}
+            <Info className="h-3 w-3 opacity-60" />
+          </span>
+        </TooltipTrigger>
+        <TooltipContent className="max-w-xs text-xs leading-relaxed">
+          {tip}
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+}
+
 export default function Step7Pricing() {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
   const location = useLocation();
   const passedProfessional = (location.state as { professional?: Professional } | null)?.professional;
+  const fromFunnel = !!passedProfessional; // arrived from Step6 -- agent just completed selection pipeline
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState<string | null>(null);
   const [isAnnual, setIsAnnual] = useState(false);
   const [prices, setPrices] = useState<PricingRow[]>(DEFAULT_PRICES);
   const [professional, setProfessional] = useState<Professional | null>(null);
   const [audit, setAudit] = useState<AuditData | null>(null);
+  const [prevScore] = useState<number | null>(null); // score before funnel (used in activation banner)
 
   useEffect(() => {
     loadData();
@@ -337,6 +371,42 @@ export default function Step7Pricing() {
             <span className="font-medium text-foreground">Choose Your Tier</span>
           </div>
 
+          {/* ── Activation banner (only when arriving from funnel flow) ── */}
+          {fromFunnel && currentScore != null && (() => {
+            const certScore = getAICS('certified');
+            const priorScore = prevScore ?? (currentScore != null ? Math.max(0, currentScore - (certScore != null ? certScore - currentScore : 0)) : null);
+            const showLift = certScore != null && certScore > currentScore;
+            return (
+              <div className="rounded-2xl border border-green-300 bg-green-50 dark:border-green-800 dark:bg-green-950/40 p-6 text-center space-y-3">
+                <p className="text-2xl font-black text-green-700 dark:text-green-400">
+                  Great work, {professional?.name?.split(' ')[0] || 'Agent'}!
+                </p>
+                <p className="text-base font-semibold text-green-800 dark:text-green-300">
+                  You&rsquo;re more citable than you were 5 minutes ago.
+                </p>
+                {showLift && (
+                  <div className="flex items-center justify-center gap-4 py-2">
+                    <div className="text-center">
+                      <p className="text-xs text-muted-foreground uppercase tracking-wide mb-0.5">Before</p>
+                      <p className={`text-3xl font-black ${bandColor(currentScore)}`}>{currentScore}</p>
+                      <div className="mt-1"><BandLabel score={currentScore} /></div>
+                    </div>
+                    <div className="text-3xl text-green-500 font-black">&rarr;</div>
+                    <div className="text-center">
+                      <p className="text-xs text-muted-foreground uppercase tracking-wide mb-0.5">After Certified</p>
+                      <p className={`text-3xl font-black ${bandColor(certScore!)}`}>{certScore}</p>
+                      <div className="mt-1"><BandLabel score={certScore!} /></div>
+                    </div>
+                  </div>
+                )}
+                <p className="text-sm text-green-700 dark:text-green-400">
+                  Activating Certified is free and publishes your verified data to AI systems today.
+                  Want to go further? Audited and Underwritten tiers are below.
+                </p>
+              </div>
+            );
+          })()}
+
           {/* ══════════════════════════════════════════════════════
               HERO: SCORE + BAND MARKER
           ══════════════════════════════════════════════════════ */}
@@ -353,9 +423,9 @@ export default function Step7Pricing() {
                     </span>
                     <span className="text-2xl text-muted-foreground mb-2">/ 95</span>
                   </div>
-                  <p className={`text-lg font-semibold mt-1 ${bandColor(currentScore)}`}>
-                    {bandLabel(currentScore)}
-                  </p>
+                  <div className="mt-1">
+                    <BandLabel score={currentScore} />
+                  </div>
                 </>
               ) : (
                 <p className="text-3xl font-bold text-muted-foreground">Score pending</p>
@@ -529,7 +599,7 @@ export default function Step7Pricing() {
                             <span className="text-sm text-muted-foreground">/ 95</span>
                           </div>
                           {aics != null && (
-                            <p className={`text-[11px] font-medium mt-0.5 ${bandColor(aics)}`}>{bandLabel(aics)}</p>
+                            <div className="mt-0.5"><BandLabel score={aics} /></div>
                           )}
                         </div>
                         {lift != null && lift > 0 && (
@@ -662,3 +732,4 @@ export default function Step7Pricing() {
     </>
   );
 }
+
