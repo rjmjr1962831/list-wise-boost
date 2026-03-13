@@ -506,7 +506,7 @@ export default function Step7Pricing() {
                 More evidence, more often increases your probability of being named.
               </p>
               <p className="text-sm text-muted-foreground max-w-lg mx-auto mt-2">
-                <span className="font-medium text-foreground">Note:</span> No one can guarantee that you will always be named. There are many factors that go into an AI&rsquo;s referral reasoning. Our Underwritten tier is the biggest step you can take to make it more likely that they will.
+                <span className="font-medium text-foreground">Note:</span>&nbsp;No one can guarantee that you will always be named. There are many factors that go into an AI&rsquo;s referral reasoning. Our Underwritten tier is the biggest step you can take to make it more likely that they will.
               </p>
             </div>
 
