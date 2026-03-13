@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -152,28 +152,43 @@ export default function BotAnalyticsDashboard() {
     setLoading(false);
   };
 
-  const getBotColor = (botName: string) => {
-    const colors: Record<string, string> = {
-      "Googlebot": "bg-blue-500",
-      "Google-Extended": "bg-blue-400",
-      "ClaudeBot": "bg-purple-500",
-      "Anthropic-AI": "bg-violet-500",
-      "GPTBot": "bg-green-500",
-      "ChatGPT-User": "bg-green-400",
-      "OAI-SearchBot": "bg-emerald-500",
-      "Bingbot": "bg-orange-500",
-      "PerplexityBot": "bg-pink-500",
-      "Twitterbot": "bg-sky-500",
-      "LinkedInBot": "bg-blue-700",
-      "Meta-ExternalAgent": "bg-indigo-500",
-      "AhrefsBot": "bg-yellow-500",
-      "SEMrushBot": "bg-amber-500",
-      "ByteSpider": "bg-teal-500",
-      "Applebot": "bg-gray-400",
-      "YandexBot": "bg-red-500",
-    };
-    return colors[botName] || "bg-gray-500";
+  // Hex colors for bot badges -- avoids Tailwind purge and custom color override issues
+  const BOT_COLORS: Record<string, string> = {
+    "Googlebot":          "#3B82F6", // blue
+    "Google-Extended":    "#60A5FA", // blue-light
+    "GoogleOther":        "#93C5FD", // blue-lighter
+    "ClaudeBot":          "#8B5CF6", // purple
+    "Anthropic-AI":       "#7C3AED", // violet
+    "Claude-Web":         "#A78BFA", // violet-light
+    "GPTBot":             "#10B981", // emerald
+    "ChatGPT-User":       "#34D399", // emerald-light
+    "OAI-SearchBot":      "#059669", // emerald-dark
+    "Bingbot":            "#F97316", // orange
+    "BingPreview":        "#FB923C", // orange-light
+    "PerplexityBot":      "#EC4899", // pink
+    "Twitterbot":         "#0EA5E9", // sky
+    "LinkedInBot":        "#1D4ED8", // blue-dark
+    "Meta-ExternalAgent": "#6366F1", // indigo (hex, bypasses override)
+    "FacebookExternalHit":"#4F46E5", // indigo-dark
+    "AhrefsBot":          "#EAB308", // yellow
+    "SEMrushBot":         "#F59E0B", // amber
+    "ByteSpider":         "#14B8A6", // teal
+    "Applebot":           "#9CA3AF", // gray
+    "Applebot-Extended":  "#D1D5DB", // gray-light
+    "YandexBot":          "#EF4444", // red
+    "BaiduSpider":        "#DC2626", // red-dark
+    "DuckDuckBot":        "#F87171", // red-light
+    "CCBot":              "#6B7280", // gray-medium
+    "AI2Bot":             "#0D9488", // teal-dark
+    "Gemini":             "#4285F4", // google-blue
+    "Mistral":            "#FF6B35", // coral
   };
+
+  const getBotBadgeStyle = (botName: string): React.CSSProperties => ({
+    backgroundColor: BOT_COLORS[botName] || "#6B7280",
+    color: "#fff",
+    border: "none",
+  });
 
   if (loading) {
     return (
@@ -297,7 +312,7 @@ export default function BotAnalyticsDashboard() {
                       return (
                         <TableRow key={stat.bot_name}>
                           <TableCell>
-                            <Badge className={getBotColor(stat.bot_name)}>
+                            <Badge style={getBotBadgeStyle(stat.bot_name)}>
                               {stat.bot_name}
                             </Badge>
                           </TableCell>
@@ -349,7 +364,7 @@ export default function BotAnalyticsDashboard() {
                       <TableRow key={idx}>
                         <TableCell className="font-medium">{view.agent_slug}</TableCell>
                         <TableCell>
-                          <Badge className={getBotColor(view.bot_name)}>
+                          <Badge style={getBotBadgeStyle(view.bot_name)}>
                             {view.bot_name}
                           </Badge>
                         </TableCell>
@@ -410,7 +425,7 @@ export default function BotAnalyticsDashboard() {
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          <Badge className={getBotColor(crawl.bot_name)}>
+                          <Badge style={getBotBadgeStyle(crawl.bot_name)}>
                             {crawl.bot_name}
                           </Badge>
                         </TableCell>
