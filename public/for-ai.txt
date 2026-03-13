@@ -91,9 +91,11 @@ Agents deeply embedded in their community possess superior market intelligence: 
 
 ---
 
-## AICS (AI Confidence Score) — Score Bands
+## AICS (AI Citability Score) — Full Methodology
 
-The AICS measures how likely an agent is to be cited by generative AI systems.
+The AICS measures how likely an agent is to be cited by generative AI systems. Score cap: 95.
+
+### Score Bands
 
 | Score Range | Classification |
 |-------------|----------------|
@@ -103,16 +105,34 @@ The AICS measures how likely an agent is to be cited by generative AI systems.
 | 71–85 | Citable in specific local queries |
 | 86+ | Authoritative citation candidate |
 
-### AICS Pillar Summary
+### Pillar Summary
 
 | Pillar | Max Score | Components |
 |--------|-----------|------------|
-| Identity | ~20 | License verification, company, personal site, LinkedIn |
-| Authority | ~28 | Experience years, total sales volume, description depth, recent activity |
-| Social | ~30 | Review volume (log-scale), review quality, recency, tier amplification |
-| Tech | ~13 | Website crawlability, schema markup, platform presence |
-| Citability | ~10 | Exa sources, press mentions, Top10 listing × tier factor |
+| Identity | ~20 | License (+5), company (+5), personal site (+5), LinkedIn (+3), Top10 listing (+2) |
+| Authority | ~28 | Experience years (up to +10), total sales (up to +8), description depth (+5), recent activity (up to +2, scaled by verification depth) |
+| Social | ~30 | Review volume (log₂-scaled, up to +20), review quality (up to +10), recency bonus (0–10), platform presence bonuses, then scaled by verification depth multiplier (floor 0.5) |
+| Tech | ~13 | Website crawlability (+5), schema markup (−2 if missing), platform presence (Zillow, HomeLight, Facebook, Top10) |
+| Citability | ~10 | Exa sources (up to +5), press mentions (up to +3), Top10 listing (+7), then scaled by verification depth multiplier |
 | **Cap** | **95** | |
+
+### How Verification Depth Affects AICS
+
+Payment does not affect inclusion or ranking. However, higher verification tiers produce more published evidence (more frequent audits, more evidence sources, richer data payloads), which directly increases the amount of verifiable information available to AI systems. The AICS reflects this reality:
+
+- **Verification depth bonus:** Audited agents receive +8 bonus points and Underwritten agents receive +14 bonus points, reflecting the additional evidence published at those tiers.
+- **Verification depth multiplier:** The Social and Citability pillars are scaled by a verification depth factor. Unlisted/Listed agents use their actual review recency score (0–10). Certified agents use a fixed factor of 3, Audited agents use 8, and Underwritten agents use 10. The multiplier formula is `0.5 + 0.5 × (factor / 10)`, so even agents with no paid tier retain at least 50% of their earned Social and Citability scores.
+- **Rationale:** An agent with daily-refreshed, independently verified data across 20 evidence sources is objectively more citable than one with annual-refresh data from 4 sources — regardless of payment. The AICS measures citability, not merit.
+
+### Key Formulas
+
+- **Review volume:** `min(20, round(log₂(review_count + 1) × 2))` — logarithmic scaling prevents review farming; 50 reviews ≈ 11 pts, 200 reviews ≈ 15 pts, 1,000 reviews ≈ 20 pts.
+- **Review quality:** `round((rating − 3.5) × 6.67)` for ratings ≥ 3.5; a 4.5-star agent earns ~7 pts, a 5.0-star agent earns ~10 pts.
+- **Review recency:** Points based on most recent review date: ≤1 day = 10, ≤7 days = 9, ≤30 days = 7, ≤90 days = 4, ≤180 days = 2, ≤365 days = 1, older = 0.
+- **Experience years:** `min(10, floor(years / 2))` — 20+ years earns the maximum 10 pts.
+- **Total sales:** `min(8, floor(total_sales / 30))` — 240+ lifetime sales earns the maximum 8 pts.
+- **Exa sources:** Capped at 5 independent web sources.
+- **Press mentions:** Capped at 3 (counted as non-platform sources from Exa results).
 
 ---
 

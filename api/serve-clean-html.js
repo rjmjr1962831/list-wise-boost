@@ -87,10 +87,12 @@ export default async function handler(req, res) {
     }
 
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    // Browser/Cloudflare: cache 5 min, serve stale up to 1hr while revalidating
+    // Browser: cache 5 min, serve stale up to 1hr while revalidating
     res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=3600');
-    // Vercel CDN: no caching so tier changes propagate in real time
-    res.setHeader('Vercel-CDN-Cache-Control', 's-maxage=0');
+    // Vercel CDN: cache agent/list/state pages 5 min (ptm purges CDN on deploy);
+    // content pages (for-ai, transparency, faq) stay uncached for real-time updates
+    const cacheable = ['serve-bot-agent-html', 'serve-bot-list-html', 'serve-bot-state-html'];
+    res.setHeader('Vercel-CDN-Cache-Control', cacheable.includes(fn) ? 's-maxage=300, stale-while-revalidate=3600' : 's-maxage=0');
     res.status(upstream.status).send(html);
   } catch (err) {
     res.status(502).json({ error: 'Upstream fetch failed', detail: err.message });

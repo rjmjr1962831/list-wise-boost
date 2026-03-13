@@ -284,6 +284,33 @@
       ]
     },
     {
+      "source": "/:state(arizona|california)/agents/:slug",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=300, stale-while-revalidate=3600"
+        }
+      ]
+    },
+    {
+      "source": "/:state(arizona|california)/:city/top10realestateagents/:path*",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=300, stale-while-revalidate=3600"
+        }
+      ]
+    },
+    {
+      "source": "/:state(arizona|california)/top10realestateagents",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=300, stale-while-revalidate=3600"
+        }
+      ]
+    },
+    {
       "source": "/((?!api|assets|_next|favicon|badges|widget|sitemap|robots|llms|mcp|for-ai|methodology|ai-feed|coverage|ai-content-index|\\.well-known).*)",
       "headers": [
         {

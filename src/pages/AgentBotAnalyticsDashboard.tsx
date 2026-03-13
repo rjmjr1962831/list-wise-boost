@@ -111,40 +111,53 @@ export default function AgentBotAnalyticsDashboard() {
     const daysAgo = dateRange === "24h" ? 1 : dateRange === "7d" ? 7 : 30;
     const startDate = new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000).toISOString();
 
-    // Get bot visits for this agent from bot_crawl_logs
-    const { data: visits } = await supabase
-      .from("bot_crawl_logs")
-      .select("bot_name, page_path, crawled_at, user_agent")
-      .eq("agent_id", agentId)
-      .gte("crawled_at", startDate)
-      .order("crawled_at", { ascending: false });
+    // All aggregation done server-side via run_sql to avoid PostgREST 1000-row cap
 
-    if (visits) {
-      const total = visits.length;
-      const profileVisits = visits.filter(r => r.page_path?.includes('/agents/')).length;
+    // 1. Summary counts for this agent
+    const { data: summaryRaw } = await supabase.rpc("run_sql", { query: `
+      SELECT
+        COUNT(*)::int                                               AS total_visits,
+        COUNT(DISTINCT bot_name)::int                              AS unique_bots,
+        COUNT(*) FILTER (WHERE page_path LIKE '%/agents/%')::int   AS profile_visits
+      FROM bot_crawl_logs
+      WHERE agent_id = '${agentId}'
+        AND crawled_at >= '${startDate}'
+    ` });
+    const s = Array.isArray(summaryRaw) ? summaryRaw[0] : null;
+    setSummary({
+      total_bot_visits:  s?.total_visits   ?? 0,
+      unique_bots:       s?.unique_bots    ?? 0,
+      profile_visits:    s?.profile_visits ?? 0,
+      artifact_visits:   0,
+      cache_hit_rate:    0,
+    });
 
-      setSummary({
-        total_bot_visits: total,
-        unique_bots: new Set(visits.map(r => r.bot_name)).size,
-        profile_visits: profileVisits,
-        artifact_visits: 0,
-        cache_hit_rate: 0,
-      });
+    // 2. Bot breakdown for this agent
+    const { data: botBreakdown } = await supabase.rpc("run_sql", { query: `
+      SELECT bot_name, COUNT(*)::int AS total_visits
+      FROM bot_crawl_logs
+      WHERE agent_id = '${agentId}'
+        AND crawled_at >= '${startDate}'
+      GROUP BY bot_name
+      ORDER BY total_visits DESC
+    ` });
+    setBotStats(
+      (Array.isArray(botBreakdown) ? botBreakdown : []).map((r: any) => ({
+        bot_name: r.bot_name || "Unknown",
+        total_visits: r.total_visits,
+      }))
+    );
 
-      // Group by bot_name
-      const byBot = visits.reduce((acc, visit) => {
-        const bot = visit.bot_name || 'Unknown';
-        acc[bot] = (acc[bot] || 0) + 1;
-        return acc;
-      }, {} as Record<string, number>);
-
-      const stats: BotStat[] = Object.entries(byBot)
-        .map(([bot_name, total_visits]) => ({ bot_name, total_visits }))
-        .sort((a, b) => b.total_visits - a.total_visits);
-
-      setBotStats(stats);
-      setRecentVisits(visits.slice(0, 50) as BotVisit[]);
-    }
+    // 3. Recent visits (capped at 50 -- display only)
+    const { data: recentRaw } = await supabase.rpc("run_sql", { query: `
+      SELECT bot_name, page_path, crawled_at, user_agent
+      FROM bot_crawl_logs
+      WHERE agent_id = '${agentId}'
+        AND crawled_at >= '${startDate}'
+      ORDER BY crawled_at DESC
+      LIMIT 50
+    ` });
+    setRecentVisits((Array.isArray(recentRaw) ? recentRaw : []) as BotVisit[]);
 
     setLoading(false);
   };

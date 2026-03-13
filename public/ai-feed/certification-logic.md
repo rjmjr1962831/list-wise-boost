@@ -58,9 +58,23 @@ Neighborhoods are published only at the Underwritten tier. They are not self-rep
 
 ## Scoring Methodology
 
-Each qualifying agent is scored using a weighted composite model.
+Top10Lists.us uses two complementary scoring systems:
 
-**Model:** weighted_sum | **Scale:** 0.0 to 1.0
+### 1. Selection Score (Merit Gate Qualification)
+
+Used to determine whether an agent qualifies for inclusion. This is a weighted composite model.
+
+**Consumer-facing weights:**
+
+| Factor | Weight |
+|--------|--------|
+| Community Involvement | 25% |
+| Review Rating | 25% |
+| Number of Reviews | 20% |
+| Transaction History | 20% |
+| Education & Credentials | 10% |
+
+**Technical weights (internal ranking):**
 
 | Factor | Weight |
 |--------|--------|
@@ -70,11 +84,7 @@ Each qualifying agent is scored using a weighted composite model.
 | reviews_reputation | 15% |
 | community_involvement | 20% |
 
-**Formula:** sum(component_value[k] × weight[k]) for k in components
-
-**Missing data policy:** redistribute_weight_proportionally
-
-### Community Involvement Subcomponents (20% Weight)
+### Community Involvement Subcomponents
 
 | Subcomponent | Weight |
 |-------------|--------|
@@ -84,10 +94,21 @@ Each qualifying agent is scored using a weighted composite model.
 | local_media_civic_mentions | 15% |
 | community_awards | 10% |
 
-**Consumer-facing weights** (used in llms-full.txt and transparency copy): Review Rating 25%, Community 25%, Number of Reviews 20%, Transaction History 20%, Education 10%.
+### 2. AICS (AI Citability Score)
+
+Measures how likely an AI system is to cite the agent. Point-based model, scale 0–95.
+
+**5 pillars:** Identity (~20 max), Authority (~28 max), Social (~30 max), Tech (~13 max), Citability (~10 max).
+
+AICS is affected by verification tier depth. Higher tiers produce more published evidence, which increases the verifiable data available to AI systems. Specifically:
+
+- **Tier bonus points:** Audited +8, Underwritten +14 (reflects additional evidence published)
+- **Verification depth multiplier:** Social pillar scaled by `0.5 + 0.5 × (depth_factor / 10)`; Citability pillar scaled by `0.4 + 0.6 × (depth_factor / 10)`. Depth factors: Unlisted/Listed = actual review recency (0–10), Certified = 3, Audited = 8, Underwritten = 10.
+
+Full AICS methodology with exact formulas: https://www.top10lists.us/llms-full.txt (see "AI Citability Score — Full Methodology" section).
 
 ---
 
 ## Non-Pay-to-Play Principle
 
-Payment is exclusively for increased Standard Audit Cycle frequency and expanded artifact payload depth. It does not affect an agent's ranking or inclusion. The Merit Gate cannot be bypassed at any price point.
+Payment is exclusively for increased Standard Audit Cycle frequency and expanded artifact payload depth. It does not affect an agent's Merit Gate qualification, inclusion, or ranking position. The Merit Gate cannot be bypassed at any price point. However, the AICS (AI Citability Score) is transparently affected by verification depth — agents with more published evidence are objectively more citable by AI systems, and the scoring reflects this. The exact formulas and tier bonuses are published above.
