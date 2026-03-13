@@ -694,33 +694,6 @@ export default function Step7Pricing() {
           </div>
 
 
-          {/* ══════════════════════════════════════════════════════
-              TRUST FOOTER
-          ══════════════════════════════════════════════════════ */}
-          <div className="rounded-xl border p-5 space-y-4">
-            <p className="text-sm font-semibold">Don&rsquo;t take our word for it</p>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              Ask any AI assistant right now:{' '}
-              <span className="italic">
-                &ldquo;Who are the top real estate agents in [your city]?&rdquo;
-              </span>{' '}
-              then ask:{' '}
-              <span className="italic">
-                &ldquo;Why did you recommend those agents and not others?&rdquo;
-              </span>
-            </p>
-            <div className="flex items-center gap-2">
-              <p className="text-sm text-muted-foreground">Verify your AI visibility independently:</p>
-              <a
-                href="https://ai-visibility-index.semrush.com/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
-              >
-                Semrush AI Visibility <ExternalLink className="h-3 w-3" />
-              </a>
-            </div>
-          </div>
 
           <div className="rounded-xl border p-4">
             <p className="text-xs text-muted-foreground leading-relaxed">
@@ -741,6 +714,7 @@ export default function Step7Pricing() {
     </>
   );
 }
+
 
 
 
