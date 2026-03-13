@@ -3,7 +3,6 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { SafeHead } from "@/components/SafeHead";
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Loader2, Shield, Zap, CheckCircle2, AlertTriangle, ExternalLink } from 'lucide-react';
@@ -87,7 +86,14 @@ function bandColor(score: number): string {
   return 'text-green-500';
 }
 
-// Annual = 2 months free (10 months price for 12 months)
+function bandBg(score: number): string {
+  if (score <= 30) return 'bg-red-500';
+  if (score <= 50) return 'bg-orange-500';
+  if (score <= 70) return 'bg-yellow-500';
+  if (score <= 85) return 'bg-blue-500';
+  return 'bg-green-500';
+}
+
 function annualPrice(monthly: number): number {
   return monthly * 10;
 }
@@ -160,14 +166,9 @@ export default function Step7Pricing() {
   }, [token, passedProfessional]);
 
   const loadData = async () => {
-    if (!token) {
-      navigate('/404');
-      return;
-    }
-
+    if (!token) { navigate('/404'); return; }
     try {
       let prof: Professional | null = null;
-
       if (passedProfessional) {
         const profWithSignals = { ...passedProfessional } as Professional;
         const { data: signals } = await supabase
@@ -187,7 +188,6 @@ export default function Step7Pricing() {
       } else {
         const profSelect = 'id, name, email, years_experience, total_sales, num_total_reviews, review_stars_rating, license_number, state_slug, community_roles, agent_sales_stats, current_tier, badge_tier, signal_score, certified_projected_signal, audited_projected_signal';
         const isUuid = /^[0-9a-f-]{36}$/i.test(token);
-
         if (isUuid) {
           const { data } = await supabase.from('professionals').select(profSelect).eq('id', token).maybeSingle();
           prof = data;
@@ -201,15 +201,9 @@ export default function Step7Pricing() {
           prof = data;
         }
       }
-
-      if (!prof) {
-        navigate('/404');
-        return;
-      }
-
+      if (!prof) { navigate('/404'); return; }
       setProfessional(prof as Professional);
 
-      // Fetch pillar-level audit data
       const { data: auditData } = await supabase
         .from('geo_audit_results')
         .select('pillar_identity, pillar_authority, pillar_social, pillar_technical, pillar_citability, score_current, score_audited, score_underwritten, gap_stale_reviews, gap_no_linkedin, gap_no_schema, gap_no_realtor, gap_no_homelight, gap_no_press, gap_no_personal_site, exa_source_count')
@@ -217,12 +211,10 @@ export default function Step7Pricing() {
         .maybeSingle();
       if (auditData) setAudit(auditData as AuditData);
 
-      // Fetch pricing config
       const { data: priceData } = await supabase
         .from('certification_pricing_config')
         .select('tier, monthly_price, payload_weight, refresh_cadence')
         .eq('is_active', true);
-
       if (priceData && priceData.length > 0) {
         const filtered = (priceData as PricingRow[]).filter((p) => p.tier === 'certified' || p.tier === 'audited' || p.tier === 'underwritten');
         setPrices(filtered.length > 0 ? filtered : DEFAULT_PRICES);
@@ -253,27 +245,20 @@ export default function Step7Pricing() {
     const monthly = row?.monthly_price ?? 0;
     if (monthly === 0) return { monthly: 0, annual: 0, display: 'Free' };
     const annual = annualPrice(monthly);
-    return {
-      monthly,
-      annual,
-      display: isAnnual ? `$${annual}/year` : `$${monthly}/mo`,
-    };
+    return { monthly, annual, display: isAnnual ? `$${annual}/year` : `$${monthly}/mo` };
   };
 
   const handleSelectCertified = async () => {
     if (!token || !professional) return;
     setSaving('certified');
     try {
-      const { data, error } = await supabase.functions.invoke('funnel-select-tier', {
-        body: { token, tier: 'certified' },
-      });
+      const { data, error } = await supabase.functions.invoke('funnel-select-tier', { body: { token, tier: 'certified' } });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       toast.success('Certified tier activated!');
       navigate(`/funnel/${token}/payment-success`);
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Failed to activate Certified tier';
-      toast.error(msg);
+      toast.error(err instanceof Error ? err.message : 'Failed to activate Certified tier');
     } finally {
       setSaving(null);
     }
@@ -282,10 +267,7 @@ export default function Step7Pricing() {
   const handleUpgrade = async (tier: 'audited' | 'underwritten') => {
     if (!token || !professional) return;
     const email = professional.email;
-    if (!email) {
-      toast.error('Email is required for checkout. Please contact support.');
-      return;
-    }
+    if (!email) { toast.error('Email is required for checkout. Please contact support.'); return; }
     setSaving(tier);
     try {
       const baseUrl = window.location.origin;
@@ -302,25 +284,16 @@ export default function Step7Pricing() {
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
-      if (data?.url) {
-        window.location.href = data.url;
-      } else {
-        throw new Error('No checkout URL returned');
-      }
+      if (data?.url) { window.location.href = data.url; }
+      else throw new Error('No checkout URL returned');
     } catch (err: unknown) {
       let msg = 'Failed to start checkout';
       if (err && typeof err === 'object') {
         const e = err as { context?: { json?: () => Promise<{ error?: string; details?: string }> }; message?: string };
         if (e.context?.json) {
-          try {
-            const body = await e.context.json();
-            msg = body?.error ?? body?.details ?? e.message ?? msg;
-          } catch {
-            msg = e.message ?? msg;
-          }
-        } else {
-          msg = e.message ?? msg;
-        }
+          try { const body = await e.context.json(); msg = body?.error ?? body?.details ?? e.message ?? msg; }
+          catch { msg = e.message ?? msg; }
+        } else { msg = e.message ?? msg; }
       }
       toast.error(msg);
     } finally {
@@ -328,7 +301,6 @@ export default function Step7Pricing() {
     }
   };
 
-  // Compute gaps as actionable items
   const gaps: string[] = [];
   if (audit) {
     if (audit.gap_stale_reviews) gaps.push('Review recency is low');
@@ -346,6 +318,8 @@ export default function Step7Pricing() {
     );
   }
 
+  const scoreMarkerPct = currentScore != null ? Math.min(100, Math.round((currentScore / 95) * 100)) : null;
+
   return (
     <>
       <SafeHead>
@@ -353,299 +327,336 @@ export default function Step7Pricing() {
         <meta name="robots" content="noindex, nofollow" />
         <meta name="googlebot" content="noindex, nofollow" />
       </SafeHead>
-      <div className="min-h-screen bg-gradient-to-b from-background to-muted py-12 px-4">
-        <div className="max-w-6xl mx-auto space-y-6">
 
-          {/* ── What You've Already Earned ──────────────────────────────── */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-muted-foreground">Step 8 of 8</span>
-                <span className="text-sm font-medium">Choose Your Tier</span>
-              </div>
-              <CardTitle className="text-2xl">What you&rsquo;ve already earned</CardTitle>
-              <p className="text-sm text-muted-foreground">
-                You passed our entire selection pipeline. This is free and always will be.
+      <div className="min-h-screen bg-gradient-to-b from-background to-muted/40 py-10 px-4">
+        <div className="max-w-4xl mx-auto space-y-8">
+
+          {/* ── Step header ── */}
+          <div className="flex items-center justify-between text-sm text-muted-foreground px-1">
+            <span>Step 8 of 8</span>
+            <span className="font-medium text-foreground">Choose Your Tier</span>
+          </div>
+
+          {/* ══════════════════════════════════════════════════════
+              HERO: SCORE + BAND MARKER
+          ══════════════════════════════════════════════════════ */}
+          <div className="rounded-2xl border bg-card p-8 text-center space-y-5 shadow-sm">
+            <div>
+              <p className="text-sm font-medium text-muted-foreground uppercase tracking-widest mb-2">
+                Your AI Confidence Score
               </p>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Pipeline checkmarks */}
-                <div className="space-y-3">
-                  <div className="flex items-center gap-3">
-                    <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0" />
-                    <div>
-                      <p className="text-sm font-medium">Gate 1: 4.5+ star rating</p>
-                      <p className="text-xs text-muted-foreground">Cross-platform verified</p>
-                    </div>
+              {currentScore != null ? (
+                <>
+                  <div className="flex items-end justify-center gap-2">
+                    <span className={`text-7xl font-black tabular-nums ${bandColor(currentScore)}`}>
+                      {currentScore}
+                    </span>
+                    <span className="text-2xl text-muted-foreground mb-2">/ 95</span>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0" />
-                    <div>
-                      <p className="text-sm font-medium">Gate 2: 10+ verified reviews (24 months)</p>
-                      <p className="text-xs text-muted-foreground">Recency-weighted</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0" />
-                    <div>
-                      <p className="text-sm font-medium">Gate 3: 5+ years in business</p>
-                      <p className="text-xs text-muted-foreground">License verified against state DRE</p>
-                    </div>
-                  </div>
-                  <div className="border-l-2 border-green-500/30 ml-2.5 pl-5 space-y-3 mt-1">
-                    <div className="flex items-center gap-3">
-                      <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
-                      <p className="text-sm text-muted-foreground">Deep research across 1,000+ sources</p>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
-                      <p className="text-sm text-muted-foreground">Community Involvement Score calculated</p>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
-                      <p className="text-sm text-muted-foreground">Human editorial review approved</p>
-                    </div>
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-2 pl-1">
-                    No payment was required for any of this &mdash; and never will be for your listing.
+                  <p className={`text-lg font-semibold mt-1 ${bandColor(currentScore)}`}>
+                    {bandLabel(currentScore)}
                   </p>
+                </>
+              ) : (
+                <p className="text-3xl font-bold text-muted-foreground">Score pending</p>
+              )}
+            </div>
+
+            {/* Spectrum bar with marker */}
+            {scoreMarkerPct != null && (
+              <div className="relative max-w-sm mx-auto">
+                <div className="h-3 rounded-full overflow-hidden flex">
+                  <div className="flex-1 bg-red-400" />
+                  <div className="flex-1 bg-orange-400" />
+                  <div className="flex-1 bg-yellow-400" />
+                  <div className="flex-1 bg-blue-400" />
+                  <div className="flex-1 bg-green-500" />
                 </div>
-
-                {/* Current AICS + pillar breakdown */}
-                <div>
-                  {currentScore != null && (
-                    <div className="rounded-lg border bg-muted/30 p-4 mb-4">
-                      <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Your Current AI Confidence Score</p>
-                      <div className="flex items-baseline gap-2">
-                        <p className={`text-3xl font-bold ${bandColor(currentScore)}`}>{currentScore}</p>
-                        <p className="text-sm text-muted-foreground">/ 95</p>
-                      </div>
-                      <p className={`text-sm font-medium mt-1 ${bandColor(currentScore)}`}>
-                        {bandLabel(currentScore)}
-                      </p>
-                    </div>
-                  )}
-
-                  {audit && (
-                    <div className="space-y-2">
-                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Pillar Breakdown</p>
-                      {PILLAR_META.map(({ key, label, max, description }) => {
-                        const val = (audit[key] as number | null) ?? 0;
-                        const pct = Math.round((val / max) * 100);
-                        return (
-                          <div key={key}>
-                            <div className="flex justify-between text-xs mb-0.5">
-                              <span className="font-medium">{label}</span>
-                              <span className="text-muted-foreground">{val}/{max}</span>
-                            </div>
-                            <div className="h-2 bg-muted rounded-full overflow-hidden">
-                              <div
-                                className={`h-full rounded-full transition-all ${pct >= 70 ? 'bg-green-500' : pct >= 40 ? 'bg-yellow-500' : 'bg-red-400'}`}
-                                style={{ width: `${pct}%` }}
-                              />
-                            </div>
-                            <p className="text-[10px] text-muted-foreground mt-0.5">{description}</p>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-
-                  {gaps.length > 0 && (
-                    <div className="mt-4 rounded-lg border border-orange-200 bg-orange-50 dark:border-orange-900 dark:bg-orange-950/30 p-3">
-                      <p className="text-xs font-medium text-orange-700 dark:text-orange-400 mb-2 flex items-center gap-1.5">
-                        <AlertTriangle className="h-3.5 w-3.5" />
-                        What AI systems can&rsquo;t verify about you yet
-                      </p>
-                      <ul className="text-xs text-orange-600 dark:text-orange-400/80 space-y-1">
-                        {gaps.map((g, i) => (
-                          <li key={i} className="flex items-start gap-1.5">
-                            <span className="mt-0.5">&bull;</span>
-                            {g}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
+                {/* Marker */}
+                <div
+                  className="absolute -top-0.5 -translate-x-1/2"
+                  style={{ left: `${scoreMarkerPct}%` }}
+                >
+                  <div className="w-4 h-4 rounded-full border-2 border-white shadow-md bg-foreground" />
+                </div>
+                <div className="flex justify-between text-[10px] text-muted-foreground mt-2 px-0.5">
+                  <span>0</span>
+                  <span>31</span>
+                  <span>51</span>
+                  <span>71</span>
+                  <span>86</span>
+                  <span>95</span>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            )}
 
-          {/* ── Amplify Your Visibility ──────────────────────────────────── */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-xl">Amplify what you&rsquo;ve earned</CardTitle>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                Paid tiers don&rsquo;t buy your spot &mdash; you already have it. They publish more of your verified data to AI systems and refresh it more frequently. More published evidence means more for AI to work with when it decides whether to cite you by name. We can&rsquo;t guarantee any AI will name you. Nobody can. What we can control is how much verified, citable data about you is available when AI makes that decision.
-              </p>
-            </CardHeader>
-            <CardContent>
-              {/* How it works */}
-              <div className="rounded-lg border bg-muted/30 p-4 mb-6">
-                <p className="text-sm font-medium mb-3">How AI decides who to cite</p>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  AI systems prefer sources with more evidence, fresher data, and independent verification. Each tier increases all three. The AICS measures what AI can verify about you &mdash; the inputs, not a guaranteed outcome. The published formula is on our{' '}
-                  <a href="/about/ranking-methodology" className="underline">methodology page</a>.
-                </p>
-              </div>
-
-              {/* AICS band reference */}
-              <div className="rounded-lg border p-4 mb-6">
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">AICS Score Bands</p>
-                <div className="grid grid-cols-1 sm:grid-cols-5 gap-2 text-xs">
-                  {[
-                    { range: '0-30', label: 'Invisible', color: 'bg-red-100 dark:bg-red-950 text-red-700 dark:text-red-400', tier: '' },
-                    { range: '31-50', label: 'Discoverable', color: 'bg-orange-100 dark:bg-orange-950 text-orange-700 dark:text-orange-400', tier: 'Listed' },
-                    { range: '51-70', label: 'Citable (general)', color: 'bg-yellow-100 dark:bg-yellow-950 text-yellow-700 dark:text-yellow-400', tier: 'Audited' },
-                    { range: '71-85', label: 'Citable (local)', color: 'bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-400', tier: '' },
-                    { range: '86-95', label: 'Authoritative', color: 'bg-green-100 dark:bg-green-950 text-green-700 dark:text-green-400', tier: 'Underwritten' },
-                  ].map((b) => (
-                    <div key={b.range} className={`rounded-md p-2 text-center ${b.color}`}>
-                      <p className="font-bold">{b.range}</p>
-                      <p className="font-medium">{b.label}</p>
-                      {b.tier && <p className="text-[10px] mt-0.5 opacity-70">{b.tier} tier</p>}
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Billing toggle */}
-              <div className="flex items-center justify-center gap-3 mb-6">
-                <Label htmlFor="billing-toggle" className="text-sm">Monthly</Label>
-                <Switch id="billing-toggle" checked={isAnnual} onCheckedChange={setIsAnnual} />
-                <Label htmlFor="billing-toggle" className="text-sm">Annual <span className="text-primary font-medium">(2 months free)</span></Label>
-              </div>
-
-              {/* Tier cards */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {(['certified', 'audited', 'underwritten'] as const).map((tier) => {
-                  const meta = TIER_FEATURES[tier];
-                  const Icon = meta.icon;
-                  const { display } = getPrice(tier);
-                  const aics = getAICS(tier);
-                  const isCurrent = currentTier === tier;
-                  const isMostPopular = tier === 'audited';
-                  const lift = aics != null && currentScore != null ? aics - currentScore : null;
+            {/* Pillar bars */}
+            {audit && (
+              <div className="grid grid-cols-5 gap-3 max-w-sm mx-auto pt-2">
+                {PILLAR_META.map(({ key, label, max }) => {
+                  const val = (audit[key] as number | null) ?? 0;
+                  const pct = Math.round((val / max) * 100);
                   return (
-                    <div
-                      key={tier}
-                      className={`relative rounded-lg border p-5 ${
-                        isMostPopular ? 'pt-7' : ''
-                      } ${isCurrent ? 'border-primary ring-2 ring-primary/20' : 'border-border'}`}
-                    >
-                      <img
-                        src={`/badges/${tier}.png`}
-                        alt={`Top10Lists ${meta.name} badge`}
-                        className="absolute top-3 right-3 h-12 w-auto object-contain"
-                      />
-                      {isMostPopular && (
-                        <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                          <span className="bg-primary text-primary-foreground text-xs font-semibold px-3 py-1 rounded-full">
-                            Most Popular
-                          </span>
-                        </div>
-                      )}
-                      {isCurrent && (
-                        <p className="text-sm font-semibold text-primary mb-2">Your current tier</p>
-                      )}
-                      <div className="flex items-center gap-2 mb-1">
-                        <Icon className="h-5 w-5 text-primary" />
-                        <h3 className="text-lg font-semibold">{meta.name}</h3>
+                    <div key={key} className="text-center">
+                      <div className="h-16 bg-muted rounded-md overflow-hidden flex flex-col-reverse mx-auto w-full">
+                        <div
+                          className={`w-full rounded-md transition-all ${pct >= 70 ? 'bg-green-500' : pct >= 40 ? 'bg-yellow-500' : 'bg-red-400'}`}
+                          style={{ height: `${pct}%` }}
+                        />
                       </div>
-                      <p className="text-2xl font-bold text-foreground mb-1">{display}</p>
-                      <p className="text-xs text-muted-foreground mb-4">
-                        {meta.evidenceSources} &middot; {meta.refreshFrequency} refresh
-                      </p>
-
-                      {/* AICS projection */}
-                      <div className="p-3 rounded-lg bg-muted/50 border mb-4">
-                        <div className="flex items-baseline justify-between">
-                          <p className="text-xs text-muted-foreground uppercase tracking-wide">Projected AICS</p>
-                          {lift != null && lift > 0 && (
-                            <span className="text-xs font-medium text-green-600">+{lift} from current</span>
-                          )}
-                        </div>
-                        <div className="flex items-baseline gap-2 mt-1">
-                          <p className={`text-2xl font-bold ${aics != null ? bandColor(aics) : ''}`}>
-                            {aics != null ? aics : 'Pending'}
-                          </p>
-                          {aics != null && <p className="text-sm text-muted-foreground">/ 95</p>}
-                        </div>
-                        {aics != null && (
-                          <p className={`text-xs font-medium mt-0.5 ${bandColor(aics)}`}>{bandLabel(aics)}</p>
-                        )}
-                      </div>
-
-                      {/* What this tier publishes */}
-                      <p className="text-xs font-medium text-foreground mb-2">What AI systems see at this tier:</p>
-                      <ul className="text-sm text-muted-foreground space-y-1.5 mb-4">
-                        {meta.features.map((f, i) => (
-                          <li key={i} className="flex items-start gap-2">
-                            <CheckCircle2 className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0" />
-                            {f}
-                          </li>
-                        ))}
-                      </ul>
-
-                      <div className="mb-4" onClick={(e) => e.stopPropagation()}>
-                        <DataPayloadExpander tier={tier} triggerText="View full data and sources" professional={professional} />
-                      </div>
-
-                      {!isCurrent && (
-                        <Button
-                          size="sm"
-                          className="w-full"
-                          disabled={!!saving}
-                          onClick={() => tier === 'certified' ? handleSelectCertified() : handleUpgrade(tier)}
-                        >
-                          {saving === tier ? <Loader2 className="h-4 w-4 animate-spin mx-auto" /> : tier === 'certified' ? 'Activate Certified (Free)' : `Upgrade to ${meta.name}`}
-                        </Button>
-                      )}
+                      <p className="text-[10px] font-medium mt-1 text-muted-foreground">{label}</p>
+                      <p className="text-[10px] text-muted-foreground">{val}/{max}</p>
                     </div>
                   );
                 })}
               </div>
+            )}
 
-              {/* Transparency + ask any AI + verify independently */}
-              <div className="mt-8 space-y-4">
-                <div className="rounded-lg border bg-muted/30 p-4">
-                  <p className="text-sm font-medium text-foreground mb-2">Don&rsquo;t take our word for it</p>
-                  <div className="space-y-3">
-                    <div>
-                      <p className="text-sm text-muted-foreground leading-relaxed">
-                        Ask any AI assistant right now:
-                      </p>
-                      <p className="text-sm italic text-muted-foreground mt-1 pl-3 border-l-2 border-primary/30">
-                        &ldquo;Who are the top real estate agents in [your city]?&rdquo; &mdash; then ask: &ldquo;Why did you recommend those agents and not others?&rdquo;
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground leading-relaxed">
-                        Verify your AI visibility independently:
-                      </p>
-                      <div className="flex flex-wrap gap-2 mt-1">
-                        <a href="https://ai-visibility-index.semrush.com/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs text-primary hover:underline">
-                          Semrush AI Visibility <ExternalLink className="h-3 w-3" />
-                        </a>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="rounded-lg border p-4">
-                  <p className="text-xs text-muted-foreground leading-relaxed">
-                    <strong className="text-foreground">Transparency:</strong> AICS is calculated identically whether you&rsquo;re on the free tier or a paid tier. The score measures what AI systems can verify about you. Paid tiers publish more of your verified data &mdash; which gives AI systems more to cite. The score reflects the result, not the payment. The full formula is published on our <a href="/about/ranking-methodology" className="underline">methodology page</a>.
-                  </p>
-                </div>
+            {/* Gaps */}
+            {gaps.length > 0 && (
+              <div className="inline-block text-left rounded-lg border border-orange-200 bg-orange-50 dark:border-orange-900 dark:bg-orange-950/30 px-4 py-3 mt-1">
+                <p className="text-xs font-semibold text-orange-700 dark:text-orange-400 flex items-center gap-1.5 mb-1.5">
+                  <AlertTriangle className="h-3.5 w-3.5" />
+                  What AI can&rsquo;t verify about you yet
+                </p>
+                <ul className="text-xs text-orange-600 dark:text-orange-400/80 space-y-1">
+                  {gaps.map((g, i) => (
+                    <li key={i} className="flex items-start gap-1.5">
+                      <span className="mt-0.5">&bull;</span>{g}
+                    </li>
+                  ))}
+                </ul>
               </div>
+            )}
 
-              <p className="text-center text-sm text-muted-foreground mt-6">
-                Questions? <a href="tel:6027589600" className="underline">(602) 758-9600</a>
+            {/* Gates passed -- compact trust strip */}
+            <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 pt-2 border-t">
+              {[
+                'Gate 1: 4.5+ star rating',
+                'Gate 2: 10+ verified reviews',
+                'Gate 3: 5+ years in business',
+                '1,000+ sources researched',
+                'Human editorial approved',
+              ].map((item) => (
+                <span key={item} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-green-500 shrink-0" />
+                  {item}
+                </span>
+              ))}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              You passed our entire selection pipeline. Free, and always will be.
+            </p>
+          </div>
+
+          {/* ══════════════════════════════════════════════════════
+              TIER CARDS
+          ══════════════════════════════════════════════════════ */}
+          <div className="space-y-4">
+            <div className="text-center space-y-1">
+              <h2 className="text-xl font-bold">Amplify what you&rsquo;ve earned</h2>
+              <p className="text-sm text-muted-foreground max-w-lg mx-auto">
+                Paid tiers publish more of your verified data to AI systems and refresh it more often.
+                More evidence means more for AI to cite when it decides who to name.
               </p>
-            </CardContent>
-          </Card>
+            </div>
+
+            {/* Billing toggle */}
+            <div className="flex items-center justify-center gap-3">
+              <Label htmlFor="billing-toggle" className="text-sm">Monthly</Label>
+              <Switch id="billing-toggle" checked={isAnnual} onCheckedChange={setIsAnnual} />
+              <Label htmlFor="billing-toggle" className="text-sm">
+                Annual <span className="text-primary font-medium">(2 months free)</span>
+              </Label>
+            </div>
+
+            {/* Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {(['certified', 'audited', 'underwritten'] as const).map((tier) => {
+                const meta = TIER_FEATURES[tier];
+                const Icon = meta.icon;
+                const { display } = getPrice(tier);
+                const aics = getAICS(tier);
+                const isCurrent = currentTier === tier;
+                const isMostPopular = tier === 'audited';
+                const lift = aics != null && currentScore != null ? aics - currentScore : null;
+
+                return (
+                  <div
+                    key={tier}
+                    className={`relative rounded-xl border p-5 flex flex-col ${
+                      isMostPopular ? 'pt-8 border-primary shadow-md' : 'border-border'
+                    } ${isCurrent ? 'ring-2 ring-primary/20' : ''}`}
+                  >
+                    {/* Badge image */}
+                    <img
+                      src={`/badges/${tier}.png`}
+                      alt={`Top10Lists ${meta.name} badge`}
+                      className="absolute top-3 right-3 h-10 w-auto object-contain"
+                    />
+
+                    {isMostPopular && (
+                      <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                        <span className="bg-primary text-primary-foreground text-xs font-semibold px-3 py-1 rounded-full">
+                          Most Popular
+                        </span>
+                      </div>
+                    )}
+
+                    {isCurrent && (
+                      <p className="text-xs font-semibold text-primary mb-2 uppercase tracking-wide">Current tier</p>
+                    )}
+
+                    {/* Tier name + price */}
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <Icon className="h-4 w-4 text-primary shrink-0" />
+                      <h3 className="text-base font-semibold">{meta.name}</h3>
+                    </div>
+                    <p className="text-3xl font-black text-foreground">{display}</p>
+                    <p className="text-xs text-muted-foreground mb-4">
+                      {meta.evidenceSources} &middot; {meta.refreshFrequency} refresh
+                    </p>
+
+                    {/* AICS lift -- the hero stat */}
+                    <div className={`rounded-lg p-3 mb-4 border ${isMostPopular ? 'bg-primary/5 border-primary/20' : 'bg-muted/40'}`}>
+                      <div className="flex items-end justify-between">
+                        <div>
+                          <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-0.5">Projected AICS</p>
+                          <div className="flex items-baseline gap-1">
+                            <span className={`text-3xl font-black ${aics != null ? bandColor(aics) : 'text-muted-foreground'}`}>
+                              {aics ?? '—'}
+                            </span>
+                            <span className="text-sm text-muted-foreground">/ 95</span>
+                          </div>
+                          {aics != null && (
+                            <p className={`text-[11px] font-medium mt-0.5 ${bandColor(aics)}`}>{bandLabel(aics)}</p>
+                          )}
+                        </div>
+                        {lift != null && lift > 0 && (
+                          <div className="text-right">
+                            <span className={`text-2xl font-black text-green-600`}>+{lift}</span>
+                            <p className="text-[10px] text-muted-foreground">from current</p>
+                          </div>
+                        )}
+                      </div>
+                      {/* Mini spectrum bar showing projected position */}
+                      {aics != null && (
+                        <div className="relative mt-2">
+                          <div className="h-1.5 rounded-full overflow-hidden flex">
+                            <div className="flex-1 bg-red-300" />
+                            <div className="flex-1 bg-orange-300" />
+                            <div className="flex-1 bg-yellow-300" />
+                            <div className="flex-1 bg-blue-300" />
+                            <div className="flex-1 bg-green-400" />
+                          </div>
+                          <div
+                            className={`absolute -top-0.5 -translate-x-1/2 w-3 h-3 rounded-full border-2 border-white shadow ${bandBg(aics)}`}
+                            style={{ left: `${Math.min(100, Math.round((aics / 95) * 100))}%` }}
+                          />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Feature list */}
+                    <ul className="text-xs text-muted-foreground space-y-1.5 mb-4 flex-1">
+                      {meta.features.map((f, i) => (
+                        <li key={i} className="flex items-start gap-2">
+                          <CheckCircle2 className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0" />
+                          {f}
+                        </li>
+                      ))}
+                    </ul>
+
+                    <div className="mb-3" onClick={(e) => e.stopPropagation()}>
+                      <DataPayloadExpander tier={tier} triggerText="View full data and sources" professional={professional} />
+                    </div>
+
+                    {!isCurrent && (
+                      <Button
+                        className="w-full mt-auto"
+                        disabled={!!saving}
+                        onClick={() => tier === 'certified' ? handleSelectCertified() : handleUpgrade(tier)}
+                      >
+                        {saving === tier
+                          ? <Loader2 className="h-4 w-4 animate-spin mx-auto" />
+                          : tier === 'certified' ? 'Activate Certified (Free)' : `Upgrade to ${meta.name}`}
+                      </Button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* ══════════════════════════════════════════════════════
+              HOW AI DECIDES + SCORE BAND REFERENCE
+          ══════════════════════════════════════════════════════ */}
+          <div className="rounded-xl border bg-muted/30 p-5 space-y-4">
+            <p className="text-sm font-semibold">How AI decides who to cite</p>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              AI systems prefer sources with more evidence, fresher data, and independent verification.
+              Each tier increases all three. The AICS measures what AI can verify about you -- the inputs,
+              not a guaranteed outcome. The full formula is on our{' '}
+              <a href="/about/ranking-methodology" className="underline text-primary">methodology page</a>.
+            </p>
+            <div className="grid grid-cols-5 gap-1.5 text-xs">
+              {[
+                { range: '0-30', label: 'Invisible', color: 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-400' },
+                { range: '31-50', label: 'Discoverable', color: 'bg-orange-100 text-orange-700 dark:bg-orange-950 dark:text-orange-400' },
+                { range: '51-70', label: 'Citable', color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-950 dark:text-yellow-400' },
+                { range: '71-85', label: 'Citable (local)', color: 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-400' },
+                { range: '86-95', label: 'Authoritative', color: 'bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-400' },
+              ].map((b) => (
+                <div key={b.range} className={`rounded-md p-2 text-center ${b.color}`}>
+                  <p className="font-bold text-[11px]">{b.range}</p>
+                  <p className="text-[10px] leading-tight mt-0.5">{b.label}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* ══════════════════════════════════════════════════════
+              TRUST FOOTER
+          ══════════════════════════════════════════════════════ */}
+          <div className="rounded-xl border p-5 space-y-4">
+            <p className="text-sm font-semibold">Don&rsquo;t take our word for it</p>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Ask any AI assistant right now:{' '}
+              <span className="italic">
+                &ldquo;Who are the top real estate agents in [your city]?&rdquo;
+              </span>{' '}
+              then ask:{' '}
+              <span className="italic">
+                &ldquo;Why did you recommend those agents and not others?&rdquo;
+              </span>
+            </p>
+            <div className="flex items-center gap-2">
+              <p className="text-sm text-muted-foreground">Verify your AI visibility independently:</p>
+              <a
+                href="https://ai-visibility-index.semrush.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+              >
+                Semrush AI Visibility <ExternalLink className="h-3 w-3" />
+              </a>
+            </div>
+          </div>
+
+          <div className="rounded-xl border p-4">
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              <strong className="text-foreground">Transparency:</strong> AICS is calculated identically
+              whether you&rsquo;re on the free tier or a paid tier. The score measures what AI systems can
+              verify about you. Paid tiers publish more of your verified data, giving AI systems more to
+              cite. The score reflects the result, not the payment. The full formula is published on our{' '}
+              <a href="/about/ranking-methodology" className="underline">methodology page</a>.
+            </p>
+          </div>
+
+          <p className="text-center text-sm text-muted-foreground pb-4">
+            Questions? <a href="tel:6027589600" className="underline">(602) 758-9600</a>
+          </p>
+
         </div>
       </div>
     </>
