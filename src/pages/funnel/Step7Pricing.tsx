@@ -697,7 +697,7 @@ export default function Step7Pricing() {
 
           <div className="rounded-xl border p-4">
             <p className="text-xs text-muted-foreground leading-relaxed">
-              <strong className="text-foreground">Transparency:</strong> AICS is calculated identically
+              <strong className="text-foreground">Transparency:</strong>&nbsp;AICS is calculated identically
               whether you&rsquo;re on the free tier or a paid tier. The score measures what AI systems can
               verify about you. Paid tiers publish more of your verified data, giving AI systems more to
               cite. The score reflects the result, not the payment. The full formula is published on our{' '}
@@ -714,6 +714,7 @@ export default function Step7Pricing() {
     </>
   );
 }
+
 
 
 
