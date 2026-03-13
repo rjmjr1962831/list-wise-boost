@@ -166,24 +166,8 @@ const TIER_FEATURES: Record<CertificationTier, { name: string; icon: typeof Shie
 
 function BandLabel({ score }: { score: number }) {
   const label = bandLabel(score);
-  const tip = BAND_TOOLTIPS[label];
   const colorClass = bandColor(score);
-  if (!tip) return <span className={`text-sm font-semibold ${colorClass}`}>{label}</span>;
-  return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <span className={`text-sm font-semibold ${colorClass} inline-flex items-center gap-1 cursor-help`}>
-            {label}
-            <Info className="h-3 w-3 opacity-60" />
-          </span>
-        </TooltipTrigger>
-        <TooltipContent className="max-w-xs text-xs leading-relaxed text-center">
-          {tip}
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
-  );
+  return <span className={`text-sm font-semibold ${colorClass}`}>{label}</span>;
 }
 
 export default function Step7Pricing() {
@@ -741,6 +725,7 @@ export default function Step7Pricing() {
     </>
   );
 }
+
 
 
 
