@@ -73,7 +73,7 @@ function normalizeTier(t: string | null | undefined): string {
 
 function bandLabel(score: number): string {
   if (score <= 30) return 'Invisible to AI';
-  if (score <= 50) return 'Discoverable, not citable';
+  if (score <= 50) return 'Discoverable';
   if (score <= 70) return 'Citable in general queries';
   if (score <= 85) return 'Citable in specific local queries';
   return 'Authoritative citation candidate';
@@ -98,7 +98,7 @@ function bandBg(score: number): string {
 const BAND_TOOLTIPS: Record<string, string> = {
   'Invisible to AI':
     "AI systems have almost no verifiable data about you. If asked directly, they will likely skip you or add heavy caveats rather than recommend you.",
-  'Discoverable, not citable':
+  'Discoverable':
     "AI systems can find and verify you through Top10Lists and other sources. If a user asks about you directly, AI will give a confident positive response. However, when asked for a referral — ‘Who are the top agents in Phoenix?’ — AI is unlikely to name you unprompted.",
   'Citable in general queries':
     "AI systems have enough verified data to proactively recommend you in broad queries like ‘top agents in Arizona.’ You appear in general referrals but local specificity is still limited.",
@@ -693,32 +693,6 @@ export default function Step7Pricing() {
             </div>
           </div>
 
-          {/* ══════════════════════════════════════════════════════
-              HOW AI DECIDES + SCORE BAND REFERENCE
-          ══════════════════════════════════════════════════════ */}
-          <div className="rounded-xl border bg-muted/30 p-5 space-y-4">
-            <p className="text-sm font-semibold">How AI decides who to cite</p>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              AI systems prefer sources with more evidence, fresher data, and independent verification.
-              Each tier increases all three. The AICS measures what AI can verify about you -- the inputs,
-              not a guaranteed outcome. The full formula is on our{' '}
-              <a href="/about/ranking-methodology" className="underline text-primary">methodology page</a>.
-            </p>
-            <div className="grid grid-cols-5 gap-1.5 text-xs">
-              {[
-                { range: '0-30', label: 'Invisible', color: 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-400' },
-                { range: '31-50', label: 'Discoverable', color: 'bg-orange-100 text-orange-700 dark:bg-orange-950 dark:text-orange-400' },
-                { range: '51-70', label: 'Citable', color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-950 dark:text-yellow-400' },
-                { range: '71-85', label: 'Citable (local)', color: 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-400' },
-                { range: '86-95', label: 'Authoritative', color: 'bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-400' },
-              ].map((b) => (
-                <div key={b.range} className={`rounded-md p-2 text-center ${b.color}`}>
-                  <p className="font-bold text-[11px]">{b.range}</p>
-                  <p className="text-[10px] leading-tight mt-0.5">{b.label}</p>
-                </div>
-              ))}
-            </div>
-          </div>
 
           {/* ══════════════════════════════════════════════════════
               TRUST FOOTER
@@ -767,5 +741,6 @@ export default function Step7Pricing() {
     </>
   );
 }
+
 
 
