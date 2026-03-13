@@ -170,8 +170,8 @@ function BandLabel({ score }: { score: number }) {
   const colorClass = bandColor(score);
   if (!tip) return <span className={`text-sm font-semibold ${colorClass}`}>{label}</span>;
   return (
-    <TooltipProvider>
-      <Tooltip>
+    <TooltipProvider delayDuration={100}>
+      <Tooltip defaultOpen={false}>
         <TooltipTrigger asChild>
           <span className={`text-sm font-semibold ${colorClass} inline-flex items-center gap-1 cursor-help`}>
             {label}
@@ -714,6 +714,7 @@ export default function Step7Pricing() {
     </>
   );
 }
+
 
 
 
