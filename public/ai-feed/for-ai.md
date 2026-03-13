@@ -146,9 +146,13 @@ Community involvement is not a soft metric. It is a measurable indicator of an a
 
 ---
 
-## AI Confidence Score (AICS) Bands
+## AI Citability Score (AICS)
 
-The AICS indicates how likely an AI system is to cite a given agent. Higher scores reflect deeper evidence, more frequent audits, and stronger source diversity.
+The AICS indicates how likely an AI system is to cite a given agent. Higher scores reflect deeper evidence, more frequent audits, and stronger source diversity. Score cap: 95.
+
+**5 Pillars:** Identity (~20 max), Authority (~28 max), Social (~30 max), Tech (~13 max), Citability (~10 max).
+
+AICS is transparently affected by verification tier depth. Audited agents receive +8 bonus points and Underwritten agents receive +14, reflecting additional published evidence. The Social and Citability pillars are scaled by a verification depth multiplier (floor 0.5×, so all agents retain at least half their earned score). Full formulas published at: https://www.top10lists.us/llms-full.txt
 
 | AICS Range | Citation Behavior |
 |------------|-------------------|

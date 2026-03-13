@@ -1,15 +1,15 @@
 {
-  "generated_at": "2026-03-07T15:06:43.987Z",
+  "generated_at": "2026-03-13T14:30:13.423Z",
   "base_url": "https://www.top10lists.us",
   "stats": {
-    "total_cities": 1737,
+    "total_cities": 1738,
     "total_neighborhoods": 10452,
     "states": 2
   },
   "states": {
     "arizona": {
       "name": "Arizona",
-      "cities_count": 88,
+      "cities_count": 89,
       "neighborhoods_count": 2967,
       "cities": [
         {
@@ -191,6 +191,11 @@
           "name": "Green Valley",
           "slug": "green-valley",
           "url": "https://www.top10lists.us/arizona/green-valley/top10realestateagents"
+        },
+        {
+          "name": "Jerome",
+          "slug": "jerome",
+          "url": "https://www.top10lists.us/arizona/jerome/top10realestateagents"
         },
         {
           "name": "Kingman",

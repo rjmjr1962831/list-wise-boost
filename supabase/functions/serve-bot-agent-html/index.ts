@@ -181,97 +181,67 @@ serve(async (req) => {
   const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
   try {
-    const { data: a, error: agentErr } = await sb
-      .from("professionals")
-      .select("id,name,review_stars_rating,num_total_reviews,license_number,license_type,license_status,license_issued_at,license_expires_at,company,phone,phone_numbers,email,website,zillow_profile_url,years_experience,total_sales,agent_sales_stats,community_roles,notable_achievements,press_mentions,selection_rationale,current_tier,badge_tier,specialty,served_cities,rank,average_value_3yr,price_range_3yr_min,price_range_3yr_max,sales_count_last_year,synthesized_bio,image_url,certifications,certifications_verified,awards_verified,city_id,state_slug,canonical_slug,social_linkedin,social_facebook,social_instagram,updated_at")
-      .eq("state_slug", pp.stateSlug)
-      .eq("canonical_slug", pp.canonicalSlug)
-      .eq("active", true)
-      .maybeSingle();
+    // Single query: JOIN professionals + cities, fetch only needed columns
+    const { data: rows, error: sqlErr } = await sb.rpc("run_sql", {
+      query: `
+        SELECT
+          p.id, p.name, p.review_stars_rating, p.num_total_reviews,
+          p.license_number, p.license_type, p.license_status,
+          p.license_issued_at, p.license_expires_at,
+          p.company, p.phone, p.phone_numbers, p.email, p.website,
+          p.zillow_profile_url, p.years_experience,
+          p.current_tier, p.badge_tier, p.image_url,
+          p.state_slug, p.canonical_slug, p.updated_at,
+          p.social_linkedin, p.social_facebook, p.social_instagram,
+          p.total_sales, p.agent_sales_stats, p.sales_count_last_year,
+          p.average_value_3yr, p.price_range_3yr_min, p.price_range_3yr_max,
+          p.selection_rationale, p.synthesized_bio, p.specialty, p.served_cities,
+          p.certifications, p.certifications_verified,
+          p.community_roles, p.notable_achievements, p.press_mentions, p.awards_verified,
+          p.rank,
+          c.id AS city_id, c.name AS city_name, c.slug AS city_slug,
+          c.state_slug AS city_state_slug, c.state AS city_state
+        FROM professionals p
+        JOIN cities c ON c.id = p.city_id
+        WHERE p.state_slug = '${pp.stateSlug.replace(/'/g, "''")}'
+          AND p.canonical_slug = '${pp.canonicalSlug.replace(/'/g, "''")}'
+          AND p.active = true
+        LIMIT 1
+      `
+    });
 
-    if (agentErr || !a) return new Response(
+    if (sqlErr || !rows || rows.length === 0) return new Response(
       JSON.stringify({ error: "Agent not found", slug: pp.canonicalSlug, state: pp.stateSlug }),
       { status: 404, headers: { ...CORS, "Content-Type": "application/json" } }
     );
+
+    const row = rows[0];
+    // Map joined result into agent (a) and city objects
+    const a = { ...row };
+    const city = { id: row.city_id, name: row.city_name, slug: row.city_slug, state_slug: row.city_state_slug, state: row.city_state };
 
     // Fire-and-forget bot crawl log — never awaited, never allowed to affect response
     const rawUa = req.headers.get("x-forwarded-user-agent") || req.headers.get("user-agent") || "";
     if (rawUa) {
       const ua = rawUa.toLowerCase();
-      const BOT_NAMES: [string, string][] = [
-        // AI assistants and LLM crawlers
-        ["gptbot", "GPTBot"], ["chatgpt-user", "ChatGPT-User"], ["oai-searchbot", "OAI-SearchBot"],
-        ["claudebot", "ClaudeBot"], ["anthropic-ai", "Anthropic-AI"], ["claude-web", "Claude-Web"],
-        ["perplexitybot", "PerplexityBot"],
-        ["cohere-ai", "Cohere-AI"],
-        ["gemini", "Gemini"], ["google-gemini", "Google-Gemini"],
-        ["mistral", "Mistral"],
-        ["ai2bot", "AI2Bot"],
-        ["timpibot", "TimpiBot"],
-        // Search engines
-        ["googlebot", "Googlebot"], ["google-extended", "Google-Extended"], ["googleother", "GoogleOther"],
-        ["google-inspectiontool", "Google-InspectionTool"],
-        ["adsbot-google", "AdsBot-Google"], ["mediapartners-google", "Mediapartners-Google"],
-        ["bingbot", "Bingbot"], ["bingpreview", "BingPreview"], ["msnbot", "MSNBot"],
-        ["yandexbot", "YandexBot"],
-        ["duckduckbot", "DuckDuckBot"],
-        ["slurp", "Yahoo-Slurp"],
-        ["baiduspider", "BaiduSpider"],
-        ["sogou", "Sogou"],
-        ["exabot", "Exabot"],
-        ["qwantify", "Qwantify"],
-        ["applebot", "Applebot"], ["applebot-extended", "Applebot-Extended"],
-        // Social and content platforms
-        ["facebookexternalhit", "FacebookExternalHit"], ["facebookcatalog", "FacebookCatalog"],
-        ["meta-externalagent", "Meta-ExternalAgent"],
-        ["twitterbot", "Twitterbot"],
-        ["linkedinbot", "LinkedInBot"],
-        ["pinterest", "Pinterest"],
-        ["slackbot", "Slackbot"],
-        ["discordbot", "Discordbot"],
-        ["whatsapp", "WhatsApp"],
-        ["telegrambot", "TelegramBot"],
-        // Data and research crawlers
-        ["bytespider", "ByteSpider"],
-        ["ccbot", "CCBot"],
-        ["youbot", "YouBot"],
-        ["diffbot", "DiffBot"],
-        ["zoominfobot", "ZoomInfoBot"],
-        ["dataforseo", "DataForSEO"],
-        ["petalbot", "PetalBot"],
-        // SEO tools
-        ["semrushbot", "SEMrushBot"],
-        ["ahrefsbot", "AhrefsBot"],
-        ["mj12bot", "MJ12Bot"],
-        ["dotbot", "DotBot"],
-        ["rogerbot", "RogerBot"],
-        ["screaming frog", "ScreamingFrog"],
-        // Archive and validators
-        ["ia_archiver", "InternetArchive"], ["archive.org_bot", "InternetArchive"],
-        ["w3c_validator", "W3C-Validator"],
+      const BOT_PATTERNS = [
+        "gptbot", "chatgpt-user", "oai-searchbot", "claudebot", "anthropic-ai",
+        "claude-web", "perplexitybot", "cohere-ai", "gemini", "mistral",
+        "googlebot", "google-extended", "bingbot", "bingpreview", "yandexbot",
+        "duckduckbot", "slurp", "baiduspider", "applebot",
+        "facebookexternalhit", "twitterbot", "linkedinbot",
+        "bytespider", "ccbot", "semrushbot", "ahrefsbot", "ia_archiver",
       ];
-      const matched = BOT_NAMES.find(([pat]) => ua.includes(pat));
+      const matched = BOT_PATTERNS.find((pat) => ua.includes(pat));
       if (matched) {
-        const botName = matched[1];
         sb.from("bot_crawl_logs").insert({
           agent_id: a.id,
           page_path: path,
           user_agent: rawUa.slice(0, 500),
-          bot_name: botName,
+          bot_name: matched,
         }).then(() => {}).catch(() => {});
       }
     }
-
-    const { data: city } = await sb
-      .from("cities")
-      .select("id,name,slug,state_slug,state")
-      .eq("id", a.city_id)
-      .single();
-
-    if (!city) return new Response(
-      JSON.stringify({ error: "City not found for agent", city_id: a.city_id }),
-      { status: 404, headers: { ...CORS, "Content-Type": "application/json" } }
-    );
 
     // Tier flags
     const t   = tierOf(a);
