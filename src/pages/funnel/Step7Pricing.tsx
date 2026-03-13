@@ -99,7 +99,7 @@ const BAND_TOOLTIPS: Record<string, string> = {
   'Invisible to AI':
     "AI systems have almost no verifiable data about you. If asked directly, they will likely skip you or add heavy caveats rather than recommend you.",
   'Discoverable':
-    "AI systems can find and verify you through Top10Lists and other sources. If a user asks about you directly, AI will give a confident positive response. However, when asked for a referral — ‘Who are the top agents in Phoenix?’ — AI is unlikely to name you unprompted.",
+    "AI systems can find and verify you through Top10Lists and other sources. If a user asks about you directly, AI will give a confident positive response.",
   'Citable in general queries':
     "AI systems have enough verified data to proactively recommend you in broad queries like ‘top agents in Arizona.’ You appear in general referrals but local specificity is still limited.",
   'Citable in specific local queries':
@@ -166,8 +166,24 @@ const TIER_FEATURES: Record<CertificationTier, { name: string; icon: typeof Shie
 
 function BandLabel({ score }: { score: number }) {
   const label = bandLabel(score);
+  const tip = BAND_TOOLTIPS[label];
   const colorClass = bandColor(score);
-  return <span className={`text-sm font-semibold ${colorClass}`}>{label}</span>;
+  if (!tip) return <span className={`text-sm font-semibold ${colorClass}`}>{label}</span>;
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span className={`text-sm font-semibold ${colorClass} inline-flex items-center gap-1 cursor-help`}>
+            {label}
+            <Info className="h-3 w-3 opacity-60" />
+          </span>
+        </TooltipTrigger>
+        <TooltipContent className="max-w-xs text-xs leading-relaxed text-center">
+          {tip}
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
 }
 
 export default function Step7Pricing() {
@@ -725,6 +741,7 @@ export default function Step7Pricing() {
     </>
   );
 }
+
 
 
 
