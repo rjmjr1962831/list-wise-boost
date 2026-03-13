@@ -562,8 +562,12 @@ export default function Step7Pricing() {
                   <div
                     key={tier}
                     className={`relative rounded-xl border p-5 flex flex-col ${
-                      isMostPopular ? 'pt-8 border-primary shadow-md' : 'border-border'
-                    } ${isCurrent ? 'ring-2 ring-primary/20' : ''}`}
+                      isCurrent
+                        ? 'border-primary bg-primary/5 ring-2 ring-primary/20 shadow-sm'
+                        : isMostPopular
+                          ? 'pt-8 border-primary shadow-md'
+                          : 'border-border'
+                    }`}
                   >
                     {/* Badge image */}
                     <img
@@ -581,7 +585,10 @@ export default function Step7Pricing() {
                     )}
 
                     {isCurrent && (
-                      <p className="text-xs font-semibold text-primary mb-2 uppercase tracking-wide">Current tier</p>
+                      <div className="flex items-center gap-1.5 mb-2">
+                        <CheckCircle2 className="h-4 w-4 text-primary" />
+                        <p className="text-xs font-bold text-primary uppercase tracking-wide">Your active tier</p>
+                      </div>
                     )}
 
                     {/* Tier name + price */}
@@ -594,45 +601,74 @@ export default function Step7Pricing() {
                       {meta.evidenceSources} &middot; {meta.refreshFrequency} refresh
                     </p>
 
-                    {/* AICS lift -- the hero stat */}
-                    <div className={`rounded-lg p-3 mb-4 border ${isMostPopular ? 'bg-primary/5 border-primary/20' : 'bg-muted/40'}`}>
-                      <div className="flex items-end justify-between">
-                        <div>
-                          <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-0.5">Projected AICS</p>
-                          <div className="flex items-baseline gap-1">
-                            <span className={`text-3xl font-black ${aics != null ? bandColor(aics) : 'text-muted-foreground'}`}>
-                              {aics ?? '—'}
-                            </span>
-                            <span className="text-sm text-muted-foreground">/ 95</span>
-                          </div>
-                          {aics != null && (
-                            <div className="mt-0.5"><BandLabel score={aics} /></div>
-                          )}
+                    {/* AICS block -- current tier shows actual score, others show projection + lift */}
+                    {isCurrent ? (
+                      <div className="rounded-lg p-3 mb-4 border bg-primary/5 border-primary/30">
+                        <p className="text-[10px] text-primary uppercase tracking-wide font-semibold mb-0.5">Your current AICS</p>
+                        <div className="flex items-baseline gap-1">
+                          <span className={`text-3xl font-black ${currentScore != null ? bandColor(currentScore) : 'text-muted-foreground'}`}>
+                            {currentScore ?? '—'}
+                          </span>
+                          <span className="text-sm text-muted-foreground">/ 95</span>
                         </div>
-                        {lift != null && lift > 0 && (
-                          <div className="text-right">
-                            <span className={`text-2xl font-black text-green-600`}>+{lift}</span>
-                            <p className="text-[10px] text-muted-foreground">from current</p>
+                        {currentScore != null && (
+                          <div className="mt-0.5"><BandLabel score={currentScore} /></div>
+                        )}
+                        {currentScore != null && (
+                          <div className="relative mt-2">
+                            <div className="h-1.5 rounded-full overflow-hidden flex">
+                              <div className="flex-1 bg-red-300" />
+                              <div className="flex-1 bg-orange-300" />
+                              <div className="flex-1 bg-yellow-300" />
+                              <div className="flex-1 bg-blue-300" />
+                              <div className="flex-1 bg-green-400" />
+                            </div>
+                            <div
+                              className={`absolute -top-0.5 -translate-x-1/2 w-3 h-3 rounded-full border-2 border-white shadow ${bandBg(currentScore)}`}
+                              style={{ left: `${Math.min(100, Math.round((currentScore / 95) * 100))}%` }}
+                            />
                           </div>
                         )}
                       </div>
-                      {/* Mini spectrum bar showing projected position */}
-                      {aics != null && (
-                        <div className="relative mt-2">
-                          <div className="h-1.5 rounded-full overflow-hidden flex">
-                            <div className="flex-1 bg-red-300" />
-                            <div className="flex-1 bg-orange-300" />
-                            <div className="flex-1 bg-yellow-300" />
-                            <div className="flex-1 bg-blue-300" />
-                            <div className="flex-1 bg-green-400" />
+                    ) : (
+                      <div className={`rounded-lg p-3 mb-4 border ${isMostPopular ? 'bg-primary/5 border-primary/20' : 'bg-muted/40'}`}>
+                        <div className="flex items-end justify-between">
+                          <div>
+                            <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-0.5">Projected AICS</p>
+                            <div className="flex items-baseline gap-1">
+                              <span className={`text-3xl font-black ${aics != null ? bandColor(aics) : 'text-muted-foreground'}`}>
+                                {aics ?? '—'}
+                              </span>
+                              <span className="text-sm text-muted-foreground">/ 95</span>
+                            </div>
+                            {aics != null && (
+                              <div className="mt-0.5"><BandLabel score={aics} /></div>
+                            )}
                           </div>
-                          <div
-                            className={`absolute -top-0.5 -translate-x-1/2 w-3 h-3 rounded-full border-2 border-white shadow ${bandBg(aics)}`}
-                            style={{ left: `${Math.min(100, Math.round((aics / 95) * 100))}%` }}
-                          />
+                          {lift != null && lift > 0 && (
+                            <div className="text-right">
+                              <span className="text-2xl font-black text-green-600">+{lift}</span>
+                              <p className="text-[10px] text-muted-foreground">from current</p>
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
+                        {aics != null && (
+                          <div className="relative mt-2">
+                            <div className="h-1.5 rounded-full overflow-hidden flex">
+                              <div className="flex-1 bg-red-300" />
+                              <div className="flex-1 bg-orange-300" />
+                              <div className="flex-1 bg-yellow-300" />
+                              <div className="flex-1 bg-blue-300" />
+                              <div className="flex-1 bg-green-400" />
+                            </div>
+                            <div
+                              className={`absolute -top-0.5 -translate-x-1/2 w-3 h-3 rounded-full border-2 border-white shadow ${bandBg(aics)}`}
+                              style={{ left: `${Math.min(100, Math.round((aics / 95) * 100))}%` }}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    )}
 
                     {/* Feature list */}
                     <ul className="text-xs text-muted-foreground space-y-1.5 mb-4 flex-1">
@@ -648,7 +684,11 @@ export default function Step7Pricing() {
                       <DataPayloadExpander tier={tier} triggerText="View full data and sources" professional={professional} />
                     </div>
 
-                    {!isCurrent && (
+                    {isCurrent ? (
+                      <div className="w-full mt-auto rounded-lg border border-primary/30 bg-primary/10 py-2.5 text-center">
+                        <p className="text-xs font-semibold text-primary">Active</p>
+                      </div>
+                    ) : (
                       <Button
                         className="w-full mt-auto"
                         disabled={!!saving}
