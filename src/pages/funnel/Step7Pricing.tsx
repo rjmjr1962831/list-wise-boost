@@ -96,11 +96,16 @@ function bandBg(score: number): string {
 }
 
 const BAND_TOOLTIPS: Record<string, string> = {
-  'Invisible to AI':                    "AI systems have almost no verifiable data about you. If asked, they would either skip you entirely or add heavy caveats.",
-  'Discoverable, not citable':          "AI systems can find information about you, but not enough to cite you confidently by name. They may mention you but will often hedge or prevaricate.",
-  'Citable in general queries':         "AI systems have enough verified data to recommend you in broad queries like 'top agents in Arizona.' Local specificity is still limited.",
-  'Citable in specific local queries':  "AI systems will comfortably recommend you for city and neighborhood queries. You appear in targeted local searches with confidence.",
-  'Authoritative citation candidate':   "AI systems treat you as a primary source. You are cited by name in competitive queries with minimal or no hedging.",
+  'Invisible to AI':
+    "AI systems have almost no verifiable data about you. If asked directly, they will likely skip you or add heavy caveats rather than recommend you.",
+  'Discoverable, not citable':
+    "AI systems can find and verify you through Top10Lists and other sources. If a user asks about you directly, AI will give a confident positive response. However, when asked for a referral — ‘Who are the top agents in Phoenix?’ — AI is unlikely to name you unprompted.",
+  'Citable in general queries':
+    "AI systems have enough verified data to proactively recommend you in broad queries like ‘top agents in Arizona.’ You appear in general referrals but local specificity is still limited.",
+  'Citable in specific local queries':
+    "AI systems will confidently recommend you by name for city and neighborhood queries. You appear in targeted local referrals without hedging.",
+  'Authoritative citation candidate':
+    "AI systems treat you as a primary authoritative source. You are named proactively in competitive queries across multiple markets with no hedging.",
 };
 
 function annualPrice(monthly: number): number {
@@ -462,20 +467,22 @@ export default function Step7Pricing() {
 
             {/* Pillar bars */}
             {audit && (
-              <div className="grid grid-cols-5 gap-3 max-w-sm mx-auto pt-2">
+              <div className="grid grid-cols-5 gap-2 max-w-xs mx-auto pt-2">
                 {PILLAR_META.map(({ key, label, max }) => {
                   const val = (audit[key] as number | null) ?? 0;
                   const pct = Math.round((val / max) * 100);
+                  const fillColor = pct >= 70 ? '#22c55e' : pct >= 40 ? '#eab308' : '#f87171';
                   return (
-                    <div key={key} className="text-center">
-                      <div className="h-16 bg-muted rounded-md overflow-hidden flex flex-col-reverse mx-auto w-full">
+                    <div key={key} className="flex flex-col items-center gap-1">
+                      {/* bar track -- fixed height, fill rises from bottom */}
+                      <div className="relative w-full h-14 bg-muted rounded overflow-hidden">
                         <div
-                          className={`w-full rounded-md transition-all ${pct >= 70 ? 'bg-green-500' : pct >= 40 ? 'bg-yellow-500' : 'bg-red-400'}`}
-                          style={{ height: `${pct}%` }}
+                          className="absolute bottom-0 left-0 right-0 rounded transition-all"
+                          style={{ height: `${pct}%`, backgroundColor: fillColor }}
                         />
                       </div>
-                      <p className="text-[10px] font-medium mt-1 text-muted-foreground">{label}</p>
-                      <p className="text-[10px] text-muted-foreground">{val}/{max}</p>
+                      <p className="text-[10px] font-semibold text-foreground leading-tight">{label}</p>
+                      <p className="text-[10px] text-muted-foreground leading-tight">{val}/{max}</p>
                     </div>
                   );
                 })}
