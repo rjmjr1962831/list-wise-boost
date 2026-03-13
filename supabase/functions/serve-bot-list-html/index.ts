@@ -389,10 +389,51 @@ serve(async (req) => {
       const ms = mk.marketStats || {};
       if (Object.keys(ms).length > 0) {
         o += `  <table><thead><tr><th>Market Metric</th><th>Value</th></tr></thead><tbody>\n`;
-        if (ms.medianHomePrice) o += `    <tr><td>Median Home Price</td><td>${ms.medianHomePrice.toLocaleString()}</td></tr>\n`;
-        if (ms.population) o += `    <tr><td>Population</td><td>${ms.population.toLocaleString()}</td></tr>\n`;
-        if (ms.homeownershipRate) o += `    <tr><td>Homeownership Rate</td><td>${ms.homeownershipRate}</td></tr>\n`;
+        if (ms.medianHomePrice) o += `    <tr><td>Median Home Price</td><td>$${Number(ms.medianHomePrice).toLocaleString()}</td></tr>\n`;
+        if (ms.medianRent) o += `    <tr><td>Median Rent</td><td>$${Number(ms.medianRent).toLocaleString()}/mo</td></tr>\n`;
+        if (ms.medianHouseholdIncome) o += `    <tr><td>Median Household Income</td><td>$${Number(ms.medianHouseholdIncome).toLocaleString()}</td></tr>\n`;
+        if (ms.population) o += `    <tr><td>Population</td><td>${Number(ms.population).toLocaleString()}</td></tr>\n`;
+        if (ms.daysOnMarket) o += `    <tr><td>Avg. Days on Market</td><td>${ms.daysOnMarket}</td></tr>\n`;
+        if (ms.pricePerSqFt) o += `    <tr><td>Price per Sq Ft</td><td>$${Number(ms.pricePerSqFt).toLocaleString()}</td></tr>\n`;
+        if (ms.averageHomeSize) o += `    <tr><td>Average Home Size</td><td>${Number(ms.averageHomeSize).toLocaleString()} sq ft</td></tr>\n`;
+        if (ms.homeownershipRate) o += `    <tr><td>Homeownership Rate</td><td>${(Number(ms.homeownershipRate) * 100).toFixed(1)}%</td></tr>\n`;
+        if (ms.pctRenterOccupied) o += `    <tr><td>Renter-Occupied</td><td>${(Number(ms.pctRenterOccupied) * 100).toFixed(1)}%</td></tr>\n`;
+        if (ms.rentToIncomeRatio) o += `    <tr><td>Rent-to-Income Ratio</td><td>${(Number(ms.rentToIncomeRatio) * 100).toFixed(1)}%</td></tr>\n`;
+        if (ms.rentalVacancyRate) o += `    <tr><td>Rental Vacancy Rate</td><td>${(Number(ms.rentalVacancyRate) * 100).toFixed(1)}%</td></tr>\n`;
+        if (ms.yearOverYearChange != null) o += `    <tr><td>Year-over-Year Change</td><td>${ms.yearOverYearChange > 0 ? "+" : ""}${(Number(ms.yearOverYearChange) * 100).toFixed(1)}%</td></tr>\n`;
+        if (ms.inventoryLevel) o += `    <tr><td>Inventory Level</td><td>${esc(String(ms.inventoryLevel))}</td></tr>\n`;
+        if (ms.marketType) o += `    <tr><td>Market Type</td><td>${esc(String(ms.marketType))}</td></tr>\n`;
         o += `  </tbody></table>\n`;
+
+        // Dataset JSON-LD for city market stats
+        const cityDsVars: any[] = [];
+        if (ms.medianHomePrice) cityDsVars.push({ "@type": "PropertyValue", name: "Median Home Price", value: Number(ms.medianHomePrice), unitCode: "USD" });
+        if (ms.medianRent) cityDsVars.push({ "@type": "PropertyValue", name: "Median Rent", value: Number(ms.medianRent), unitCode: "USD" });
+        if (ms.medianHouseholdIncome) cityDsVars.push({ "@type": "PropertyValue", name: "Median Household Income", value: Number(ms.medianHouseholdIncome), unitCode: "USD" });
+        if (ms.population) cityDsVars.push({ "@type": "PropertyValue", name: "Population", value: Number(ms.population) });
+        if (ms.daysOnMarket) cityDsVars.push({ "@type": "PropertyValue", name: "Average Days on Market", value: ms.daysOnMarket });
+        if (ms.pricePerSqFt) cityDsVars.push({ "@type": "PropertyValue", name: "Price per Square Foot", value: Number(ms.pricePerSqFt), unitCode: "USD" });
+        if (ms.homeownershipRate) cityDsVars.push({ "@type": "PropertyValue", name: "Homeownership Rate", value: Number(ms.homeownershipRate) });
+        if (ms.marketType) cityDsVars.push({ "@type": "PropertyValue", name: "Market Type", value: ms.marketType });
+        if (cityDsVars.length > 0) {
+          const cityDataset = {
+            "@context": "https://schema.org",
+            "@type": "Dataset",
+            name: `Real Estate Market Data for ${city.name}, ${si.display}`,
+            description: `Verified market statistics for ${city.name}, ${si.display}. Includes pricing, demographics, and housing market indicators.`,
+            spatialCoverage: {
+              "@type": "Place",
+              name: `${city.name}, ${si.display}`,
+              address: { "@type": "PostalAddress", addressLocality: city.name, addressRegion: si.abbr, addressCountry: "US" },
+            },
+            variableMeasured: cityDsVars,
+            dateModified: new Date().toISOString().slice(0, 10),
+            creator: { "@type": "Organization", name: "Top10Lists.us", url: "https://www.top10lists.us" },
+            isAccessibleForFree: true,
+            license: "https://www.top10lists.us/terms",
+          };
+          o += `  <script type="application/ld+json">\n${JSON.stringify(cityDataset)}\n  </script>\n`;
+        }
       }
       const hist = jp(mk.historicalFacts, []);
       if (hist.length > 0) { o += `  <h3>History</h3>\n`; for (const h of hist) o += `  <p>${esc(sanitizeMeritGate(h))}</p>\n`; }
