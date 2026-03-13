@@ -465,6 +465,35 @@ export default function Step7Pricing() {
               </div>
             )}
 
+            {/* 5-band reference table */}
+            {currentScore != null && (
+              <div className="w-full max-w-md mx-auto pt-1">
+                {[
+                  { min: 0,  max: 30,  label: 'Invisible to AI',                bg: 'bg-red-50 dark:bg-red-950/40',     border: 'border-red-200 dark:border-red-800',     text: 'text-red-700 dark:text-red-400' },
+                  { min: 31, max: 50,  label: 'Discoverable',                   bg: 'bg-orange-50 dark:bg-orange-950/40', border: 'border-orange-200 dark:border-orange-800', text: 'text-orange-700 dark:text-orange-400' },
+                  { min: 51, max: 70,  label: 'Citable in general queries',     bg: 'bg-yellow-50 dark:bg-yellow-950/40', border: 'border-yellow-200 dark:border-yellow-800', text: 'text-yellow-700 dark:text-yellow-500' },
+                  { min: 71, max: 85,  label: 'Citable in specific local queries', bg: 'bg-blue-50 dark:bg-blue-950/40', border: 'border-blue-200 dark:border-blue-800',   text: 'text-blue-700 dark:text-blue-400' },
+                  { min: 86, max: 100, label: 'Authoritative citation candidate', bg: 'bg-green-50 dark:bg-green-950/40', border: 'border-green-200 dark:border-green-800', text: 'text-green-700 dark:text-green-400' },
+                ].map((band) => {
+                  const isHere = currentScore >= band.min && currentScore <= band.max;
+                  return (
+                    <div
+                      key={band.min}
+                      className={`flex items-center justify-between px-3 py-2 rounded-lg border mb-1.5 ${isHere ? `${band.bg} ${band.border} ring-2 ring-offset-1 ring-current` : 'border-border bg-transparent'}`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="text-[11px] text-muted-foreground tabular-nums w-12 shrink-0">{band.min}–{band.max}</span>
+                        <span className={`text-xs font-medium ${isHere ? band.text : 'text-muted-foreground'}`}>{band.label}</span>
+                      </div>
+                      {isHere && (
+                        <span className={`text-[10px] font-bold uppercase tracking-wide shrink-0 ${band.text}`}>You are here</span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
             {/* Pillar bars */}
             {audit && (
               <div className="grid grid-cols-5 gap-2 max-w-xs mx-auto pt-2">
@@ -714,6 +743,7 @@ export default function Step7Pricing() {
     </>
   );
 }
+
 
 
 
