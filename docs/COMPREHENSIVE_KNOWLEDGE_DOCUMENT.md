@@ -1,7 +1,7 @@
 # Top10Lists.us — Comprehensive Knowledge Document
 
 **Purpose:** Single consolidated reference for agent2, Claude, and Cursor. Use latest updates as source of truth.  
-**Last consolidated:** 2026-03-13
+**Last consolidated:** 2026-03-14
 **Conflict rule:** When sources conflict, this document wins. Deprecate earlier statements.
 
 ---
@@ -270,7 +270,7 @@ From `src/data/master-ssot.md`:
 
 ## 21. Recent Updates (from t1)
 
-*Last synthesized: 2026-03-13*
+*Last synthesized: 2026-03-14*
 
 ---
 
@@ -315,6 +315,66 @@ From `src/data/master-ssot.md`:
 - Certified option removed from `Step7Pricing.tsx` tier list
 - `DEFAULT_PRICES` in `Step7Pricing.tsx`: certified entry removed; audited 300, underwritten 500
 - Four-tier model language replaced with three-tier acquisition model in all marketing/FAQ copy
+
+---
+
+### CLAUDE — 2026-03-14
+
+# Claude Code Takeaways — 2026-03-14
+
+## Key Outcomes
+- Built and launched **GEO Uplift Analysis** across all 3,274 active agents — measures the value Top10Lists.us provides to each agent's AI discoverability
+- For each agent, runs two Google searches (via Serper API): one excluding top10lists.us, one including it. GPT-4o-mini synthesizes recommendations from search results, then classifies uplift as significant/moderate/minimal
+- Early results (933/3,274 processed): **70% significant**, 19% moderate, 11% minimal — strong validation of the GEO value proposition
+- Built and launched **Tier Projection** script — projects what each agent's recommendation would look like at Certified, Audited, and Underwritten tiers
+- Tier projection early results (71 processed): near-100% significant across all paid tiers
+
+## Config / Infrastructure
+- Added 9 new columns to `professionals` table via `run-migration` edge function:
+  - `recommendation_without`, `recommendation_with`, `uplift` (base analysis)
+  - `projected_rec_certified`, `projected_rec_audited`, `projected_rec_underwritten` (tier projections)
+  - `projected_uplift_certified`, `projected_uplift_audited`, `projected_uplift_underwritten` (tier uplift classification)
+- Migration deployed via `supabase/functions/run-migration/index.ts` (updated to include new columns)
+- Migration file created: `supabase/migrations/20260313183000_add_geo_uplift_columns.sql` (not pushed — old migrations conflict with `db push`)
+
+## New Rules or Docs
+- None
+
+## New Functions / Scripts
+- `scripts/geo-uplift-analysis.cjs` — Base GEO uplift analysis. Serper + OpenAI pipeline. Resumable (skips agents with existing results). ~16s/agent. Uses PostgREST PATCH for writes (run_sql blocks UPDATE/DDL)
+- `scripts/geo-tier-projection.cjs` — Tier uplift projection. Runs on agents that already have base results. Projects Certified/Audited/Underwritten recommendations. Auto-waits for base analysis to feed it new agents. ~18s/agent
+- Both scripts write progress logs to `scripts/geo-uplift-progress.log` and `scripts/geo-tier-projection.log`
+
+## Deprecated or Removed
+- `supabase/functions/run-migration/index.ts` was repurposed from its original email-tables migration to the uplift columns migration. Previous email table DDL statements were replaced.
+
+---
+
+### CLAUDE — 2026-03-14
+
+# Claude Code Takeaways — 2026-03-14
+
+## Key Outcomes
+- Expanded city clean-room HTML pages from 3 market stats to all 14 available fields (median rent, household income, days on market, price/sqft, home size, homeownership rate, renter-occupied %, rent-to-income ratio, vacancy rate, YoY change, inventory level, market type)
+- Wired up neighborhood clean-room HTML pages to pull rich market stats from `marketing_content` table (previously only used 4 fields from `neighborhood_catalog`)
+- Fixed variable ordering bug: `isNh` was used before definition in `serve-bot-list-html`, causing neighborhood marketing_content queries to always fall through to city queries
+- Added Dataset JSON-LD structured data for city market stats (neighborhoods already had this)
+- Verified Scottsdale city page renders 14 stats, Arcadia neighborhood page renders 13 stats
+- All percentages now properly formatted (e.g., "64.0%" instead of raw "0.64"), currencies prefixed with "$"
+
+## Config / Infrastructure
+- Edge function `serve-bot-list-html` deployed to Supabase project `wiotrvoirdgzfacuuiem`
+- No new env vars or credentials
+
+## New Rules or Docs
+- None
+
+## New Functions / Scripts
+- None (updated existing `serve-bot-list-html` edge function)
+
+## Deprecated or Removed
+- Old 3-stat city market table rendering replaced with full 14-field rendering
+- Old 4-stat neighborhood market table is now fallback only (used when no `marketing_content` entry exists for the neighborhood)
 
 ---
 
