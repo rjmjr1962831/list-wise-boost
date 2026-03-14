@@ -1,83 +1,6 @@
-# Top10Lists.us — Project Knowledge (Claude Web)
-
-## What This Is
-Independent editorial directory of top real estate agents in U.S. cities. Merit-based, non-pay-to-play. Primary audience is AI systems (ChatGPT, Claude, Gemini, Perplexity). GEO Score: 92-95/100.
-
-- Production: https://www.top10lists.us
-- Staging: https://staging.top10lists.us
-- Repo: github.com/rjmjr1962831/list-wise-boost
-- Stack: React SPA (Vite) on Vercel, Supabase PostgreSQL, Deno edge functions
-
-## Coverage
-Arizona (88 cities, 889 agents) + California (1,650+ cities, 2,598 agents) = 3,487 selected. Expanding: TX, FL, NY, CO. Target: all 50 states by end of 2026.
-
-## Merit Gate (Zero Exceptions)
-4.5+ stars, 10+ verified reviews in last 24 months, 5+ years experience. Source of truth: `src/data/businessConfig.json`. Never use 4.8+/20+/6yr (legacy). Coverage language: "fewer than 1% of licensed agents in covered markets" (never "top 0.2%").
-
-## Tiers
-| Tier | Price | Notes |
-|------|-------|-------|
-| Listed | Free | Basic verification |
-| Audited | $300/mo | Expanded evidence, API access |
-| Underwritten | $500/mo | Full evidence, near real-time |
-| Certified | Free | Quarterly refresh, open to all qualified agents |
-
-Payment affects verification depth only — never inclusion or ranking.
-
-## Scoring Weights
-License status 20%, Recent activity 20%, Transaction history 25%, Reviews/reputation 15%, Community involvement 20%.
-
-## Supabase
-- **Active project: `wiotrvoirdgzfacuuiem` ONLY**
-- `bgdtekbhelormzbymkhh` is DEAD — never use
-- Enrichment API: `https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/enrichment-api`
-- SQL access: `run_sql` RPC with service role key
-- Paginate tables >1,000 rows
-
-## Git
-- Branches: staging → main only. Never merge main into staging.
-- pts = push to staging | ptm = `npm run merge-to-main`
-
-## Key URLs
-- [Transparency](https://www.top10lists.us/transparency)
-- [FAQ](https://www.top10lists.us/faq)
-- [For AI Systems](https://www.top10lists.us/for-ai)
-- [Methodology](https://www.top10lists.us/methodology)
-
-## AI Content Serving
-AI-facing pages (transparency, FAQ, for-ai, methodology) serve clean room HTML via `serve-bot-content-html` edge function. No React SPA for AI consumers.
-
-## Email Sequencer v2
-- Cron sender: `sequencer-v2-tick` (every 2 min via pg_cron)
-- Tables: email_campaigns, email_queue, email_send_volume, email_unsubscribes
-- Campaign flow: draft → pending_review → approved → active → paused → complete
-- Queue flow: pending_review → approved → sending → sent/failed
-- Volume ramp: toptenlists.us 25/day +5 cap 100; top10lists.us 10/day +2 cap 25
-- Send window: 8am-5pm MST
-- Bulk mail: Smartleads
-
-## Active Crons
-- `cleanup-expired-grace-periods` (daily midnight)
-- `batch-aics-score-run` (every 1 min)
-- `gmail-sync` (every 5 min)
-- `sequencer-v2-tick` (every 2 min)
-
-## Rules
-- **"ALL"** means every instance. Grep exhaustively, fix exhaustively.
-- Every change must enhance GEO or be neutral. Ask before anything detrimental.
-- Verify changes on the live page. "Code updated" is not completion.
-- Always give full URLs as markdown links, never placeholders.
-
-## Commands (Claude Code only)
-- **ryt**: Fetch COMPREHENSIVE_KNOWLEDGE_DOCUMENT.md (SSoT, read-only)
-- **t1**: Write session takeaways to `docs/takeaways/CLAUDE_TAKEAWAYS_YYYY-MM-DD_HHMM.md`
-- **s1**: `npm run s1` — synthesize takeaways into COMPREHENSIVE Section 21
-
----
-
 ## 21. Recent Updates (from t1)
 
-*Last synthesized: 2026-03-13*
+*Last synthesized: 2026-03-14*
 
 ---
 
@@ -122,6 +45,144 @@ AI-facing pages (transparency, FAQ, for-ai, methodology) serve clean room HTML v
 - Certified option removed from `Step7Pricing.tsx` tier list
 - `DEFAULT_PRICES` in `Step7Pricing.tsx`: certified entry removed; audited 300, underwritten 500
 - Four-tier model language replaced with three-tier acquisition model in all marketing/FAQ copy
+
+---
+
+### CLAUDE — 2026-03-14
+
+# Claude Code Takeaways — 2026-03-14
+
+## Key Outcomes
+
+### Serper.dev Enrichment POC (Jeff Sibbach)
+- Ran full enrichment pipeline on Jeff Sibbach (already-qualified agent) using only Serper.dev: 7 API calls ($0.007), 8 web page crawls, 1 DeepSeek call ($0.001) = **$0.008 total per agent**
+- Serper found: license verification (AZRE.gov snippets), Google Business data (Places API), social links (3 new: Homes.com, Realtor.com, YouTube), 9 awards (vs 1 in DB), 7 press mentions (vs 0 in DB), 4 community roles (vs 1 in DB)
+- Serper cannot find: detailed sales stats, current listings, profile photos, review text, team member breakdowns — all require Zillow crawl
+
+### Serper License-to-Profile POC (5 random CA agents)
+- Tested pipeline: state_licenses (raw) → Serper → report on 5 random unenriched CA salespersons
+- **0/5 pass merit gate** — expected since <1% qualify. 3/5 had verified licenses via DRE snippets, 0/5 had findable Zillow profiles or review data
+- Serper works as a fast filter ($0.004/agent) but cannot pre-qualify agents (stars/reviews not in search snippets)
+
+### Serper Batch Run — 1,000 CA License Holders
+- **Run v1** (`"Name" city CA zillow`): 67 Zillow URLs found (6.7%), but only 40% correct (name match in URL). 30% were wrong person entirely.
+- **Run v2** (`"Name" "LicenseNumber"`): 2 Zillow URLs (0.2%), both 100% correct. License number kills hit rate because Zillow doesn't index license numbers.
+- **Run v3** (`"Name" "LicenseNumber" City California`): 1 Zillow URL (0.1%), correct. Adding city made it worse.
+- **DRE license verification**: `site:dre.ca.gov LICENSE_NUMBER` found 14/20 (70%) with expiration dates — but we already have this data in the license table, so this is redundant.
+- Key domains found in results: homes.com (108x), licensee.io (88x), compass.com (77x), zillow.com listings (60x), realtor.com (28x) — but all except licensee.io block crawlers (403).
+
+### Exa.ai Batch Run — 100 CA License Holders
+- Tested `type: "fast"` and `type: "instant"` with `includeDomains: ['zillow.com']`, `numResults: 1`
+- **Both return 100% hit rate — and ~99% wrong person.** `includeDomains` forces Exa to always return *something* from zillow.com, even if it's a random agent in the same city.
+- Exa fast/instant is useless for finding Zillow URLs from license data. Neural search ($0.007/req) might be more accurate but untested and expensive at scale (415K × $0.007 = $2,905).
+
+### Enrichment Tool Landscape Research
+- Surveyed: Piloterr, RapidAPI (zillow56, zillow-com1, zillow-working-api, real-time-zillow-data), Apify (6 actors), Bright Data, HasData, Scrapingdog, WebAutomation
+- **Piloterr Zillow Search Professional API** accepts agent name as input, returns rating + reviews — but currently "under maintenance, temporarily suspended"
+- **RapidAPI zillow56** had `search_agents` endpoint with name+location input — but API appears dead (returns "API doesn't exists")
+- **Apify scrapestorm all-in-one** ($24.99/mo) and **sovereigntaylor** ($0.005/agent) search by location, possibly name
+- homes.com, realtor.com, nestfully.com all block crawlers (403). licensee.io is crawlable but has no Zillow links.
+
+### Core Finding
+**The gap is: license table (name + license + city) → Zillow profile URL.** Neither Serper nor Exa can reliably bridge this. Serper finds the wrong person; Exa forces a result from zillow.com regardless of accuracy. The only reliable path is Zillow's own search — which requires either a working third-party API (all seem dead or suspended) or building our own scraper with residential proxies.
+
+## Config / Infrastructure
+- No new env vars, secrets, or infrastructure changes
+- No database modifications — all tests were read-only
+- Serper API keys confirmed working (SERPER_API_KEY in .env)
+- Exa API key confirmed working (EXA_API_KEY in .env)
+- DeepSeek API key confirmed working
+- Proxy-cheap residential proxy credentials are in Supabase secrets (ROTATING_PROXY_USERNAME, ROTATING_PROXY_PASSWORD), not in local .env
+
+## New Rules or Docs
+- **Serper enrichment is valuable for already-qualified agents** — adds license verification, Google Business data, social links, awards, press, community at $0.008/agent. Replaces Exa for this use case at lower cost.
+- **Serper cannot pre-qualify agents** — star ratings and review counts are not in Google search snippets from Zillow pages
+- **Exa `includeDomains` with fast/instant search is unreliable** — returns random agents from the constrained domain when the target agent has no profile there
+- **memo23 Apify actor price increase** — Robert reports the actor dramatically increased prices, making it unaffordable
+- Reports saved to staging:
+  - `docs/takeaways/SERPER_ENRICHMENT_POC_2026-03-14.md` — Jeff Sibbach full comparison
+  - `docs/takeaways/SERPER_LICENSE_TO_PROFILE_POC_2026-03-14.md` — 5 raw CA agents
+
+## New Functions / Scripts
+- `C:/Users/rober/tmp/serper_batch.js` — Serper batch search v1 (name + city + zillow)
+- `C:/Users/rober/tmp/serper_batch2.js` — Serper batch search v2 (name + license number)
+- `C:/Users/rober/tmp/serper_batch3.js` — Serper batch search v3 (name + license + city + state)
+- `C:/Users/rober/tmp/exa_batch.js` — Exa fast/instant batch test with includeDomains
+- None deployed to Supabase or committed to repo (all temp/test scripts)
+
+## Deprecated or Removed
+- **Exa.ai for Zillow URL discovery** — confirmed ineffective with fast/instant search types. The `exa-ca-zillow-search` edge function in worktree `agent-a032121f` was never deployed and should not be deployed as-is (neural search at $0.007/req is too expensive for 415K agents)
+- **RapidAPI zillow56** — appears dead, returns "API doesn't exists" for all endpoints
+
+## Actual API Pricing (verified March 2026)
+
+| Tool | Unit Cost | What It's Good For |
+|------|-----------|-------------------|
+| Serper.dev | $0.001/search | Social links, awards, press, license verification, Google Places |
+| Exa.ai (fast/instant) | $0.007/search | NOT useful for Zillow URL discovery (too inaccurate) |
+| Exa.ai (neural) | $0.007/search | Untested for this use case, likely expensive at scale |
+| DeepSeek V3.2 | $0.28/M input, $0.42/M output | Text field generation (bio, headline, rationale) |
+| Apify memo23 Zillow | $0.0025-0.003/agent (OLD price) | Profile scraping — but needs URL as input, price increased |
+
+---
+
+### CLAUDE — 2026-03-14
+
+# Claude Code Takeaways — 2026-03-14
+
+## Key Outcomes
+- Built and launched **GEO Uplift Analysis** across all 3,274 active agents — measures the value Top10Lists.us provides to each agent's AI discoverability
+- For each agent, runs two Google searches (via Serper API): one excluding top10lists.us, one including it. GPT-4o-mini synthesizes recommendations from search results, then classifies uplift as significant/moderate/minimal
+- Early results (933/3,274 processed): **70% significant**, 19% moderate, 11% minimal — strong validation of the GEO value proposition
+- Built and launched **Tier Projection** script — projects what each agent's recommendation would look like at Certified, Audited, and Underwritten tiers
+- Tier projection early results (71 processed): near-100% significant across all paid tiers
+
+## Config / Infrastructure
+- Added 9 new columns to `professionals` table via `run-migration` edge function:
+  - `recommendation_without`, `recommendation_with`, `uplift` (base analysis)
+  - `projected_rec_certified`, `projected_rec_audited`, `projected_rec_underwritten` (tier projections)
+  - `projected_uplift_certified`, `projected_uplift_audited`, `projected_uplift_underwritten` (tier uplift classification)
+- Migration deployed via `supabase/functions/run-migration/index.ts` (updated to include new columns)
+- Migration file created: `supabase/migrations/20260313183000_add_geo_uplift_columns.sql` (not pushed — old migrations conflict with `db push`)
+
+## New Rules or Docs
+- None
+
+## New Functions / Scripts
+- `scripts/geo-uplift-analysis.cjs` — Base GEO uplift analysis. Serper + OpenAI pipeline. Resumable (skips agents with existing results). ~16s/agent. Uses PostgREST PATCH for writes (run_sql blocks UPDATE/DDL)
+- `scripts/geo-tier-projection.cjs` — Tier uplift projection. Runs on agents that already have base results. Projects Certified/Audited/Underwritten recommendations. Auto-waits for base analysis to feed it new agents. ~18s/agent
+- Both scripts write progress logs to `scripts/geo-uplift-progress.log` and `scripts/geo-tier-projection.log`
+
+## Deprecated or Removed
+- `supabase/functions/run-migration/index.ts` was repurposed from its original email-tables migration to the uplift columns migration. Previous email table DDL statements were replaced.
+
+---
+
+### CLAUDE — 2026-03-14
+
+# Claude Code Takeaways — 2026-03-14
+
+## Key Outcomes
+- Expanded city clean-room HTML pages from 3 market stats to all 14 available fields (median rent, household income, days on market, price/sqft, home size, homeownership rate, renter-occupied %, rent-to-income ratio, vacancy rate, YoY change, inventory level, market type)
+- Wired up neighborhood clean-room HTML pages to pull rich market stats from `marketing_content` table (previously only used 4 fields from `neighborhood_catalog`)
+- Fixed variable ordering bug: `isNh` was used before definition in `serve-bot-list-html`, causing neighborhood marketing_content queries to always fall through to city queries
+- Added Dataset JSON-LD structured data for city market stats (neighborhoods already had this)
+- Verified Scottsdale city page renders 14 stats, Arcadia neighborhood page renders 13 stats
+- All percentages now properly formatted (e.g., "64.0%" instead of raw "0.64"), currencies prefixed with "$"
+
+## Config / Infrastructure
+- Edge function `serve-bot-list-html` deployed to Supabase project `wiotrvoirdgzfacuuiem`
+- No new env vars or credentials
+
+## New Rules or Docs
+- None
+
+## New Functions / Scripts
+- None (updated existing `serve-bot-list-html` edge function)
+
+## Deprecated or Removed
+- Old 3-stat city market table rendering replaced with full 14-field rendering
+- Old 4-stat neighborhood market table is now fallback only (used when no `marketing_content` entry exists for the neighborhood)
 
 ---
 
@@ -837,4 +898,3 @@ Wave 1 (parallel): Prompts 1, 3, 4 | Wave 2: Prompt 2 (needs 1) | Wave 3: Prompt
 - `warm-top-markets-cache` cron — removed (dead project reference)
 - `city-content-enrichment-cron`, `ca-city-writeups-cron`, `enrich-selection-rationale-cron` — removed (finished)
 - Email outreach now uses Smartleads for bulk mail
-
