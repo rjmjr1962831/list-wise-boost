@@ -282,12 +282,15 @@ serve(async (req) => {
       .eq("city_area_slug", pp.citySlug).eq("is_active", true).order("neighborhood");
     const nhs = allNhs || [];
 
+    const isNh = !!nh;
+    const mkPage = isNh ? `neighborhood-${pp.citySlug}-${pp.neighborhoodSlug}` : `city-${pp.citySlug}`;
+    const mkSection = isNh ? "market_stats" : "market_overview";
     const { data: mr } = await sb.from("marketing_content").select("value")
-      .eq("page", `city-${pp.citySlug}`).eq("section", "market_overview").eq("key", "full_content").limit(1);
+      .eq("page", mkPage).eq("section", mkSection).eq("key", "full_content").limit(1);
     let mk: any = {};
     if (mr && mr[0]?.value) { const v = mr[0].value; mk = typeof v === "string" ? JSON.parse(v) : v; }
-
-    const isNh = !!nh;
+    // For neighborhoods, marketing_content holds marketStats at top level (not nested under .marketStats)
+    const nhMs = isNh && mk && mk.medianHomePrice ? mk : null;
     const loc = isNh ? `${nh.neighborhood}, ${city.name}` : city.name;
     const locShort = isNh ? nh.neighborhood : city.name;
     // ZIP-based URLs deprecated Feb 12; canonical always uses non-ZIP format
@@ -348,18 +351,49 @@ serve(async (req) => {
       o += `<section id="${pp.neighborhoodSlug}-market">\n`;
       o += `  <h2>${esc(nh.neighborhood)} Neighborhood Market Intelligence</h2>\n`;
       o += `  ${sanitizeMeritGate(nh.writeup_html)}\n`;
-      if (nh.median_home_value || nh.median_income) {
+      // Use rich marketing_content stats when available, fall back to neighborhood_catalog
+      const ms = nhMs || {};
+      const hasRichStats = !!nhMs;
+      if (hasRichStats || nh.median_home_value || nh.median_income) {
         o += `  <table><thead><tr><th>Market Metric</th><th>Value</th></tr></thead><tbody>\n`;
-        if (nh.median_home_value) o += `    <tr><td>Median Home Value</td><td>$${Number(nh.median_home_value).toLocaleString()}</td></tr>\n`;
-        if (nh.median_income) o += `    <tr><td>Median Household Income</td><td>$${Number(nh.median_income).toLocaleString()}</td></tr>\n`;
-        if (nh.primary_zip) o += `    <tr><td>Primary ZIP</td><td>${nh.primary_zip}</td></tr>\n`;
-        if (nh.tier) o += `    <tr><td>Market Tier</td><td>${esc(nh.tier)}</td></tr>\n`;
+        if (hasRichStats) {
+          if (ms.medianHomePrice) o += `    <tr><td>Median Home Price</td><td>$${Number(ms.medianHomePrice).toLocaleString()}</td></tr>\n`;
+          if (ms.medianRent) o += `    <tr><td>Median Rent</td><td>$${Number(ms.medianRent).toLocaleString()}/mo</td></tr>\n`;
+          if (ms.medianHouseholdIncome) o += `    <tr><td>Median Household Income</td><td>$${Number(ms.medianHouseholdIncome).toLocaleString()}</td></tr>\n`;
+          if (ms.daysOnMarket) o += `    <tr><td>Avg. Days on Market</td><td>${ms.daysOnMarket}</td></tr>\n`;
+          if (ms.pricePerSqFt) o += `    <tr><td>Price per Sq Ft</td><td>$${Number(ms.pricePerSqFt).toLocaleString()}</td></tr>\n`;
+          if (ms.averageHomeSize) o += `    <tr><td>Average Home Size</td><td>${Number(ms.averageHomeSize).toLocaleString()} sq ft</td></tr>\n`;
+          if (ms.homeownershipRate) o += `    <tr><td>Homeownership Rate</td><td>${(Number(ms.homeownershipRate) * 100).toFixed(1)}%</td></tr>\n`;
+          if (ms.pctRenterOccupied) o += `    <tr><td>Renter-Occupied</td><td>${(Number(ms.pctRenterOccupied) * 100).toFixed(1)}%</td></tr>\n`;
+          if (ms.rentToIncomeRatio) o += `    <tr><td>Rent-to-Income Ratio</td><td>${(Number(ms.rentToIncomeRatio) * 100).toFixed(1)}%</td></tr>\n`;
+          if (ms.rentalVacancyRate) o += `    <tr><td>Rental Vacancy Rate</td><td>${(Number(ms.rentalVacancyRate) * 100).toFixed(1)}%</td></tr>\n`;
+          if (ms.yearOverYearChange != null) o += `    <tr><td>Year-over-Year Change</td><td>${ms.yearOverYearChange > 0 ? "+" : ""}${(Number(ms.yearOverYearChange) * 100).toFixed(1)}%</td></tr>\n`;
+          if (ms.inventoryLevel) o += `    <tr><td>Inventory Level</td><td>${esc(String(ms.inventoryLevel))}</td></tr>\n`;
+          if (ms.marketType) o += `    <tr><td>Market Type</td><td>${esc(String(ms.marketType))}</td></tr>\n`;
+          if (ms.tier || nh.tier) o += `    <tr><td>Market Tier</td><td>${esc(String(ms.tier || nh.tier))}</td></tr>\n`;
+          if (ms.metadata?.primaryZip || nh.primary_zip) o += `    <tr><td>Primary ZIP</td><td>${ms.metadata?.primaryZip || nh.primary_zip}</td></tr>\n`;
+        } else {
+          if (nh.median_home_value) o += `    <tr><td>Median Home Value</td><td>$${Number(nh.median_home_value).toLocaleString()}</td></tr>\n`;
+          if (nh.median_income) o += `    <tr><td>Median Household Income</td><td>$${Number(nh.median_income).toLocaleString()}</td></tr>\n`;
+          if (nh.primary_zip) o += `    <tr><td>Primary ZIP</td><td>${nh.primary_zip}</td></tr>\n`;
+          if (nh.tier) o += `    <tr><td>Market Tier</td><td>${esc(nh.tier)}</td></tr>\n`;
+        }
         o += `  </tbody></table>\n`;
 
         // Dataset JSON-LD for neighborhood market stats
         const dsVars: any[] = [];
-        if (nh.median_home_value) dsVars.push({ "@type": "PropertyValue", name: "Median Home Value", value: Number(nh.median_home_value), unitCode: "USD" });
-        if (nh.median_income) dsVars.push({ "@type": "PropertyValue", name: "Median Household Income", value: Number(nh.median_income), unitCode: "USD" });
+        if (hasRichStats) {
+          if (ms.medianHomePrice) dsVars.push({ "@type": "PropertyValue", name: "Median Home Price", value: Number(ms.medianHomePrice), unitCode: "USD" });
+          if (ms.medianRent) dsVars.push({ "@type": "PropertyValue", name: "Median Rent", value: Number(ms.medianRent), unitCode: "USD" });
+          if (ms.medianHouseholdIncome) dsVars.push({ "@type": "PropertyValue", name: "Median Household Income", value: Number(ms.medianHouseholdIncome), unitCode: "USD" });
+          if (ms.daysOnMarket) dsVars.push({ "@type": "PropertyValue", name: "Average Days on Market", value: ms.daysOnMarket });
+          if (ms.pricePerSqFt) dsVars.push({ "@type": "PropertyValue", name: "Price per Square Foot", value: Number(ms.pricePerSqFt), unitCode: "USD" });
+          if (ms.homeownershipRate) dsVars.push({ "@type": "PropertyValue", name: "Homeownership Rate", value: Number(ms.homeownershipRate) });
+          if (ms.marketType) dsVars.push({ "@type": "PropertyValue", name: "Market Type", value: ms.marketType });
+        } else {
+          if (nh.median_home_value) dsVars.push({ "@type": "PropertyValue", name: "Median Home Value", value: Number(nh.median_home_value), unitCode: "USD" });
+          if (nh.median_income) dsVars.push({ "@type": "PropertyValue", name: "Median Household Income", value: Number(nh.median_income), unitCode: "USD" });
+        }
         if (nh.tier) dsVars.push({ "@type": "PropertyValue", name: "Market Tier", value: nh.tier });
         const dataset = {
           "@context": "https://schema.org",
