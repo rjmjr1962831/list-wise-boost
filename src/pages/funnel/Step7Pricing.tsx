@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Loader2, Shield, Zap, CheckCircle2, AlertTriangle, ExternalLink, Info } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { DataPayloadExpander } from '@/components/agent/DataPayloadExpander';
+import { AIFSGauge, type AIFSData } from '@/components/agent/AIFSGauge';
 import { toast } from 'sonner';
 
 type CertificationTier = 'certified' | 'audited' | 'underwritten';
@@ -44,6 +45,9 @@ interface AuditData {
   pillar_social: number | null;
   pillar_technical: number | null;
   pillar_citability: number | null;
+  score_unlisted: number | null;
+  score_listed: number | null;
+  score_certified: number | null;
   score_current: number | null;
   score_audited: number | null;
   score_underwritten: number | null;
@@ -56,6 +60,9 @@ interface AuditData {
   gap_no_personal_site: boolean | null;
   exa_source_count: number | null;
 }
+
+/* AIFS columns from aifs_scores table */
+const AIFS_SELECT = 'aifs_total, aifs_band, serp_knowledge_graph, serp_knowledge_graph_score, serp_sitelink_salience, serp_sitelink_salience_score, serp_related_citations, serp_related_citations_score, serp_third_party_count, serp_third_party_score, serp_organic_visibility_score, internal_data_freshness_days, internal_data_freshness_score, internal_selection_rationale, internal_selection_rationale_score, internal_crypto_verified, internal_crypto_verified_score, internal_data_score, gap_analysis, tier_lift_projection';
 
 const DEFAULT_PRICES: PricingRow[] = [
   { tier: 'certified', monthly_price: 0, payload_weight: 'standard', refresh_cadence: 'quarterly' },
@@ -72,25 +79,22 @@ function normalizeTier(t: string | null | undefined): string {
 }
 
 function bandLabel(score: number): string {
-  if (score <= 30) return 'Invisible to AI';
-  if (score <= 50) return 'Discoverable';
-  if (score <= 70) return 'Citable in general queries';
-  if (score <= 85) return 'Citable in specific local queries';
-  return 'Authoritative citation candidate';
+  if (score <= 35) return 'Invisible';
+  if (score <= 65) return 'Fragmented';
+  if (score <= 85) return 'Recognized';
+  return 'High Fidelity';
 }
 
 function bandColor(score: number): string {
-  if (score <= 30) return 'text-red-500';
-  if (score <= 50) return 'text-orange-500';
-  if (score <= 70) return 'text-yellow-600';
+  if (score <= 35) return 'text-red-500';
+  if (score <= 65) return 'text-orange-500';
   if (score <= 85) return 'text-blue-500';
   return 'text-green-500';
 }
 
 function bandBg(score: number): string {
-  if (score <= 30) return 'bg-red-500';
-  if (score <= 50) return 'bg-orange-500';
-  if (score <= 70) return 'bg-yellow-500';
+  if (score <= 35) return 'bg-red-500';
+  if (score <= 65) return 'bg-orange-500';
   if (score <= 85) return 'bg-blue-500';
   return 'bg-green-500';
 }
@@ -198,6 +202,7 @@ export default function Step7Pricing() {
   const [prices, setPrices] = useState<PricingRow[]>(DEFAULT_PRICES);
   const [professional, setProfessional] = useState<Professional | null>(null);
   const [audit, setAudit] = useState<AuditData | null>(null);
+  const [aifsData, setAifsData] = useState<AIFSData | null>(null);
   const [prevScore] = useState<number | null>(null); // score before funnel (used in activation banner)
 
   useEffect(() => {
@@ -245,10 +250,18 @@ export default function Step7Pricing() {
 
       const { data: auditData } = await supabase
         .from('geo_audit_results')
-        .select('pillar_identity, pillar_authority, pillar_social, pillar_technical, pillar_citability, score_current, score_audited, score_underwritten, gap_stale_reviews, gap_no_linkedin, gap_no_schema, gap_no_realtor, gap_no_homelight, gap_no_press, gap_no_personal_site, exa_source_count')
+        .select('pillar_identity, pillar_authority, pillar_social, pillar_technical, pillar_citability, score_unlisted, score_listed, score_certified, score_current, score_audited, score_underwritten, gap_stale_reviews, gap_no_linkedin, gap_no_schema, gap_no_realtor, gap_no_homelight, gap_no_press, gap_no_personal_site, exa_source_count')
         .eq('agent_id', prof.id)
         .maybeSingle();
       if (auditData) setAudit(auditData as AuditData);
+
+      // Load AIFS data
+      const { data: aifsRow } = await supabase
+        .from('aifs_scores' as any)
+        .select(AIFS_SELECT)
+        .eq('agent_id', prof.id)
+        .maybeSingle();
+      if (aifsRow) setAifsData(aifsRow as unknown as AIFSData);
 
       const { data: priceData } = await supabase
         .from('certification_pricing_config')
@@ -267,12 +280,17 @@ export default function Step7Pricing() {
     }
   };
 
-  const rawTier = professional?.current_tier || professional?.badge_tier || 'listed';
-  const currentTier = normalizeTier(rawTier);
-  const currentScore = audit?.score_current ?? professional?.signal_score ?? professional?.certified_projected_signal ?? null;
+  // On the funnel pricing page, the agent is always Certified (free) -- this IS the upsell page
+  const currentTier = 'certified' as const;
+  const currentScore = audit?.score_certified ?? professional?.certified_projected_signal ?? professional?.signal_score ?? audit?.score_current ?? null;
 
-  const getAICS = (tierId: string): number | null => {
+  const getAIFS = (tierId: string): number | null => {
     if (!professional) return null;
+    // Use AIFS tier lift projections if available
+    if (aifsData?.tier_lift_projection?.[tierId]) {
+      return aifsData.tier_lift_projection[tierId].projected_score;
+    }
+    // Fallback to legacy AICS data
     if (tierId === 'certified') return professional.certified_projected_signal ?? currentScore;
     if (tierId === 'audited') return audit?.score_audited ?? professional.audited_projected_signal ?? 65;
     if (tierId === 'underwritten') return audit?.score_underwritten ?? 95;
@@ -359,6 +377,35 @@ export default function Step7Pricing() {
 
   const scoreMarkerPct = currentScore != null ? Math.min(100, Math.round((currentScore / 100) * 100)) : null;
 
+  // Build AIFS gauge data from DB scores
+  const aifsGaugeData: AIFSData | null = aifsData ?? (currentScore != null ? (() => {
+    const band = (s: number) => s <= 35 ? 'invisible' as const : s <= 65 ? 'fragmented' as const : s <= 85 ? 'recognized' as const : 'high_fidelity' as const;
+    const sListed = audit?.score_listed ?? Math.max(10, currentScore - 10);
+    const sCertified = audit?.score_certified ?? currentScore;
+    const sAudited = audit?.score_audited ?? Math.min(100, currentScore + 20);
+    const sUnderwritten = audit?.score_underwritten ?? Math.min(100, currentScore + 40);
+    return {
+      aifs_total: currentScore,
+      aifs_band: band(currentScore),
+      serp_knowledge_graph: false, serp_knowledge_graph_score: 0,
+      serp_sitelink_salience: false, serp_sitelink_salience_score: 0,
+      serp_related_citations: false, serp_related_citations_score: 0,
+      serp_third_party_count: 0, serp_third_party_score: 0,
+      serp_organic_visibility_score: 0,
+      internal_data_freshness_days: null, internal_data_freshness_score: 0,
+      internal_selection_rationale: false, internal_selection_rationale_score: 0,
+      internal_crypto_verified: false, internal_crypto_verified_score: 0,
+      internal_data_score: 0,
+      gap_analysis: [],
+      tier_lift_projection: {
+        listed: { projected_score: sListed, projected_band: band(sListed), lift: sListed - currentScore },
+        certified: { projected_score: sCertified, projected_band: band(sCertified), lift: 0 },
+        audited: { projected_score: sAudited, projected_band: band(sAudited), lift: sAudited - currentScore },
+        underwritten: { projected_score: sUnderwritten, projected_band: band(sUnderwritten), lift: sUnderwritten - currentScore },
+      },
+    } as AIFSData;
+  })() : null);
+
   return (
     <>
       <SafeHead>
@@ -378,7 +425,7 @@ export default function Step7Pricing() {
 
           {/* ── Activation banner (only when arriving from funnel flow) ── */}
           {fromFunnel && currentScore != null && (() => {
-            const certScore = getAICS('certified');
+            const certScore = getAIFS('certified');
             const priorScore = prevScore ?? (currentScore != null ? Math.max(0, currentScore - (certScore != null ? certScore - currentScore : 0)) : null);
             const showLift = certScore != null && certScore > currentScore;
             return (
@@ -413,146 +460,36 @@ export default function Step7Pricing() {
           })()}
 
           {/* ══════════════════════════════════════════════════════
-              HERO: SCORE + BAND MARKER
+              AIFS SCORE
           ══════════════════════════════════════════════════════ */}
-          <div className="rounded-2xl border bg-card p-8 text-center space-y-5 shadow-sm">
-            <div>
-              <p className="text-sm font-medium text-muted-foreground uppercase tracking-widest mb-2">
-                Your AI Confidence Score
-              </p>
-              {currentScore != null ? (
-                <>
-                  <div className="flex items-end justify-center gap-2">
-                    <span className={`text-7xl font-black tabular-nums ${bandColor(currentScore)}`}>
-                      {currentScore}
-                    </span>
-                    <span className="text-2xl text-muted-foreground mb-2">/ 100</span>
-                  </div>
-                  <div className="mt-1">
-                    <BandLabel score={currentScore} />
-                  </div>
-                </>
-              ) : (
-                <p className="text-3xl font-bold text-muted-foreground">Score pending</p>
-              )}
-            </div>
-
-            {/* Spectrum bar with marker */}
-            {scoreMarkerPct != null && (
-              <div className="relative max-w-sm mx-auto">
-                <div className="h-3 rounded-full overflow-hidden flex">
-                  <div className="flex-1 bg-red-400" />
-                  <div className="flex-1 bg-orange-400" />
-                  <div className="flex-1 bg-yellow-400" />
-                  <div className="flex-1 bg-blue-400" />
-                  <div className="flex-1 bg-green-500" />
-                </div>
-                {/* Marker */}
-                <div
-                  className="absolute -top-0.5 -translate-x-1/2"
-                  style={{ left: `${scoreMarkerPct}%` }}
-                >
-                  <div className="w-4 h-4 rounded-full border-2 border-white shadow-md bg-foreground" />
-                </div>
-                <div className="flex justify-between text-[10px] text-muted-foreground mt-2 px-0.5">
-                  <span>0</span>
-                  <span>31</span>
-                  <span>51</span>
-                  <span>71</span>
-                  <span>86</span>
-                  <span>95</span>
-                </div>
-              </div>
-            )}
-
-            {/* 5-band reference table */}
-            {currentScore != null && (
-              <div className="w-full max-w-md mx-auto pt-1">
-                {[
-                  { min: 0,  max: 30,  label: 'Invisible to AI',                bg: 'bg-red-50 dark:bg-red-950/40',     border: 'border-red-200 dark:border-red-800',     text: 'text-red-700 dark:text-red-400' },
-                  { min: 31, max: 50,  label: 'Discoverable',                   bg: 'bg-orange-50 dark:bg-orange-950/40', border: 'border-orange-200 dark:border-orange-800', text: 'text-orange-700 dark:text-orange-400' },
-                  { min: 51, max: 70,  label: 'Citable in general queries',     bg: 'bg-yellow-50 dark:bg-yellow-950/40', border: 'border-yellow-200 dark:border-yellow-800', text: 'text-yellow-700 dark:text-yellow-500' },
-                  { min: 71, max: 85,  label: 'Citable in specific local queries', bg: 'bg-blue-50 dark:bg-blue-950/40', border: 'border-blue-200 dark:border-blue-800',   text: 'text-blue-700 dark:text-blue-400' },
-                  { min: 86, max: 100, label: 'Authoritative citation candidate', bg: 'bg-green-50 dark:bg-green-950/40', border: 'border-green-200 dark:border-green-800', text: 'text-green-700 dark:text-green-400' },
-                ].map((band) => {
-                  const isHere = currentScore >= band.min && currentScore <= band.max;
-                  return (
-                    <div
-                      key={band.min}
-                      className={`flex items-center justify-between px-3 py-2 rounded-lg border mb-1.5 ${isHere ? `${band.bg} ${band.border} ring-2 ring-offset-1 ring-current` : 'border-border bg-transparent'}`}
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="text-[11px] text-muted-foreground tabular-nums w-12 shrink-0">{band.min}–{band.max}</span>
-                        <span className={`text-xs font-medium ${isHere ? band.text : 'text-muted-foreground'}`}>{band.label}</span>
-                      </div>
-                      {isHere && (
-                        <span className={`text-[10px] font-bold uppercase tracking-wide shrink-0 ${band.text}`}>You are here</span>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-
-            {/* Pillar bars */}
-            {audit && (
-              <div className="grid grid-cols-5 gap-2 max-w-xs mx-auto pt-2">
-                {PILLAR_META.map(({ key, label, max }) => {
-                  const val = (audit[key] as number | null) ?? 0;
-                  const pct = Math.round((val / max) * 100);
-                  const fillColor = pct >= 70 ? '#22c55e' : pct >= 40 ? '#eab308' : '#f87171';
-                  return (
-                    <div key={key} className="flex flex-col items-center gap-1">
-                      {/* bar track -- fixed height, fill rises from bottom */}
-                      <div className="relative w-full h-14 bg-muted rounded overflow-hidden">
-                        <div
-                          className="absolute bottom-0 left-0 right-0 rounded transition-all"
-                          style={{ height: `${pct}%`, backgroundColor: fillColor }}
-                        />
-                      </div>
-                      <p className="text-[10px] font-semibold text-foreground leading-tight">{label}</p>
-                      <p className="text-[10px] text-muted-foreground leading-tight">{val}/{max}</p>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-
-
-
-            {/* Gates passed -- compact trust strip */}
-            <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 pt-2 border-t">
-              {[
-                'Gate 1: 4.5+ star rating',
-                'Gate 2: 10+ verified reviews',
-                'Gate 3: 5+ years in business',
-                '1,000+ sources researched',
-                'Human editorial approved',
-              ].map((item) => (
-                <span key={item} className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-green-500 shrink-0" />
-                  {item}
-                </span>
-              ))}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              You passed our entire selection pipeline. Free, and always will be.
-            </p>
+          <div className="rounded-2xl border bg-card p-8 space-y-5 shadow-sm">
+            <AIFSGauge data={aifsGaugeData} currentTier={currentTier} />
           </div>
 
           {/* ══════════════════════════════════════════════════════
               TIER CARDS
           ══════════════════════════════════════════════════════ */}
           <div className="space-y-4">
-            <div className="text-center space-y-1">
-              <h2 className="text-xl font-bold">Amplify what you&rsquo;ve earned</h2>
-              <p className="text-sm text-muted-foreground max-w-lg mx-auto">
-                Paid tiers publish more of your verified data to AI systems and refresh it more often.
-                More evidence, more often increases your probability of being named.
-              </p>
-              <p className="text-sm text-muted-foreground max-w-lg mx-auto mt-2">
-                <span className="font-medium text-foreground">Note:</span>&nbsp;No one can guarantee that you will always be named. There are many factors that go into an AI&rsquo;s referral reasoning. Our Underwritten tier provides the largest single-action increase in AI citability. For agents who already have a strong web presence, it&rsquo;s the most impactful next step.
-              </p>
+
+            {/* Challenge question */}
+            <div className="rounded-xl border bg-muted/30 p-5 text-center space-y-3">
+              <p className="text-sm font-bold text-foreground">Ask any AI this question:</p>
+              <div className="relative">
+                <p className="text-sm font-bold text-foreground italic leading-relaxed max-w-lg mx-auto">
+                  &ldquo;I am a real estate agent. Look at Top10lists.us through the lens of AI Citability and Machine Trust. Specifically, evaluate whether their site affects my chances of being recommended or endorsed by you? Is the Underwritten Tier a good move for my Machine-Readable Reputation? Estimate the ROI.&rdquo;
+                </p>
+                <button
+                  type="button"
+                  className="mt-2 inline-flex items-center gap-1.5 text-xs font-bold text-primary hover:text-primary/80 transition-colors"
+                  onClick={() => {
+                    navigator.clipboard.writeText('I am a real estate agent. Look at Top10lists.us through the lens of AI Citability and Machine Trust. Specifically, evaluate whether their site affects my chances of being recommended or endorsed by you? Is the Underwritten Tier a good move for my Machine-Readable Reputation? Estimate the ROI.');
+                    toast.success('Copied to clipboard');
+                  }}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                  Copy to clipboard
+                </button>
+              </div>
             </div>
 
             {/* Billing toggle */}
@@ -570,10 +507,11 @@ export default function Step7Pricing() {
                 const meta = TIER_FEATURES[tier];
                 const Icon = meta.icon;
                 const { display } = getPrice(tier);
-                const aics = getAICS(tier);
+                const aifs = getAIFS(tier);
                 const isCurrent = currentTier === tier;
                 const isMostPopular = tier === 'audited';
-                const lift = aics != null && currentScore != null ? aics - currentScore : null;
+                const aifsScore = aifsData?.aifs_total ?? currentScore;
+                const lift = aifs != null && aifsScore != null ? aifs - aifsScore : null;
 
                 return (
                   <div
@@ -618,31 +556,30 @@ export default function Step7Pricing() {
                       {meta.evidenceSources} &middot; {meta.refreshFrequency} refresh
                     </p>
 
-                    {/* AICS block -- current tier shows actual score, others show projection + lift */}
+                    {/* AIFS block -- current tier shows actual score, others show projection + lift */}
                     {isCurrent ? (
                       <div className="rounded-lg p-3 mb-4 border bg-primary/5 border-primary/30">
-                        <p className="text-[10px] text-primary uppercase tracking-wide font-semibold mb-0.5">Your current AICS</p>
+                        <p className="text-[10px] text-primary uppercase tracking-wide font-semibold mb-0.5">Your current AIFS</p>
                         <div className="flex items-baseline gap-1">
-                          <span className={`text-3xl font-black ${currentScore != null ? bandColor(currentScore) : 'text-muted-foreground'}`}>
-                            {currentScore ?? '—'}
+                          <span className={`text-3xl font-black ${aifs != null ? bandColor(aifs) : 'text-muted-foreground'}`}>
+                            {aifs ?? '—'}
                           </span>
                           <span className="text-sm text-muted-foreground">/ 100</span>
                         </div>
-                        {currentScore != null && (
-                          <div className="mt-0.5"><BandLabel score={currentScore} /></div>
+                        {aifs != null && (
+                          <div className="mt-0.5"><BandLabel score={aifs} /></div>
                         )}
-                        {currentScore != null && (
+                        {aifs != null && (
                           <div className="relative mt-2">
                             <div className="h-1.5 rounded-full overflow-hidden flex">
-                              <div className="flex-1 bg-red-300" />
-                              <div className="flex-1 bg-orange-300" />
-                              <div className="flex-1 bg-yellow-300" />
-                              <div className="flex-1 bg-blue-300" />
-                              <div className="flex-1 bg-green-400" />
+                              <div className="flex-[35] bg-red-300" />
+                              <div className="flex-[30] bg-orange-300" />
+                              <div className="flex-[20] bg-blue-300" />
+                              <div className="flex-[15] bg-green-400" />
                             </div>
                             <div
-                              className={`absolute -top-0.5 -translate-x-1/2 w-3 h-3 rounded-full border-2 border-white shadow ${bandBg(currentScore)}`}
-                              style={{ left: `${Math.min(100, Math.round((currentScore / 100) * 100))}%` }}
+                              className={`absolute -top-0.5 -translate-x-1/2 w-3 h-3 rounded-full border-2 border-white shadow ${bandBg(aifs)}`}
+                              style={{ left: `${Math.min(100, Math.round((aifs / 100) * 100))}%` }}
                             />
                           </div>
                         )}
@@ -651,15 +588,15 @@ export default function Step7Pricing() {
                       <div className={`rounded-lg p-3 mb-4 border ${isMostPopular ? 'bg-primary/5 border-primary/20' : 'bg-muted/40'}`}>
                         <div className="flex items-end justify-between">
                           <div>
-                            <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-0.5">Projected AICS</p>
+                            <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-0.5">Projected AIFS</p>
                             <div className="flex items-baseline gap-1">
-                              <span className={`text-3xl font-black ${aics != null ? bandColor(aics) : 'text-muted-foreground'}`}>
-                                {aics ?? '—'}
+                              <span className={`text-3xl font-black ${aifs != null ? bandColor(aifs) : 'text-muted-foreground'}`}>
+                                {aifs ?? '—'}
                               </span>
                               <span className="text-sm text-muted-foreground">/ 100</span>
                             </div>
-                            {aics != null && (
-                              <div className="mt-0.5"><BandLabel score={aics} /></div>
+                            {aifs != null && (
+                              <div className="mt-0.5"><BandLabel score={aifs} /></div>
                             )}
                           </div>
                           {lift != null && lift > 0 && (
@@ -669,18 +606,17 @@ export default function Step7Pricing() {
                             </div>
                           )}
                         </div>
-                        {aics != null && (
+                        {aifs != null && (
                           <div className="relative mt-2">
                             <div className="h-1.5 rounded-full overflow-hidden flex">
-                              <div className="flex-1 bg-red-300" />
-                              <div className="flex-1 bg-orange-300" />
-                              <div className="flex-1 bg-yellow-300" />
-                              <div className="flex-1 bg-blue-300" />
-                              <div className="flex-1 bg-green-400" />
+                              <div className="flex-[35] bg-red-300" />
+                              <div className="flex-[30] bg-orange-300" />
+                              <div className="flex-[20] bg-blue-300" />
+                              <div className="flex-[15] bg-green-400" />
                             </div>
                             <div
-                              className={`absolute -top-0.5 -translate-x-1/2 w-3 h-3 rounded-full border-2 border-white shadow ${bandBg(aics)}`}
-                              style={{ left: `${Math.min(100, Math.round((aics / 100) * 100))}%` }}
+                              className={`absolute -top-0.5 -translate-x-1/2 w-3 h-3 rounded-full border-2 border-white shadow ${bandBg(aifs)}`}
+                              style={{ left: `${Math.min(100, Math.round((aifs / 100) * 100))}%` }}
                             />
                           </div>
                         )}
@@ -720,17 +656,9 @@ export default function Step7Pricing() {
                 );
               })}
             </div>
-          </div>
 
-
-
-          <div className="rounded-xl border p-4">
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              <strong className="text-foreground">Transparency:</strong>&nbsp;AICS is calculated identically
-              whether you&rsquo;re on the free tier or a paid tier. The score measures what AI systems can
-              verify about you. Paid tiers publish more of your verified data, giving AI systems more to
-              cite. The score reflects the result, not the payment. The full formula is published on our{' '}
-              <a href="/about/ranking-methodology" className="underline">methodology page</a>.
+            <p className="text-sm text-muted-foreground max-w-lg mx-auto text-center mt-2">
+              <span className="font-medium text-foreground">Note:</span>&nbsp;No one can guarantee that you will always be named. There are many factors that go into an AI&rsquo;s referral reasoning. Our Underwritten tier provides the largest single-action increase in AI citability. For agents who already have a strong web presence, it&rsquo;s the most impactful next step.
             </p>
           </div>
 
