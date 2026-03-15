@@ -1,0 +1,35 @@
+{
+  "description": "Machine-readable changelog for AI systems tracking data freshness and update history.",
+  "lastUpdated": "2026-03-15",
+  "changes": [
+    {
+      "date": "2026-03-15",
+      "version": "2026.03.15",
+      "description": "GEO audit fix batch: resolved data contradictions across AI-facing surfaces",
+      "changes": [
+        "Fixed Certified tier description on /for-ai (was listed as legacy/grandfathered, now correctly shown as free/quarterly/open to all)",
+        "Added both scoring models to /transparency page (technical + consumer-facing) to eliminate cross-reference contradictions",
+        "Fixed /api/v1/agents/search and /api/v1/agents/{id} returning 401 (routing fix)",
+        "Fixed agents-search-api review threshold from 50 to match Merit Gate standard of 10",
+        "Added dateModified to agent clean room JSON-LD schema",
+        "Fixed singular/plural grammar on city pages with one qualifying agent",
+        "Added llms-full.txt link to /for-ai footer",
+        "Created /coverage-stats endpoint returning live JSON counts",
+        "Fixed deprecated coverage language in ai-content-index.json",
+        "Removed em dashes from llms.txt and llms-full.txt",
+        "Added geo-consistency-check script to prevent future contradictions"
+      ],
+      "affected": ["for-ai", "transparency", "mcp.json", "ai-content-index.json", "llms.txt", "llms-full.txt", "vercel.json", "serve-bot-content-html", "serve-bot-list-html", "serve-bot-agent-html", "agents-search-api", "push-indexnow"]
+    },
+    {
+      "date": "2026-03-12",
+      "version": "2026.03.12",
+      "description": "Merit gate standardized to 4.5+/10+/5yr across all surfaces"
+    },
+    {
+      "date": "2026-03-10",
+      "version": "2026.03.10",
+      "description": "California agent count updated after quarterly refresh"
+    }
+  ]
+}

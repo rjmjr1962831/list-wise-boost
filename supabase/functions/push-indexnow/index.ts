@@ -32,6 +32,10 @@ const KEY_URLS = [
   
   // Technical/AI files
   'https://www.top10lists.us/llms.txt',
+  'https://www.top10lists.us/llms-full.txt',
+  'https://www.top10lists.us/for-ai.txt',
+  'https://www.top10lists.us/mcp.json',
+  'https://www.top10lists.us/coverage.json',
   'https://www.top10lists.us/.well-known/ai-content-index.json',
   'https://www.top10lists.us/sitemap.xml',
 

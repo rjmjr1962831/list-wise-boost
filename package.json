@@ -29,7 +29,8 @@
     "smoke-test": "tsx scripts/smoke-test.ts",
     "geo-audit": "tsx scripts/geo-audit.ts",
     "merge-to-main": "powershell -ExecutionPolicy Bypass -File scripts/merge-to-main.ps1",
-    "register-sequencer-cron": "tsx scripts/register-sequencer-cron.ts"
+    "register-sequencer-cron": "tsx scripts/register-sequencer-cron.ts",
+    "geo:check": "node scripts/geo-consistency-check.cjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
