@@ -127,6 +127,7 @@ const AdminDemo = import.meta.env.VITE_IS_PRODUCTION !== "1"
 const AdminLogin = lazy(() => import("@/pages/AdminLogin"));
 const AdminExportAgents = lazy(() => import("@/pages/AdminExportAgents"));
 const BotAnalyticsDashboard = lazy(() => import("@/pages/BotAnalyticsDashboard"));
+const MergeFieldPreview = lazy(() => import("@/pages/admin/MergeFieldPreview"));
 const AgentBotAnalyticsDashboard = lazy(() => import("@/pages/AgentBotAnalyticsDashboard"));
 const MobilePreview = lazy(() => import("@/pages/MobilePreview"));
 const OGPreview = lazy(() => import("@/pages/OGPreview"));
@@ -176,6 +177,7 @@ export const routeManifest: RouteObject[] = [
   { path: "/admin/ingest-neighborhoods", element: wrapAdmin(React.createElement(Navigate, { to: "/404", replace: true })) },
   { path: "/admin/neighborhood-writeups", element: wrapAdmin(React.createElement(Navigate, { to: "/404", replace: true })) },
   { path: "/admin/export-agents", element: wrapAdmin(React.createElement(AdminExportAgents, null)) },
+  { path: "/admin/merge-preview", element: wrapAdmin(React.createElement(MergeFieldPreview, null)) },
   { path: "/a/bot-analytics", element: wrapAdmin(React.createElement(BotAnalyticsDashboard, null)) },
   { path: "/agent/bot-analytics", element: wrapAdmin(React.createElement(AgentBotAnalyticsDashboard, null)) },
   { path: "/og-preview", element: wrapAdmin(React.createElement(OGPreview, null)) },

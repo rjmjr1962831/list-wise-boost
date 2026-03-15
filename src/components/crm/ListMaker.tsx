@@ -83,6 +83,22 @@ const AICS_FIELDS: { key: string; label: string }[] = [
   { key: "footprint_context", label: "Footprint Context" },
 ];
 
+const AIFS_FIELDS: { key: string; label: string }[] = [
+  { key: "aifs_score", label: "AIFS Score" },
+  { key: "aifs_band", label: "AIFS Band" },
+  { key: "aifs_serp_knowledge_graph", label: "AIFS: Knowledge Graph" },
+  { key: "aifs_serp_sitelink_salience", label: "AIFS: Sitelink Salience" },
+  { key: "aifs_serp_related_citations", label: "AIFS: Related Citations" },
+  { key: "aifs_serp_third_party_count", label: "AIFS: Third-Party Count" },
+  { key: "aifs_serp_visibility_score", label: "AIFS: SERP Visibility Score" },
+  { key: "aifs_data_freshness_days", label: "AIFS: Data Freshness (days)" },
+  { key: "aifs_data_freshness_score", label: "AIFS: Data Freshness Score" },
+  { key: "aifs_selection_rationale", label: "AIFS: Selection Rationale" },
+  { key: "aifs_crypto_verified", label: "AIFS: Crypto Verified" },
+  { key: "aifs_internal_score", label: "AIFS: Internal Score" },
+  { key: "aifs_gap_analysis", label: "AIFS: Gap Analysis" },
+];
+
 const STATES = [
   { value: "", label: "All states" },
   { value: "arizona", label: "Arizona" },
@@ -279,12 +295,12 @@ export function ListMaker() {
       // Fetch matching agents with email (paginated)
       const pageSize = 1000;
       let offset = 0;
-      let allAgents: { id: string; name: string; email: string }[] = [];
+      let allAgents: { id: string; name: string; email: string; state_slug?: string; canonical_slug?: string }[] = [];
 
       while (true) {
         let q = supabase
           .from("professionals")
-          .select("id, name, email")
+          .select("id, name, email, state_slug, canonical_slug")
           .not("email", "is", null)
           .neq("email", "")
           .range(offset, offset + pageSize - 1);
@@ -320,17 +336,92 @@ export function ListMaker() {
       const templateSubject = campaign?.template_subject ?? "No subject";
       const templateHtml = campaign?.template_html ?? "";
 
+      // Check if template uses merge fields
+      const hasMergeFields = /\{\{[a-zA-Z_]+\}\}/.test(templateSubject + templateHtml);
+
+      // Fetch merge data (bot crawl stats + city names) if template uses merge fields
+      let mergeData: Map<string, Record<string, string>> = new Map();
+      if (hasMergeFields) {
+        const agentIds = allAgents.map((a) => a.id);
+        // Fetch in batches of 500 to avoid query limits
+        const BOT_DISPLAY: Record<string, string> = {
+          "ChatGPT-User": "ChatGPT", "OAI-SearchBot": "ChatGPT Search",
+          "Googlebot": "Google", "Google-Extended": "Google AI",
+          "Applebot": "Apple", "applebot": "Apple", "Applebot-Extended": "Apple AI",
+          "Meta-ExternalAgent": "Meta AI", "bingbot": "Microsoft Bing", "Bingbot": "Microsoft Bing",
+          "ByteSpider": "TikTok/ByteDance", "ClaudeBot": "Claude (Anthropic)",
+          "PerplexityBot": "Perplexity", "Gemini-AI": "Google Gemini",
+        };
+        const SEO_BOTS = new Set(["AhrefsBot", "semrushbot", "SEMrushBot", "DotBot", "AdsBot-Google", "MJ12bot"]);
+
+        for (let i = 0; i < agentIds.length; i += 500) {
+          const batchIds = agentIds.slice(i, i + 500);
+          const idList = batchIds.map((id) => `'${id}'`).join(",");
+          const { data: rows } = await supabase.rpc("run_sql" as any, {
+            query: `SELECT s.agent_id, s.total_crawls_30d, s.profile_crawls_30d, s.list_crawls_30d, s.unique_bot_count_30d, s.bot_names_30d, c.name as city_name FROM agent_bot_crawl_stats s JOIN professionals p ON p.id = s.agent_id LEFT JOIN cities c ON c.id = p.city_id WHERE s.agent_id IN (${idList})`,
+          });
+          // Also fetch city names for agents not in the view (zero crawls)
+          const { data: cityRows } = await supabase.rpc("run_sql" as any, {
+            query: `SELECT p.id as agent_id, c.name as city_name FROM professionals p LEFT JOIN cities c ON c.id = p.city_id WHERE p.id IN (${idList})`,
+          });
+          const cityMap = new Map((cityRows || []).map((r: any) => [r.agent_id, r.city_name || ""]));
+
+          for (const r of (rows || []) as any[]) {
+            const botNames = (r.bot_names_30d || []) as string[];
+            const aiBots = botNames.filter((b: string) => !SEO_BOTS.has(b));
+            const displayBots = [...new Set(aiBots.map((b: string) => BOT_DISPLAY[b] || b))].sort();
+            mergeData.set(r.agent_id, {
+              bot_crawl_total: String(r.total_crawls_30d || 0),
+              bot_crawl_profile: String(r.profile_crawls_30d || 0),
+              bot_crawl_list: String(r.list_crawls_30d || 0),
+              bot_crawl_bots: displayBots.join(", ") || "AI systems",
+              bot_crawl_bots_count: String(displayBots.length || 0),
+              city: cityMap.get(r.agent_id) || "",
+            });
+          }
+          // Fill city for agents with no crawl data
+          for (const [id, cityName] of cityMap) {
+            if (!mergeData.has(id)) {
+              mergeData.set(id, {
+                bot_crawl_total: "0", bot_crawl_profile: "0", bot_crawl_list: "0",
+                bot_crawl_bots: "", bot_crawl_bots_count: "0",
+                city: cityName || "",
+              });
+            }
+          }
+        }
+      }
+
+      // Merge field substitution helper
+      const applyMerge = (template: string, fields: Record<string, string>): string => {
+        return template.replace(/\{\{(\w+)\}\}/g, (_match, key) => fields[key] ?? "");
+      };
+
       // Build queue entries, distributing across senders round-robin
-      const queueRows = allAgents.map((agent, i) => ({
-        campaign_id: campaignId,
-        agent_id: agent.id,
-        recipient_email: agent.email.trim().toLowerCase(),
-        recipient_name: agent.name || null,
-        sender_account: campaignSenders[i % campaignSenders.length],
-        subject: templateSubject,
-        html_body: templateHtml,
-        status: "pending_review",
-      }));
+      const queueRows = allAgents.map((agent, i) => {
+        // Build per-agent merge fields
+        const firstName = (agent.name || "").split(" ")[0] || "";
+        const md = mergeData.get(agent.id) || {};
+        const fields: Record<string, string> = {
+          first_name: firstName, firstName,
+          full_name: agent.name || "", fullName: agent.name || "",
+          ...md,
+          profile_url: agent.state_slug && agent.canonical_slug
+            ? `https://www.top10lists.us/${agent.state_slug}/agents/${agent.canonical_slug}`
+            : "",
+        };
+
+        return {
+          campaign_id: campaignId,
+          agent_id: agent.id,
+          recipient_email: agent.email.trim().toLowerCase(),
+          recipient_name: agent.name || null,
+          sender_account: campaignSenders[i % campaignSenders.length],
+          subject: hasMergeFields ? applyMerge(templateSubject, fields) : templateSubject,
+          html_body: hasMergeFields ? applyMerge(templateHtml, fields) : templateHtml,
+          status: "pending_review",
+        };
+      });
 
       // Insert in batches of 500
       const batchSize = 500;
@@ -593,6 +684,40 @@ export function ListMaker() {
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
               {AICS_FIELDS.map((f) => (
+                <label
+                  key={f.key}
+                  className="flex items-center gap-2 cursor-pointer text-sm"
+                >
+                  <Checkbox
+                    checked={outputFields.includes(f.key)}
+                    onCheckedChange={(c) => toggleOutputField(f.key, !!c)}
+                  />
+                  <span>{f.label}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+          <div>
+            <div className="flex items-center gap-3 mb-2">
+              <Label className="text-sm font-semibold">AIFS Score Fields</Label>
+              <button
+                type="button"
+                className="text-xs text-blue-500 hover:text-blue-700 underline"
+                onClick={() => {
+                  const allAifsKeys = AIFS_FIELDS.map((f) => f.key);
+                  const allSelected = allAifsKeys.every((k) => outputFields.includes(k));
+                  if (allSelected) {
+                    setOutputFields((prev) => prev.filter((k) => !allAifsKeys.includes(k)));
+                  } else {
+                    setOutputFields((prev) => [...new Set([...prev, ...allAifsKeys])]);
+                  }
+                }}
+              >
+                {AIFS_FIELDS.every((f) => outputFields.includes(f.key)) ? "Deselect all" : "Select all"}
+              </button>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+              {AIFS_FIELDS.map((f) => (
                 <label
                   key={f.key}
                   className="flex items-center gap-2 cursor-pointer text-sm"

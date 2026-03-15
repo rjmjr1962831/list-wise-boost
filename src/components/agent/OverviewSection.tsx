@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Award, BadgeCheck, Shield, Zap, Sparkles, CheckCircle, XCircle, TrendingUp } from "lucide-react";
@@ -6,6 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { DataPayloadExpander } from "@/components/agent/DataPayloadExpander";
+import { AIFSGauge, type AIFSData } from "@/components/agent/AIFSGauge";
+import { BotCrawlCard } from "@/components/agent/BotCrawlCard";
+import { supabase } from "@/integrations/supabase/client";
 
 interface OverviewSectionProps {
   professional: any;
@@ -54,9 +57,20 @@ function toSecondPerson(text: string): string {
 export function OverviewSection({ professional }: OverviewSectionProps) {
   const navigate = useNavigate();
   const [isAnnual, setIsAnnual] = useState(false);
+  const [aifsData, setAifsData] = useState<AIFSData | null>(null);
   const rawTier = professional.current_tier || professional.badge_tier || "certified";
   const currentTier = normalizeTier(rawTier);
   const baseScore = professional.signal_score ?? professional.certified_projected_signal ?? null;
+
+  useEffect(() => {
+    if (!professional?.id) return;
+    supabase
+      .from("aifs_scores" as any)
+      .select("aifs_total, aifs_band, serp_knowledge_graph, serp_knowledge_graph_score, serp_sitelink_salience, serp_sitelink_salience_score, serp_related_citations, serp_related_citations_score, serp_third_party_count, serp_third_party_score, serp_organic_visibility_score, internal_data_freshness_days, internal_data_freshness_score, internal_selection_rationale, internal_selection_rationale_score, internal_crypto_verified, internal_crypto_verified_score, internal_data_score, gap_analysis, tier_lift_projection")
+      .eq("agent_id", professional.id)
+      .maybeSingle()
+      .then(({ data }) => { if (data) setAifsData(data as unknown as AIFSData); });
+  }, [professional?.id]);
 
   const getAICS = (tierId: string): number | null => {
     if (tierId === "listed") return 10;
@@ -91,16 +105,10 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
             <CardTitle className="text-lg">Our Tiered Product Structure</CardTitle>
   
           </div>
-          {/* AICS + Web of Truth™ + Ways to Improve */}
+          {/* AIFS + Web of Truth™ */}
           <div className="grid gap-3 sm:grid-cols-2">
-            {/* AI Citability Score */}
-            <div className="rounded-lg border bg-muted/30 p-4">
-              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Your AI Citability Score</p>
-              <p className="text-3xl font-bold text-foreground">
-                {getAICS(currentTier) != null ? `${getAICS(currentTier)}/100` : "Pending"}
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">Based on your current tier and verified data</p>
-            </div>
+            {/* AI Footprint Score */}
+            <AIFSGauge data={aifsData} currentTier={currentTier} compact />
 
             {/* Web of Truth™ */}
             <div className="rounded-lg border bg-muted/30 p-4">
@@ -119,6 +127,9 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
               <p className="text-xs text-muted-foreground mt-2">Your public trust artifact that AI systems can cite</p>
             </div>
           </div>
+
+          {/* Bot Crawl Activity */}
+          <BotCrawlCard professionalId={professional.id} city={professional.city_name} />
 
           {/* Ways to improve */}
           <div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
@@ -182,7 +193,7 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
                     <Label htmlFor={`overview-billing-${tier.id}`} className="text-xs">Annual (2 mo free)</Label>
                   </div>
                   <div className="p-3 rounded-lg bg-muted/50 border mb-2">
-                    <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">AI Citability Score</p>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">AI Footprint Score</p>
                     <p className="text-xl font-bold">{aics != null ? `${aics}/100` : "Pending"}</p>
                   </div>
                   {tier.id === "certified" && (
