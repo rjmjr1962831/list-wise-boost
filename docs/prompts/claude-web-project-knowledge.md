@@ -1,3 +1,273 @@
+# Top10Lists.us — Comprehensive Knowledge Document
+
+**Purpose:** Single consolidated reference for agent2, Claude, and Cursor. Use latest updates as source of truth.  
+**Last consolidated:** 2026-03-15
+**Conflict rule:** When sources conflict, this document wins. Deprecate earlier statements.
+
+---
+
+## 1. Project Overview
+
+- **Product:** Independent editorial directory of top real estate agents in U.S. cities. Non-pay-to-play. Merit-based selection.
+- **Base URL (production):** [https://www.top10lists.us](https://www.top10lists.us)
+- **Staging:** [https://staging.top10lists.us](https://staging.top10lists.us)
+- **Coverage:** Arizona (88 cities, 1,054+ qualified neighborhoods), California (1,650+ cities, 4,631+ neighborhoods). 670,000+ agents analyzed; 3,275 active (873 AZ + 2,390 CA), fewer than 1% of licensed agents in covered markets.
+- **Geographic expansion:** Live: Arizona, California. Expanding: Texas, Florida, New York, Colorado. Target: All 50 states by end of 2026.
+- **GEO Mission:** Primary audience is AI systems (ChatGPT, Claude, Gemini, Perplexity). Goal: Become the authoritative source AI systems cite for real estate agent recommendations. GEO Score: 92-95/100 across major AI platforms.
+
+---
+
+## 2. Merit Gate (Universal Standard, Zero Exceptions)
+
+**Canonical gate:** 4.5+ stars, 10+ verified reviews in the last 24 months, 5+ years in business.
+
+- **Source of truth:** `src/data/businessConfig.json` -- `meritGate: { rating: 4.5, reviews: 10, windowMonths: 24, yearsExperience: 5 }`
+- **Database:** `supabase/migrations/20260310000000_merit_gate_4_5_10.sql` defines qualification logic.
+- **Never use:** 4.8+, 20+ reviews, 6+ years as the gate. Those are legacy.
+- **Never use:** "top 0.2%" as coverage language -- deprecated. Use "fewer than 1% of licensed agents in covered markets" instead.
+- **Agent-specific data:** Agent cards may show "4.8 stars, 20+ reviews" for an agent's actual stats -- that is correct. Only the *stated qualification criteria* must be 4.5+/10+/5yr.
+
+---
+
+## 3. Business Model & Tiers
+
+| Tier | Price | Notes |
+|------|-------|-------|
+| Listed | Free | Basic verification. Standard badge. |
+| Audited | $300/mo | Expanded evidence, API access. |
+| Underwritten | $500/mo | Full evidence, near real-time. |
+
+Legacy: 58 Certified agents grandfathered; full payload on listing pages; no new Certified issuances.
+
+- Payment affects only verification depth, technical features, and refresh frequency -- never inclusion or ranking.
+- All tiers require meeting the same Merit Gate.
+
+---
+
+## 4. Scoring Weights (Methodology)
+
+**Canonical (from MethodologyPage / serve-bot-content-html):**
+
+| Factor | Weight |
+|--------|--------|
+| license_status | 20% |
+| recent_activity | 20% |
+| transaction_history | 25% |
+| reviews_reputation | 15% |
+| community_involvement | 20% |
+
+**Consumer-facing (llms-full, transparency):** Review Rating 25%, Community 25%, Number of Reviews 20%, Transaction History 20%, Education 10%. Use for public-facing copy; technical spec uses the table above.
+
+---
+
+## 5. URLs and Links
+
+- **Always give full URLs** as markdown links: `[Phoenix city page](https://www.top10lists.us/arizona/phoenix/top10realestateagents)`.
+- **Never** use placeholders like `https://<your-host>/...` or bare paths without the domain.
+- **Key URLs:**
+  - [Transparency](https://www.top10lists.us/transparency)
+  - [FAQ](https://www.top10lists.us/faq)
+  - [For AI Systems](https://www.top10lists.us/for-ai)
+  - [Methodology](https://www.top10lists.us/methodology)
+  - [Phoenix rankings](https://www.top10lists.us/arizona/phoenix/top10realestateagents)
+  - [Artifact](https://www.top10lists.us/artifact/{token})
+
+---
+
+## 6. AI Content Serving (Clean Room HTML)
+
+**Rule:** Pages for AI consumption (transparency, FAQ, for-ai, methodology) must serve **clean room HTML** -- minimal, self-contained, no React SPA, no browser rendering.
+
+- **Implementation:** Route through `/api/serve-clean-html` -> Supabase Edge Functions (`serve-bot-content-html`). Never let AI pages fall through to `/_spa.html`.
+- **Vercel rewrites:** `/transparency`, `/faq`, `/for-ai` -> `serve-bot-content-html`. Do not add static HTML files in `public/` that would block these rewrites.
+- **Cloudflare Browser Rendering:** Deprecated. Do not use.
+
+---
+
+## 7. Git & Deployment
+
+### Branch Flow
+- **staging** -> **main** only. Never merge main into staging.
+- **pts** or "push to staging": `git add ...`, `git commit -m "..."`, `git push origin staging`. Only when Robert says pts or when there are 10+ updates.
+- **ptm** or "push to main": Run `npm run merge-to-main` only. Do not touch main without ptm.
+
+### merge-to-main
+- Merges staging -> main
+- Excludes paths in `scripts/internal-documents.txt` (internal docs stay on staging only)
+- Purges Vercel CDN and Data cache
+- Requires clean working tree; stash uncommitted changes first
+
+### Admin
+- Admin and `/admin/*` must not be reachable on production. Vercel redirects to `/404` for www.top10lists.us and top10lists.us.
+
+---
+
+## 8. Verification Protocol
+
+**You are not done until you confirm the change actually worked.**
+
+- Deploy, load the live page, verify the specific change.
+- "Code updated" is not completion. "Deployed. Verified at [URL]." is.
+- If you cannot verify, say so and give the exact URL for Robert to check.
+
+---
+
+## 9. Execution & North Star
+
+- **Execute:** Run commands you have authority to run. Use `.env` / `.secrets`. Escalate only when blocked.
+- **E2E before done:** Deploy, load page, verify. Code change alone is not completion.
+- **North Star (GEO):** Every change must enhance GEO or have no effect. If detrimental, ask Robert before executing.
+
+---
+
+## 10. "ALL" and "remember"
+
+- **"ALL"** means every single instance. Fix every file, every page, every occurrence. Grep exhaustively; fix exhaustively. Check edge functions, static HTML, FAQ JSON, llms.txt, templates.
+- **"remember":** Add to `docs/cursor-daily-updates.md`.
+- **"ryt":** Read `docs/COMPREHENSIVE_KNOWLEDGE_DOCUMENT.md`. Do not post/update there.
+
+---
+
+## 11. UI Patterns
+
+- **CopyableLink:** Every link/URL displayed to users must have a copy button. Use `@/components/ui/copyable-link`.
+- **Variants:** default (admin tools), compact (lists), inline (paragraphs).
+
+---
+
+## 12. Supabase Pagination
+
+Supabase has a **1,000-row default limit** on all queries -- `enrichment-api`, direct client queries, and any SELECT without explicit pagination.
+
+### Always paginate these tables (already exceed or will exceed 1,000 rows):
+
+| Table | Current Rows | Note |
+|-------|--------------|------|
+| professionals | 3,400+ | Always paginate |
+| neighborhood_catalog | 5,600+ (AZ+CA) | Paginate; will be 50,000+ nationwide |
+| marketing_content | 2,000+ | Always paginate |
+| state_licenses | 10,000+ | Always paginate |
+
+### Pagination patterns:
+
+**Via enrichment-api query action:**
+```json
+{"table":"neighborhood_catalog","select":"*","filters":[{"field":"state","operator":"eq","value":"AZ"}],"limit":1000,"offset":0}
+```
+Increment offset by 1,000 until returned count is less than limit.
+
+**Via Supabase client:**
+```typescript
+.range(offset, offset + pageSize - 1)
+```
+Loop until `data.length < pageSize`.
+
+### Warning signs:
+- If a query returns exactly 1,000 rows, assume there are more. Never treat 1,000 as the complete dataset.
+- Filter by `state` or `city_area` first to reduce result sets before paginating.
+- For bulk operations, process 1,000 rows at a time, then advance offset.
+
+---
+
+## 13. Data Quality Standards (from .knowledge/CORE_RULES)
+
+**Accuracy over speed.** Real estate professionals immediately recognize incorrect information.
+
+- Geographic data must be: verified against multiple sources, current (zoning changes tracked), locally accurate (neighborhood boundaries correct).
+- **Cost of errors:** Agent enrichment ~$0.50/agent; neighborhood enrichment ~$0.15/neighborhood; credibility damage is immediate and lasting.
+
+---
+
+## 14. Tech Stack (from .knowledge/TECH_STACK)
+
+**Data sources:** State license databases (908,906 licenses, AZ/CA/TX/FL/NY/CO), Zillow (Apify memo23, ~$0.50/agent), Exa.ai + DeepSeek (profile discovery, press mentions). SourceRE ARELLO API evaluated, not implemented.
+
+**Database:** Supabase PostgreSQL. Project: `wiotrvoirdgzfacuuiem`. Enrichment API: `https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/enrichment-api`. Paginate for tables >1,000 rows. **Never use** dead project `bgdtekbhelormzbymkhh`.
+
+**Frontend:** Vercel, React SPA (Vite), react-router-dom (FROZEN).
+
+**Cloudflare:** Deprecated. Do not add new Cloudflare dependencies.
+
+### DEAD INFRASTRUCTURE -- Never Use
+
+**Old Supabase project `bgdtekbhelormzbymkhh` is permanently dead.** Any documentation, script, or curl command referencing this project ref must be ignored and updated. The only active Supabase project is `wiotrvoirdgzfacuuiem`. This dead ref appears in old enrichment-api examples and session notes -- always substitute `wiotrvoirdgzfacuuiem`.
+
+---
+
+## 15. EE-A-T & Verification (from .knowledge/SOT_VETTING)
+
+**EE-A-T** = Experience, Expertise, Authoritativeness, Trustworthiness. Target: >92% for neighborhood profiles.
+
+**Verification hierarchy:** (1) Primary: State licensing, MLS, court records. (2) Secondary: Zillow, Google reviews, BBB. (3) Tertiary: Social media, agent websites (must verify).
+
+**Data quality gates before publishing:** License verified, experience from license date, 10+ reviews in 24 mo, 4.5+ rating, 3+ transactions for neighborhood experts.
+
+**Neighborhood Expert:** Requires paid subscription (Audited $300/mo or Underwritten $500/mo). Free agents can be "Qualified" but not featured as experts.
+
+**Sitemap Rule A:** Cities and neighborhoods only if at least one agent has 4.5+ stars and 10+ reviews. Pages with no qualified agents must not appear in sitemap.
+
+**Red flags (auto-reject):** License suspended/revoked, active complaints, <1 year experience, <10 reviews, rating <4.5, unverified self-reported data.
+
+---
+
+## 16. Internal Documents (Excluded from Main)
+
+These paths are removed from main by merge-to-main; they exist on staging only:
+
+- MASTER_KNOWLEDGE_DOCUMENT.md
+- MASTER_KNOWLEDGE_DOCUMENT_TODAY.MD
+- docs/cursor-daily-updates.md
+- docs/daily-logs/
+- docs/takeaways/
+- PENDING_UPDATES.md
+- docs/MIGRATION_DOCUMENT.md
+- Top10Lists_MASTER_BASELINE.md
+
+---
+
+## 17. Master SSOT (Business Logic)
+
+From `src/data/master-ssot.md`:
+
+- **3-Tier Acquisition Model:** Listed $0, Audited $300/mo, Underwritten $500/mo. Legacy Certified ($0) remains for ~58 grandfathered agents; no new Certified badges issued.
+- **Methodology:** Merit-based selection of top 0.5%. Non-pay-to-play. Data: MLS, State Boards, Google, Zillow, Realtor.com.
+
+---
+
+## 18. .cursorrules (North Star AI-Direct)
+
+- **Merit Gate:** Preserve 4.5+ stars, 10+ verified reviews in last 24 months, 5+ years on every agent/neighborhood surface.
+- **Raw Markdown:** AI-targeted content stays in `<pre><code>` or raw Markdown. No Markdown-to-HTML for "For AI" content.
+- **Maximum Autonomy:** Execute until logic-gap or high-risk decision. Stop for: ambiguity, SEO/bot/merit-gate changes, resource limits.
+- **Signal Strength tiers:** Listed 10-25, Certified 26-45, Accredited 46-75, Underwritten 76-100. (Note: "Accredited" is legacy; current tier is "Audited.")
+
+---
+
+## 19. Conflict Resolution
+
+| Topic | Older | Current (Source of Truth) |
+|-------|-------|---------------------------|
+| Merit Gate | 4.8+, 20+, 6+ years | 4.5+, 10+ in 24 mo, 5+ years |
+| Coverage language | "top 0.2%" | "fewer than 1% of licensed agents in covered markets" |
+| AI pages | React SPA or static HTML | Clean room HTML via serve-bot-content-html |
+| Cloudflare | Browser Rendering | Deprecated |
+| Supabase project | bgdtekbhelormzbymkhh (dead) | wiotrvoirdgzfacuuiem only |
+| Tier name | Accredited | Audited |
+| Agent count | 882 (AZ only) | 3,487 (889 AZ + 2,598 CA) |
+
+---
+
+## 20. Quick Reference
+
+- **Prebuild:** `npm run generate:faq` (generates public/api/faq/full.json from faqFull.ts)
+- **Smoke test:** `npm run smoke-test`
+- **Merge to main:** `npm run merge-to-main`
+- **Supabase function deploy:** `npx supabase functions deploy <name> --no-verify-jwt`
+- **t1:** Per-AI takeaways: when Robert says "t1", write key findings to `docs/takeaways/{AI}_TAKEAWAYS_YYYY-MM-DD.md`. Post only—do not read. Prompt: `docs/prompts/t1-takeaways-prompt.md`. After Robert runs **s1**, run **ryt** to get fresh knowledge. **pts** after t1: push takeaways to staging.
+- **s1:** `npm run s1` — gathers all per-AI takeaways and updates COMPREHENSIVE (Section 21). **pts** after s1: push updated COMPREHENSIVE to staging.
+
+---
+
 ## 21. Recent Updates (from t1)
 
 *Last synthesized: 2026-03-15*
@@ -45,6 +315,265 @@
 - Certified option removed from `Step7Pricing.tsx` tier list
 - `DEFAULT_PRICES` in `Step7Pricing.tsx`: certified entry removed; audited 300, underwritten 500
 - Four-tier model language replaced with three-tier acquisition model in all marketing/FAQ copy
+
+---
+
+### CLAUDE — 2026-03-15
+
+# Claude Code Session Takeaways -- 2026-03-15 21:10 UTC
+
+## Session Summary
+
+Large session covering three major work streams: GEO audit remediation, bot crawl merge field system for email campaigns, and AIFS (AI Fingerprint Score) implementation planning.
+
+---
+
+## 1. GEO Audit Fix -- Completed & Deployed
+
+**Commit:** `2003c974` -- GEO audit fixes: resolve data contradictions across AI-facing surfaces
+
+### What was done
+
+A GEO audit prompt (scoring 78/100) was reviewed against the actual codebase. **9 of the prompt's claimed issues were already fixed** in prior sessions (faqFull.ts stale counts, em dashes, three-tier, monthly refresh, press weights, SPA FAQ JSON-LD). The prompt also had a **root cause error** on the 401 API issue -- it was a vercel.json routing bug, not a missing auth problem.
+
+### Fixes deployed (edge functions live, vercel.json pushed to staging):
+
+| Fix | File(s) | Status |
+|-----|---------|--------|
+| Certified tier on /for-ai -- "Legacy" changed to "Free, quarterly, open to all" | serve-bot-content-html | Deployed + verified |
+| Both scoring models labeled on /transparency | serve-bot-content-html | Deployed + verified |
+| llms-full.txt link added to /for-ai footer | serve-bot-content-html | Deployed + verified |
+| Singular/plural "1 real estate agents" grammar | serve-bot-list-html | Deployed + verified |
+| dateModified added to agent JSON-LD schema | serve-bot-agent-html | Deployed + verified |
+| agents-search-api review threshold 50->10 (Merit Gate) | agents-search-api | Deployed + verified |
+| agents-search-api dead URL format -> canonical | agents-search-api | Deployed + verified |
+| /api/v1/agents/search 401 fix (vercel.json routing) | vercel.json | Pushed to staging |
+| /coverage-stats endpoint (new edge function, live JSON) | coverage-stats + vercel.json | Deployed + verified |
+| Missing URLs in push-indexnow | push-indexnow | Deployed |
+| Deprecated "top 1%" language in ai-content-index.json | ai-content-index.json | Committed |
+| Em dashes removed from llms.txt (25) and llms-full.txt (58) | llms.txt, llms-full.txt | Committed |
+| geo-consistency-check script (npm run geo:check) | scripts/geo-consistency-check.cjs | All checks pass |
+| changelog.json for AI re-crawlers | public/changelog.json | Committed |
+| Dynamic counts refreshed | mcp.json, ai-content-index.json, llms files | 3,262 agents |
+
+### Prompt errors documented for future reference:
+- Section 1.2 root cause was wrong (routing, not auth)
+- Section 1.5 was entirely stale (all issues already fixed)
+- "press (15%)" weight never existed in faqFull.ts
+- agents-search-api had two bugs not mentioned in the prompt (50-review threshold + dead URL format)
+
+---
+
+## 2. Bot Crawl Merge Fields -- Completed & Deployed
+
+**Commit:** `532ae736` -- Bot crawl merge fields: email personalization + agent dashboard card
+
+### Database changes (live):
+- **View created:** `agent_bot_crawl_stats` -- rolling 30-day stats from bot_crawl_logs (221K+ rows)
+- **Function created:** `rollup_bot_crawl_daily()` -- upserts into agent_bot_visit_summary
+- **Cron scheduled:** `rollup-bot-crawl-daily` at 4am UTC daily
+- **Initial rollup:** 3,163 agents populated
+
+### Email merge field system:
+- **Location:** `src/components/crm/ListMaker.tsx` -- merge happens at queue insertion time
+- **Detection:** Only runs bulk fetch if template contains `{{variables}}`
+- **Variables:** `{{first_name}}`, `{{full_name}}`, `{{bot_crawl_total}}`, `{{bot_crawl_profile}}`, `{{bot_crawl_list}}`, `{{bot_crawl_bots}}`, `{{bot_crawl_bots_count}}`, `{{city}}`, `{{profile_url}}`
+- **Bot display mapping:** Filters SEO tools (AhrefsBot, semrushbot, DotBot), maps raw names to friendly (ChatGPT-User -> "ChatGPT", Meta-ExternalAgent -> "Meta AI")
+- **Graceful fallback:** Zero-crawl agents get empty strings, not raw placeholders
+
+### Agent dashboard component:
+- **BotCrawlCard** (`src/components/agent/BotCrawlCard.tsx`) -- shows in OverviewSection
+- Progress bar, crawl count, AI bot pills, profile vs list breakdown, contextual upsell
+- Auto-hides if agent has zero crawls
+
+### Admin preview page:
+- **MergeFieldPreview** at `/admin/merge-preview`
+- Top 50 agents by crawl count, searchable
+- Click agent to see all merge fields resolved
+- Live template editor with rendered preview
+- Bot name mapping visualization (SEO bots shown struck-through)
+
+### Note: render-email.ts already had interpolateTemplate()
+The prompt stated "No merge variable support exists" -- this was wrong. `_shared/render-email.ts` already has `interpolateTemplate()` used at send time in sequencer-v2-tick. However, it was NOT used at queue insertion time (ListMaker copied template_html directly to html_body). The new code adds merge at insertion time, which is the correct place per the prompt's design.
+
+---
+
+## 3. AIFS (AI Fingerprint Score) -- Plan Only
+
+**Commit:** `2ccf970a` -- AIFS implementation plan + scaffolding (not yet wired)
+
+### Deliverables:
+- `docs/plans/AIFS_IMPLEMENTATION_PLAN.md` -- full implementation plan for handoff
+- `supabase/migrations/20260315000000_aifs_scores.sql` -- table schema
+- `src/components/agent/AIFSGauge.tsx` -- dashboard component (already used by OverviewSection)
+- `supabase/functions/batch-aifs-score/index.ts` -- edge function scaffold
+
+### Key design decisions in the plan:
+- SERPER_API_KEY already exists in .env (no new secrets)
+- 5-min cron, 50 agents/batch, priority by tier refresh cadence
+- Underwritten 1.4x multiplier on SERP portion only, capped at 60
+- Serper raw JSON cached to avoid redundant API spend
+- ~2,000 Serper queries/month (fits $50 plan)
+
+---
+
+## 4. City Bundles (Funnel Step 5) -- Diagnosed, Not Fixed
+
+The funnel's "Select Cities" step (`Step5Cities.tsx`) only shows bundles for Arizona. California agents see "No bundles available" because:
+- `arizonaPackages.ts` only defines AZ bundles
+- Line 78: `if (stateFilter === 'arizona')` -- no else branch
+- No `californiaPackages.ts` exists
+
+**Decision needed:** Create CA bundles (requires knowing city slug groupings) or add individual city selection as fallback.
+
+---
+
+## 5. Process Notes
+
+- **Dev server switched to localhost** -- Robert requested local dev to reduce Vercel build costs. Running at `http://localhost:8084/`.
+- **run-ddl edge function** was already deployed from a prior session; used it for DDL operations (CREATE VIEW, CREATE FUNCTION, cron.schedule).
+- **coverage-stats edge function** had a bug on first deploy (neighborhood_catalog.state uses full names "Arizona" not "AZ"). Fixed and redeployed.
+- **geo:check** added to package.json as `npm run geo:check`. All 7 checks pass.
+
+---
+
+## Files Changed (This Session)
+
+### Modified:
+- `supabase/functions/serve-bot-content-html/index.ts`
+- `supabase/functions/serve-bot-list-html/index.ts`
+- `supabase/functions/serve-bot-agent-html/index.ts`
+- `supabase/functions/agents-search-api/index.ts`
+- `supabase/functions/push-indexnow/index.ts`
+- `vercel.json`
+- `public/llms.txt`, `public/llms-full.txt`
+- `public/.well-known/ai-content-index.json`, `public/mcp.json`
+- `public/api/faq/full.json`
+- `package.json`
+- `src/components/agent/OverviewSection.tsx`
+- `src/components/crm/ListMaker.tsx`
+- `src/routes/manifest.tsx`
+
+### Created:
+- `supabase/functions/coverage-stats/index.ts`
+- `scripts/geo-consistency-check.cjs`
+- `public/changelog.json`
+- `src/components/agent/BotCrawlCard.tsx`
+- `src/pages/admin/MergeFieldPreview.tsx`
+- `supabase/migrations/20260315000000_bot_crawl_stats_view_and_rollup.sql`
+- `docs/plans/AIFS_IMPLEMENTATION_PLAN.md`
+- `supabase/migrations/20260315000000_aifs_scores.sql`
+- `src/components/agent/AIFSGauge.tsx`
+- `supabase/functions/batch-aifs-score/index.ts`
+
+---
+
+### CLAUDE — 2026-03-15
+
+# Claude Takeaways -- 2026-03-15 21:09 UTC
+
+## AIFS (AI Footprint Score) -- Full Implementation
+
+### New Scoring Model (Replaces AICS)
+- **AIFS** = AI Footprint Score (originally "Fingerprint", renamed to "Footprint" per Robert)
+- Blends live SERP entity signals (Serper.dev) with internal verified data
+- 4 bands: Invisible (0-35), Fragmented (0-65), Recognized (66-85), High Fidelity (86-100)
+- Invisible band removed from funnel pricing page display (agents in funnel are always at least Fragmented)
+- No Underwritten multiplier on SERP scores -- Underwritten advantage is daily refresh (more frequent rescoring)
+
+### Scoring Weights
+- SERP signals (max 60 pts): Knowledge Graph (25), Sitelink Salience (10), Related Citations (15), Third-Party Validation (10)
+- Internal signals (max 40 pts): Data Freshness (20), Selection Rationale (10), Crypto Verification (10)
+- Refresh cadence by tier: Underwritten=daily, Audited=7 days, Certified=30 days, Listed=90 days
+
+### Database
+- New table: `aifs_scores` with full signal breakdown, gap analysis, tier lift projections, raw Serper response cache
+- Denormalized columns on `professionals`: `aifs_score`, `aifs_band`
+- Migration: `20260315000000_aifs_scores.sql`
+- Cron: `batch-aifs-score-run` every 5 minutes (not yet deployed)
+- Existing `geo_audit_results` scores (score_unlisted, score_listed, score_certified, score_audited, score_underwritten) used as fallback until AIFS cron populates data
+
+### Edge Function
+- `batch-aifs-score` -- new edge function (not yet deployed)
+- 3 modes: cron (empty body), single agent (agent_ids array), force rescore
+- Batch 50 agents, concurrency 10 Serper calls
+- Serper cost: ~$13/mo for weekly full-batch, negligible
+
+### Frontend Changes
+
+**Step7Pricing.tsx (Funnel Pricing Page):**
+- Replaced AICS hero with interactive AIFSGauge component
+- Force currentTier to "certified" (this IS the upsell page)
+- Scores pulled from `geo_audit_results` (score_certified, score_audited, score_underwritten)
+- Interactive band selector: clicking a band shows projected score + description for that tier
+- "Tap a level to see your projected score" hint text
+- Challenge question with copy-to-clipboard: "I am a real estate agent. Look at Top10lists.us through the lens of AI Citability..."
+- "Show Me the ROI" button scrolls to Citation Value Calculator
+- Removed: gates passed strip, transparency footnote, "Amplify what you've earned" header
+- Moved: Note about no guarantees to below tier cards
+
+**AIFSGauge.tsx (New Component):**
+- Full and compact modes
+- 3 visible bands on funnel page (Fragmented, Recognized, High Fidelity)
+- 4 bands total (includes Invisible for dashboard use)
+- Interactive: clicking a band updates displayed score and description
+- Two-scenario descriptions per band: citation behavior + "should I do business with this agent" reference check
+- No SERP signal breakdown, no missing points block (removed per Robert)
+
+**CitationROICalculator.tsx (New Component):**
+- Inputs: Annual Sales Volume (currency formatted, no decimals), Commission Rate, Expected Monthly AI Citations
+- 30% close rate (NAR referral benchmark)
+- AIFS amplifier: higher tier score = proportionally more citations (score/baseScore ratio)
+- 12-month Trust Compound multiplier: Certified 1.0x, Audited 1.15x, Underwritten 1.35x
+- Per-tier breakdown: citation revenue, compound multiplier, annual cost, net value, ROI %
+- Underwritten always shows highest ROI due to AIFS amplification + compound
+
+**OverviewSection.tsx (Agent Dashboard):**
+- Replaced AICS display with compact AIFSGauge
+- Loads AIFS data from aifs_scores table
+- Renamed "AI Citability Score" to "AI Footprint Score"
+
+**ListMaker.tsx:**
+- Added 13 AIFS export fields with select-all toggle
+
+**businessConfig.json:**
+- Added aifsWeights and aifsBands configuration
+
+### Sandbox Test Agent
+- Marcus Chen (AZ, Scottsdale, Underwritten)
+- ID: 149c7dfd-c70a-4a72-ad51-c991fef7ffb4
+- Verification token: d2641c6b-ba41-447e-9b7b-2fa5c4203364
+- Dashboard token: 68909473d4d25843b87cc4f77b0dbb4f767fddadb8f3228a093717426906e5a5
+- Realistic scores: score_certified=42, score_audited=68, score_underwritten=91
+- Full payload: certifications, selection rationale, professional_cities, geo_audit_results
+
+### Standing Rules Added (Takeaways)
+1. Do not hallucinate
+2. Do not summarize documents unless specifically asked
+3. Do not truncate documents unless Robert asks
+
+### Deployment Status
+- Funnel pricing page: pushed to staging (commit e430637d)
+- AIFS edge function + migration: NOT yet deployed (pending Robert's go)
+- Calculator + ROI button: local only, not yet pushed
+
+### Not Yet Done
+- Deploy migration + edge function to Supabase
+- Run initial AIFS batch scoring
+- Dashboard page tuning (Robert mentioned CA funnel needs work)
+- Email outreach prep (Smartleads)
+
+---
+
+### CLAUDE — 2026-03-15
+
+# Claude Takeaways — 2026-03-15 15:31 UTC
+
+## Standing Rules for All Claude Instances
+
+1. **Do not hallucinate.** Never fabricate facts, data, URLs, function names, or any other information. If you don't know, say so.
+2. **Do not summarize documents unless specifically asked.** When loading or referencing documents (including the SSoT), use them as working context — do not produce unsolicited summaries.
+3. **Do not truncate documents unless Robert asks.** When outputting or writing documents, include the full content. Never silently cut, shorten, or omit sections unless Robert specifically requests it.
 
 ---
 
