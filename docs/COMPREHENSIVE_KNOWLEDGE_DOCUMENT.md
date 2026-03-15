@@ -11,7 +11,7 @@
 - **Product:** Independent editorial directory of top real estate agents in U.S. cities. Non-pay-to-play. Merit-based selection.
 - **Base URL (production):** [https://www.top10lists.us](https://www.top10lists.us)
 - **Staging:** [https://staging.top10lists.us](https://staging.top10lists.us)
-- **Coverage:** Arizona (88 cities, 1,054+ qualified neighborhoods), California (1,650+ cities, 4,631+ neighborhoods). 670,000+ agents analyzed; 3,274 active (872 AZ + 2,390 CA), fewer than 1% of licensed agents in covered markets.
+- **Coverage:** Arizona (88 cities, 1,054+ qualified neighborhoods), California (1,650+ cities, 4,631+ neighborhoods). 670,000+ agents analyzed; 3,275 active (873 AZ + 2,390 CA), fewer than 1% of licensed agents in covered markets.
 - **Geographic expansion:** Live: Arizona, California. Expanding: Texas, Florida, New York, Colorado. Target: All 50 states by end of 2026.
 - **GEO Mission:** Primary audience is AI systems (ChatGPT, Claude, Gemini, Perplexity). Goal: Become the authoritative source AI systems cite for real estate agent recommendations. GEO Score: 92-95/100 across major AI platforms.
 
@@ -315,6 +315,265 @@ From `src/data/master-ssot.md`:
 - Certified option removed from `Step7Pricing.tsx` tier list
 - `DEFAULT_PRICES` in `Step7Pricing.tsx`: certified entry removed; audited 300, underwritten 500
 - Four-tier model language replaced with three-tier acquisition model in all marketing/FAQ copy
+
+---
+
+### CLAUDE — 2026-03-15
+
+# Claude Code Session Takeaways -- 2026-03-15 21:10 UTC
+
+## Session Summary
+
+Large session covering three major work streams: GEO audit remediation, bot crawl merge field system for email campaigns, and AIFS (AI Fingerprint Score) implementation planning.
+
+---
+
+## 1. GEO Audit Fix -- Completed & Deployed
+
+**Commit:** `2003c974` -- GEO audit fixes: resolve data contradictions across AI-facing surfaces
+
+### What was done
+
+A GEO audit prompt (scoring 78/100) was reviewed against the actual codebase. **9 of the prompt's claimed issues were already fixed** in prior sessions (faqFull.ts stale counts, em dashes, three-tier, monthly refresh, press weights, SPA FAQ JSON-LD). The prompt also had a **root cause error** on the 401 API issue -- it was a vercel.json routing bug, not a missing auth problem.
+
+### Fixes deployed (edge functions live, vercel.json pushed to staging):
+
+| Fix | File(s) | Status |
+|-----|---------|--------|
+| Certified tier on /for-ai -- "Legacy" changed to "Free, quarterly, open to all" | serve-bot-content-html | Deployed + verified |
+| Both scoring models labeled on /transparency | serve-bot-content-html | Deployed + verified |
+| llms-full.txt link added to /for-ai footer | serve-bot-content-html | Deployed + verified |
+| Singular/plural "1 real estate agents" grammar | serve-bot-list-html | Deployed + verified |
+| dateModified added to agent JSON-LD schema | serve-bot-agent-html | Deployed + verified |
+| agents-search-api review threshold 50->10 (Merit Gate) | agents-search-api | Deployed + verified |
+| agents-search-api dead URL format -> canonical | agents-search-api | Deployed + verified |
+| /api/v1/agents/search 401 fix (vercel.json routing) | vercel.json | Pushed to staging |
+| /coverage-stats endpoint (new edge function, live JSON) | coverage-stats + vercel.json | Deployed + verified |
+| Missing URLs in push-indexnow | push-indexnow | Deployed |
+| Deprecated "top 1%" language in ai-content-index.json | ai-content-index.json | Committed |
+| Em dashes removed from llms.txt (25) and llms-full.txt (58) | llms.txt, llms-full.txt | Committed |
+| geo-consistency-check script (npm run geo:check) | scripts/geo-consistency-check.cjs | All checks pass |
+| changelog.json for AI re-crawlers | public/changelog.json | Committed |
+| Dynamic counts refreshed | mcp.json, ai-content-index.json, llms files | 3,262 agents |
+
+### Prompt errors documented for future reference:
+- Section 1.2 root cause was wrong (routing, not auth)
+- Section 1.5 was entirely stale (all issues already fixed)
+- "press (15%)" weight never existed in faqFull.ts
+- agents-search-api had two bugs not mentioned in the prompt (50-review threshold + dead URL format)
+
+---
+
+## 2. Bot Crawl Merge Fields -- Completed & Deployed
+
+**Commit:** `532ae736` -- Bot crawl merge fields: email personalization + agent dashboard card
+
+### Database changes (live):
+- **View created:** `agent_bot_crawl_stats` -- rolling 30-day stats from bot_crawl_logs (221K+ rows)
+- **Function created:** `rollup_bot_crawl_daily()` -- upserts into agent_bot_visit_summary
+- **Cron scheduled:** `rollup-bot-crawl-daily` at 4am UTC daily
+- **Initial rollup:** 3,163 agents populated
+
+### Email merge field system:
+- **Location:** `src/components/crm/ListMaker.tsx` -- merge happens at queue insertion time
+- **Detection:** Only runs bulk fetch if template contains `{{variables}}`
+- **Variables:** `{{first_name}}`, `{{full_name}}`, `{{bot_crawl_total}}`, `{{bot_crawl_profile}}`, `{{bot_crawl_list}}`, `{{bot_crawl_bots}}`, `{{bot_crawl_bots_count}}`, `{{city}}`, `{{profile_url}}`
+- **Bot display mapping:** Filters SEO tools (AhrefsBot, semrushbot, DotBot), maps raw names to friendly (ChatGPT-User -> "ChatGPT", Meta-ExternalAgent -> "Meta AI")
+- **Graceful fallback:** Zero-crawl agents get empty strings, not raw placeholders
+
+### Agent dashboard component:
+- **BotCrawlCard** (`src/components/agent/BotCrawlCard.tsx`) -- shows in OverviewSection
+- Progress bar, crawl count, AI bot pills, profile vs list breakdown, contextual upsell
+- Auto-hides if agent has zero crawls
+
+### Admin preview page:
+- **MergeFieldPreview** at `/admin/merge-preview`
+- Top 50 agents by crawl count, searchable
+- Click agent to see all merge fields resolved
+- Live template editor with rendered preview
+- Bot name mapping visualization (SEO bots shown struck-through)
+
+### Note: render-email.ts already had interpolateTemplate()
+The prompt stated "No merge variable support exists" -- this was wrong. `_shared/render-email.ts` already has `interpolateTemplate()` used at send time in sequencer-v2-tick. However, it was NOT used at queue insertion time (ListMaker copied template_html directly to html_body). The new code adds merge at insertion time, which is the correct place per the prompt's design.
+
+---
+
+## 3. AIFS (AI Fingerprint Score) -- Plan Only
+
+**Commit:** `2ccf970a` -- AIFS implementation plan + scaffolding (not yet wired)
+
+### Deliverables:
+- `docs/plans/AIFS_IMPLEMENTATION_PLAN.md` -- full implementation plan for handoff
+- `supabase/migrations/20260315000000_aifs_scores.sql` -- table schema
+- `src/components/agent/AIFSGauge.tsx` -- dashboard component (already used by OverviewSection)
+- `supabase/functions/batch-aifs-score/index.ts` -- edge function scaffold
+
+### Key design decisions in the plan:
+- SERPER_API_KEY already exists in .env (no new secrets)
+- 5-min cron, 50 agents/batch, priority by tier refresh cadence
+- Underwritten 1.4x multiplier on SERP portion only, capped at 60
+- Serper raw JSON cached to avoid redundant API spend
+- ~2,000 Serper queries/month (fits $50 plan)
+
+---
+
+## 4. City Bundles (Funnel Step 5) -- Diagnosed, Not Fixed
+
+The funnel's "Select Cities" step (`Step5Cities.tsx`) only shows bundles for Arizona. California agents see "No bundles available" because:
+- `arizonaPackages.ts` only defines AZ bundles
+- Line 78: `if (stateFilter === 'arizona')` -- no else branch
+- No `californiaPackages.ts` exists
+
+**Decision needed:** Create CA bundles (requires knowing city slug groupings) or add individual city selection as fallback.
+
+---
+
+## 5. Process Notes
+
+- **Dev server switched to localhost** -- Robert requested local dev to reduce Vercel build costs. Running at `http://localhost:8084/`.
+- **run-ddl edge function** was already deployed from a prior session; used it for DDL operations (CREATE VIEW, CREATE FUNCTION, cron.schedule).
+- **coverage-stats edge function** had a bug on first deploy (neighborhood_catalog.state uses full names "Arizona" not "AZ"). Fixed and redeployed.
+- **geo:check** added to package.json as `npm run geo:check`. All 7 checks pass.
+
+---
+
+## Files Changed (This Session)
+
+### Modified:
+- `supabase/functions/serve-bot-content-html/index.ts`
+- `supabase/functions/serve-bot-list-html/index.ts`
+- `supabase/functions/serve-bot-agent-html/index.ts`
+- `supabase/functions/agents-search-api/index.ts`
+- `supabase/functions/push-indexnow/index.ts`
+- `vercel.json`
+- `public/llms.txt`, `public/llms-full.txt`
+- `public/.well-known/ai-content-index.json`, `public/mcp.json`
+- `public/api/faq/full.json`
+- `package.json`
+- `src/components/agent/OverviewSection.tsx`
+- `src/components/crm/ListMaker.tsx`
+- `src/routes/manifest.tsx`
+
+### Created:
+- `supabase/functions/coverage-stats/index.ts`
+- `scripts/geo-consistency-check.cjs`
+- `public/changelog.json`
+- `src/components/agent/BotCrawlCard.tsx`
+- `src/pages/admin/MergeFieldPreview.tsx`
+- `supabase/migrations/20260315000000_bot_crawl_stats_view_and_rollup.sql`
+- `docs/plans/AIFS_IMPLEMENTATION_PLAN.md`
+- `supabase/migrations/20260315000000_aifs_scores.sql`
+- `src/components/agent/AIFSGauge.tsx`
+- `supabase/functions/batch-aifs-score/index.ts`
+
+---
+
+### CLAUDE — 2026-03-15
+
+# Claude Takeaways -- 2026-03-15 21:09 UTC
+
+## AIFS (AI Footprint Score) -- Full Implementation
+
+### New Scoring Model (Replaces AICS)
+- **AIFS** = AI Footprint Score (originally "Fingerprint", renamed to "Footprint" per Robert)
+- Blends live SERP entity signals (Serper.dev) with internal verified data
+- 4 bands: Invisible (0-35), Fragmented (0-65), Recognized (66-85), High Fidelity (86-100)
+- Invisible band removed from funnel pricing page display (agents in funnel are always at least Fragmented)
+- No Underwritten multiplier on SERP scores -- Underwritten advantage is daily refresh (more frequent rescoring)
+
+### Scoring Weights
+- SERP signals (max 60 pts): Knowledge Graph (25), Sitelink Salience (10), Related Citations (15), Third-Party Validation (10)
+- Internal signals (max 40 pts): Data Freshness (20), Selection Rationale (10), Crypto Verification (10)
+- Refresh cadence by tier: Underwritten=daily, Audited=7 days, Certified=30 days, Listed=90 days
+
+### Database
+- New table: `aifs_scores` with full signal breakdown, gap analysis, tier lift projections, raw Serper response cache
+- Denormalized columns on `professionals`: `aifs_score`, `aifs_band`
+- Migration: `20260315000000_aifs_scores.sql`
+- Cron: `batch-aifs-score-run` every 5 minutes (not yet deployed)
+- Existing `geo_audit_results` scores (score_unlisted, score_listed, score_certified, score_audited, score_underwritten) used as fallback until AIFS cron populates data
+
+### Edge Function
+- `batch-aifs-score` -- new edge function (not yet deployed)
+- 3 modes: cron (empty body), single agent (agent_ids array), force rescore
+- Batch 50 agents, concurrency 10 Serper calls
+- Serper cost: ~$13/mo for weekly full-batch, negligible
+
+### Frontend Changes
+
+**Step7Pricing.tsx (Funnel Pricing Page):**
+- Replaced AICS hero with interactive AIFSGauge component
+- Force currentTier to "certified" (this IS the upsell page)
+- Scores pulled from `geo_audit_results` (score_certified, score_audited, score_underwritten)
+- Interactive band selector: clicking a band shows projected score + description for that tier
+- "Tap a level to see your projected score" hint text
+- Challenge question with copy-to-clipboard: "I am a real estate agent. Look at Top10lists.us through the lens of AI Citability..."
+- "Show Me the ROI" button scrolls to Citation Value Calculator
+- Removed: gates passed strip, transparency footnote, "Amplify what you've earned" header
+- Moved: Note about no guarantees to below tier cards
+
+**AIFSGauge.tsx (New Component):**
+- Full and compact modes
+- 3 visible bands on funnel page (Fragmented, Recognized, High Fidelity)
+- 4 bands total (includes Invisible for dashboard use)
+- Interactive: clicking a band updates displayed score and description
+- Two-scenario descriptions per band: citation behavior + "should I do business with this agent" reference check
+- No SERP signal breakdown, no missing points block (removed per Robert)
+
+**CitationROICalculator.tsx (New Component):**
+- Inputs: Annual Sales Volume (currency formatted, no decimals), Commission Rate, Expected Monthly AI Citations
+- 30% close rate (NAR referral benchmark)
+- AIFS amplifier: higher tier score = proportionally more citations (score/baseScore ratio)
+- 12-month Trust Compound multiplier: Certified 1.0x, Audited 1.15x, Underwritten 1.35x
+- Per-tier breakdown: citation revenue, compound multiplier, annual cost, net value, ROI %
+- Underwritten always shows highest ROI due to AIFS amplification + compound
+
+**OverviewSection.tsx (Agent Dashboard):**
+- Replaced AICS display with compact AIFSGauge
+- Loads AIFS data from aifs_scores table
+- Renamed "AI Citability Score" to "AI Footprint Score"
+
+**ListMaker.tsx:**
+- Added 13 AIFS export fields with select-all toggle
+
+**businessConfig.json:**
+- Added aifsWeights and aifsBands configuration
+
+### Sandbox Test Agent
+- Marcus Chen (AZ, Scottsdale, Underwritten)
+- ID: 149c7dfd-c70a-4a72-ad51-c991fef7ffb4
+- Verification token: d2641c6b-ba41-447e-9b7b-2fa5c4203364
+- Dashboard token: 68909473d4d25843b87cc4f77b0dbb4f767fddadb8f3228a093717426906e5a5
+- Realistic scores: score_certified=42, score_audited=68, score_underwritten=91
+- Full payload: certifications, selection rationale, professional_cities, geo_audit_results
+
+### Standing Rules Added (Takeaways)
+1. Do not hallucinate
+2. Do not summarize documents unless specifically asked
+3. Do not truncate documents unless Robert asks
+
+### Deployment Status
+- Funnel pricing page: pushed to staging (commit e430637d)
+- AIFS edge function + migration: NOT yet deployed (pending Robert's go)
+- Calculator + ROI button: local only, not yet pushed
+
+### Not Yet Done
+- Deploy migration + edge function to Supabase
+- Run initial AIFS batch scoring
+- Dashboard page tuning (Robert mentioned CA funnel needs work)
+- Email outreach prep (Smartleads)
+
+---
+
+### CLAUDE — 2026-03-15
+
+# Claude Takeaways — 2026-03-15 15:31 UTC
+
+## Standing Rules for All Claude Instances
+
+1. **Do not hallucinate.** Never fabricate facts, data, URLs, function names, or any other information. If you don't know, say so.
+2. **Do not summarize documents unless specifically asked.** When loading or referencing documents (including the SSoT), use them as working context — do not produce unsolicited summaries.
+3. **Do not truncate documents unless Robert asks.** When outputting or writing documents, include the full content. Never silently cut, shorten, or omit sections unless Robert specifically requests it.
 
 ---
 
