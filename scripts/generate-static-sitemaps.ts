@@ -173,10 +173,10 @@ function generateCitySitemap(publicDir: string, cities: City[]): string[] {
 
 function generateNeighborhoodSitemap(publicDir: string, neighborhoods: Neighborhood[]): string[] {
   const locs = neighborhoods
-    .filter(n => n.primary_zip)
+    .filter(n => n.neighborhood_slug && n.city_area_slug)
     .map(n => {
       const stateSlug = stateToSlug(n.state);
-      return `${BASE_URL}/${stateSlug}/${n.city_area_slug}/${n.primary_zip}/${n.neighborhood_slug}/top10realestateagents`;
+      return `${BASE_URL}/${stateSlug}/${n.city_area_slug}/${n.neighborhood_slug}/top10realestateagents`;
     });
   return writeSitemapParts(publicDir, 'sitemap-neighborhoods', locs, 'weekly', '0.7');
 }

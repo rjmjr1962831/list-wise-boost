@@ -80,6 +80,11 @@
       "source": "/california/:city((?!agents|top10realestateagents)[a-z0-9-]+)",
       "destination": "/california/:city/top10realestateagents",
       "permanent": true
+    },
+    {
+      "source": "/:state/:city/:zip(\\d{5})/:neighborhood/top10realestateagents",
+      "destination": "/:state/:city/:neighborhood/top10realestateagents",
+      "permanent": true
     }
   ],
   "rewrites": [
