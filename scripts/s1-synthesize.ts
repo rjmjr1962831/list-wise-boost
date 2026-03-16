@@ -10,7 +10,7 @@
  *    - Updates live agent counts from Supabase (Section 1 coverage line)
  *    - Adds/updates "## 21. Recent Updates (from t1)" with synthesized content
  *    - Preserves all other sections
- * 4. pts: commits and pushes updated COMPREHENSIVE to staging
+ * 4. Commits locally (does NOT push — Robert batches pushes with pts)
  */
 import { readFileSync, writeFileSync, readdirSync, existsSync } from 'fs';
 import { execSync } from 'child_process';
@@ -127,12 +127,11 @@ async function main() {
   await updateComprehensive(synthesis);
   console.log(`Updated docs/COMPREHENSIVE_KNOWLEDGE_DOCUMENT.md with synthesis from ${files.length} AI(s).`);
 
-  // pts: push to staging
+  // Commit locally only — do NOT push. Robert will batch pushes with pts.
   execSync('git add docs/COMPREHENSIVE_KNOWLEDGE_DOCUMENT.md', { stdio: 'inherit' });
   try {
     execSync('git commit -m "s1: update COMPREHENSIVE Section 21 from takeaways"', { stdio: 'inherit' });
-    execSync('git push origin staging', { stdio: 'inherit' });
-    console.log('pts: pushed to staging.');
+    console.log('s1: committed locally. Run pts when ready to push.');
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : String(e);
     if (msg.includes('nothing to commit') || msg.includes('no changes added')) {

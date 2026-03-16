@@ -5,10 +5,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Loader2, Shield, Zap, CheckCircle2, AlertTriangle, ExternalLink, Info } from 'lucide-react';
+import { Loader2, Shield, Zap, CheckCircle2, AlertTriangle, ExternalLink, Info, DollarSign } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { DataPayloadExpander } from '@/components/agent/DataPayloadExpander';
 import { AIFSGauge, type AIFSData } from '@/components/agent/AIFSGauge';
+import { CitationROICalculator } from '@/components/agent/CitationROICalculator';
 import { toast } from 'sonner';
 
 type CertificationTier = 'certified' | 'audited' | 'underwritten';
@@ -492,6 +493,18 @@ export default function Step7Pricing() {
               </div>
             </div>
 
+            {/* Show me ROI button */}
+            <div className="text-center">
+              <Button
+                size="lg"
+                className="font-black text-base px-8 py-6 shadow-lg"
+                onClick={() => document.getElementById('roi-calculator')?.scrollIntoView({ behavior: 'smooth' })}
+              >
+                <DollarSign className="h-5 w-5 mr-2" />
+                Show Me the ROI
+              </Button>
+            </div>
+
             {/* Billing toggle */}
             <div className="flex items-center justify-center gap-3">
               <Label htmlFor="billing-toggle" className="text-sm">Monthly</Label>
@@ -661,6 +674,14 @@ export default function Step7Pricing() {
               <span className="font-medium text-foreground">Note:</span>&nbsp;No one can guarantee that you will always be named. There are many factors that go into an AI&rsquo;s referral reasoning. Our Underwritten tier provides the largest single-action increase in AI citability. For agents who already have a strong web presence, it&rsquo;s the most impactful next step.
             </p>
           </div>
+
+          {/* ROI Calculator */}
+          {aifsGaugeData?.tier_lift_projection && (
+            <CitationROICalculator
+              tierProjections={aifsGaugeData.tier_lift_projection}
+              currentScore={currentScore ?? 0}
+            />
+          )}
 
           <p className="text-center text-sm text-muted-foreground pb-4">
             Questions? <a href="tel:6027589600" className="underline">(602) 758-9600</a>
