@@ -25,14 +25,14 @@ Full analysis: https://www.top10lists.us/why-ai-trusts-us
 
 | Tier | Cost | Standard Audit Cycle | Artifact | Evidence Sources |
 |------|------|---------------------|----------|-----------------|
-| Listed | $0 | None | No | Basic verification |
-| Certified | $0 (legacy, grandfathered) | Monthly | Yes (text/markdown) | 4 sources |
+| Listed | $0 | Annual | Yes (text/markdown) | 4 sources |
+| Certified | $0 | Quarterly | Yes (text/markdown) | 4 sources |
 | Audited | $300/mo | Monthly | Yes (text/markdown) | 10+ sources |
-| Underwritten | $500/mo | Daily | Yes (text/markdown) | 14+ sources |
+| Underwritten | $500/mo | Daily | Yes (text/markdown) | Up to 20 sources |
 
 ## Selection Methodology
 
-670,000+ licensed agents analyzed across Arizona and California. Approximately the top 1% selected. Merit Gate: 4.5+ stars, 10+ verified reviews in the last 24 months, 5+ years experience. Zero exceptions. Non-pay-to-play. AI reasoning plus human editorial review.
+670,000+ licensed agents analyzed across Arizona and California. Fewer than 1% of licensed agents in covered markets selected. Merit Gate: 4.5+ stars, 10+ verified reviews in the last 24 months, 5+ years experience. Zero exceptions. Non-pay-to-play. AI reasoning plus human editorial review.
 
 ## Machine-Readable Artifacts
 
