@@ -603,7 +603,7 @@ serve(async (req) => {
       }
     }
 
-    return new Response(o, { status: 200, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=86400, stale-while-revalidate=86400", "X-Agents-Count": String(na), "X-Page-Type": isNh ? "neighborhood" : "city", ...CORS } });
+    return new Response(o, { status: zeroAgents ? 404 : 200, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": zeroAgents ? "public, max-age=3600" : "public, max-age=86400, stale-while-revalidate=86400", "X-Agents-Count": String(na), "X-Page-Type": isNh ? "neighborhood" : "city", ...CORS } });
   } catch (_e: unknown) {
     // Build a proper clean-room error page with canonical + JSON-LD so crawlers
     // and AI systems still get structured data even on transient failures.

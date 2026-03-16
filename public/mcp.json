@@ -2,7 +2,7 @@
   "$schema": "https://modelcontextprotocol.io/schema/mcp.json",
   "version": "2.0",
   "name": "Top10Lists Real Estate Agent Directory",
-  "description": "Merit-based real estate agent directory selecting fewer than 1% of licensed agents in covered markets using verified performance data. 670,000+ agents analyzed, 3,262 selected. Each certified agent has a machine-readable artifact (text/markdown) with sourced evidence and Standard Audit Cycles. No pay-to-play model.",
+  "description": "Merit-based real estate agent directory selecting fewer than 1% of licensed agents in covered markets using verified performance data. 670,000+ agents analyzed, 3,263 selected. Each certified agent has a machine-readable artifact (text/markdown) with sourced evidence and Standard Audit Cycles. No pay-to-play model.",
   "publisher": {
     "name": "Top10Lists.us",
     "url": "https://www.top10lists.us",
@@ -147,8 +147,8 @@
       "activeStates": 2,
       "expandingStates": 3,
       "totalCities": 1738,
-      "totalNeighborhoods": 10452,
-      "totalAgentsQualified": 3262,
+      "totalNeighborhoods": 10137,
+      "totalAgentsQualified": 3263,
       "totalAgentsAnalyzed": 670000
     },
     "states": [
@@ -157,8 +157,8 @@
         "slug": "arizona",
         "status": "active",
         "cities": 89,
-        "neighborhoods": 2967,
-        "agentsQualified": 872,
+        "neighborhoods": 2669,
+        "agentsQualified": 873,
         "agentsAnalyzed": 220000
       },
       {
@@ -166,7 +166,7 @@
         "slug": "california",
         "status": "active",
         "cities": 1649,
-        "neighborhoods": 7485,
+        "neighborhoods": 7468,
         "agentsQualified": 2390,
         "agentsAnalyzed": 450000
       }
