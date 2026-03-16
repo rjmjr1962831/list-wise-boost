@@ -21,7 +21,7 @@
 - Email merge fields are plain text/HTML for Smartleads template system — function generates content blocks, Smartleads handles HTML rendering
 
 ## New Functions / Scripts
-- `supabase/functions/geo-footprint-audit/index.ts` — complete rewrite (~720 lines): data+crawl+DeepSeek approach with 12-step pipeline, AICS scoring, website JSON-LD schema detection, AI perception Q&A, Smartleads merge field generation
+- `supabase/functions/geo-footprint-audit/index.ts` — complete rewrite (~720 lines): data+crawl+DeepSeek approach with 12-step pipeline, AIFS scoring, website JSON-LD schema detection, AI perception Q&A, Smartleads merge field generation
 - `supabase/functions/run-ddl/index.ts` — utility for DDL execution from edge function (uses internal SUPABASE_DB_URL)
 - `supabase/functions/list-maker-export/index.ts` — fixed pagination in queryStandard, deployed, storage bucket created
 

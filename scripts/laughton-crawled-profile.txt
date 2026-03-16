@@ -273,7 +273,7 @@ GAPS CONFIRMED:
 • AI citation: GPT does not name George when asked about Avondale agents
 • Most press is from 2018-2020; thin recent coverage
 
-AICS SCORES (from Top10Lists DB):
+AIFS SCORES (from Top10Lists DB):
 • Current: 68 (Listed)
 • Listed: 81 | Certified: 84 | Audited: 95 | Underwritten: 95
 • Lift to Audited: +27 | Lift to Underwritten: +27

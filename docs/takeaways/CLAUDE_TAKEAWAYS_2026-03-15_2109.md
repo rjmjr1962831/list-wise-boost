@@ -2,7 +2,7 @@
 
 ## AIFS (AI Footprint Score) -- Full Implementation
 
-### New Scoring Model (Replaces AICS)
+### New Scoring Model (Replaces AIFS)
 - **AIFS** = AI Footprint Score (originally "Fingerprint", renamed to "Footprint" per Robert)
 - Blends live SERP entity signals (Serper.dev) with internal verified data
 - 4 bands: Invisible (0-35), Fragmented (0-65), Recognized (66-85), High Fidelity (86-100)
@@ -30,12 +30,12 @@
 ### Frontend Changes
 
 **Step7Pricing.tsx (Funnel Pricing Page):**
-- Replaced AICS hero with interactive AIFSGauge component
+- Replaced AIFS hero with interactive AIFSGauge component
 - Force currentTier to "certified" (this IS the upsell page)
 - Scores pulled from `geo_audit_results` (score_certified, score_audited, score_underwritten)
 - Interactive band selector: clicking a band shows projected score + description for that tier
 - "Tap a level to see your projected score" hint text
-- Challenge question with copy-to-clipboard: "I am a real estate agent. Look at Top10lists.us through the lens of AI Citability..."
+- Challenge question with copy-to-clipboard: "I am a real estate agent. Look at Top10lists.us through the lens of AI Footprint..."
 - "Show Me the ROI" button scrolls to Citation Value Calculator
 - Removed: gates passed strip, transparency footnote, "Amplify what you've earned" header
 - Moved: Note about no guarantees to below tier cards
@@ -57,9 +57,9 @@
 - Underwritten always shows highest ROI due to AIFS amplification + compound
 
 **OverviewSection.tsx (Agent Dashboard):**
-- Replaced AICS display with compact AIFSGauge
+- Replaced AIFS display with compact AIFSGauge
 - Loads AIFS data from aifs_scores table
-- Renamed "AI Citability Score" to "AI Footprint Score"
+- Renamed "AI Footprint Score" label in UI
 
 **ListMaker.tsx:**
 - Added 13 AIFS export fields with select-all toggle

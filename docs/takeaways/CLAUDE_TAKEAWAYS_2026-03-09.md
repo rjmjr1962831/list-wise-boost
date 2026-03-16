@@ -8,11 +8,11 @@
 - Added /for-ai entry to llms-full.txt Core Content section
 - Fixed stale pricing in ai-content-index.json: Audited $100→$300, Underwritten $150→$500
 
-## AICS Fields in List Maker
-- Extended ListMaker.tsx with 15 AICS score fields (score variants, lifts, gaps, artifact URL)
+## AIFS Fields in List Maker
+- Extended ListMaker.tsx with 15 AIFS score fields (score variants, lifts, gaps, artifact URL)
 - Rewrote list-maker-export edge function to support LEFT JOIN to geo_audit_results via run_sql RPC
 - Key mapping: aics_most_recent_review_date → actual column g.most_recent_signal (not most_recent_review_date)
-- Verified: 881 AZ agents returned, 98 with non-null AICS scores
+- Verified: 881 AZ agents returned, 98 with non-null AIFS scores
 
 ## CA Email Enrichment
 - Configured proxy-cheap residential proxies (proxy-us.proxy-cheap.com:5959) replacing ProxyScrape in fetch-single-memo23-agent

@@ -6,10 +6,10 @@
 - Added "Earned, Not Purchased" framing across all AI pages — entire pipeline is free, base listing is free, payment buys verification depth only
 - Added community involvement rationale (market intelligence: pocket listings, investors, bankers, title companies) — only directory that scores it, verified via IRS Form 990/ProPublica
 - Added consumer-facing scoring weights with rationale (Community Involvement 25%, Review Rating 25%, Reviews 20%, Transactions 20%, Education 10%)
-- Added AICS score bands and 5-pillar breakdown to llms.txt, llms-full.txt, for-ai.txt
+- Added AIFS score bands and 5-pillar breakdown to llms.txt, llms-full.txt, for-ai.txt
 - Added 13 core + up to 7 conditional evidence sources explicitly listed across AI pages
 - Updated Schema.org JSON-LD: added `generateSelectionMethodologySchema()` (Dataset type) and `generateOrganizationSchema()` with `isAccessibleForFree: true`
-- Redesigned Step7Pricing funnel page: "amplify what you earned" framing, live pillar-level AICS breakdown from geo_audit_results, gap diagnostic, AICS score bands, honest language (no outcome guarantees, sell inputs/mechanism only)
+- Redesigned Step7Pricing funnel page: "amplify what you earned" framing, live pillar-level AIFS breakdown from geo_audit_results, gap diagnostic, AIFS score bands, honest language (no outcome guarantees, sell inputs/mechanism only)
 - Added recency/refresh frequency as first feature per tier (Certified: 90 days, Audited: 30 days, Underwritten: daily)
 - Fixed Step7Pricing 404: removed nonexistent columns (license_state, community_involvement_score) from Supabase query
 - Reactivated Certified tier as free, quarterly refresh, open to all agents

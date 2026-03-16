@@ -293,7 +293,7 @@ serve(async (req) => {
         artifact_url:          agent.short_code ? `https://www.top10lists.us/artifact/${agent.short_code}` : null,
         audited_at:            new Date().toISOString(),
         status:                'complete',
-        aics_version:          'v1',
+        aifs_version:          'v1',
         score_current:         scores.unlisted.total,
         score_unlisted:        scores.unlisted.total,
         score_listed:          scores.listed.total,

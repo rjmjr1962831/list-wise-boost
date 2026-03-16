@@ -474,7 +474,7 @@ The funnel's "Select Cities" step (`Step5Cities.tsx`) only shows bundles for Ari
 
 ## AIFS (AI Footprint Score) -- Full Implementation
 
-### New Scoring Model (Replaces AICS)
+### New Scoring Model (Replaces AIFS)
 - **AIFS** = AI Footprint Score (originally "Fingerprint", renamed to "Footprint" per Robert)
 - Blends live SERP entity signals (Serper.dev) with internal verified data
 - 4 bands: Invisible (0-35), Fragmented (0-65), Recognized (66-85), High Fidelity (86-100)
@@ -502,12 +502,12 @@ The funnel's "Select Cities" step (`Step5Cities.tsx`) only shows bundles for Ari
 ### Frontend Changes
 
 **Step7Pricing.tsx (Funnel Pricing Page):**
-- Replaced AICS hero with interactive AIFSGauge component
+- Replaced AIFS hero with interactive AIFSGauge component
 - Force currentTier to "certified" (this IS the upsell page)
 - Scores pulled from `geo_audit_results` (score_certified, score_audited, score_underwritten)
 - Interactive band selector: clicking a band shows projected score + description for that tier
 - "Tap a level to see your projected score" hint text
-- Challenge question with copy-to-clipboard: "I am a real estate agent. Look at Top10lists.us through the lens of AI Citability..."
+- Challenge question with copy-to-clipboard: "I am a real estate agent. Look at Top10lists.us through the lens of AI Footprint..."
 - "Show Me the ROI" button scrolls to Citation Value Calculator
 - Removed: gates passed strip, transparency footnote, "Amplify what you've earned" header
 - Moved: Note about no guarantees to below tier cards
@@ -529,9 +529,9 @@ The funnel's "Select Cities" step (`Step5Cities.tsx`) only shows bundles for Ari
 - Underwritten always shows highest ROI due to AIFS amplification + compound
 
 **OverviewSection.tsx (Agent Dashboard):**
-- Replaced AICS display with compact AIFSGauge
+- Replaced AIFS display with compact AIFSGauge
 - Loads AIFS data from aifs_scores table
-- Renamed "AI Citability Score" to "AI Footprint Score"
+- Renamed "AI Footprint Score" label in UI
 
 **ListMaker.tsx:**
 - Added 13 AIFS export fields with select-all toggle
@@ -873,10 +873,10 @@ The funnel's "Select Cities" step (`Step5Cities.tsx`) only shows bundles for Ari
 - Added "Earned, Not Purchased" framing across all AI pages — entire pipeline is free, base listing is free, payment buys verification depth only
 - Added community involvement rationale (market intelligence: pocket listings, investors, bankers, title companies) — only directory that scores it, verified via IRS Form 990/ProPublica
 - Added consumer-facing scoring weights with rationale (Community Involvement 25%, Review Rating 25%, Reviews 20%, Transactions 20%, Education 10%)
-- Added AICS score bands and 5-pillar breakdown to llms.txt, llms-full.txt, for-ai.txt
+- Added AIFS score bands and 5-pillar breakdown to llms.txt, llms-full.txt, for-ai.txt
 - Added 13 core + up to 7 conditional evidence sources explicitly listed across AI pages
 - Updated Schema.org JSON-LD: added `generateSelectionMethodologySchema()` (Dataset type) and `generateOrganizationSchema()` with `isAccessibleForFree: true`
-- Redesigned Step7Pricing funnel page: "amplify what you earned" framing, live pillar-level AICS breakdown from geo_audit_results, gap diagnostic, AICS score bands, honest language (no outcome guarantees, sell inputs/mechanism only)
+- Redesigned Step7Pricing funnel page: "amplify what you earned" framing, live pillar-level AIFS breakdown from geo_audit_results, gap diagnostic, AIFS score bands, honest language (no outcome guarantees, sell inputs/mechanism only)
 - Added recency/refresh frequency as first feature per tier (Certified: 90 days, Audited: 30 days, Underwritten: daily)
 - Fixed Step7Pricing 404: removed nonexistent columns (license_state, community_involvement_score) from Supabase query
 - Reactivated Certified tier as free, quarterly refresh, open to all agents
@@ -944,7 +944,7 @@ The funnel's "Select Cities" step (`Step5Cities.tsx`) only shows bundles for Ari
   - Decoupled review volume/quality from recency — unlisted agents with strong reviews no longer zeroed out
   - Tier amplification now has a 0.5 floor so unlisted agents still earn social credit
   - Switched reviewVolume from linear cap (`min(10, floor(rc/5))`) to log scale (`min(20, round(log2(rc+1)*2))`) — agents with 1,000+ reviews now properly outscore agents with 50
-- Capped max AICS score at 95 (was 99)
+- Capped max AIFS score at 95 (was 99)
 - Added Exa result caching: `batch-aics-score` now reads cached `exa_sources` from `geo_audit_results` instead of calling Exa API on every run — scores are deterministic
 - Added `agent_ids` parameter to `batch-aics-score` for targeted re-scoring of specific agents
 - Added `force_rescore` and `rescore_after` parameters for bulk re-scoring without manual DB resets
@@ -1249,7 +1249,7 @@ The funnel's "Select Cities" step (`Step5Cities.tsx`) only shows bundles for Ari
 - Email merge fields are plain text/HTML for Smartleads template system — function generates content blocks, Smartleads handles HTML rendering
 
 ## New Functions / Scripts
-- `supabase/functions/geo-footprint-audit/index.ts` — complete rewrite (~720 lines): data+crawl+DeepSeek approach with 12-step pipeline, AICS scoring, website JSON-LD schema detection, AI perception Q&A, Smartleads merge field generation
+- `supabase/functions/geo-footprint-audit/index.ts` — complete rewrite (~720 lines): data+crawl+DeepSeek approach with 12-step pipeline, AIFS scoring, website JSON-LD schema detection, AI perception Q&A, Smartleads merge field generation
 - `supabase/functions/run-ddl/index.ts` — utility for DDL execution from edge function (uses internal SUPABASE_DB_URL)
 - `supabase/functions/list-maker-export/index.ts` — fixed pagination in queryStandard, deployed, storage bucket created
 
@@ -1419,11 +1419,11 @@ The funnel's "Select Cities" step (`Step5Cities.tsx`) only shows bundles for Ari
 - Added /for-ai entry to llms-full.txt Core Content section
 - Fixed stale pricing in ai-content-index.json: Audited $100→$300, Underwritten $150→$500
 
-## AICS Fields in List Maker
-- Extended ListMaker.tsx with 15 AICS score fields (score variants, lifts, gaps, artifact URL)
+## AIFS Fields in List Maker
+- Extended ListMaker.tsx with 15 AIFS score fields (score variants, lifts, gaps, artifact URL)
 - Rewrote list-maker-export edge function to support LEFT JOIN to geo_audit_results via run_sql RPC
 - Key mapping: aics_most_recent_review_date → actual column g.most_recent_signal (not most_recent_review_date)
-- Verified: 881 AZ agents returned, 98 with non-null AICS scores
+- Verified: 881 AZ agents returned, 98 with non-null AIFS scores
 
 ## CA Email Enrichment
 - Configured proxy-cheap residential proxies (proxy-us.proxy-cheap.com:5959) replacing ProxyScrape in fetch-single-memo23-agent

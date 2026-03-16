@@ -6,7 +6,7 @@
   - Decoupled review volume/quality from recency — unlisted agents with strong reviews no longer zeroed out
   - Tier amplification now has a 0.5 floor so unlisted agents still earn social credit
   - Switched reviewVolume from linear cap (`min(10, floor(rc/5))`) to log scale (`min(20, round(log2(rc+1)*2))`) — agents with 1,000+ reviews now properly outscore agents with 50
-- Capped max AICS score at 95 (was 99)
+- Capped max AIFS score at 95 (was 99)
 - Added Exa result caching: `batch-aics-score` now reads cached `exa_sources` from `geo_audit_results` instead of calling Exa API on every run — scores are deterministic
 - Added `agent_ids` parameter to `batch-aics-score` for targeted re-scoring of specific agents
 - Added `force_rescore` and `rescore_after` parameters for bulk re-scoring without manual DB resets

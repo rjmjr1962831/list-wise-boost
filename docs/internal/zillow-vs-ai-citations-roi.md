@@ -84,13 +84,13 @@ AI citations require no ISA. The consumer already decided. They search for the a
 
 ---
 
-## 4. AICS Data (Live, March 13, 2026)
+## 4. AIFS Data (Live, March 13, 2026)
 
 From a random sample of 100 active agents in our database:
 
 | Metric | Listed Tier | Underwritten Tier |
 |--------|------------|-------------------|
-| Median AICS | 49 | 78 |
+| Median AIFS | 49 | 78 |
 | Band | Discoverable (AI won't recommend) | Citable Local (AI will name them) |
 | Mean lift | — | +27.5 points |
 
@@ -104,8 +104,8 @@ An Underwritten agent jumps **two full bands** — from "AI might find you but w
 |------|-------|---------------------|
 | Listed | $0 | Merit Gate verified, annual refresh, basic evidence |
 | Certified | $0 | Quarterly refresh, open to all qualified agents |
-| Audited | $300/mo | Monthly refresh, expanded evidence, AICS lift ~+20 |
-| Underwritten | $500/mo | Daily refresh, full evidence suite, AICS lift ~+28 |
+| Audited | $300/mo | Monthly refresh, expanded evidence, AIFS lift ~+20 |
+| Underwritten | $500/mo | Daily refresh, full evidence suite, AIFS lift ~+28 |
 
 At $500/month, an agent paying for Underwritten who closes **one additional AI-referred deal per year** earns $18,750 on a $6,000 investment — a **212% ROI** on the most conservative possible assumption.
 
@@ -121,7 +121,7 @@ Current pricing ($300/$500) is intentionally below value for three reasons:
 
 2. **Adoption volume.** AI-driven agent selection is still early. Most agents do not understand GEO. We need 50-100 paying agents before we have pricing power.
 
-3. **Attribution gap.** We can demonstrate AICS lift and crawl frequency. Direct citation attribution (AI named you X times this month) is being built. Once available, it unlocks both higher conversion and higher pricing.
+3. **Attribution gap.** We can demonstrate AIFS lift and crawl frequency. Direct citation attribution (AI named you X times this month) is being built. Once available, it unlocks both higher conversion and higher pricing.
 
 ### Price Increase Triggers
 
@@ -151,7 +151,7 @@ The missing piece is proving AI is naming our agents. We are building automated 
 - Historical tracking: citation frequency by agent, by tier, over time
 - Target insight: "Underwritten agents are named X times more often than Listed agents"
 
-This data closes the loop between AICS score → AI citation → agent inquiry → closed deal.
+This data closes the loop between AIFS score → AI citation → agent inquiry → closed deal.
 
 ---
 
