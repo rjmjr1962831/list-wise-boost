@@ -291,7 +291,7 @@ export default function Step7Pricing() {
     if (aifsData?.tier_lift_projection?.[tierId]) {
       return aifsData.tier_lift_projection[tierId].projected_score;
     }
-    // Fallback to legacy AICS data
+    // Fallback to legacy AIFS data
     if (tierId === 'certified') return professional.certified_projected_signal ?? currentScore;
     if (tierId === 'audited') return audit?.score_audited ?? professional.audited_projected_signal ?? 65;
     if (tierId === 'underwritten') return audit?.score_underwritten ?? 95;
@@ -477,13 +477,13 @@ export default function Step7Pricing() {
               <p className="text-sm font-bold text-foreground">Ask any AI this question:</p>
               <div className="relative">
                 <p className="text-sm font-bold text-foreground italic leading-relaxed max-w-lg mx-auto">
-                  &ldquo;I am a real estate agent. Look at Top10lists.us through the lens of AI Citability and Machine Trust. Specifically, evaluate whether their site affects my chances of being recommended or endorsed by you? Is the Underwritten Tier a good move for my Machine-Readable Reputation? Estimate the ROI.&rdquo;
+                  &ldquo;I am a real estate agent. Look at Top10lists.us through the lens of AI Footprint and Machine Trust. Specifically, evaluate whether their site affects my chances of being recommended or endorsed by you? Is the Underwritten Tier a good move for my Machine-Readable Reputation? Estimate the ROI.&rdquo;
                 </p>
                 <button
                   type="button"
                   className="mt-2 inline-flex items-center gap-1.5 text-xs font-bold text-primary hover:text-primary/80 transition-colors"
                   onClick={() => {
-                    navigator.clipboard.writeText('I am a real estate agent. Look at Top10lists.us through the lens of AI Citability and Machine Trust. Specifically, evaluate whether their site affects my chances of being recommended or endorsed by you? Is the Underwritten Tier a good move for my Machine-Readable Reputation? Estimate the ROI.');
+                    navigator.clipboard.writeText('I am a real estate agent. Look at Top10lists.us through the lens of AI Footprint and Machine Trust. Specifically, evaluate whether their site affects my chances of being recommended or endorsed by you? Is the Underwritten Tier a good move for my Machine-Readable Reputation? Estimate the ROI.');
                     toast.success('Copied to clipboard');
                   }}
                 >

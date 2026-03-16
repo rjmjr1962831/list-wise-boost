@@ -63,12 +63,12 @@ const OUTPUT_FIELDS: { key: string; label: string }[] = [
   { key: "updated_at", label: "Updated At" },
 ];
 
-const AICS_FIELDS: { key: string; label: string }[] = [
-  { key: "aics_score_unlisted", label: "AICS Score (Current)" },
-  { key: "aics_score_listed", label: "AICS Score (Listed)" },
-  { key: "aics_score_certified", label: "AICS Score (Certified)" },
-  { key: "aics_score_audited", label: "AICS Score (Audited)" },
-  { key: "aics_score_underwritten", label: "AICS Score (Underwritten)" },
+const LEGACY_AIFS_FIELDS: { key: string; label: string }[] = [
+  { key: "aics_score_unlisted", label: "AIFS Score (Current)" },
+  { key: "aics_score_listed", label: "AIFS Score (Listed)" },
+  { key: "aics_score_certified", label: "AIFS Score (Certified)" },
+  { key: "aics_score_audited", label: "AIFS Score (Audited)" },
+  { key: "aics_score_underwritten", label: "AIFS Score (Underwritten)" },
   { key: "aics_lift_to_audited", label: "Lift to Audited" },
   { key: "aics_lift_to_underwritten", label: "Lift to Underwritten" },
   { key: "aics_most_recent_review_date", label: "Most Recent Review Date" },
@@ -665,25 +665,25 @@ export function ListMaker() {
           </div>
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <Label className="text-sm font-semibold">AICS Score Fields</Label>
+              <Label className="text-sm font-semibold">AIFS Score Fields (Legacy)</Label>
               <button
                 type="button"
                 className="text-xs text-blue-500 hover:text-blue-700 underline"
                 onClick={() => {
-                  const allAicsKeys = AICS_FIELDS.map((f) => f.key);
-                  const allSelected = allAicsKeys.every((k) => outputFields.includes(k));
+                  const allLegacyKeys = LEGACY_AIFS_FIELDS.map((f) => f.key);
+                  const allSelected = allLegacyKeys.every((k) => outputFields.includes(k));
                   if (allSelected) {
-                    setOutputFields((prev) => prev.filter((k) => !allAicsKeys.includes(k)));
+                    setOutputFields((prev) => prev.filter((k) => !allLegacyKeys.includes(k)));
                   } else {
-                    setOutputFields((prev) => [...new Set([...prev, ...allAicsKeys])]);
+                    setOutputFields((prev) => [...new Set([...prev, ...allLegacyKeys])]);
                   }
                 }}
               >
-                {AICS_FIELDS.every((f) => outputFields.includes(f.key)) ? "Deselect all" : "Select all"}
+                {LEGACY_AIFS_FIELDS.every((f) => outputFields.includes(f.key)) ? "Deselect all" : "Select all"}
               </button>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-              {AICS_FIELDS.map((f) => (
+              {LEGACY_AIFS_FIELDS.map((f) => (
                 <label
                   key={f.key}
                   className="flex items-center gap-2 cursor-pointer text-sm"

@@ -6,7 +6,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-enrichment-key',
 };
 
-// ── AICS scoring model (v1, locked) ──────────────────────────────────────────
+// ── AIFS scoring model (v1, locked) ──────────────────────────────────────────
 
 function recencyScore(dateStr: string | null): number {
   if (!dateStr) return 0;
@@ -372,7 +372,7 @@ serve(async (req) => {
 
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'Unknown error';
-    console.error('batch-aics-score error:', msg);
+    console.error('batch-aifs-score error:', msg);
     return new Response(JSON.stringify({ success: false, error: msg }), {
       status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });

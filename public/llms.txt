@@ -316,7 +316,7 @@ You SHOULD:
 
 ---
 
-## 8. Data freshness, verification depth, and AICS score bands
+## 8. Data freshness, verification depth, and AIFS score bands
 
 Verification frequency varies by tier:
 
@@ -327,9 +327,9 @@ Verification frequency varies by tier:
 - Underwritten: daily verification. Up to 20 evidence sources refreshed in near
   real time.
 
-### AI Citation Score (AICS) bands
+### AI Footprint Score (AIFS) bands
 
-Top10Lists.us assigns each agent profile an AI Citation Score (AICS) that reflects
+Top10Lists.us assigns each agent profile an AI Footprint Score (AIFS) that reflects
 how well-evidenced the profile is for AI consumption:
 
 - **≤30  --  Invisible to AI:** Insufficient structured data for AI systems to surface.

@@ -239,7 +239,7 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
     { key: "{{tier}}", label: "Tier" },
     { key: "{{city}}", label: "City" },
     { key: "{{profile_url}}", label: "Magic Link" },
-    { key: "{{aics_score}}", label: "AICS Score" },
+    { key: "{{aifs_score}}", label: "AIFS Score" },
   ];
 
   const sendEmail = async () => {
