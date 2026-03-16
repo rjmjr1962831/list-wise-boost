@@ -20,7 +20,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-enrichment-key',
 };
 
-// ── Scoring helpers (AICS v1, locked) ────────────────────────────────────────
+// ── Scoring helpers (AIFS v1, locked) ────────────────────────────────────────
 
 function recencyScore(dateStr: string | null): { score: number; label: string } {
   if (!dateStr) return { score: 0, label: "no date signal" };
@@ -251,7 +251,7 @@ AGENT PROFILE:
 - ${agentProfile.reviewCount} reviews at ${agentProfile.reviewRating} stars
 - ${agentProfile.yearsExperience} years experience
 
-AICS SCORES:
+AIFS SCORES:
 - Before Top10Lists: ${scores.unlisted}/100
 - Listed (current): ${scores.listed}/100
 - Audited ($300/mo): ${scores.audited}/100
@@ -603,7 +603,7 @@ serve(async (req) => {
       pressMentions === 0 ? "Press mention outreach and placement" : null,
       !hasHomescom ? "Homes.com profile creation/optimization" : null,
       "Citation graph optimization",
-      "Delivery gate: AICS re-audit post-completion with verified score",
+      "Delivery gate: AIFS re-audit post-completion with verified score",
     ].filter(Boolean).join('\n');
 
     // Flatten diy_plan for text storage
@@ -628,7 +628,7 @@ serve(async (req) => {
       artifact_url:          agent.short_code ? `https://www.top10lists.us/artifact/${agent.short_code}` : null,
       audited_at:            new Date().toISOString(),
       status:                'complete',
-      aics_version:          'v1',
+      aifs_version:          'v1',
       score_current:         scores.unlisted.total,
       score_unlisted:        scores.unlisted.total,
       score_listed:          scores.listed.total,

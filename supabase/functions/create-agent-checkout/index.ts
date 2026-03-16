@@ -116,7 +116,7 @@ const handler = async (req: Request): Promise<Response> => {
           unit_amount: unitAmount,
           product_data: {
             name: `${tierName} Badge Tier`,
-            description: `Top10Lists ${tierName} - Enhanced AI Citability Score and data refresh`,
+            description: `Top10Lists ${tierName} - Enhanced AI Footprint Score and data refresh`,
             metadata: { badgeTier },
           },
         },

@@ -1,6 +1,6 @@
 /**
  * List Maker Export: Generate CSV from professionals by criteria and output fields.
- * When AICS fields are requested, uses run_sql RPC with LEFT JOIN to geo_audit_results.
+ * When AIFS fields are requested, uses run_sql RPC with LEFT JOIN to geo_audit_results.
  * Uploads to Supabase storage, returns public URL.
  * Run from staging CRM only; do not push to main.
  */
@@ -13,22 +13,22 @@ const corsHeaders = {
 };
 
 // Map from frontend field keys to { table, column } for SQL query building
-const AICS_FIELD_MAP: Record<string, string> = {
-  aics_score_unlisted: "g.score_unlisted",
-  aics_score_listed: "g.score_listed",
-  aics_score_certified: "g.score_certified",
-  aics_score_audited: "g.score_audited",
-  aics_score_underwritten: "g.score_underwritten",
-  aics_lift_to_audited: "g.score_lift_to_audited",
-  aics_lift_to_underwritten: "g.score_lift_to_underwritten",
-  aics_most_recent_review_date: "g.most_recent_signal",
-  aics_gap_stale_reviews: "g.gap_stale_reviews",
-  aics_gap_no_linkedin: "g.gap_no_linkedin",
-  aics_gap_no_schema: "g.gap_no_schema",
-  aics_gap_no_personal_site: "g.gap_no_personal_site",
-  aics_gap_no_realtor: "g.gap_no_realtor",
-  aics_gap_no_press: "g.gap_no_press",
-  aics_artifact_url: "g.artifact_url",
+const AIFS_FIELD_MAP: Record<string, string> = {
+  aifs_score_unlisted: "g.score_unlisted",
+  aifs_score_listed: "g.score_listed",
+  aifs_score_certified: "g.score_certified",
+  aifs_score_audited: "g.score_audited",
+  aifs_score_underwritten: "g.score_underwritten",
+  aifs_lift_to_audited: "g.score_lift_to_audited",
+  aifs_lift_to_underwritten: "g.score_lift_to_underwritten",
+  aifs_most_recent_review_date: "g.most_recent_signal",
+  aifs_gap_stale_reviews: "g.gap_stale_reviews",
+  aifs_gap_no_linkedin: "g.gap_no_linkedin",
+  aifs_gap_no_schema: "g.gap_no_schema",
+  aifs_gap_no_personal_site: "g.gap_no_personal_site",
+  aifs_gap_no_realtor: "g.gap_no_realtor",
+  aifs_gap_no_press: "g.gap_no_press",
+  aifs_artifact_url: "g.artifact_url",
   bot_crawl_count: "(SELECT COUNT(*)::int FROM bot_crawl_logs WHERE agent_id = p.id)",
 };
 
@@ -52,21 +52,21 @@ const FIELD_LABELS: Record<string, string> = {
   created_at: "Created At",
   updated_at: "Updated At",
   review_stars_rating: "Rating",
-  aics_score_unlisted: "AICS Score (Current)",
-  aics_score_listed: "AICS Score (Listed)",
-  aics_score_certified: "AICS Score (Certified)",
-  aics_score_audited: "AICS Score (Audited)",
-  aics_score_underwritten: "AICS Score (Underwritten)",
-  aics_lift_to_audited: "Lift to Audited",
-  aics_lift_to_underwritten: "Lift to Underwritten",
-  aics_most_recent_review_date: "Most Recent Review Date",
-  aics_gap_stale_reviews: "Gap: Stale Reviews",
-  aics_gap_no_linkedin: "Gap: No LinkedIn",
-  aics_gap_no_schema: "Gap: No Schema",
-  aics_gap_no_personal_site: "Gap: No Personal Site",
-  aics_gap_no_realtor: "Gap: No Realtor",
-  aics_gap_no_press: "Gap: No Press",
-  aics_artifact_url: "Artifact URL",
+  aifs_score_unlisted: "AIFS Score (Current)",
+  aifs_score_listed: "AIFS Score (Listed)",
+  aifs_score_certified: "AIFS Score (Certified)",
+  aifs_score_audited: "AIFS Score (Audited)",
+  aifs_score_underwritten: "AIFS Score (Underwritten)",
+  aifs_lift_to_audited: "Lift to Audited",
+  aifs_lift_to_underwritten: "Lift to Underwritten",
+  aifs_most_recent_review_date: "Most Recent Review Date",
+  aifs_gap_stale_reviews: "Gap: Stale Reviews",
+  aifs_gap_no_linkedin: "Gap: No LinkedIn",
+  aifs_gap_no_schema: "Gap: No Schema",
+  aifs_gap_no_personal_site: "Gap: No Personal Site",
+  aifs_gap_no_realtor: "Gap: No Realtor",
+  aifs_gap_no_press: "Gap: No Press",
+  aifs_artifact_url: "Artifact URL",
   bot_crawl_count: "AI Crawl Count",
 };
 
@@ -87,12 +87,12 @@ serve(async (req) => {
 
     const baseUrl = "https://www.top10lists.us";
 
-    // Check if any AICS fields are requested
-    const hasAicsFields = outputFields.some((f) => f in AICS_FIELD_MAP);
+    // Check if any AIFS fields are requested
+    const hasAifsFields = outputFields.some((f) => f in AIFS_FIELD_MAP);
 
     let rows: Record<string, unknown>[];
 
-    if (hasAicsFields) {
+    if (hasAifsFields) {
       // Use run_sql RPC for JOIN query
       rows = await queryWithJoin(supabase, criteria, outputFields);
     } else {
@@ -117,8 +117,8 @@ serve(async (req) => {
         if (f === "date_last_updated") return escape(row.updated_at);
         if (f === "city_name") return escape(row.city_name ?? (row as any).cities?.name);
         if (f === "company") return escape(row.company || row.business_name || "");
-        // AICS fields: map to the SQL alias (aics_* prefix)
-        if (f in AICS_FIELD_MAP) return escape(row[f]);
+        // AIFS fields: map to the SQL alias (aifs_* prefix)
+        if (f in AIFS_FIELD_MAP) return escape(row[f]);
         return escape(row[f]);
       });
       csvRows.push(cells.join(","));
@@ -180,7 +180,7 @@ serve(async (req) => {
 });
 
 /**
- * Standard query using Supabase client (no AICS join needed).
+ * Standard query using Supabase client (no AIFS join needed).
  */
 async function queryStandard(
   supabase: ReturnType<typeof createClient>,
@@ -256,10 +256,10 @@ async function queryWithJoin(
     "c.name AS city_name",
   ];
 
-  // Add requested AICS columns with aliases
+  // Add requested AIFS columns with aliases
   for (const f of outputFields) {
-    if (f in AICS_FIELD_MAP) {
-      selectCols.push(`${AICS_FIELD_MAP[f]} AS ${f}`);
+    if (f in AIFS_FIELD_MAP) {
+      selectCols.push(`${AIFS_FIELD_MAP[f]} AS ${f}`);
     }
   }
 

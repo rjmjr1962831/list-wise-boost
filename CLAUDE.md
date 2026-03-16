@@ -80,7 +80,7 @@ Top10Lists is **infrastructure**, not a directory or lead generator. Parallel: w
 
 **Consumer-facing scoring (llms-full, transparency):** Review Rating 25%, Community 25%, Number of Reviews 20%, Transaction History 20%, Education 10%.
 
-**AICS Score:** Agent Internet Citability Score. Bands: Listed 10-25, Certified 26-45, Audited 46-75, Underwritten 76-100. Max capped at 95. Median Listed: 49, median Underwritten: 78 (mean lift +27.5 pts).
+**AIFS Score:** AI Footprint Score. Bands: Listed 10-25, Certified 26-45, Audited 46-75, Underwritten 76-100. Max capped at 95. Median Listed: 49, median Underwritten: 78 (mean lift +27.5 pts).
 
 **Selection pipeline:** 3 hard prequalification gates (merit gate) -> PREQUALIFIED -> 1,000+ source deep research -> proprietary Community Involvement Score (verified via IRS Form 990/ProPublica) -> human editorial review -> LISTED. Entire pipeline is free. Payment buys verification depth only.
 
@@ -317,7 +317,7 @@ Push to main: `npm run merge-to-main`. Never run without Robert's explicit instr
 
 ### ROI Framing
 - Even conservative scenario (1 extra deal every 5 months) returns 5:1
-- AICS lift: median 49 -> 78 (two full bands) at Underwritten tier
+- AIFS lift: median 49 -> 78 (two full bands) at Underwritten tier
 - "AI top-of-mind awareness" -- we build awareness for AI, not consumers directly, but consumers who search AI get your name
 
 ### When to Raise Prices

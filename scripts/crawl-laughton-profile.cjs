@@ -245,7 +245,7 @@ Method: Direct web crawl of all discoverable URLs from Serper deep search
   profile += `• AI citation: GPT does not name George when asked about Avondale agents\n`;
   profile += `• Most press is from 2018-2020; thin recent coverage\n\n`;
 
-  profile += `AICS SCORES (from Top10Lists DB):\n`;
+  profile += `AIFS SCORES (from Top10Lists DB):\n`;
   profile += `• Current: 68 (Listed)\n`;
   profile += `• Listed: 81 | Certified: 84 | Audited: 95 | Underwritten: 95\n`;
   profile += `• Lift to Audited: +27 | Lift to Underwritten: +27\n`;

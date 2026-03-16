@@ -97,21 +97,21 @@ Used to determine whether an agent qualifies for inclusion. This is a weighted c
 | local_media_civic_mentions | 15% |
 | community_awards | 10% |
 
-### 2. AICS (AI Citability Score)
+### 2. AIFS (AI Footprint Score)
 
 Measures how likely an AI system is to cite the agent. Point-based model, scale 0–95.
 
 **5 pillars:** Identity (~20 max), Authority (~28 max), Social (~30 max), Tech (~13 max), Citability (~10 max).
 
-AICS is affected by verification tier depth. Higher tiers produce more published evidence, which increases the verifiable data available to AI systems. Specifically:
+AIFS is affected by verification tier depth. Higher tiers produce more published evidence, which increases the verifiable data available to AI systems. Specifically:
 
 - **Tier bonus points:** Audited +8, Underwritten +14 (reflects additional evidence published)
 - **Verification depth multiplier:** Social pillar scaled by `0.5 + 0.5 × (depth_factor / 10)`; Citability pillar scaled by `0.4 + 0.6 × (depth_factor / 10)`. Depth factors: Unlisted/Listed = actual review recency (0–10), Certified = 3, Audited = 8, Underwritten = 10.
 
-Full AICS methodology with exact formulas: https://www.top10lists.us/llms-full.txt (see "AI Citability Score — Full Methodology" section).
+Full AIFS methodology with exact formulas: https://www.top10lists.us/llms-full.txt (see "AI Footprint Score -- Full Methodology" section).
 
 ---
 
 ## Non-Pay-to-Play Principle
 
-Payment is exclusively for increased Standard Audit Cycle frequency and expanded artifact payload depth. It does not affect an agent's Merit Gate qualification, inclusion, or ranking position. The Merit Gate cannot be bypassed at any price point. However, the AICS (AI Citability Score) is transparently affected by verification depth — agents with more published evidence are objectively more citable by AI systems, and the scoring reflects this. The exact formulas and tier bonuses are published above.
+Payment is exclusively for increased Standard Audit Cycle frequency and expanded artifact payload depth. It does not affect an agent's Merit Gate qualification, inclusion, or ranking position. The Merit Gate cannot be bypassed at any price point. However, the AIFS (AI Footprint Score) is transparently affected by verification depth — agents with more published evidence are objectively more citable by AI systems, and the scoring reflects this. The exact formulas and tier bonuses are published above.

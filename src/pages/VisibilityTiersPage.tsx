@@ -17,8 +17,8 @@ function normalizeTier(t: string | null): string {
   return 'certified'; // listed, null, empty, or any other value = Certified (dashboard minimum)
 }
 
-/** Estimate AICS using tier lift model when no projection exists */
-function estimateAICS(
+/** Estimate AIFS using tier lift model when no projection exists */
+function estimateAIFS(
   base: number | null,
   currentTier: string,
   targetTier: string
@@ -159,7 +159,7 @@ export default function VisibilityTiersPage() {
   const currentTier = normalizeTier(rawTier);
   const baseScore = professional?.signal_score ?? professional?.certified_projected_signal ?? null;
 
-  const getAICS = (tierId: string): number | null => {
+  const getAIFS = (tierId: string): number | null => {
     if (!professional) return null;
     if (tierId === 'listed') return 10;
     if (tierId === 'certified')
@@ -194,7 +194,7 @@ export default function VisibilityTiersPage() {
     <>
       <SafeHead>
         <title>Upgrade Your Tier | Top10Lists</title>
-        <meta name="description" content="Upgrade to increase your AI Citability Score. Compare Certified, Audited, and Underwritten tiers." />
+        <meta name="description" content="Upgrade to increase your AI Footprint Score. Compare Certified, Audited, and Underwritten tiers." />
         <meta name="robots" content="noindex, nofollow" />
       </SafeHead>
 
@@ -207,7 +207,7 @@ export default function VisibilityTiersPage() {
         <div className="mb-8">
           <h1 className="text-2xl font-bold">Upgrade Your Tier</h1>
           <p className="text-muted-foreground mt-1">
-            Higher tiers increase your AI Citability Score. Payment never affects inclusion or ranking.
+            Higher tiers increase your AI Footprint Score. Payment never affects inclusion or ranking.
           </p>
         </div>
 
@@ -215,7 +215,7 @@ export default function VisibilityTiersPage() {
           {TIERS.map((tier) => {
             const Icon = tier.icon;
             const isCurrent = currentTier === tier.id;
-            const aics = getAICS(tier.id);
+            const aifs = getAIFS(tier.id);
             const isPaid = tier.id === 'audited' || tier.id === 'underwritten';
 
             return (
@@ -248,10 +248,10 @@ export default function VisibilityTiersPage() {
                 <CardContent className="space-y-4">
                   <div className="p-3 rounded-lg bg-muted/50 border">
                     <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
-                      AI Citability Score
+                      AI Footprint Score
                     </p>
                     <p className="text-xl font-bold">
-                      {aics != null ? `${aics}/100` : 'Pending'}
+                      {aifs != null ? `${aifs}/100` : 'Pending'}
                     </p>
                   </div>
 

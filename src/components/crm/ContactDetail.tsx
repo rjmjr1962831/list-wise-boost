@@ -220,7 +220,7 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
     const tier = pro?.current_tier || pro?.badge_tier || "";
     const city = pro?.business_city ?? "";
     const profileUrl = profileUrlForPro();
-    const aics = (pro as any)?.certified_projected_signal ?? (pro as any)?.signal_score ?? "";
+    const aifs = (pro as any)?.certified_projected_signal ?? (pro as any)?.signal_score ?? "";
     const sub = (s: string) => s
       .replace(/\{\{firstName\}\}/g, firstName)
       .replace(/\{\{first_name\}\}/g, firstName)
@@ -228,7 +228,7 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
       .replace(/\{\{tier\}\}/g, tier)
       .replace(/\{\{city\}\}/g, city)
       .replace(/\{\{profile_url\}\}/g, profileUrl)
-      .replace(/\{\{aics_score\}\}/g, String(aics));
+      .replace(/\{\{aifs_score\}\}/g, String(aifs));
     setComposeSubject(sub(tpl.subject));
     setComposeBody(sub(tpl.body));
   };
@@ -239,7 +239,7 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
     { key: "{{tier}}", label: "Tier" },
     { key: "{{city}}", label: "City" },
     { key: "{{profile_url}}", label: "Magic Link" },
-    { key: "{{aics_score}}", label: "AICS Score" },
+    { key: "{{aifs_score}}", label: "AIFS Score" },
   ];
 
   const sendEmail = async () => {

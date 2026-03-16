@@ -616,7 +616,7 @@ serve(async (req) => {
     } = await req.json();
 
     // Tier gate: only audited and underwritten get full content extraction.
-    // Listed agents get URL-only mode -- sufficient for AICS source counting, zero content cost.
+    // Listed agents get URL-only mode -- sufficient for AIFS source counting, zero content cost.
     const contentTiers = ['audited', 'underwritten'];
     const useContentMode = contentTiers.includes(tier);
 

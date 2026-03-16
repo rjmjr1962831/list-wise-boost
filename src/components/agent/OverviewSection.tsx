@@ -22,8 +22,8 @@ function normalizeTier(t: string | null): string {
   return "certified";
 }
 
-/** Estimate AICS when no projection exists */
-function estimateAICS(base: number | null, current: string, target: string): number | null {
+/** Estimate AIFS when no projection exists */
+function estimateAIFS(base: number | null, current: string, target: string): number | null {
   const lift: Record<string, number> = {
     listed: 4,
     certified: 11,
@@ -72,7 +72,7 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
       .then(({ data }) => { if (data) setAifsData(data as unknown as AIFSData); });
   }, [professional?.id]);
 
-  const getAICS = (tierId: string): number | null => {
+  const getAIFS = (tierId: string): number | null => {
     if (tierId === "listed") return 10;
     if (tierId === "certified")
       return professional.certified_projected_signal ?? professional.signal_score ?? 25;
@@ -164,7 +164,7 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
             {TIERS.map((tier) => {
               const Icon = tier.icon;
               const isCurrent = currentTier === tier.id;
-              const aics = getAICS(tier.id);
+              const aifs = getAIFS(tier.id);
               const isPaid = tier.id === "audited" || tier.id === "underwritten";
 
               return (
@@ -194,7 +194,7 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
                   </div>
                   <div className="p-3 rounded-lg bg-muted/50 border mb-2">
                     <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">AI Footprint Score</p>
-                    <p className="text-xl font-bold">{aics != null ? `${aics}/100` : "Pending"}</p>
+                    <p className="text-xl font-bold">{aifs != null ? `${aifs}/100` : "Pending"}</p>
                   </div>
                   {tier.id === "certified" && (
                     <div className="mb-3">

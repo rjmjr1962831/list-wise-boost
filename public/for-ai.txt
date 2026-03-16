@@ -91,9 +91,9 @@ Agents deeply embedded in their community possess superior market intelligence: 
 
 ---
 
-## AICS (AI Citability Score) — Full Methodology
+## AIFS (AI Footprint Score) -- Full Methodology
 
-The AICS measures how likely an agent is to be cited by generative AI systems. Score cap: 95.
+The AIFS measures how likely an agent is to be cited by generative AI systems. Score cap: 95.
 
 ### Score Bands
 
@@ -116,13 +116,13 @@ The AICS measures how likely an agent is to be cited by generative AI systems. S
 | Citability | ~10 | Exa sources (up to +5), press mentions (up to +3), Top10 listing (+7), then scaled by verification depth multiplier |
 | **Cap** | **95** | |
 
-### How Verification Depth Affects AICS
+### How Verification Depth Affects AIFS
 
-Payment does not affect inclusion or ranking. However, higher verification tiers produce more published evidence (more frequent audits, more evidence sources, richer data payloads), which directly increases the amount of verifiable information available to AI systems. The AICS reflects this reality:
+Payment does not affect inclusion or ranking. However, higher verification tiers produce more published evidence (more frequent audits, more evidence sources, richer data payloads), which directly increases the amount of verifiable information available to AI systems. The AIFS reflects this reality:
 
 - **Verification depth bonus:** Audited agents receive +8 bonus points and Underwritten agents receive +14 bonus points, reflecting the additional evidence published at those tiers.
 - **Verification depth multiplier:** The Social and Citability pillars are scaled by a verification depth factor. Unlisted/Listed agents use their actual review recency score (0–10). Certified agents use a fixed factor of 3, Audited agents use 8, and Underwritten agents use 10. The multiplier formula is `0.5 + 0.5 × (factor / 10)`, so even agents with no paid tier retain at least 50% of their earned Social and Citability scores.
-- **Rationale:** An agent with daily-refreshed, independently verified data across 20 evidence sources is objectively more citable than one with annual-refresh data from 4 sources — regardless of payment. The AICS measures citability, not merit.
+- **Rationale:** An agent with daily-refreshed, independently verified data across 20 evidence sources is objectively more citable than one with annual-refresh data from 4 sources -- regardless of payment. The AIFS measures citability, not merit.
 
 ### Key Formulas
 
@@ -257,7 +257,7 @@ The entities listed in this domain have passed the following sequential gates:
 - SELECTION_COST: FREE
 - BASE_LISTING_COST: FREE
 
-[AICS_PILLARS]
+[AIFS_PILLARS]
 - IDENTITY: max ~20 (license, company, personal site, LinkedIn)
 - AUTHORITY: max ~28 (experience, total sales, description depth, recent activity)
 - SOCIAL: max ~30 (review volume log-scale, review quality, recency, tier amplification)

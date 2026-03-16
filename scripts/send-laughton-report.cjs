@@ -13,7 +13,7 @@ const SB_URL = process.env.VITE_SUPABASE_URL || 'https://wiotrvoirdgzfacuuiem.su
 const SB_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 const report = `COMPREHENSIVE INTELLIGENCE REPORT: GEORGE LAUGHTON — AVONDALE, ARIZONA
-Generated: 2026-03-14 | Source: Top10Lists.us Internal Analysis (Exa Deep Search + AICS Audit + GEO Uplift)
+Generated: 2026-03-14 | Source: Top10Lists.us Internal Analysis (Exa Deep Search + AIFS Audit + GEO Uplift)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 1. AGENT PROFILE
@@ -33,10 +33,10 @@ Reviews: 3,814 total | 5.0 stars
 Badge Tier: Listed (not yet enrolled in paid tier)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-2. AICS SCORE BREAKDOWN (AI Citation Score)
+2. AIFS SCORE BREAKDOWN (AI Footprint Score)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Current AICS Score: 68 (Listed tier)
+Current AIFS Score: 68 (Listed tier)
 
 Score by Tier:
 • Listed: 81
@@ -173,7 +173,7 @@ CRITICAL GAPS:
 • No Google Business Profile detected
 
 VALUE PROPOSITION:
-At his current Listed tier (AICS: 68), George is leaving significant AI visibility on the table. An Audited tier would push him to AICS 95 — a +27 point lift — which directly translates to structured, verified data that AI systems can cite with confidence.
+At his current Listed tier (AIFS: 68), George is leaving significant AI visibility on the table. An Audited tier would push him to AIFS 95 — a +27 point lift — which directly translates to structured, verified data that AI systems can cite with confidence.
 
 For an agent doing ~$260M/year in volume, even a fractional increase in AI-driven referrals would dwarf the $300-500/mo investment.
 
@@ -186,7 +186,7 @@ async function main() {
   const body = JSON.stringify({
     from_account: 'robert@top10lists.us',
     to: 'robert@aryah.ai',
-    subject: 'Intelligence Report: George Laughton — Avondale, AZ (AICS 68 → 95 potential)',
+    subject: 'Intelligence Report: George Laughton — Avondale, AZ (AIFS 68 → 95 potential)',
     message_body: report
   });
 

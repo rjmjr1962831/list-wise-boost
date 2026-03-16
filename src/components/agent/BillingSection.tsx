@@ -123,7 +123,7 @@ export function BillingSection({
             <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <p className="text-muted-foreground mb-4">No active subscriptions</p>
             <p className="text-sm text-muted-foreground mb-4">
-              Upgrade your profile to increase your AI Citability Score.
+              Upgrade your profile to increase your AI Footprint Score.
             </p>
             <Button onClick={onUpgradeClick ?? (() => navigate("/visibility/tiers?returnTo=dashboard"))}>
               Upgrade

@@ -2,7 +2,7 @@
 
 **Date:** 2026-03-15
 **Status:** Draft -- awaiting Robert's approval
-**Depends on:** Existing AICS infrastructure (batch-aics-score, geo_audit_results, crypto-sign)
+**Depends on:** Existing AIFS infrastructure (batch-aics-score, geo_audit_results, crypto-sign)
 
 ---
 
@@ -63,7 +63,7 @@ AIFS = AI Fingerprint Score. Measures an agent's **machine-readability and entit
 | What | Where | How AIFS Uses It |
 |------|-------|------------------|
 | Serper API | `SERPER_API_KEY` in .env, already used by `find-social-links` | Reuse for SERP entity queries |
-| AICS batch scoring | `supabase/functions/batch-aics-score/index.ts` | Pattern reference for batch processing, concurrency, `run_sql` usage |
+| AIFS batch scoring | `supabase/functions/batch-aics-score/index.ts` | Pattern reference for batch processing, concurrency, `run_sql` usage |
 | geo_audit_results | Migration `20260308000000_geo_audit_results.sql` | Existing pillar scores feed into AIFS "Internal Data" weights |
 | Ed25519 signing | `supabase/functions/_shared/crypto-sign.ts` | "Cryptographic Verification" weight checks certifications table |
 | Certifications table | Migration `20260210_artifact_certifications.sql` | Check `certification_status = 'active'` + valid signature |
@@ -137,7 +137,7 @@ ALTER TABLE professionals
   ADD COLUMN IF NOT EXISTS aifs_band TEXT;
 ```
 
-This mirrors how `signal_score` works for AICS -- a denormalized column on professionals for fast dashboard reads.
+This mirrors how `signal_score` works for AIFS -- a denormalized column on professionals for fast dashboard reads.
 
 ---
 
@@ -444,7 +444,7 @@ No new secrets needed -- `SERPER_API_KEY` already exists.
 
 ### 9.1 New Component: `src/components/agent/AIFSGauge.tsx`
 
-Visual gauge showing the agent's AIFS with the three confidence zones. Sits alongside the existing AICS display in `OverviewSection.tsx`.
+Visual gauge showing the agent's AIFS with the three confidence zones. Sits alongside the existing AIFS display in `OverviewSection.tsx`.
 
 ```
 ┌────────────────────────────────────────────┐
@@ -475,8 +475,8 @@ Visual gauge showing the agent's AIFS with the three confidence zones. Sits alon
 
 ### 9.2 Integration Points
 
-- **OverviewSection.tsx** -- Add AIFS Gauge below or beside existing AICS score
-- **PayloadSection.tsx** -- Show projected AIFS at each tier (same pattern as AICS projections)
+- **OverviewSection.tsx** -- Add AIFS Gauge below or beside existing AIFS score
+- **PayloadSection.tsx** -- Show projected AIFS at each tier (same pattern as AIFS projections)
 - **ListMaker.tsx** -- Add `aifs_score`, `aifs_band` to CSV export columns
 
 ### 9.3 Data Flow

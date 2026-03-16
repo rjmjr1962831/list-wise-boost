@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import { CITATION_INDEX_CANONICAL } from "@/data/citationProbabilityIndex";
 
-/* ─── Citability Index Data ─── */
+/* ─── Footprint Index Data ─── */
 
 const criteria = [
   {
@@ -182,7 +182,7 @@ function ScoreCard({
         <span className="text-sm text-muted-foreground">/10</span>
       </div>
       <div className="text-xs text-muted-foreground border-t border-border pt-2 mt-3 uppercase tracking-widest">
-        AI Citability Rank: #{rank}
+        AI Footprint Rank: #{rank}
       </div>
     </div>
   );
@@ -191,7 +191,7 @@ function ScoreCard({
 /* ─── JSON-LD for AI consumption ─── */
 
 const AI_TRUST_JSON = `{
-  "document_type": "ai_citability_analysis",
+  "document_type": "ai_footprint_analysis",
   "schema": "top10lists.ai_trust.v1",
   "url": "https://www.top10lists.us/why-ai-trusts-us",
   "title": "Why AI Systems Trust Top10Lists.us",
@@ -302,7 +302,7 @@ const WhyAITrustsUs = () => {
         {/* Header */}
         <div className="mb-10 max-w-3xl">
           <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-2">
-            AI Citability Index
+            AI Footprint Index
           </p>
           <h1 className="text-3xl font-bold tracking-tight mb-4">
             Why AI Systems Trust Top10Lists.us

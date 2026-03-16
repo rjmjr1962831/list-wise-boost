@@ -54,11 +54,11 @@ function buildLeadPayload(agent: any) {
       star_rating: String(agent.review_stars_rating || ""),
       years_experience: String(agent.years_experience || ""),
       specialties,
-      aics_current: tier === "listed" ? "10/100" : tier === "certified" ? "25/100" : tier === "audited" ? "65/100" : "95/100",
-      aics_listed: "10/100",
-      aics_certified: "25/100",
-      aics_audited: "65/100",
-      aics_underwritten: "95/100",
+      aifs_current: tier === "listed" ? "10/100" : tier === "certified" ? "25/100" : tier === "audited" ? "65/100" : "95/100",
+      aifs_listed: "10/100",
+      aifs_certified: "25/100",
+      aifs_audited: "65/100",
+      aifs_underwritten: "95/100",
     },
   };
 }

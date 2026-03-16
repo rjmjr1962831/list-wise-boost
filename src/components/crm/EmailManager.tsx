@@ -48,7 +48,7 @@ const TEMPLATE_VARS = [
   { key: "{{tier}}", label: "Tier" },
   { key: "{{city}}", label: "City" },
   { key: "{{profile_url}}", label: "Magic Link" },
-  { key: "{{aics_score}}", label: "AICS Score" },
+  { key: "{{aifs_score}}", label: "AIFS Score" },
 ];
 
 const BASE_URL = "https://www.top10lists.us";
@@ -71,7 +71,7 @@ function applyTemplate(text: string, contact: Contact | null, professional: any 
     .replace(/{{tier}}/g, professional?.current_tier || professional?.badge_tier || "")
     .replace(/{{city}}/g, professional?.business_city || "")
     .replace(/{{profile_url}}/g, profileUrl)
-    .replace(/{{aics_score}}/g, professional?.certified_projected_signal || professional?.signal_score || "");
+    .replace(/{{aifs_score}}/g, professional?.certified_projected_signal || professional?.signal_score || "");
 }
 
 export const EmailManager = () => {
