@@ -313,6 +313,7 @@ serve(async (req) => {
         name: a.name,
         url: canon,
         description: desc,
+        dateModified: a.updated_at ? String(a.updated_at).split("T")[0] : TODAY_ISO,
         address: {
           "@type": "PostalAddress",
           addressLocality: city.name,

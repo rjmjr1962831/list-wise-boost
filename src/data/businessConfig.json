@@ -34,6 +34,21 @@
     "pendingLabel": "Audit Pending",
     "deprecated": ["$25/mo Main", "$50/mo Prime", "$75/mo Luxury", "per-zip pricing tiers"]
   },
+  "aifsWeights": {
+    "knowledgeGraph": 25,
+    "sitelinkSalience": 10,
+    "relatedCitations": 15,
+    "thirdPartyValidation": 10,
+    "dataFreshness": 20,
+    "selectionRationale": 10,
+    "cryptoVerification": 10
+  },
+  "aifsBands": {
+    "invisible": { "min": 0, "max": 35, "label": "Invisible" },
+    "fragmented": { "min": 36, "max": 65, "label": "Fragmented" },
+    "recognized": { "min": 66, "max": 85, "label": "Recognized" },
+    "high_fidelity": { "min": 86, "max": 100, "label": "High Fidelity" }
+  },
   "tier1Cities": {
     "arizona": ["phoenix", "tucson", "mesa", "chandler", "gilbert", "glendale", "scottsdale"],
     "california": ["los-angeles", "san-diego", "san-jose", "san-francisco", "fresno", "sacramento", "long-beach", "oakland", "bakersfield", "anaheim", "santa-ana", "riverside", "stockton", "irvine", "chula-vista", "fremont"]

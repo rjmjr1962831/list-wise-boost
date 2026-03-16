@@ -65,12 +65,14 @@ serve(async (req) => {
         address,
         zip_code,
         image_url,
-        type
+        type,
+        canonical_slug,
+        state_slug
       `)
       .eq('active', true)
       .eq('city_id', cityData.id)
       .gte('review_stars_rating', 4.5)
-      .gte('num_total_reviews', 50)
+      .gte('num_total_reviews', 10)
       .order('review_stars_rating', { ascending: false })
       .limit(limit);
 
@@ -105,7 +107,9 @@ serve(async (req) => {
         "position": index + 1,
         "item": {
           "@type": "RealEstateAgent",
-          "@id": `https://top10lists.us/agent/${agent.id}`,
+          "@id": agent.canonical_slug && agent.state_slug
+            ? `https://www.top10lists.us/${agent.state_slug}/agents/${agent.canonical_slug}`
+            : `https://www.top10lists.us/api/v1/agents/${agent.id}`,
           "name": agent.name,
           "description": agent.description || `Professional real estate agent serving ${cityData.name}, ${cityData.state}`,
           "email": agent.email || undefined,
