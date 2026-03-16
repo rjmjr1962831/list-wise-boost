@@ -52,6 +52,11 @@
       "permanent": true
     },
     {
+      "source": "/p/:code",
+      "destination": "/",
+      "permanent": true
+    },
+    {
       "source": "/MASTER_KNOWLEDGE_DOCUMENT.md",
       "destination": "/404",
       "permanent": false

@@ -19,6 +19,7 @@ const SITEMAP_STATES = ['arizona', 'california'];
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 interface City {
+  id: string;
   slug: string;
   state_slug: string;
   name: string;
@@ -49,6 +50,35 @@ function stateToSlug(state: string): string {
   return map[state] ?? state.toLowerCase().replace(/\s+/g, '-');
 }
 
+/**
+ * Fetch the set of city IDs that have at least one qualified agent (Sitemap Rule A).
+ * Uses run_sql RPC to JOIN professional_cities -> professionals -> cities.
+ */
+async function fetchCityIdsWithQualifiedAgents(): Promise<Set<string>> {
+  const ids = new Set<string>();
+  try {
+    const { data, error } = await supabase.rpc('run_sql', {
+      query: `
+        SELECT DISTINCT p.city_id::text AS city_id
+        FROM professionals p
+        WHERE p.active = true
+          AND p.city_id IS NOT NULL
+          AND p.review_stars_rating >= 4.5
+          AND p.num_total_reviews >= 10
+          AND p.state_slug IN ('arizona', 'california')
+      `
+    });
+    if (error) { console.error('Error fetching qualified city IDs:', error); return ids; }
+    for (const row of data || []) {
+      ids.add(row.city_id);
+    }
+  } catch (err) {
+    console.error('RPC error fetching qualified cities:', err);
+  }
+  console.log(`  Found ${ids.size} cities with qualified agents`);
+  return ids;
+}
+
 async function fetchAllCities(): Promise<City[]> {
   const all: City[] = [];
   const pageSize = 1000;
@@ -56,7 +86,7 @@ async function fetchAllCities(): Promise<City[]> {
   while (true) {
     const { data, error } = await supabase
       .from('cities')
-      .select('slug, state_slug, name, state')
+      .select('id, slug, state_slug, name, state')
       .eq('active', true)
       .in('state_slug', SITEMAP_STATES)
       .order('state_slug')
@@ -253,7 +283,7 @@ function generateCoverageJson(cities: City[], neighborhoods: Neighborhood[]): st
       name: n.neighborhood,
       slug: n.neighborhood_slug,
       zip: n.primary_zip,
-      url: `${BASE_URL}/${stateSlug}/${n.city_area_slug}/${n.primary_zip}/${n.neighborhood_slug}/top10realestateagents`,
+      url: `${BASE_URL}/${stateSlug}/${n.city_area_slug}/${n.neighborhood_slug}/top10realestateagents`,
     });
   }
   for (const k of Object.keys(states)) {
@@ -276,16 +306,27 @@ async function main() {
   const publicDir = path.join(process.cwd(), 'public');
   console.log('Fetching cities, neighborhoods, and agents from Supabase...');
 
-  const [cities, neighborhoods, agents] = await Promise.all([
+  const [allCities, allNeighborhoods, agents, qualifiedCityIds] = await Promise.all([
     fetchAllCities(),
     fetchAllNeighborhoods(),
     fetchAllAgents(),
+    fetchCityIdsWithQualifiedAgents(),
   ]);
+
+  // Sitemap Rule A: only include cities/neighborhoods with at least one qualified agent
+  const cities = allCities.filter(c => qualifiedCityIds.has(c.id));
+  // Build a set of city slugs that passed the filter for neighborhood matching
+  const qualifiedCitySlugs = new Set(cities.map(c => `${c.state_slug}:${c.slug}`));
+  const neighborhoods = allNeighborhoods.filter(n => {
+    const stateSlug = stateToSlug(n.state);
+    return qualifiedCitySlugs.has(`${stateSlug}:${n.city_area_slug}`);
+  });
 
   const cityCount = cities.length;
   const neighborhoodCount = neighborhoods.filter(n => n.primary_zip).length;
   const agentCount = agents.length;
-  console.log(`Fetched ${cityCount} cities, ${neighborhoodCount} neighborhoods, ${agentCount} agents`);
+  console.log(`Fetched ${allCities.length} cities, ${allNeighborhoods.length} neighborhoods, ${agentCount} agents`);
+  console.log(`After Sitemap Rule A filter: ${cityCount} cities (removed ${allCities.length - cityCount}), ${neighborhoodCount} neighborhoods (removed ${allNeighborhoods.length - neighborhoodCount})`);
 
   const cityFiles = generateCitySitemap(publicDir, cities);
   console.log(`✓ Generated city sitemap(s): ${cityFiles.join(', ')} (${cityCount} URLs)`);

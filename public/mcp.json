@@ -147,7 +147,7 @@
       "activeStates": 2,
       "expandingStates": 3,
       "totalCities": 1738,
-      "totalNeighborhoods": 10452,
+      "totalNeighborhoods": 10137,
       "totalAgentsQualified": 3263,
       "totalAgentsAnalyzed": 670000
     },
@@ -157,7 +157,7 @@
         "slug": "arizona",
         "status": "active",
         "cities": 89,
-        "neighborhoods": 2967,
+        "neighborhoods": 2669,
         "agentsQualified": 873,
         "agentsAnalyzed": 220000
       },
@@ -166,7 +166,7 @@
         "slug": "california",
         "status": "active",
         "cities": 1649,
-        "neighborhoods": 7485,
+        "neighborhoods": 7468,
         "agentsQualified": 2390,
         "agentsAnalyzed": 450000
       }
