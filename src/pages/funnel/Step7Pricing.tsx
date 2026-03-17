@@ -102,13 +102,13 @@ function bandBg(score: number): string {
 }
 
 const BAND_TOOLTIPS: Record<string, string> = {
-  ‘Invisible’:
+  "Invisible":
     "AI systems have almost no verifiable data about you. If asked directly, they will likely skip you or add heavy caveats rather than recommend you.",
-  ‘Fragmented’:
+  "Fragmented":
     "AI systems can find some data about you but it’s inconsistent across sources. You may appear in results but with hedging or caveats.",
-  ‘Recognized’:
+  "Recognized":
     "AI systems have enough verified data to proactively recommend you in broad and local queries. You appear in referrals with confidence.",
-  ‘High Fidelity’:
+  "High Fidelity":
     "AI systems treat you as a primary authoritative source. You are named proactively in competitive queries across multiple markets with no hedging.",
 };
 
