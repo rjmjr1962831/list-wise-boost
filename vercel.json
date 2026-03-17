@@ -226,7 +226,7 @@
       "destination": "/_spa.html"
     },
     {
-      "source": "/((?!widget/|api/|sitemap).*)",
+      "source": "/((?!widget/|api/|sitemap|crawl-stats).*)",
       "destination": "/_spa.html"
     }
   ],
