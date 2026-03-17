@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Loader2, ArrowRight, ArrowLeft, Search, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { FunnelBreadcrumbs } from '@/components/funnel/FunnelBreadcrumbs';
 
 interface Neighborhood {
   id: string;
@@ -165,10 +166,7 @@ export default function Step6Neighborhoods() {
         <div className="max-w-5xl mx-auto">
           <Card>
             <CardHeader>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-muted-foreground">Step 7 of 8</span>
-                <span className="text-sm font-medium">Select Neighborhoods</span>
-              </div>
+              <FunnelBreadcrumbs currentStep={7} />
               <CardTitle>Which neighborhoods are you an expert in?</CardTitle>
               <p className="text-sm text-muted-foreground">
                 Optional: Select specific neighborhoods where you have deep expertise. Type to search and add as many as you like.

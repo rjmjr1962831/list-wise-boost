@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, ArrowRight, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { REGIONAL_PACKAGES } from '@/data/arizonaPackages';
+import { FunnelBreadcrumbs } from '@/components/funnel/FunnelBreadcrumbs';
 
 type LocationState = { professionalId?: string; state_slug?: string | null; license_state?: string | null; professional?: Record<string, unknown> } | null;
 
@@ -164,10 +165,7 @@ export default function Step5Cities() {
         <div className="max-w-4xl mx-auto">
           <Card>
             <CardHeader>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-muted-foreground">Step 6 of 8</span>
-                <span className="text-sm font-medium">Select Cities</span>
-              </div>
+              <FunnelBreadcrumbs currentStep={6} />
               <CardTitle>Which cities do you serve?</CardTitle>
               <p className="text-sm text-muted-foreground">
                 Add bundles to select your coverage areas. City listings are free.

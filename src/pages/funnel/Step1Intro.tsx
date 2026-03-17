@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Loader2, CheckCircle, ArrowRight, TrendingDown, TrendingUp } from 'lucide-react';
 import { CITATION_INDEX_DISPLAY } from '@/data/citationProbabilityIndex';
+import { FunnelBreadcrumbs } from '@/components/funnel/FunnelBreadcrumbs';
 
 interface Professional {
   id: string;
@@ -126,7 +127,8 @@ export default function Step1Intro() {
         <meta name="googlebot" content="noindex, nofollow" />
       </SafeHead>
       <div className="min-h-screen bg-gradient-to-b from-background to-muted py-8 sm:py-12 px-4">
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-2xl mx-auto space-y-3">
+          <FunnelBreadcrumbs currentStep={1} />
           <Card>
             <CardContent className="pt-8 pb-6 px-5 sm:px-8 space-y-6">
               {/* Mission statement */}

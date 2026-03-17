@@ -210,7 +210,11 @@
       "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/email-track"
     },
     {
-      "source": "/((?!api|for-ai|methodology|ai-feed|llms|coverage\\.json|sitemap|mcp\\.json|ai-content-index\\.json|robots\\.txt|\\.well-known|widget).*)",
+      "source": "/mcp",
+      "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/mcp-server"
+    },
+    {
+      "source": "/((?!api|for-ai|methodology|ai-feed|llms|coverage\\.json|sitemap|mcp\\.json|mcp$|ai-content-index\\.json|robots\\.txt|\\.well-known|widget).*)",
       "destination": "/_spa.html"
     },
     {

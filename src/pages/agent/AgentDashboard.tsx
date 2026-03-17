@@ -16,15 +16,17 @@ import {
   Menu,
   X,
   Shield,
+  Sparkles,
 } from "lucide-react";
 import { OverviewSection } from "@/components/agent/OverviewSection";
 import { ProfileSection } from "@/components/agent/ProfileSection";
 import { PayloadSection } from "@/components/agent/PayloadSection";
 import { BillingSection } from "@/components/agent/BillingSection";
+import { AIMaxPlan } from "@/components/agent/AIMaxPlan";
 import { getValidImageUrl } from "@/utils/imageUrlValidator";
 import { cn } from "@/lib/utils";
 
-type NavSection = "overview" | "profile" | "payload" | "billing" | "badge";
+type NavSection = "overview" | "ai-max-plan" | "profile" | "payload" | "billing" | "badge";
 
 interface NavItem {
   id: NavSection;
@@ -34,6 +36,7 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { id: "overview", label: "Overview", icon: LayoutDashboard },
+  { id: "ai-max-plan", label: "AI Max Plan", icon: Sparkles },
   { id: "profile", label: "Profile", icon: User },
   { id: "payload", label: "Payload", icon: Bot },
   { id: "badge", label: "Badge & sharing", icon: Shield },
@@ -458,6 +461,10 @@ export default function AgentDashboard() {
 
               {activeSection === "overview" && (
                 <OverviewSection professional={professional} />
+              )}
+
+              {activeSection === "ai-max-plan" && (
+                <AIMaxPlan professional={professional} />
               )}
 
               {activeSection === "profile" && (

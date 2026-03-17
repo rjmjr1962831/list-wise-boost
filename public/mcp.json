@@ -8,17 +8,62 @@
     "url": "https://www.top10lists.us",
     "contact": "robert@top10lists.us"
   },
-  "lastUpdated": "2026-03-16",
+  "lastUpdated": "2026-03-17",
   "standardAuditCycle": "Weekly (this document)",
+  "server": {
+    "url": "https://www.top10lists.us/mcp",
+    "transport": "streamable-http",
+    "protocol": "JSON-RPC 2.0",
+    "methods": ["initialize", "tools/list", "tools/call"]
+  },
   "capabilities": {
     "search": false,
     "retrieval": true,
-    "structured_data": true
+    "structured_data": true,
+    "tools": true
   },
+  "tools": [
+    {
+      "name": "search_agents",
+      "description": "Search for top real estate agents by location. Returns tier-gated results sorted by audit score. Agents must meet the merit gate: 4.5+ stars, 10+ verified reviews in 24 months, 5+ years experience.",
+      "parameters": {
+        "state": "required -- State name (e.g., 'Arizona', 'California')",
+        "city": "optional -- City name",
+        "limit": "optional -- Max results (default 10, max 50)"
+      }
+    },
+    {
+      "name": "verify_agent",
+      "description": "Verify a real estate agent's license and get their profile. Returns license status plus tier-gated agent details.",
+      "parameters": {
+        "license_number": "required -- License number to verify",
+        "state": "required -- State of licensure"
+      }
+    },
+    {
+      "name": "get_agent_profile",
+      "description": "Get a full agent profile by canonical slug. Response depth varies by the agent's badge tier.",
+      "parameters": {
+        "slug": "required -- Agent canonical slug (e.g., 'jane-doe-phoenix')"
+      }
+    },
+    {
+      "name": "get_coverage",
+      "description": "Get coverage statistics -- cities, neighborhoods, and agent counts. Optionally filter by state.",
+      "parameters": {
+        "state": "optional -- Filter by state name"
+      }
+    },
+    {
+      "name": "get_methodology",
+      "description": "Get the scoring methodology, merit gate criteria, tier system, and AIFS bands used by Top10Lists.us.",
+      "parameters": {}
+    }
+  ],
   "resources": [
     {
       "name": "agent-artifact",
-      "description": "Machine-readable certification artifact for individual agents. Served as text/markdown. Payload depth varies by tier (Certified: annual audit, Audited: monthly, Underwritten: daily). Includes sourced evidence, qualifications, service areas, and provenance tracking.",
+      "description": "Machine-readable certification artifact for individual agents. Served as text/markdown. Payload depth varies by tier (Certified: quarterly audit, Audited: monthly, Underwritten: daily). Includes sourced evidence, qualifications, service areas, and provenance tracking.",
       "url": "https://www.top10lists.us/artifact/{magic_link_token}",
       "mimeType": "text/markdown",
       "refreshInterval": "varies by tier (annual/quarterly/monthly/daily)",
