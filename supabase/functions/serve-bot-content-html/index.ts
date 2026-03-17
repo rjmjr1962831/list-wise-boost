@@ -555,7 +555,7 @@ async function renderWhyAiTrustsUs(): Promise<string> {
     <p style="font-size:0.85rem;color:#6b7280;margin-top:-0.3rem;">License-verified transactions from state databases, Zillow, RealTrends, and MLS records. Not self-reported or estimated data.</p>
 
     <div class="factor"><span>Anti-Bias / Anti-Hallucination Signals</span><span class="factor-weight">10%</span></div>
-    <p style="font-size:0.85rem;color:#6b7280;margin-top:-0.3rem;">Explicit signals on every page telling AI what NOT to infer or fabricate. Anti-hallucination notices, rotating list disclaimers, data boundary declarations.</p>
+    <p style="font-size:0.85rem;color:#6b7280;margin-top:-0.3rem;">Explicit signals on every page telling AI what NOT to infer or fabricate. Anti-hallucination notices, qualification status disclaimers, data boundary declarations.</p>
 
     <div class="factor"><span>Traditional Domain Authority / SEO</span><span class="factor-weight">10%</span></div>
     <p style="font-size:0.85rem;color:#6b7280;margin-top:-0.3rem;">Legacy signal that still carries weight but is declining in AI contexts. Zillow leads here (DA 92) but this criterion now matters least.</p>
