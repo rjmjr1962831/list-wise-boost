@@ -164,6 +164,8 @@ function shapeAgentPayload(
       reviews: "10+ in 24 months",
       experience: "5+ years",
     },
+    aifs_score: audit?.score_listed ?? null,
+    aifs_band: aifsBand(audit?.score_listed),
   };
 
   // -- Audited adds --
@@ -627,9 +629,7 @@ async function handleGetAgentProfile(
   const license: LicenseRow = {
     professional_id: row.id,
     license_number: row.license_number,
-    state: row.license_state,
-    status: row.license_status,
-    expiration_date: row.expiration_date,
+    state: stateNameFromSlug(row.state_slug),
   };
 
   return shapeAgentPayload(agent, audit, license);
@@ -716,7 +716,7 @@ function handleGetMethodology() {
     },
     aifs: {
       name: "AI Footprint Score",
-      description: "Measures an agent's digital footprint as seen by AI systems",
+      description: "Measures how likely an AI system is to cite a specific agent when answering a consumer query. Blends live web signals with internal verified data. Score cap: 95.",
       bands: {
         listed: "10-25",
         certified: "26-45",
@@ -724,7 +724,64 @@ function handleGetMethodology() {
         underwritten: "76-100",
       },
       max_score: 95,
-      pillars: ["identity", "authority", "social", "technical", "citability"],
+      pillars: {
+        identity: {
+          max_points: 20,
+          description: "Verifiable professional identity across platforms",
+          signals: [
+            "Active real estate license verified against state authority database (+5)",
+            "Company/brokerage affiliation from MLS/brokerage records (+5)",
+            "Personal website -- DNS resolution, crawlability (+5)",
+            "LinkedIn profile existence (+3)",
+            "Top10Lists active listing (+2)",
+          ],
+        },
+        authority: {
+          max_points: 28,
+          description: "Sustained track record of real estate activity",
+          signals: [
+            "Years of experience from license issuance date: min(10, floor(years/2)) -- 20+ years = max 10 pts",
+            "Total verified sales from Zillow/RealTrends/MLS: min(8, floor(total_sales/30)) -- 240+ sales = max 8 pts",
+            "Description depth: +5 if profile description > 50 characters",
+            "Recent activity: transactions in past 12 months scaled by verification depth factor",
+          ],
+        },
+        social: {
+          max_points: 30,
+          description: "Third-party reviews are the strongest trust signal for AI systems. Largest pillar.",
+          signals: [
+            "Review volume (logarithmic): min(20, round(log2(review_count+1) * 2)) -- prevents review farming. 10 reviews ~ 7pts, 50 ~ 11pts, 200 ~ 15pts, 1000 ~ 20pts",
+            "Review quality: round((rating - 3.5) * 6.67) for ratings >= 3.5 -- a 5.0-star agent earns ~10 pts",
+            "Review recency: <=1 day: 10, <=7 days: 9, <=30 days: 7, <=90 days: 4, <=180 days: 2, <=365 days: 1, older: 0",
+            "Platform presence: Realtor.com (+4), HomeLight (+3)",
+            "Verification depth multiplier: score * (0.5 + 0.5 * (depth_factor/10)) -- floor of 0.5 ensures unlisted agents retain 50% of earned Social score",
+          ],
+        },
+        technical: {
+          max_points: 13,
+          description: "Whether an agent's digital footprint is accessible to AI systems",
+          signals: [
+            "Website crawlability: can AI crawlers find and parse the agent's site (+5)",
+            "Schema markup: structured data on personal site (-2 penalty if missing)",
+            "Platform presence: Realtor.com (+3), HomeLight (+2), Facebook (+2), Top10Lists (+3)",
+          ],
+        },
+        citability: {
+          max_points: 10,
+          description: "Whether AI systems can extract and cite credentials in a recommendation",
+          signals: [
+            "Exa.ai source count: number of independent web sources that corroborate the agent's identity",
+            "Recency of web signals: how recently third-party sources have mentioned the agent",
+          ],
+        },
+      },
+      verification_depth_by_tier: {
+        listed: "Depth factor 1 (annual verification)",
+        certified: "Depth factor 3 (quarterly verification)",
+        audited: "Depth factor 7 (monthly verification, 10+ evidence sources)",
+        underwritten: "Depth factor 10 (daily verification, up to 20 evidence sources)",
+      },
+      full_methodology_url: "https://www.top10lists.us/llms-full.txt",
     },
     tiers: {
       listed: {
@@ -850,7 +907,7 @@ serve(async (req) => {
       // -- MCP lifecycle --
       case "initialize": {
         result = {
-          protocolVersion: "2025-03-26",
+          protocolVersion: "2024-11-05",
           serverInfo: SERVER_INFO,
           capabilities: CAPABILITIES,
         };

@@ -133,7 +133,8 @@ All human-facing pages are static HTML. No React SPA. No JavaScript-rendered con
 - **SQL access:** Use `run_sql` RPC with service role key. No direct DB connection needed (IPv6-only, unreachable from IPv4). For DDL, use `run-migration` edge function with `npm:postgres` (not deno-postgres -- SCRAM auth bug).
 - **Deploy functions:** `npx supabase functions deploy <name> --no-verify-jwt`
 - **Pagination:** Always paginate tables >1,000 rows. If a query returns exactly 1,000 rows, there are more. Key tables: professionals (3,400+), neighborhood_catalog (5,600+), marketing_content (2,000+), state_licenses (10,000+).
-- **Active crons (4):** `cleanup-expired-grace-periods` (daily midnight), `batch-aics-score-run` (every 1 min), `gmail-sync` (every 5 min), `sequencer-v2-tick` (every 2 min).
+- **Active crons (4):** `cleanup-expired-grace-periods` (daily midnight), `batch-aics-score-run` (AIFS scoring, every 1 min -- cron/folder name is legacy "aics", product name is AIFS), `gmail-sync` (every 5 min), `sequencer-v2-tick` (every 2 min).
+- **AICS is deprecated.** The product name is **AIFS (AI Footprint Score)**. The edge function folder (`batch-aics-score`) and pg_cron job (`batch-aics-score-run`) retain the old name for infrastructure continuity. All user-facing references must say AIFS, never AICS.
 - **90 deprecated edge functions** (Pipedrive, HubSpot, Cloudflare, Instantly, old Apify scrapers, one-time backfills, test utilities). See docs/takeaways for full list.
 
 ---
