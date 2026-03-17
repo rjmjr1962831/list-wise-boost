@@ -191,21 +191,16 @@ function formatDate(iso: string): string {
 
 function formatTimestamp(iso: string): string {
   if (!iso) return "N/A";
-  return `${new Date(iso).toISOString().replace("T", " ").slice(0, 19)} UTC`;
+  const d = new Date(iso);
+  const display = `${d.toISOString().replace("T", " ").slice(0, 19)} UTC`;
+  return `<time datetime="${d.toISOString()}">${display}</time>`;
 }
 
-function formatTimeShort(iso: string): string {
-  if (!iso) return "";
-  return new Date(iso).toISOString().slice(11, 16) + " UTC";
-}
-
-function timeAgo(iso: string): string {
-  const ms = Date.now() - new Date(iso).getTime();
-  const mins = Math.floor(ms / 60000);
-  if (mins < 60) return `${mins}m ago`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  return `${Math.floor(hrs / 24)}d ago`;
+function formatTimeAbsolute(iso: string): string {
+  if (!iso) return "N/A";
+  const d = new Date(iso);
+  const display = `${d.toISOString().replace("T", " ").slice(0, 19)} UTC`;
+  return `<time datetime="${d.toISOString()}">${display}</time>`;
 }
 
 /* ── Merge case-insensitive duplicates ─────────────────────────────────── */
@@ -319,7 +314,7 @@ async function renderCrawlStats(): Promise<string> {
       <td><strong>${esc(display)}</strong><br><span class="muted">${esc(label)}</span></td>
       <td class="num">${fmt(i.visits)}</td>
       <td class="num">${fmt(i.agents)}</td>
-      <td class="timestamp">${timeAgo(i.last_seen)}</td>
+      <td class="timestamp">${formatTimeAbsolute(i.last_seen)}</td>
     </tr>`;
     })
     .join("\n");
@@ -353,12 +348,13 @@ async function renderCrawlStats(): Promise<string> {
       <span class="stream-bot">${esc(display)}</span>
       <span class="stream-agent">${agent}</span>
       <span class="stream-market">${market}</span>
-      <span class="stream-time">${timeAgo(r.crawled_at)}</span>
+      <span class="stream-time">${formatTimeAbsolute(r.crawled_at)}</span>
     </div>`;
     })
     .join("\n");
 
-  const generatedAt = new Date().toISOString().replace("T", " ").slice(0, 19) + " UTC";
+  const now = new Date();
+  const generatedAt = `<time datetime="${now.toISOString()}">${now.toISOString().replace("T", " ").slice(0, 19)} UTC</time>`;
   const uniqueMarkets = markets.length;
 
   return `<!DOCTYPE html>
@@ -399,7 +395,7 @@ async function renderCrawlStats(): Promise<string> {
   <div class="merit-box">
     <h1>AI Crawl Statistics</h1>
     <p>Live, rolling 30-day bot crawl data for Top10Lists.us. Which AI systems, search engines, and crawlers are actively indexing our verified agent directory -- and where.</p>
-    <p class="muted">Generated: ${esc(generatedAt)} -- Data window: ${esc(formatDate(summary.earliest))} to ${esc(formatDate(summary.latest))}</p>
+    <p class="muted">Generated: ${generatedAt} -- Data window: <time datetime="${new Date(summary.earliest).toISOString()}">${esc(formatDate(summary.earliest))}</time> to <time datetime="${new Date(summary.latest).toISOString()}">${esc(formatDate(summary.latest))}</time></p>
   </div>
 
   <div class="stats">
@@ -521,7 +517,7 @@ serve(async (req) => {
       status: 200,
       headers: {
         "Content-Type": "text/html; charset=utf-8",
-        "Cache-Control": "public, max-age=3600, s-maxage=3600",
+        "Cache-Control": "public, max-age=900, s-maxage=900",
         "X-Rendered": "serve-bot-crawl-stats-html",
         ...CORS,
       },
