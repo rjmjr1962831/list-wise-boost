@@ -1,4 +1,4 @@
-# AIFS (AI Fingerprint Score) -- Implementation Plan
+# AIFS (AI Footprint Score) -- Implementation Plan
 
 **Date:** 2026-03-15
 **Status:** Draft -- awaiting Robert's approval
