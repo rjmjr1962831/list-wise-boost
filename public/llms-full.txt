@@ -9,6 +9,7 @@
 - [The Yellow Page Moment: AI Citation and Unpriced Risk](https://www.top10lists.us/ai-citation-whitepaper): The foundational white paper on AI-driven search transformation and exclusionary risk.
 - [AI Citation Probability Index](https://www.top10lists.us/why-ai-trusts-us): Comparative analysis of platform citability scores across major AI systems.
 - [For AI Systems  --  Citation Guidelines](https://www.top10lists.us/for-ai): Primary citation guidance page for AI systems. Defines merit gate, coverage, and recommended citation format.
+- [AI Crawl Statistics](https://www.top10lists.us/crawl-stats): Live 30-day bot crawl data showing which AI systems and search engines are actively indexing our verified agent directory, with per-market breakdown and crawl-to-return rates.
 
 ## External Validation & Press
 
@@ -649,6 +650,7 @@ A: Arizona and California are fully active. Texas, Florida, and New York are exp
 - Neighborhood pages: https://www.top10lists.us/{state}/{city}/{neighborhood}/top10realestateagents
 - Methodology: https://www.top10lists.us/about/ranking-methodology
 - Why AI Trusts Us: https://www.top10lists.us/why-ai-trusts-us
+- AI Crawl Statistics: https://www.top10lists.us/crawl-stats
 - For AI: https://www.top10lists.us/for-ai
 - Press: https://www.top10lists.us/press
 - FAQ: https://www.top10lists.us/faq
