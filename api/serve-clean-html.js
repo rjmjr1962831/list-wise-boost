@@ -91,7 +91,7 @@ export default async function handler(req, res) {
     res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=3600');
     // Vercel CDN: cache agent/list/state pages 5 min (ptm purges CDN on deploy);
     // content pages (for-ai, transparency, faq) stay uncached for real-time updates
-    const cacheable = ['serve-bot-agent-html', 'serve-bot-list-html', 'serve-bot-state-html'];
+    const cacheable = ['serve-bot-agent-html', 'serve-bot-list-html', 'serve-bot-state-html', 'serve-bot-crawl-stats-html'];
     res.setHeader('Vercel-CDN-Cache-Control', cacheable.includes(fn) ? 's-maxage=300, stale-while-revalidate=3600' : 's-maxage=0');
     res.status(upstream.status).send(html);
   } catch (err) {
