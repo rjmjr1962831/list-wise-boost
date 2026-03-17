@@ -106,6 +106,14 @@
       "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/coverage-stats"
     },
     {
+      "source": "/crawl-stats",
+      "destination": "/api/serve-clean-html?fn=serve-bot-crawl-stats-html&path=%2Fcrawl-stats"
+    },
+    {
+      "source": "/crawl-stats/",
+      "destination": "/api/serve-clean-html?fn=serve-bot-crawl-stats-html&path=%2Fcrawl-stats"
+    },
+    {
       "source": "/artifact/:token",
       "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/artifact-markdown?token=:token"
     },
