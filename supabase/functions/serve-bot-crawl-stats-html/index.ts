@@ -161,13 +161,13 @@ async function fetchAllData() {
       query: `SELECT count(*)::int as total_crawls, count(DISTINCT agent_id)::int as unique_agents, count(DISTINCT bot_name)::int as unique_bots, min(crawled_at)::text as earliest, max(crawled_at)::text as latest FROM bot_crawl_logs WHERE crawled_at >= now() - interval '30 days'`,
     }),
     sb.rpc("run_sql", {
-      query: `SELECT p.business_city, p.state_slug, count(*)::int as crawls, count(DISTINCT b.bot_name)::int as bot_types, count(DISTINCT b.agent_id)::int as agents FROM bot_crawl_logs b JOIN professionals p ON p.id = b.agent_id WHERE b.crawled_at >= now() - interval '30 days' AND b.agent_id IS NOT NULL AND p.business_city IS NOT NULL GROUP BY p.business_city, p.state_slug ORDER BY crawls DESC LIMIT 30`,
+      query: `SELECT initcap(p.business_city) as business_city, p.state_slug, count(*)::int as crawls, count(DISTINCT b.bot_name)::int as bot_types, count(DISTINCT b.agent_id)::int as agents FROM bot_crawl_logs b JOIN professionals p ON p.id = b.agent_id WHERE b.crawled_at >= now() - interval '30 days' AND b.agent_id IS NOT NULL AND p.business_city IS NOT NULL AND p.business_city !~ '^[0-9]' AND lower(p.business_city) NOT IN ('anytown') AND p.business_city !~ '\\n' AND length(p.business_city) <= 30 GROUP BY initcap(p.business_city), p.state_slug ORDER BY crawls DESC LIMIT 30`,
     }),
     sb.rpc("run_sql", {
       query: `SELECT bot_name, count(*)::int as visits, count(DISTINCT agent_id)::int as agents, max(crawled_at)::text as last_seen FROM bot_crawl_logs WHERE crawled_at >= now() - interval '30 days' AND bot_name IN ('ChatGPT-User', 'chatgpt-user', 'OAI-SearchBot', 'PerplexityBot', 'YouBot') GROUP BY bot_name ORDER BY visits DESC`,
     }),
     sb.rpc("run_sql", {
-      query: `SELECT b.bot_name, b.page_path, b.crawled_at::text, p.name, p.business_city FROM bot_crawl_logs b LEFT JOIN professionals p ON p.id = b.agent_id ORDER BY b.crawled_at DESC LIMIT 50`,
+      query: `SELECT b.bot_name, b.page_path, b.crawled_at::text, p.name, CASE WHEN p.business_city IS NULL OR p.business_city ~ '^[0-9]' OR lower(p.business_city) = 'anytown' OR p.business_city ~ '\\n' THEN NULL ELSE initcap(p.business_city) END as business_city FROM bot_crawl_logs b LEFT JOIN professionals p ON p.id = b.agent_id ORDER BY b.crawled_at DESC LIMIT 50`,
     }),
     sb.rpc("run_sql", {
       query: `SELECT bot_name, count(DISTINCT agent_id)::int as total_agents, count(DISTINCT agent_id) FILTER (WHERE visit_days >= 2)::int as returning_agents FROM (SELECT bot_name, agent_id, count(DISTINCT crawled_at::date) as visit_days FROM bot_crawl_logs WHERE crawled_at >= now() - interval '30 days' AND agent_id IS NOT NULL GROUP BY bot_name, agent_id) sub GROUP BY bot_name ORDER BY total_agents DESC`,
@@ -293,7 +293,7 @@ async function renderCrawlStats(): Promise<string> {
       const barWidth = Math.max(2, Math.round((m.crawls / maxMarketCrawls) * 100));
       const state = m.state_slug === "arizona" ? "AZ" : m.state_slug === "california" ? "CA" : esc(m.state_slug);
       return `<tr>
-      <td><strong>${esc(titleCase(m.business_city))}</strong>, ${state}</td>
+      <td><strong>${esc(m.business_city)}</strong>, ${state}</td>
       <td class="num">${fmt(m.crawls)}</td>
       <td class="num">${m.bot_types}</td>
       <td class="num">${fmt(m.agents)}</td>
@@ -340,7 +340,7 @@ async function renderCrawlStats(): Promise<string> {
     .map((r) => {
       const display = BOT_DISPLAY[r.bot_name] || esc(r.bot_name);
       const agent = r.name ? esc(r.name) : esc(r.page_path);
-      const market = r.business_city ? esc(titleCase(r.business_city)) : "";
+      const market = r.business_city ? esc(r.business_city) : "";
       return `<div class="stream-item">
       <span class="stream-bot">${esc(display)}</span>
       <span class="stream-agent">${agent}</span>
