@@ -111,8 +111,6 @@ interface LicenseRow {
   professional_id: number;
   license_number: string | null;
   state: string | null;
-  status: string | null;
-  expiration_date: string | null;
 }
 
 function buildProfileUrl(stateSlug: string | null, slug: string | null): string | null {
@@ -135,7 +133,7 @@ function shapeAgentPayload(
     state: license?.state ?? null,
     license_number: license?.license_number ?? null,
     license_state: license?.state ?? null,
-    license_status: license?.status ?? null,
+    license_type: license?.license_number ? "active" : null,
     license_registry_url:
       license?.state && license?.license_number
         ? registryUrl(license.state, license.license_number)
@@ -356,8 +354,7 @@ async function handleSearchAgents(
       g.gap_no_linkedin, g.gap_no_schema, g.gap_no_google_business,
       g.has_linkedin, g.has_zillow, g.has_realtor,
       g.recency_label, g.most_recent_signal, g.current_tier, g.audited_at,
-      sl.license_number, sl.state as license_state, sl.status as license_status,
-      sl.expiration_date
+      sl.license_number, sl.state as license_state, sl.license_type as license_type
     FROM professionals p
     LEFT JOIN geo_audit_results g ON g.agent_id = p.id
     LEFT JOIN LATERAL (
@@ -437,8 +434,6 @@ async function handleSearchAgents(
       professional_id: row.id as number,
       license_number: row.license_number as string | null,
       state: row.license_state as string | null,
-      status: row.license_status as string | null,
-      expiration_date: row.expiration_date as string | null,
     };
 
     return shapeAgentPayload(agent, audit, license);
@@ -453,7 +448,7 @@ async function handleVerifyAgent(
 ) {
   const sql = `
     SELECT
-      sl.license_number, sl.state, sl.status, sl.expiration_date,
+      sl.license_number, sl.state, sl.license_type,
       p.id, p.name, p.badge_tier, p.active, p.canonical_slug, p.state_slug,
       p.business_city, p.website, p.years_experience,
       g.score_listed, g.score_certified, g.score_audited, g.score_underwritten,
@@ -531,16 +526,13 @@ async function handleVerifyAgent(
     professional_id: row.id,
     license_number: row.license_number,
     state: row.state,
-    status: row.status,
-    expiration_date: row.expiration_date,
   };
 
   return {
     verified: true,
     license_number: params.license_number,
     license_state: params.state,
-    license_status: row.status,
-    license_expiration: row.expiration_date,
+    license_type: row.license_type ?? "active",
     license_registry_url: registryUrl(params.state, params.license_number),
     in_directory: row.active === true,
     agent: shapeAgentPayload(agent, audit, license),
@@ -562,8 +554,7 @@ async function handleGetAgentProfile(
       g.gap_no_linkedin, g.gap_no_schema, g.gap_no_google_business,
       g.has_linkedin, g.has_zillow, g.has_realtor,
       g.recency_label, g.most_recent_signal, g.current_tier, g.audited_at,
-      sl.license_number, sl.state as license_state, sl.status as license_status,
-      sl.expiration_date
+      sl.license_number, sl.state as license_state, sl.license_type as license_type
     FROM professionals p
     LEFT JOIN geo_audit_results g ON g.agent_id = p.id
     LEFT JOIN LATERAL (
