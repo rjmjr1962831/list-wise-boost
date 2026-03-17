@@ -5,6 +5,13 @@
  * No React SPA, no JavaScript, no browser rendering.
  * Data pulled live from bot_crawl_logs via run_sql RPC.
  *
+ * Sections:
+ *   A. Ecosystem Consensus -- full bot breakdown by category
+ *   B. Market Verification -- per-city crawl activity (top 30 markets)
+ *   C. Consumer Intent -- ChatGPT/Perplexity/You.com inquiry bots
+ *   D. Return Rate -- crawl-to-return rate per bot (repeat indexing signal)
+ *   E. Live Activity Stream -- 50 most recent crawls
+ *
  * GET ?path=/crawl-stats
  */
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
@@ -26,6 +33,7 @@ const CSS = `
     p { margin-bottom: 0.8rem; } a { color: #1a56db; }
     .merit-box { background: #f7f7f0; border: 1px solid #d4d0c4; border-radius: 6px; padding: 1rem 1.2rem; margin: 1rem 0; }
     .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; text-align: center; margin: 1.5rem 0; }
+    @media (max-width: 600px) { .stats { grid-template-columns: repeat(2, 1fr); } }
     .stat-number { font-size: 1.8rem; font-weight: bold; color: #1a56db; }
     .stat-label { color: #6b7280; font-size: 0.9rem; }
     table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
@@ -40,9 +48,19 @@ const CSS = `
     .num { text-align: right; font-variant-numeric: tabular-nums; }
     .muted { color: #6b7280; font-size: 0.85rem; }
     .timestamp { color: #9ca3af; font-size: 0.8rem; }
+    .intent-highlight { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 6px; padding: 1rem 1.2rem; margin: 1rem 0; }
+    .stream-item { display: flex; gap: 1rem; padding: 0.5rem 0; border-bottom: 1px solid #f3f4f6; font-size: 0.9rem; }
+    .stream-item:last-child { border-bottom: none; }
+    .stream-bot { min-width: 140px; font-weight: 600; }
+    .stream-agent { flex: 1; }
+    .stream-market { min-width: 120px; color: #4b5563; }
+    .stream-time { min-width: 80px; color: #9ca3af; font-size: 0.8rem; text-align: right; }
+    .bar-container { display: flex; align-items: center; gap: 0.5rem; }
+    .bar { height: 8px; background: #3b82f6; border-radius: 4px; }
+    .bar-label { font-size: 0.8rem; color: #6b7280; min-width: 40px; }
 `;
 
-/* Bot categorization */
+/* ── Bot categorization ────────────────────────────────────────────────── */
 const AI_BOTS = new Set([
   "ChatGPT-User", "chatgpt-user", "OAI-SearchBot", "GPTBot",
   "ClaudeBot", "claude-web", "anthropic-ai",
@@ -64,6 +82,9 @@ const SEO_BOTS = new Set([
 const SOCIAL_BOTS = new Set([
   "FacebookExternalHit", "Twitterbot", "LinkedInBot",
 ]);
+const INTENT_BOTS = new Set([
+  "ChatGPT-User", "chatgpt-user", "OAI-SearchBot", "PerplexityBot", "YouBot",
+]);
 
 const BOT_DISPLAY: Record<string, string> = {
   "ChatGPT-User": "ChatGPT (OpenAI)", "chatgpt-user": "ChatGPT (OpenAI)",
@@ -79,6 +100,14 @@ const BOT_DISPLAY: Record<string, string> = {
   "PerplexityBot": "PerplexityBot", "YouBot": "You.com Bot",
   "CCBot": "Common Crawl", "SEMrushBot": "SEMrush", "semrushbot": "SEMrush",
   "AhrefsBot": "Ahrefs", "DotBot": "DotBot", "MJ12bot": "Majestic",
+};
+
+const INTENT_LABELS: Record<string, string> = {
+  "ChatGPT-User": "Live RAG query -- a consumer asked ChatGPT a question and it fetched our data in real time",
+  "chatgpt-user": "Live RAG query -- a consumer asked ChatGPT a question and it fetched our data in real time",
+  "OAI-SearchBot": "ChatGPT Search -- OpenAI's search-grounded answer pipeline queried our site",
+  "PerplexityBot": "Research query -- Perplexity fetched our data to answer a consumer's question with citations",
+  "YouBot": "You.com query -- consumer research assistant fetched our verified agent data",
 };
 
 function botCategory(name: string): string {
@@ -99,73 +128,88 @@ function categoryLabel(cat: string): string {
   }
 }
 
-function fmt(n: number): string {
-  return n.toLocaleString("en-US");
-}
+function fmt(n: number): string { return n.toLocaleString("en-US"); }
 
 function esc(s: unknown): string {
   if (!s) return "";
-  return String(s)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#x27;");
+  return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#x27;");
 }
 
-interface BotRow {
-  bot_name: string;
-  visits: number;
-  agents_covered: number;
-  last_seen: string;
+function titleCase(s: string): string {
+  return s.replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-interface SummaryRow {
-  total_crawls: number;
-  unique_agents: number;
-  unique_bots: number;
-  earliest: string;
-  latest: string;
-}
+/* ── Types ─────────────────────────────────────────────────────────────── */
+interface BotRow { bot_name: string; visits: number; agents_covered: number; last_seen: string; }
+interface SummaryRow { total_crawls: number; unique_agents: number; unique_bots: number; earliest: string; latest: string; }
+interface MarketRow { business_city: string; state_slug: string; crawls: number; bot_types: number; agents: number; }
+interface IntentRow { bot_name: string; visits: number; agents: number; last_seen: string; }
+interface RecentRow { bot_name: string; page_path: string; crawled_at: string; name: string | null; business_city: string | null; }
+interface ReturnRow { bot_name: string; total_agents: number; returning_agents: number; }
 
-async function fetchCrawlData(): Promise<{ bots: BotRow[]; summary: SummaryRow }> {
+/* ── Data fetching (all queries in parallel) ───────────────────────────── */
+async function fetchAllData() {
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const sb = createClient(supabaseUrl, supabaseKey);
 
-  const [botResult, summaryResult] = await Promise.all([
+  const [botResult, summaryResult, marketResult, intentResult, recentResult, returnResult] = await Promise.all([
     sb.rpc("run_sql", {
       query: `SELECT bot_name, count(*)::int as visits, count(DISTINCT agent_id)::int as agents_covered, max(crawled_at)::text as last_seen FROM bot_crawl_logs WHERE crawled_at >= now() - interval '30 days' GROUP BY bot_name ORDER BY visits DESC`,
     }),
     sb.rpc("run_sql", {
       query: `SELECT count(*)::int as total_crawls, count(DISTINCT agent_id)::int as unique_agents, count(DISTINCT bot_name)::int as unique_bots, min(crawled_at)::text as earliest, max(crawled_at)::text as latest FROM bot_crawl_logs WHERE crawled_at >= now() - interval '30 days'`,
     }),
+    sb.rpc("run_sql", {
+      query: `SELECT p.business_city, p.state_slug, count(*)::int as crawls, count(DISTINCT b.bot_name)::int as bot_types, count(DISTINCT b.agent_id)::int as agents FROM bot_crawl_logs b JOIN professionals p ON p.id = b.agent_id WHERE b.crawled_at >= now() - interval '30 days' AND b.agent_id IS NOT NULL AND p.business_city IS NOT NULL GROUP BY p.business_city, p.state_slug ORDER BY crawls DESC LIMIT 30`,
+    }),
+    sb.rpc("run_sql", {
+      query: `SELECT bot_name, count(*)::int as visits, count(DISTINCT agent_id)::int as agents, max(crawled_at)::text as last_seen FROM bot_crawl_logs WHERE crawled_at >= now() - interval '30 days' AND bot_name IN ('ChatGPT-User', 'chatgpt-user', 'OAI-SearchBot', 'PerplexityBot', 'YouBot') GROUP BY bot_name ORDER BY visits DESC`,
+    }),
+    sb.rpc("run_sql", {
+      query: `SELECT b.bot_name, b.page_path, b.crawled_at::text, p.name, p.business_city FROM bot_crawl_logs b LEFT JOIN professionals p ON p.id = b.agent_id ORDER BY b.crawled_at DESC LIMIT 50`,
+    }),
+    sb.rpc("run_sql", {
+      query: `SELECT bot_name, count(DISTINCT agent_id)::int as total_agents, count(DISTINCT agent_id) FILTER (WHERE visit_days >= 2)::int as returning_agents FROM (SELECT bot_name, agent_id, count(DISTINCT crawled_at::date) as visit_days FROM bot_crawl_logs WHERE crawled_at >= now() - interval '30 days' AND agent_id IS NOT NULL GROUP BY bot_name, agent_id) sub GROUP BY bot_name ORDER BY total_agents DESC`,
+    }),
   ]);
 
-  const bots: BotRow[] = (botResult.data as BotRow[]) || [];
-  const summary: SummaryRow = (summaryResult.data as SummaryRow[])?.[0] || {
-    total_crawls: 0, unique_agents: 0, unique_bots: 0, earliest: "", latest: "",
+  return {
+    bots: (botResult.data as BotRow[]) || [],
+    summary: (summaryResult.data as SummaryRow[])?.[0] || { total_crawls: 0, unique_agents: 0, unique_bots: 0, earliest: "", latest: "" },
+    markets: (marketResult.data as MarketRow[]) || [],
+    intent: (intentResult.data as IntentRow[]) || [],
+    recent: (recentResult.data as RecentRow[]) || [],
+    returns: (returnResult.data as ReturnRow[]) || [],
   };
-
-  return { bots, summary };
 }
 
 function formatDate(iso: string): string {
   if (!iso) return "N/A";
-  const d = new Date(iso);
-  return d.toISOString().split("T")[0];
+  return new Date(iso).toISOString().split("T")[0];
 }
 
 function formatTimestamp(iso: string): string {
   if (!iso) return "N/A";
-  const d = new Date(iso);
-  return `${d.toISOString().replace("T", " ").slice(0, 19)} UTC`;
+  return `${new Date(iso).toISOString().replace("T", " ").slice(0, 19)} UTC`;
 }
 
-async function renderCrawlStats(): Promise<string> {
-  const { bots, summary } = await fetchCrawlData();
+function formatTimeShort(iso: string): string {
+  if (!iso) return "";
+  return new Date(iso).toISOString().slice(11, 16) + " UTC";
+}
 
-  /* Merge case-insensitive duplicates (e.g. Googlebot + googlebot) */
+function timeAgo(iso: string): string {
+  const ms = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(ms / 60000);
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  return `${Math.floor(hrs / 24)}d ago`;
+}
+
+/* ── Merge case-insensitive duplicates ─────────────────────────────────── */
+function mergeBots(bots: BotRow[]): BotRow[] {
   const merged = new Map<string, BotRow>();
   for (const b of bots) {
     const key = b.bot_name.toLowerCase();
@@ -178,16 +222,56 @@ async function renderCrawlStats(): Promise<string> {
       merged.set(key, { ...b });
     }
   }
-  const mergedBots = Array.from(merged.values()).sort((a, b) => b.visits - a.visits);
+  return Array.from(merged.values()).sort((a, b) => b.visits - a.visits);
+}
 
-  /* Separate AI bots from others for summary */
+function mergeReturns(returns: ReturnRow[]): ReturnRow[] {
+  const merged = new Map<string, ReturnRow>();
+  for (const r of returns) {
+    const key = r.bot_name.toLowerCase();
+    const existing = merged.get(key);
+    if (existing) {
+      existing.total_agents = Math.max(existing.total_agents, r.total_agents + (existing.total_agents || 0));
+      existing.returning_agents += r.returning_agents;
+    } else {
+      merged.set(key, { ...r });
+    }
+  }
+  return Array.from(merged.values()).sort((a, b) => b.total_agents - a.total_agents);
+}
+
+function mergeIntent(intent: IntentRow[]): IntentRow[] {
+  const merged = new Map<string, IntentRow>();
+  for (const i of intent) {
+    const key = i.bot_name.toLowerCase();
+    const existing = merged.get(key);
+    if (existing) {
+      existing.visits += i.visits;
+      existing.agents = Math.max(existing.agents, i.agents);
+      if (i.last_seen > existing.last_seen) existing.last_seen = i.last_seen;
+    } else {
+      merged.set(key, { ...i });
+    }
+  }
+  return Array.from(merged.values()).sort((a, b) => b.visits - a.visits);
+}
+
+/* ── Render ─────────────────────────────────────────────────────────────── */
+async function renderCrawlStats(): Promise<string> {
+  const { bots, summary, markets, intent, recent, returns } = await fetchAllData();
+
+  const mergedBots = mergeBots(bots);
+  const mergedReturns = mergeReturns(returns);
+  const mergedIntent = mergeIntent(intent);
+
   const aiBots = mergedBots.filter((b) => botCategory(b.bot_name) === "ai");
   const searchBots = mergedBots.filter((b) => botCategory(b.bot_name) === "search");
   const aiVisits = aiBots.reduce((s, b) => s + b.visits, 0);
   const searchVisits = searchBots.reduce((s, b) => s + b.visits, 0);
+  const intentVisits = mergedIntent.reduce((s, i) => s + i.visits, 0);
 
-  /* Build bot table rows */
-  const tableRows = mergedBots
+  /* Section A: Bot breakdown table */
+  const botTableRows = mergedBots
     .map((b) => {
       const cat = botCategory(b.bot_name);
       const display = BOT_DISPLAY[b.bot_name] || esc(b.bot_name);
@@ -202,7 +286,72 @@ async function renderCrawlStats(): Promise<string> {
     })
     .join("\n");
 
+  /* Section B: Market verification table */
+  const maxMarketCrawls = markets.length > 0 ? markets[0].crawls : 1;
+  const marketRows = markets
+    .map((m) => {
+      const barWidth = Math.max(2, Math.round((m.crawls / maxMarketCrawls) * 100));
+      const state = m.state_slug === "arizona" ? "AZ" : m.state_slug === "california" ? "CA" : esc(m.state_slug);
+      return `<tr>
+      <td><strong>${esc(titleCase(m.business_city))}</strong>, ${state}</td>
+      <td class="num">${fmt(m.crawls)}</td>
+      <td class="num">${m.bot_types}</td>
+      <td class="num">${fmt(m.agents)}</td>
+      <td><div class="bar-container"><div class="bar" style="width:${barWidth}%"></div></div></td>
+    </tr>`;
+    })
+    .join("\n");
+
+  /* Section C: Consumer intent table */
+  const intentRows = mergedIntent
+    .map((i) => {
+      const display = BOT_DISPLAY[i.bot_name] || esc(i.bot_name);
+      const label = INTENT_LABELS[i.bot_name] || "Consumer inquiry bot";
+      return `<tr>
+      <td><strong>${esc(display)}</strong><br><span class="muted">${esc(label)}</span></td>
+      <td class="num">${fmt(i.visits)}</td>
+      <td class="num">${fmt(i.agents)}</td>
+      <td class="timestamp">${timeAgo(i.last_seen)}</td>
+    </tr>`;
+    })
+    .join("\n");
+
+  /* Section D: Return rate table */
+  const returnRows = mergedReturns
+    .filter((r) => r.total_agents >= 10) /* only bots with meaningful coverage */
+    .slice(0, 15)
+    .map((r) => {
+      const display = BOT_DISPLAY[r.bot_name] || esc(r.bot_name);
+      const cat = botCategory(r.bot_name);
+      const rate = r.total_agents > 0 ? ((r.returning_agents / r.total_agents) * 100).toFixed(1) : "0";
+      const barWidth = Math.max(2, Math.round(Number(rate)));
+      return `<tr>
+      <td>${esc(display)} <span class="badge badge-${cat}">${categoryLabel(cat)}</span></td>
+      <td class="num">${fmt(r.total_agents)}</td>
+      <td class="num">${fmt(r.returning_agents)}</td>
+      <td class="num"><div class="bar-container"><div class="bar" style="width:${barWidth}%"></div><span class="bar-label">${rate}%</span></div></td>
+    </tr>`;
+    })
+    .join("\n");
+
+  /* Section E: Recent activity stream */
+  const streamItems = recent
+    .slice(0, 50)
+    .map((r) => {
+      const display = BOT_DISPLAY[r.bot_name] || esc(r.bot_name);
+      const agent = r.name ? esc(r.name) : esc(r.page_path);
+      const market = r.business_city ? esc(titleCase(r.business_city)) : "";
+      return `<div class="stream-item">
+      <span class="stream-bot">${esc(display)}</span>
+      <span class="stream-agent">${agent}</span>
+      <span class="stream-market">${market}</span>
+      <span class="stream-time">${timeAgo(r.crawled_at)}</span>
+    </div>`;
+    })
+    .join("\n");
+
   const generatedAt = new Date().toISOString().replace("T", " ").slice(0, 19) + " UTC";
+  const uniqueMarkets = markets.length;
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -210,24 +359,30 @@ async function renderCrawlStats(): Promise<string> {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AI Crawl Statistics | Top10Lists.us</title>
-  <meta name="description" content="Live bot crawl statistics for Top10Lists.us. ${fmt(summary.total_crawls)} crawls from ${summary.unique_bots} bot types covering ${fmt(summary.unique_agents)} verified agents in the last 30 days.">
+  <meta name="description" content="Live bot crawl statistics for Top10Lists.us. ${fmt(summary.total_crawls)} crawls from ${summary.unique_bots} bot types covering ${fmt(summary.unique_agents)} verified agents across ${uniqueMarkets}+ markets in the last 30 days.">
   <link rel="canonical" href="${BASE}/crawl-stats">
   <meta name="robots" content="index, follow">
   <script type="application/ld+json">${JSON.stringify({
     "@context": "https://schema.org",
     "@type": "Dataset",
     "name": "Top10Lists.us AI Crawl Statistics",
-    "description": `Rolling 30-day bot crawl statistics for Top10Lists.us. ${summary.total_crawls} total crawls from ${summary.unique_bots} bot types covering ${summary.unique_agents} verified real estate agents.`,
+    "description": `Rolling 30-day bot crawl statistics. ${summary.total_crawls} crawls from ${summary.unique_bots} bot types covering ${summary.unique_agents} verified real estate agents across ${uniqueMarkets}+ markets in Arizona and California.`,
     "url": `${BASE}/crawl-stats`,
     "dateModified": new Date().toISOString().split("T")[0],
     "temporalCoverage": `${formatDate(summary.earliest)}/${formatDate(summary.latest)}`,
     "publisher": { "@type": "Organization", "name": "Top10Lists.us", "url": BASE },
+    "spatialCoverage": [
+      { "@type": "Place", "name": "Arizona" },
+      { "@type": "Place", "name": "California" },
+    ],
     "variableMeasured": [
       { "@type": "PropertyValue", "name": "Total Crawls (30 days)", "value": summary.total_crawls },
       { "@type": "PropertyValue", "name": "Unique Agents Crawled", "value": summary.unique_agents },
       { "@type": "PropertyValue", "name": "Unique Bot Types", "value": summary.unique_bots },
       { "@type": "PropertyValue", "name": "AI Assistant Crawls", "value": aiVisits },
+      { "@type": "PropertyValue", "name": "Consumer Intent Crawls", "value": intentVisits },
       { "@type": "PropertyValue", "name": "Search Engine Crawls", "value": searchVisits },
+      { "@type": "PropertyValue", "name": "Markets Covered", "value": uniqueMarkets },
     ],
   })}</script>
   <style>${CSS}</style>
@@ -235,51 +390,95 @@ async function renderCrawlStats(): Promise<string> {
 <body>
   <div class="merit-box">
     <h1>AI Crawl Statistics</h1>
-    <p>Live, rolling 30-day bot crawl data for Top10Lists.us. This page shows which AI systems, search engines, and crawlers are actively indexing our verified agent directory.</p>
+    <p>Live, rolling 30-day bot crawl data for Top10Lists.us. Which AI systems, search engines, and crawlers are actively indexing our verified agent directory -- and where.</p>
     <p class="muted">Generated: ${esc(generatedAt)} -- Data window: ${esc(formatDate(summary.earliest))} to ${esc(formatDate(summary.latest))}</p>
   </div>
 
   <div class="stats">
     <div><div class="stat-number">${fmt(summary.total_crawls)}</div><div class="stat-label">Total Crawls (30d)</div></div>
     <div><div class="stat-number">${fmt(summary.unique_agents)}</div><div class="stat-label">Agents Crawled</div></div>
-    <div><div class="stat-number">${fmt(aiVisits)}</div><div class="stat-label">AI Assistant Crawls</div></div>
-    <div><div class="stat-number">${summary.unique_bots}</div><div class="stat-label">Bot Types</div></div>
+    <div><div class="stat-number">${fmt(intentVisits)}</div><div class="stat-label">Consumer Intent Crawls</div></div>
+    <div><div class="stat-number">${uniqueMarkets}+</div><div class="stat-label">Markets Covered</div></div>
   </div>
 
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <!-- SECTION A: Ecosystem Consensus                                     -->
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
   <section>
-    <h2>What This Means</h2>
-    <p>Top10Lists.us is actively crawled by major AI assistants (ChatGPT, Meta AI, Perplexity, Claude, You.com), search engines (Google, Bing, Apple), and SEO platforms. When consumers ask these AI systems for real estate agent recommendations, the systems reference the verified credentials and rankings they have indexed from our directory.</p>
-    <p>AI assistant crawls account for <strong>${fmt(aiVisits)}</strong> visits (${summary.total_crawls > 0 ? ((aiVisits / summary.total_crawls) * 100).toFixed(1) : "0"}% of total), with <strong>Meta AI</strong> (powering recommendations across WhatsApp, Instagram, and Facebook -- 7B+ combined users) as the most active crawler. Search engine crawls add <strong>${fmt(searchVisits)}</strong> visits from Google, Bing, and Apple.</p>
-  </section>
-
-  <section>
-    <h2>Bot Crawl Breakdown (Last 30 Days)</h2>
+    <h2>A. Ecosystem Consensus (All Bots, Last 30 Days)</h2>
+    <p>Full breakdown of every bot type crawling Top10Lists.us. AI assistant crawls account for <strong>${fmt(aiVisits)}</strong> visits (${summary.total_crawls > 0 ? ((aiVisits / summary.total_crawls) * 100).toFixed(1) : "0"}%), search engines add <strong>${fmt(searchVisits)}</strong>.</p>
     <table>
       <thead>
-        <tr>
-          <th>Bot</th>
-          <th class="num">Crawls</th>
-          <th class="num">Share</th>
-          <th class="num">Agents Covered</th>
-          <th>Last Seen</th>
-        </tr>
+        <tr><th>Bot</th><th class="num">Crawls</th><th class="num">Share</th><th class="num">Agents</th><th>Last Seen</th></tr>
       </thead>
-      <tbody>
-        ${tableRows}
-      </tbody>
+      <tbody>${botTableRows}</tbody>
     </table>
   </section>
 
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <!-- SECTION B: Market Verification                                     -->
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <section>
+    <h2>B. Market Verification (Top 30 Cities by Crawl Volume)</h2>
+    <p>Per-city crawl activity showing which markets bots are actively indexing. Bot diversity (number of distinct bot types) indicates broad ecosystem coverage for that market.</p>
+    <table>
+      <thead>
+        <tr><th>Market</th><th class="num">Crawls</th><th class="num">Bot Types</th><th class="num">Agents</th><th>Relative Volume</th></tr>
+      </thead>
+      <tbody>${marketRows}</tbody>
+    </table>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <!-- SECTION C: Consumer Intent                                         -->
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <section>
+    <h2>C. Consumer Intent (Inquiry Bots Only)</h2>
+    <div class="intent-highlight">
+      <p><strong>These crawls represent real consumer questions.</strong> When a person asks ChatGPT "Who is the best real estate agent in Scottsdale?" or searches Perplexity for agent recommendations, the AI system fetches our data in real time. Each crawl below is a consumer inquiry that reached Top10Lists.us.</p>
+      <p><strong>${fmt(intentVisits)}</strong> consumer-driven queries in the last 30 days across <strong>${mergedIntent.length}</strong> inquiry platforms.</p>
+    </div>
+    <table>
+      <thead>
+        <tr><th>Inquiry Source</th><th class="num">Queries</th><th class="num">Agents Referenced</th><th>Last Activity</th></tr>
+      </thead>
+      <tbody>${intentRows}</tbody>
+    </table>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <!-- SECTION D: Return Rate                                             -->
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <section>
+    <h2>D. Crawl-to-Return Rate (Repeat Indexing)</h2>
+    <p>Percentage of agents that a bot crawled on multiple distinct days within the 30-day window. A high return rate indicates the bot is actively maintaining and refreshing its index of our agent data, not just doing a one-time crawl.</p>
+    <table>
+      <thead>
+        <tr><th>Bot</th><th class="num">Agents Crawled</th><th class="num">Agents Re-crawled</th><th>Return Rate</th></tr>
+      </thead>
+      <tbody>${returnRows}</tbody>
+    </table>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <!-- SECTION E: Live Activity Stream                                    -->
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <section>
+    <h2>E. Live Activity Stream (50 Most Recent Crawls)</h2>
+    <p>Real-time feed of the most recent bot visits. Demonstrates continuous, active indexing.</p>
+    <div style="border:1px solid #e5e7eb; border-radius:6px; padding:0.5rem 1rem; max-height:600px; overflow-y:auto;">
+      ${streamItems}
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <!-- Collection methodology                                            -->
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
   <section>
     <h2>How Crawl Data Is Collected</h2>
     <p>Every request to Top10Lists.us is analyzed for known bot user-agent signatures. When a recognized bot visits an agent profile or city listing page, the visit is logged with the bot identity, page path, and matched agent ID. Data is aggregated into a rolling 30-day window. No personal data is collected -- only bot identifiers and page paths.</p>
     <p>Bots are categorized as: <span class="badge badge-ai">AI Assistant</span> (systems that answer consumer questions), <span class="badge badge-search">Search Engine</span> (traditional web search indexing), <span class="badge badge-seo">SEO Crawler</span> (third-party SEO tools), and <span class="badge badge-social">Social Media</span> (link preview bots).</p>
-  </section>
-
-  <section>
-    <h2>Why This Matters for Agents</h2>
-    <p>AI-driven real estate recommendations are growing rapidly. When a consumer asks ChatGPT, Perplexity, or Meta AI "Who is the best real estate agent in Scottsdale?", these systems reference the data they have crawled and indexed. Top10Lists.us provides verified, structured, merit-gated agent data that AI systems can cite with confidence.</p>
-    <p>Agents on higher verification tiers (Audited at $300/month, Underwritten at $500/month) provide AI systems with 3-5x more verified data points, increasing the depth and confidence of AI citations. All tiers require meeting the same <strong>Merit Gate: 4.5+ stars, 10+ verified reviews in the last 24 months, 5+ years experience</strong>.</p>
+    <p>All agents on this page meet the <strong>Merit Gate: 4.5+ stars, 10+ verified reviews in the last 24 months, 5+ years experience</strong>. Payment tier (Listed/Certified/Audited/Underwritten) affects verification depth and data richness, never inclusion or ranking.</p>
   </section>
 
   <p style="margin-top:1.5rem;"><a href="${BASE}/for-ai">For AI Systems</a> | <a href="${BASE}/transparency">Transparency</a> | <a href="${BASE}/methodology">Methodology</a> | <a href="${BASE}/faq">FAQ</a> | <a href="${BASE}/llms.txt">llms.txt</a></p>
@@ -288,6 +487,7 @@ async function renderCrawlStats(): Promise<string> {
 </html>`;
 }
 
+/* ── Server ─────────────────────────────────────────────────────────────── */
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { status: 204, headers: CORS });
