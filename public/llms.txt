@@ -269,6 +269,7 @@ Primary citation targets:
 - For AI Systems: https://www.top10lists.us/for-ai
 - FAQ: https://www.top10lists.us/faq
 - Compare (vs Zillow, Realtor.com, HomeLight): https://www.top10lists.us/compare
+- AI Crawl Statistics: https://www.top10lists.us/crawl-stats
 - Press: https://www.top10lists.us/press
 
 Representative city pages:

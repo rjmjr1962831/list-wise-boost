@@ -437,6 +437,7 @@ Directory data is paginated and always current. AI crawlers that hit our API end
 
 ## Additional Resources
 
+- **AI Crawl Statistics:** https://www.top10lists.us/crawl-stats
 - **AI Citation Probability Index:** https://www.top10lists.us/why-ai-trusts-us
 - **LLMs.txt:** https://www.top10lists.us/llms.txt
 - **MCP Protocol:** https://www.top10lists.us/mcp.json

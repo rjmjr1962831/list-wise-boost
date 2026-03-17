@@ -287,7 +287,8 @@
       "https://www.top10lists.us/ai-feed/tier-underwritten.md"
     ],
     "artifactPayloadStructure": "https://www.top10lists.us/ai-feed/artifact-payload-structure.md",
-    "paymentsSecurity": "https://www.top10lists.us/payments-security"
+    "paymentsSecurity": "https://www.top10lists.us/payments-security",
+    "crawlStats": "https://www.top10lists.us/crawl-stats"
   },
   "urlPatterns": {
     "cityDirectory": "https://www.top10lists.us/{state}/{city}/top10realestateagents",

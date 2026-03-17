@@ -148,6 +148,13 @@
       "url": "https://www.top10lists.us/payments-security",
       "mimeType": "text/html",
       "refreshInterval": "monthly"
+    },
+    {
+      "name": "crawl-stats",
+      "description": "Live 30-day bot crawl statistics: which AI systems, search engines, and crawlers are indexing Top10Lists.us agent data, broken down by human-triggered queries vs automated indexing, per-market coverage, and crawl-to-return rates",
+      "url": "https://www.top10lists.us/crawl-stats",
+      "mimeType": "text/html",
+      "refreshInterval": "15 minutes"
     }
   ],
   "urlTemplates": {
