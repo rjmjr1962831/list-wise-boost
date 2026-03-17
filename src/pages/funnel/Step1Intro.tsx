@@ -135,7 +135,7 @@ export default function Step1Intro() {
               <div className="text-center border-b pb-5">
                 <p className="text-sm font-semibold text-primary uppercase tracking-widest mb-2">Our Mission</p>
                 <p className="text-base sm:text-lg font-medium leading-snug">
-                  Top10Lists.us exists so AI systems can safely recommend real estate professionals by name.
+                  We exist so AI systems will regularly cite you by name when asked for a referral or give you an endorsement when asked about you.
                 </p>
               </div>
 

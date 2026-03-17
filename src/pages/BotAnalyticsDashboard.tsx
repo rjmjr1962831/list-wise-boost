@@ -26,7 +26,7 @@ interface ListCrawl {
   location_label: string;
   page_type: "city" | "neighborhood";
   bot_name: string;
-  agent_count: number;
+  crawl_count: number;
   last_crawled: string;
 }
 
@@ -123,7 +123,7 @@ export default function BotAnalyticsDashboard() {
       SELECT
         page_path,
         bot_name,
-        COUNT(DISTINCT agent_id)::int   AS agent_count,
+        COUNT(*)::int                   AS crawl_count,
         MAX(crawled_at)                 AS last_crawled
       FROM bot_crawl_logs
       WHERE crawled_at >= '${startDate}'
@@ -144,7 +144,7 @@ export default function BotAnalyticsDashboard() {
           location_label,
           page_type:      isNh ? "neighborhood" : "city",
           bot_name:       r.bot_name || "Unknown",
-          agent_count:    r.agent_count,
+          crawl_count:    r.crawl_count,
           last_crawled:   r.last_crawled,
         } as ListCrawl;
       })
@@ -254,12 +254,12 @@ export default function BotAnalyticsDashboard() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Agents Covered</CardTitle>
+            <CardTitle className="text-sm font-medium">Agents Seen by AI</CardTitle>
             <Eye className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{(summary?.unique_agents_covered || 0).toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground">Via profile or list page</p>
+            <p className="text-xs text-muted-foreground">Unique agents crawled</p>
           </CardContent>
         </Card>
 
@@ -395,7 +395,7 @@ export default function BotAnalyticsDashboard() {
             <CardHeader>
               <CardTitle>City and Neighborhood List Crawls</CardTitle>
               <CardDescription>
-                Each row is a distinct (page, bot) combination. Agent count shows how many listed agents received coverage.
+                Each row is a distinct (page, bot) combination. Page crawls shows how many times AI visited that listing page.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -405,7 +405,7 @@ export default function BotAnalyticsDashboard() {
                     <TableHead>Location</TableHead>
                     <TableHead>Type</TableHead>
                     <TableHead>Bot</TableHead>
-                    <TableHead className="text-right">Agents Covered</TableHead>
+                    <TableHead className="text-right">Page Crawls</TableHead>
                     <TableHead>Last Crawled</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -430,7 +430,7 @@ export default function BotAnalyticsDashboard() {
                             {crawl.bot_name}
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-right font-mono">{crawl.agent_count}</TableCell>
+                        <TableCell className="text-right font-mono">{crawl.crawl_count}</TableCell>
                         <TableCell className="text-sm text-muted-foreground">
                           {format(new Date(crawl.last_crawled), "MMM d, yyyy HH:mm")}
                         </TableCell>

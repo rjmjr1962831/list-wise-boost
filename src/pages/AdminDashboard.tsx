@@ -108,12 +108,20 @@ const AdminDashboard = () => {
               Test Agent Dashboard
             </Button>
             <Button
-              onClick={() => navigate('/claim?token=e1e71db2-6469-46ec-b777-e009e02133b6')}
+              onClick={() => navigate('/funnel/f7a1b2c3-d4e5-6789-abcd-ef0123456789')}
               variant="outline"
               className="h-auto py-3 border-emerald-500 text-emerald-600 hover:bg-emerald-50"
             >
               <TestTube2 className="mr-2 h-4 w-4" />
-              Test Funnel
+              Test Funnel (Sarah Park)
+            </Button>
+            <Button
+              onClick={() => navigate('/dashboard/d2641c6b-ba41-447e-9b7b-2fa5c4203364')}
+              variant="outline"
+              className="h-auto py-3 border-emerald-500 text-emerald-600 hover:bg-emerald-50"
+            >
+              <TestTube2 className="mr-2 h-4 w-4" />
+              Test Dashboard (Marcus Chen)
             </Button>
             <Button
               onClick={async () => {
