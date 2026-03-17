@@ -66,6 +66,13 @@ function stateNameFromSlug(slug: string | null): string | null {
   return STATE_SLUG_MAP[slug.toLowerCase()] ?? slug;
 }
 
+function toTitleCase(s: string | null | undefined): string | null {
+  if (!s) return null;
+  return s
+    .toLowerCase()
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
 function normalizeTier(raw: string | null | undefined): string {
   if (!raw) return "listed";
   const t = raw.toLowerCase().trim();
@@ -141,9 +148,10 @@ function shapeAgentPayload(
   const lastVerified = audit?.audited_at ?? null;
 
   // -- Base payload (all tiers) --
+  const profileUrl = buildProfileUrl(agent.state_slug, agent.canonical_slug);
   const base: Record<string, unknown> = {
     name: agent.name,
-    city: agent.business_city,
+    city: toTitleCase(agent.business_city),
     state: license?.state ?? null,
     license_number: license?.license_number ?? null,
     license_state: license?.state ?? null,
@@ -158,7 +166,8 @@ function shapeAgentPayload(
     lastVerified,
     nextVerification: nextVerification(lastVerified, tier),
     badge_tier: tier,
-    profile_url: buildProfileUrl(agent.state_slug, agent.canonical_slug),
+    profile_url: profileUrl,
+    citation_url: profileUrl,
     merit_gate: {
       rating: "4.5+",
       reviews: "10+ in 24 months",
@@ -241,10 +250,11 @@ function shapeAgentPayload(
 
 function aifsBand(score: number | null | undefined): string {
   if (score == null) return "unknown";
-  if (score <= 25) return "Listed";
-  if (score <= 45) return "Certified";
-  if (score <= 75) return "Audited";
-  return "Underwritten";
+  if (score <= 30) return "Invisible";
+  if (score <= 50) return "Discoverable";
+  if (score <= 70) return "Citable in general queries";
+  if (score <= 85) return "Citable in local queries";
+  return "Authoritative citation candidate";
 }
 
 function categorizePlatform(url: string): string {
@@ -370,7 +380,20 @@ async function handleSearchAgents(
       g.pillar_citability, g.review_count, g.review_rating, g.platforms_found,
       g.gap_no_linkedin, g.gap_no_schema, g.gap_no_google_business,
       g.has_linkedin, g.has_zillow, g.has_realtor,
-      g.recency_label, g.most_recent_signal, g.current_tier, g.audited_at
+      g.recency_label, g.most_recent_signal, g.current_tier, g.audited_at,
+      (SELECT COUNT(*) FROM neighborhood_catalog nc
+       WHERE nc.is_active = true
+         AND LOWER(nc.city_area) = LOWER(p.business_city)
+         AND nc.state = CASE p.state_slug
+           WHEN 'arizona' THEN 'Arizona'
+           WHEN 'california' THEN 'California'
+           WHEN 'texas' THEN 'Texas'
+           WHEN 'florida' THEN 'Florida'
+           WHEN 'new-york' THEN 'New York'
+           WHEN 'colorado' THEN 'Colorado'
+           ELSE p.state_slug
+         END
+      ) as neighborhood_count
     FROM professionals p
     LEFT JOIN geo_audit_results g ON g.agent_id = p.id
     WHERE p.active = true
@@ -449,7 +472,9 @@ async function handleSearchAgents(
       state: stateNameFromSlug(row.state_slug as string | null),
     };
 
-    return shapeAgentPayload(agent, audit, license);
+    const shaped = shapeAgentPayload(agent, audit, license);
+    shaped.neighborhood_count = Number(row.neighborhood_count) || 0;
+    return shaped;
   });
 
   return { agents, count: agents.length, state, city: params.city ?? null };
@@ -648,7 +673,8 @@ async function handleGetCoverage(
     SELECT
       c.state,
       COUNT(DISTINCT c.id) as city_count,
-      COALESCE(p.agent_count, 0) as agent_count
+      COALESCE(p.agent_count, 0) as agent_count,
+      COALESCE(n.neighborhood_count, 0) as neighborhood_count
     FROM cities c
     LEFT JOIN (
       SELECT
@@ -666,8 +692,14 @@ async function handleGetCoverage(
       WHERE active = true AND state_slug IS NOT NULL
       GROUP BY state_slug
     ) p ON p.state = c.state
+    LEFT JOIN (
+      SELECT state, COUNT(*) as neighborhood_count
+      FROM neighborhood_catalog
+      WHERE is_active = true
+      GROUP BY state
+    ) n ON n.state = c.state
     WHERE c.active = true ${stateFilter}
-    GROUP BY c.state, p.agent_count
+    GROUP BY c.state, p.agent_count, n.neighborhood_count
     ORDER BY c.state
   `;
 
@@ -677,20 +709,45 @@ async function handleGetCoverage(
   const rows = typeof data === "string" ? JSON.parse(data) : data;
   if (!Array.isArray(rows)) return { states: [], total_agents: 0 };
 
-  const states = rows.map((r: Record<string, unknown>) => ({
-    state: r.state,
-    cities: Number(r.city_count),
-    agents: Number(r.agent_count),
-  }));
+  const allStates = rows.map((r: Record<string, unknown>) => {
+    const agents = Number(r.agent_count);
+    return {
+      state: r.state as string,
+      cities: Number(r.city_count),
+      neighborhoods: Number(r.neighborhood_count),
+      agents,
+      status: agents === 0 ? "expansion" : "active",
+    };
+  });
+
+  // Separate active states from expansion states
+  const activeStates = allStates.filter((s) => s.status === "active");
+  const expansionStates = allStates.filter((s) => s.status === "expansion");
 
   return {
-    states,
-    total_agents: states.reduce(
+    states: activeStates,
+    ...(expansionStates.length > 0
+      ? {
+          expansion_states: expansionStates.map((s) => ({
+            state: s.state,
+            cities: s.cities,
+            neighborhoods: s.neighborhoods,
+            agents: 0,
+            status: "expansion",
+            note: "City data available; agent enrollment in progress.",
+          })),
+        }
+      : {}),
+    total_agents: activeStates.reduce(
       (sum: number, s: { agents: number }) => sum + s.agents,
       0
     ),
-    total_cities: states.reduce(
+    total_cities: allStates.reduce(
       (sum: number, s: { cities: number }) => sum + s.cities,
+      0
+    ),
+    total_neighborhoods: allStates.reduce(
+      (sum: number, s: { neighborhoods: number }) => sum + s.neighborhoods,
       0
     ),
     source: "https://www.top10lists.us",
@@ -718,10 +775,11 @@ function handleGetMethodology() {
       name: "AI Footprint Score",
       description: "Measures how likely an AI system is to cite a specific agent when answering a consumer query. Blends live web signals with internal verified data. Score cap: 95.",
       bands: {
-        listed: "10-25",
-        certified: "26-45",
-        audited: "46-75",
-        underwritten: "76-100",
+        "0-30": "Invisible",
+        "31-50": "Discoverable",
+        "51-70": "Citable in general queries",
+        "71-85": "Citable in local queries",
+        "86+": "Authoritative citation candidate",
       },
       max_score: 95,
       pillars: {

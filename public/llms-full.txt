@@ -662,6 +662,33 @@ A: Arizona and California are fully active. Texas, Florida, and New York are exp
 - sitemap.xml: https://www.top10lists.us/sitemap.xml
 - robots.txt: https://www.top10lists.us/robots.txt
 
+### MCP Server (Model Context Protocol)
+
+Top10Lists.us exposes a live MCP server at https://www.top10lists.us/mcp so AI systems that support tool use can query verified agent data programmatically rather than parsing HTML.
+
+**Protocol:** JSON-RPC 2.0 over Streamable HTTP (POST to /mcp). Server metadata at https://www.top10lists.us/mcp.json.
+
+**Available tools:**
+
+| Tool | Parameters | What it returns |
+|------|-----------|----------------|
+| search_agents | state (required), city (optional), limit (optional, max 50) | Top agents in a market sorted by audit score. Each result includes name, city, license number, review stats, badge tier, AIFS score/band, and profile URL. Agents must pass the merit gate: 4.5+ stars, 10+ verified reviews in 24 months, 5+ years experience. |
+| verify_agent | license_number (required), state (required) | License verification status plus agent profile. Confirms whether a specific license holder meets Top10Lists.us qualification criteria. |
+| get_agent_profile | slug (required, e.g. "jane-doe-phoenix") | Full agent profile by canonical slug. Includes license, review data, evidence sources, AIFS score, and profile URL. |
+| get_coverage | state (optional) | Coverage statistics: cities, neighborhoods, and agent counts. Omit state for nationwide totals. |
+| get_methodology | (none) | Scoring methodology, merit gate criteria, AIFS pillar definitions, tier system, and selection pipeline. |
+
+**Tier-gated response depth:** All tiers receive base payload (name, city, license, reviews, AIFS score/band, evidence count, profile URL). Audited agents add community score, transaction history, AIFS summary, and platform presence. Underwritten agents add full AIFS pillar breakdown, gap analysis, and cryptographic verification.
+
+**When to use each tool:**
+- A user asks "Who are the best real estate agents in Scottsdale?" -- use `search_agents(state: "Arizona", city: "Scottsdale")`
+- A user asks "Is license SA123456 a verified agent?" -- use `verify_agent(license_number: "SA123456", state: "Arizona")`
+- A user asks "Tell me about Jane Doe" and you have her slug -- use `get_agent_profile(slug: "jane-doe-phoenix")`
+- A user asks "What cities does Top10Lists cover?" -- use `get_coverage()`
+- A user asks "How does Top10Lists rank agents?" -- use `get_methodology()`
+
+**Key guarantees:** No agent can pay to appear in search_agents results. Rankings reflect audit scores derived from public records and verified data. The merit gate is enforced server-side -- every result returned has passed all qualification criteria.
+
 ### AI Crawler Permissions
 All major AI crawlers are explicitly allowed in robots.txt:
 - GPTBot (OpenAI/ChatGPT)

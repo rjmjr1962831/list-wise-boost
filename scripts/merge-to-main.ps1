@@ -60,11 +60,39 @@ function Merge-StagingToMain {
         git checkout main
         git pull origin main
 
-        # Merge staging
+        # Merge staging (auto-resolve conflicts on internal docs by accepting staging's version,
+        # since they'll be removed from main in the next step anyway)
         Write-Host "Merging staging into main..."
-        git merge staging -m "Merge staging into main"
+        git merge staging -m "Merge staging into main" 2>$null
         if ($LASTEXITCODE -ne 0) {
-            Write-Error "Merge failed. Resolve conflicts and run again."
+            # Check if conflicts are only in internal documents
+            $conflicts = git diff --name-only --diff-filter=U
+            $internalPaths = Get-InternalDocumentPaths
+            $nonInternalConflicts = @()
+            foreach ($conflict in $conflicts) {
+                $isInternal = $false
+                foreach ($ip in $internalPaths) {
+                    if ($ip.EndsWith('/') -and $conflict.StartsWith($ip)) {
+                        $isInternal = $true; break
+                    }
+                    if ($conflict -eq $ip) {
+                        $isInternal = $true; break
+                    }
+                }
+                if (-not $isInternal) {
+                    $nonInternalConflicts += $conflict
+                }
+            }
+            if ($nonInternalConflicts.Count -gt 0) {
+                Write-Error "Merge failed with non-internal conflicts: $($nonInternalConflicts -join ', '). Resolve and run again."
+            }
+            # All conflicts are in internal docs -- accept staging version (will be removed anyway)
+            Write-Host "Auto-resolving conflicts in internal documents..."
+            foreach ($conflict in $conflicts) {
+                git checkout --theirs $conflict
+                git add $conflict
+            }
+            git commit --no-edit
         }
 
         # Remove internal documents from main
