@@ -102,15 +102,13 @@ function bandBg(score: number): string {
 }
 
 const BAND_TOOLTIPS: Record<string, string> = {
-  'Invisible to AI':
+  ‘Invisible’:
     "AI systems have almost no verifiable data about you. If asked directly, they will likely skip you or add heavy caveats rather than recommend you.",
-  'Discoverable':
-    "AI systems can find and verify you through Top10Lists and other sources. If a user asks about you directly, AI will give a confident positive response.",
-  'Citable in general queries':
-    "AI systems have enough verified data to proactively recommend you in broad queries like ‘top agents in Arizona.’ You appear in general referrals but local specificity is still limited.",
-  'Citable in specific local queries':
-    "AI systems will regularly recommend you by name for city and neighborhood queries. You appear in targeted local referrals without significant hedging.",
-  'Authoritative citation candidate':
+  ‘Fragmented’:
+    "AI systems can find some data about you but it’s inconsistent across sources. You may appear in results but with hedging or caveats.",
+  ‘Recognized’:
+    "AI systems have enough verified data to proactively recommend you in broad and local queries. You appear in referrals with confidence.",
+  ‘High Fidelity’:
     "AI systems treat you as a primary authoritative source. You are named proactively in competitive queries across multiple markets with no hedging.",
 };
 
@@ -205,7 +203,8 @@ export default function Step7Pricing() {
   const [professional, setProfessional] = useState<Professional | null>(null);
   const [audit, setAudit] = useState<AuditData | null>(null);
   const [aifsData, setAifsData] = useState<AIFSData | null>(null);
-  const [prevScore] = useState<number | null>(null); // score before funnel (used in activation banner)
+  // Pre-funnel score: Listed score represents before Certified activation
+  const prevScore = audit?.score_listed ?? null;
 
   useEffect(() => {
     loadData();
@@ -282,9 +281,18 @@ export default function Step7Pricing() {
     }
   };
 
-  // On the funnel pricing page, the agent is always Certified (free) -- this IS the upsell page
-  const currentTier = 'certified' as const;
-  const currentScore = audit?.score_certified ?? professional?.certified_projected_signal ?? professional?.signal_score ?? audit?.score_current ?? null;
+  // Detect actual tier from DB -- agents move from Listed to Certified on approval
+  const currentTier = ((): CertificationTier => {
+    const tier = normalizeTier(professional?.current_tier ?? professional?.badge_tier);
+    if (tier === 'audited' || tier === 'underwritten') return tier as CertificationTier;
+    if (tier === 'certified') return 'certified';
+    return 'certified'; // Listed agents viewing pricing are becoming Certified
+  })();
+  const currentScore = (() => {
+    if (currentTier === 'audited') return audit?.score_audited ?? professional?.audited_projected_signal ?? professional?.signal_score ?? audit?.score_current ?? null;
+    if (currentTier === 'underwritten') return audit?.score_underwritten ?? professional?.signal_score ?? audit?.score_current ?? null;
+    return audit?.score_certified ?? professional?.certified_projected_signal ?? professional?.signal_score ?? audit?.score_current ?? null;
+  })();
 
   const getAIFS = (tierId: string): number | null => {
     if (!professional) return null;
@@ -425,8 +433,8 @@ export default function Step7Pricing() {
           {/* ── Activation banner (only when arriving from funnel flow) ── */}
           {fromFunnel && currentScore != null && (() => {
             const certScore = getAIFS('certified');
-            const priorScore = prevScore ?? (currentScore != null ? Math.max(0, currentScore - (certScore != null ? certScore - currentScore : 0)) : null);
-            const showLift = certScore != null && certScore > currentScore;
+            const priorScore = prevScore;
+            const showLift = priorScore != null && certScore != null && certScore > priorScore;
             return (
               <div className="rounded-2xl border border-green-300 bg-green-50 dark:border-green-800 dark:bg-green-950/40 p-6 text-center space-y-3">
                 <p className="text-2xl font-black text-green-700 dark:text-green-400">
@@ -439,8 +447,8 @@ export default function Step7Pricing() {
                   <div className="flex items-center justify-center gap-4 py-2">
                     <div className="text-center">
                       <p className="text-xs text-muted-foreground uppercase tracking-wide mb-0.5">Before</p>
-                      <p className={`text-3xl font-black ${bandColor(currentScore)}`}>{currentScore}</p>
-                      <div className="mt-1"><BandLabel score={currentScore} /></div>
+                      <p className={`text-3xl font-black ${bandColor(priorScore!)}`}>{priorScore}</p>
+                      <div className="mt-1"><BandLabel score={priorScore!} /></div>
                     </div>
                     <div className="text-3xl text-green-500 font-black">&rarr;</div>
                     <div className="text-center">
@@ -498,7 +506,7 @@ export default function Step7Pricing() {
           {/* ══════════════════════════════════════════════════════
               TIER CARDS
           ══════════════════════════════════════════════════════ */}
-          <div className="space-y-4">
+          <div id="tier-cards" className="space-y-4">
 
             {/* Show me ROI button */}
             <div className="text-center">
