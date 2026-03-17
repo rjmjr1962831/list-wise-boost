@@ -74,21 +74,10 @@
     },
     {
       "name": "agents-search",
-      "description": "Search agents by state, city, zip, specialty. Public API.",
+      "description": "Search agents by state, city, zip, specialty. Returns Schema.org ItemList with JSON-LD.",
       "url": "https://www.top10lists.us/api/v1/agents/search",
-      "mimeType": "application/json",
+      "mimeType": "application/ld+json",
       "refreshInterval": "hourly"
-    },
-    {
-      "name": "agent-details",
-      "description": "Get full agent profile by ID. Public API.",
-      "url": "https://www.top10lists.us/api/v1/agents/{id}",
-      "mimeType": "application/json",
-      "refreshInterval": "hourly",
-      "urlTemplate": true,
-      "variables": {
-        "id": "Agent ID (numeric)"
-      }
     },
     {
       "name": "coverage",

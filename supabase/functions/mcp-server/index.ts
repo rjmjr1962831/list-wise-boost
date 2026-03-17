@@ -164,6 +164,8 @@ function shapeAgentPayload(
       reviews: "10+ in 24 months",
       experience: "5+ years",
     },
+    aifs_score: audit?.score_listed ?? null,
+    aifs_band: aifsBand(audit?.score_listed),
   };
 
   // -- Audited adds --
@@ -627,9 +629,7 @@ async function handleGetAgentProfile(
   const license: LicenseRow = {
     professional_id: row.id,
     license_number: row.license_number,
-    state: row.license_state,
-    status: row.license_status,
-    expiration_date: row.expiration_date,
+    state: stateNameFromSlug(row.state_slug),
   };
 
   return shapeAgentPayload(agent, audit, license);
@@ -850,7 +850,7 @@ serve(async (req) => {
       // -- MCP lifecycle --
       case "initialize": {
         result = {
-          protocolVersion: "2025-03-26",
+          protocolVersion: "2024-11-05",
           serverInfo: SERVER_INFO,
           capabilities: CAPABILITIES,
         };
