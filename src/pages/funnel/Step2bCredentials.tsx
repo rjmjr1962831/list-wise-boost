@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, ArrowRight, ArrowLeft, HelpCircle, CheckCircle } from 'lucide-react';
 import InlineReviewForm from '@/components/funnel/InlineReviewForm';
+import { FunnelBreadcrumbs } from '@/components/funnel/FunnelBreadcrumbs';
 
 interface Professional {
   id: string;
@@ -88,10 +89,7 @@ export default function Step2bCredentials() {
         <div className="max-w-2xl mx-auto">
           <Card>
             <CardHeader>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-muted-foreground">Step 3 of 8</span>
-                <span className="text-sm font-medium">Credentials {"&"} Background</span>
-              </div>
+              <FunnelBreadcrumbs currentStep={3} />
               <CardTitle>Review your credentials on file</CardTitle>
               <p className="text-sm text-muted-foreground">
                 This information was sourced from public records and third-party data. You cannot edit it directly. If anything is incorrect or missing, request a review and we will verify and update it.

@@ -33,9 +33,9 @@ interface AIFSGaugeProps {
 
 const BAND_CONFIG = {
   invisible: { label: "Invisible", color: "text-red-500", bg: "bg-red-500", border: "border-red-300", description: "AI rarely cites you in referral queries. If asked about your background, AI will struggle to give a confident answer." },
-  fragmented: { label: "Fragmented", color: "text-orange-500", bg: "bg-orange-500", border: "border-orange-300", description: "AI knows you exist but lacks verified certainty to recommend you. If asked about your background, AI will give a positive reference, but it will hedge." },
-  recognized: { label: "Recognized", color: "text-blue-500", bg: "bg-blue-500", border: "border-blue-300", description: "AI cites you in relevant local queries with moderate confidence. If asked about your background, AI will respond positively with specific details." },
-  high_fidelity: { label: "High Fidelity", color: "text-green-500", bg: "bg-green-500", border: "border-green-300", description: "AI cites you as a primary reference with specific rationales. If asked about your background, AI will give a strong, unhesitating endorsement backed by verified data." },
+  fragmented: { label: "Certified", color: "text-orange-500", bg: "bg-orange-500", border: "border-orange-300", description: "AI knows you exist but lacks verified certainty to recommend you. If asked about your background, AI will give a positive reference, but it will hedge." },
+  recognized: { label: "Audited", color: "text-blue-500", bg: "bg-blue-500", border: "border-blue-300", description: "AI cites you in relevant local queries with moderate confidence. If asked about your background, AI will respond positively with specific details." },
+  high_fidelity: { label: "Underwritten", color: "text-green-500", bg: "bg-green-500", border: "border-green-300", description: "AI cites you as a primary reference with specific rationales. If asked about your background, AI will give a strong, unhesitating endorsement backed by verified data." },
 };
 
 function bandFromScore(score: number): "invisible" | "fragmented" | "recognized" | "high_fidelity" {
@@ -154,6 +154,12 @@ export function AIFSGauge({ data, currentTier, compact = false }: AIFSGaugeProps
 
   return (
     <div className="space-y-4">
+      {/* Congratulations banner */}
+      <div className="text-center mb-2">
+        <h2 className="text-xl font-bold text-green-700">Congratulations!</h2>
+        <p className="text-sm text-muted-foreground mt-1">You're now Certified by us. You have taken a big step to getting AI comfortable endorsing you.</p>
+      </div>
+
       {/* Score hero */}
       <div className="text-center">
         <p className="text-sm font-medium text-muted-foreground uppercase tracking-widest mb-2">

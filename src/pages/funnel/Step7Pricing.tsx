@@ -9,7 +9,8 @@ import { Loader2, Shield, Zap, CheckCircle2, AlertTriangle, ExternalLink, Info, 
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { DataPayloadExpander } from '@/components/agent/DataPayloadExpander';
 import { AIFSGauge, type AIFSData } from '@/components/agent/AIFSGauge';
-import { CitationROICalculator } from '@/components/agent/CitationROICalculator';
+import { CitationROICalculator, AIFSBandMeter, BANDS, TIER_LIFTS, TIER_ORDER } from '@/components/agent/CitationROICalculator';
+import { FunnelBreadcrumbs } from '@/components/funnel/FunnelBreadcrumbs';
 import { toast } from 'sonner';
 
 type CertificationTier = 'certified' | 'audited' | 'underwritten';
@@ -419,10 +420,7 @@ export default function Step7Pricing() {
         <div className="max-w-4xl mx-auto space-y-8">
 
           {/* ── Step header ── */}
-          <div className="flex items-center justify-between text-sm text-muted-foreground px-1">
-            <span>Step 8 of 8</span>
-            <span className="font-medium text-foreground">Choose Your Tier</span>
-          </div>
+          <FunnelBreadcrumbs currentStep={8} />
 
           {/* ── Activation banner (only when arriving from funnel flow) ── */}
           {fromFunnel && currentScore != null && (() => {
@@ -468,30 +466,39 @@ export default function Step7Pricing() {
           </div>
 
           {/* ══════════════════════════════════════════════════════
+              CITATION VALUE PREVIEW + AIFS BAND METER
+          ══════════════════════════════════════════════════════ */}
+          {(() => {
+            const baseline = currentScore ?? 42;
+            const tierScoresForMeter: Record<string, number> = {};
+            for (const tier of TIER_ORDER) {
+              tierScoresForMeter[tier] = Math.min(95, baseline + TIER_LIFTS[tier]);
+            }
+            return (
+              <div className="rounded-2xl border bg-card p-8 space-y-5 shadow-sm">
+                <div className="text-center">
+                  <h3 className="text-lg font-bold text-foreground">Citation Value Calculator</h3>
+                  <p className="text-xs text-muted-foreground mt-1">Estimated projections based on AIFS citation frequency model -- not guaranteed outcomes</p>
+                </div>
+
+                <div className="px-2 pt-2 pb-6">
+                  <AIFSBandMeter baseline={baseline} tiers={tierScoresForMeter} />
+                </div>
+
+                <div className="rounded-lg border border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950/30 px-4 py-3 text-center">
+                  <p className="text-sm font-semibold text-green-800 dark:text-green-300">
+                    AI-referred leads close at an estimated 25-40% vs &lt;1% for paid lead platforms
+                  </p>
+                  <p className="text-[10px] text-green-700 dark:text-green-400 mt-0.5">Based on NAR referral conversion data</p>
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* ══════════════════════════════════════════════════════
               TIER CARDS
           ══════════════════════════════════════════════════════ */}
           <div className="space-y-4">
-
-            {/* Challenge question */}
-            <div className="rounded-xl border bg-muted/30 p-5 text-center space-y-3">
-              <p className="text-sm font-bold text-foreground">Ask any AI this question:</p>
-              <div className="relative">
-                <p className="text-sm font-bold text-foreground italic leading-relaxed max-w-lg mx-auto">
-                  &ldquo;I am a real estate agent. Look at Top10lists.us through the lens of AI Footprint and Machine Trust. Specifically, evaluate whether their site affects my chances of being recommended or endorsed by you? Is the Underwritten Tier a good move for my Machine-Readable Reputation? Estimate the ROI.&rdquo;
-                </p>
-                <button
-                  type="button"
-                  className="mt-2 inline-flex items-center gap-1.5 text-xs font-bold text-primary hover:text-primary/80 transition-colors"
-                  onClick={() => {
-                    navigator.clipboard.writeText('I am a real estate agent. Look at Top10lists.us through the lens of AI Footprint and Machine Trust. Specifically, evaluate whether their site affects my chances of being recommended or endorsed by you? Is the Underwritten Tier a good move for my Machine-Readable Reputation? Estimate the ROI.');
-                    toast.success('Copied to clipboard');
-                  }}
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
-                  Copy to clipboard
-                </button>
-              </div>
-            </div>
 
             {/* Show me ROI button */}
             <div className="text-center">
@@ -670,9 +677,6 @@ export default function Step7Pricing() {
               })}
             </div>
 
-            <p className="text-sm text-muted-foreground max-w-lg mx-auto text-center mt-2">
-              <span className="font-medium text-foreground">Note:</span>&nbsp;No one can guarantee that you will always be named. There are many factors that go into an AI&rsquo;s referral reasoning. Our Underwritten tier provides the largest single-action increase in AI citability. For agents who already have a strong web presence, it&rsquo;s the most impactful next step.
-            </p>
           </div>
 
           {/* ROI Calculator */}
@@ -682,6 +686,10 @@ export default function Step7Pricing() {
               currentScore={currentScore ?? 0}
             />
           )}
+
+          <p className="text-sm text-muted-foreground max-w-lg mx-auto text-center mt-2">
+            <span className="font-medium text-foreground">Note:</span>&nbsp;No one can guarantee that you will always be named. There are many factors that go into an AI&rsquo;s referral reasoning. Our Underwritten tier provides the largest single-action increase in AI citability. For agents who already have a strong web presence, it&rsquo;s the most impactful next step.
+          </p>
 
           <p className="text-center text-sm text-muted-foreground pb-4">
             Questions? <a href="tel:6027589600" className="underline">(602) 758-9600</a>

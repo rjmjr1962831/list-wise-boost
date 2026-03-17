@@ -10,6 +10,7 @@ import { Loader2, ArrowRight, ArrowLeft, HelpCircle, X, Plus, CheckCircle } from
 import { toast } from 'sonner';
 import InlineReviewForm from '@/components/funnel/InlineReviewForm';
 import { floorSales, floorReviews } from '@/utils/floorDisplay';
+import { FunnelBreadcrumbs } from '@/components/funnel/FunnelBreadcrumbs';
 
 // Known specialties for autocomplete - kept in sync with DB
 const KNOWN_SPECIALTIES = [
@@ -266,10 +267,7 @@ export default function Step3Review2() {
         <div className="max-w-2xl mx-auto">
           <Card>
             <CardHeader>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-muted-foreground">Step 4 of 8</span>
-                <span className="text-sm font-medium">Professional Details</span>
-              </div>
+              <FunnelBreadcrumbs currentStep={4} />
               <CardTitle>Review your profile fields</CardTitle>
               <p className="text-sm text-muted-foreground">
                 Fields you can edit are open inputs. Some fields require a review request to change. Your changes save when you continue.

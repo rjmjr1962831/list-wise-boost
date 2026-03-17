@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Loader2, ArrowRight, ArrowLeft, HelpCircle, Eye, EyeOff, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import InlineReviewForm from '@/components/funnel/InlineReviewForm';
+import { FunnelBreadcrumbs } from '@/components/funnel/FunnelBreadcrumbs';
 
 interface Professional {
   id: string;
@@ -209,10 +210,7 @@ export default function Step2Review1() {
         <div className="max-w-2xl mx-auto">
           <Card>
             <CardHeader>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-muted-foreground">Step 2 of 8</span>
-                <span className="text-sm font-medium">Basic Information</span>
-              </div>
+              <FunnelBreadcrumbs currentStep={2} />
               <CardTitle>Let's verify your contact information</CardTitle>
               <p className="text-sm text-muted-foreground">
                 Make sure everything is correct. This is how clients will reach you.

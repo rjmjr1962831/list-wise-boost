@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, ArrowRight, ArrowLeft, CheckCircle, Edit } from 'lucide-react';
 import { toast } from 'sonner';
 import { floorSales, floorReviews } from '@/utils/floorDisplay';
+import { FunnelBreadcrumbs } from '@/components/funnel/FunnelBreadcrumbs';
 
 interface Professional {
   id: string;
@@ -189,10 +190,7 @@ export default function Step4ReviewFinal() {
         <div className="max-w-3xl mx-auto">
           <Card>
             <CardHeader>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-muted-foreground">Step 5 of 8</span>
-                <span className="text-sm font-medium">Final Review</span>
-              </div>
+              <FunnelBreadcrumbs currentStep={5} />
               <CardTitle>Does everything look correct?</CardTitle>
               <p className="text-sm text-muted-foreground">
                 Review your information before we move forward. Fields marked with a green badge have a pending review request.
