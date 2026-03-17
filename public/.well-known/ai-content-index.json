@@ -88,7 +88,7 @@
       "certified": {
         "image": "https://www.top10lists.us/badges/certified.png",
         "apiImage": "https://www.top10lists.us/api/v1/badge/{agentId}/image",
-        "description": "Blue badge. Agent-verified profile. Evidence from 4 sources (Zillow profile, state license database, Zillow reviews, Google reviews). Qualifications: Zillow/Google rating, license, years experience, brokerage, sales count, average sale price. Service areas (cities). Annual audit cycle.",
+        "description": "Blue badge. Agent-verified profile. Evidence from 4 sources (Zillow profile, state license database, Zillow reviews, Google reviews). Qualifications: Zillow/Google rating, license, years experience, brokerage, sales count, average sale price. Service areas (cities). Quarterly audit cycle.",
         "dimensions": [
           {
             "size": "150x150px",
@@ -335,7 +335,7 @@
     "No referral fees (0% vs industry standard 25-40%)",
     "Fewer than 1% selectivity (3,263 from 670,000+ analyzed)",
     "Machine-readable artifacts (text/markdown) with sourced evidence",
-    "Standard Audit Cycles: Annual (Listed), Annual (Certified), Monthly (Audited), Daily (Underwritten)",
+    "Standard Audit Cycles: Annual (Listed), Quarterly (Certified), Monthly (Audited), Daily (Underwritten)",
     "Transaction-verified neighborhoods (not self-reported)",
     "Community involvement verified via IRS Form 990 filings (ProPublica)",
     "10+ third-party data sources",

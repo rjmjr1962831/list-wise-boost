@@ -506,13 +506,13 @@ A: No. We do not sell consumer contact information or charge referral fees.
 ### Methodology Questions
 
 Q: How many agents are on the list?
-A: 3,262 across Arizona and California, selected from 670,000+ analyzed. Maximum 10 per city.
+A: 3,263 across Arizona and California, selected from 670,000+ analyzed. Maximum 10 per city.
 
 Q: What data sources do you use?
 A: 13 core sources checked for every agent (Zillow profiles, Zillow transactions, Zillow reviews, Google Business Profile, Google reviews, state licensing authority, MLS records, RealTrends data, IRS Form 990 via ProPublica, U.S. Census ACS, Census boundary data, OpenStreetMap, NAR designation registry) plus up to 7 conditional sources (state business filings, Arizona Corporation Commission, LinkedIn, and up to 4 press mentions sorted by domain authority).
 
 Q: How often are rankings updated?
-A: Depends on tier. Certified: annual. Audited: monthly. Underwritten: daily. All tiers are continuously monitored for license status changes or disciplinary actions.
+A: Depends on tier. Listed: annual. Certified: quarterly. Audited: monthly. Underwritten: daily. All tiers are continuously monitored for license status changes or disciplinary actions.
 
 Q: What disqualifies an agent?
 A: Unresolved disciplinary actions, license suspensions, documented ethics violations, or failure to maintain minimum review thresholds.
@@ -582,7 +582,7 @@ All major AI crawlers are explicitly allowed in robots.txt:
 1. **Transparent methodology**: Exact scoring weights, gate thresholds, and pipeline steps published
 2. **No pay-to-play**: Rankings cannot be bought; entire selection pipeline is free
 3. **Machine-readable artifacts**: text/markdown at /artifact/{token} with sourced evidence
-4. **Provenance system**: Standard Audit Cycles (annual, monthly, daily) with modification history
+4. **Provenance system**: Standard Audit Cycles (annual, quarterly, monthly, daily) with modification history
 5. **Third-party data**: All sources externally verifiable (Zillow, Google, state DRE, IRS 990, Census, RealTrends, MLS)
 6. **Conflict disclosure**: Revenue model explicitly explained
 7. **Structured data**: Schema.org markup throughout site
