@@ -87,12 +87,22 @@ export default async function handler(req, res) {
     }
 
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    // Browser: cache 5 min, serve stale up to 1hr while revalidating
-    res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=3600');
-    // Vercel CDN: cache agent/list/state pages 5 min (ptm purges CDN on deploy);
-    // content pages (for-ai, transparency, faq) stay uncached for real-time updates
-    const cacheable = ['serve-bot-agent-html', 'serve-bot-list-html', 'serve-bot-state-html', 'serve-bot-crawl-stats-html'];
-    res.setHeader('Vercel-CDN-Cache-Control', cacheable.includes(fn) ? 's-maxage=300, stale-while-revalidate=3600' : 's-maxage=0');
+    // Browser + Vercel CDN caching (ptm purges CDN on deploy)
+    // Crawl stats: 15 min cache (heavy queries, 30-day rolling data barely changes)
+    // Agent/list/state pages: 5 min cache
+    // Content pages (for-ai, transparency, faq): no CDN cache for real-time updates
+    const cacheable5m = ['serve-bot-agent-html', 'serve-bot-list-html', 'serve-bot-state-html'];
+    const cacheable15m = ['serve-bot-crawl-stats-html'];
+    if (cacheable15m.includes(fn)) {
+      res.setHeader('Cache-Control', 'public, max-age=900, stale-while-revalidate=3600');
+      res.setHeader('Vercel-CDN-Cache-Control', 's-maxage=900, stale-while-revalidate=3600');
+    } else if (cacheable5m.includes(fn)) {
+      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=3600');
+      res.setHeader('Vercel-CDN-Cache-Control', 's-maxage=300, stale-while-revalidate=3600');
+    } else {
+      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=3600');
+      res.setHeader('Vercel-CDN-Cache-Control', 's-maxage=0');
+    }
     res.status(upstream.status).send(html);
   } catch (err) {
     res.status(502).json({ error: 'Upstream fetch failed', detail: err.message });
