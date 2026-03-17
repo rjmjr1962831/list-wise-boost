@@ -639,32 +639,37 @@ async function handleGetCoverage(
   supabase: ReturnType<typeof createClient>,
   params: { state?: string }
 ) {
-  let sql: string;
-  if (params.state) {
-    sql = `
+  // Count agents from professionals table (authoritative), cities from cities table
+  const stateFilter = params.state
+    ? `AND LOWER(c.state) = LOWER('${params.state.replace(/'/g, "''")}')`
+    : "";
+
+  const sql = `
+    SELECT
+      c.state,
+      COUNT(DISTINCT c.id) as city_count,
+      COALESCE(p.agent_count, 0) as agent_count
+    FROM cities c
+    LEFT JOIN (
       SELECT
-        c.state,
-        COUNT(DISTINCT c.id) as city_count,
-        COUNT(DISTINCT pc.professional_id) as agent_count
-      FROM cities c
-      LEFT JOIN professional_cities pc ON pc.city_id = c.id
-      WHERE c.active = true
-        AND LOWER(c.state) = LOWER('${params.state.replace(/'/g, "''")}')
-      GROUP BY c.state
-    `;
-  } else {
-    sql = `
-      SELECT
-        c.state,
-        COUNT(DISTINCT c.id) as city_count,
-        COUNT(DISTINCT pc.professional_id) as agent_count
-      FROM cities c
-      LEFT JOIN professional_cities pc ON pc.city_id = c.id
-      WHERE c.active = true
-      GROUP BY c.state
-      ORDER BY c.state
-    `;
-  }
+        CASE state_slug
+          WHEN 'arizona' THEN 'Arizona'
+          WHEN 'california' THEN 'California'
+          WHEN 'texas' THEN 'Texas'
+          WHEN 'florida' THEN 'Florida'
+          WHEN 'new-york' THEN 'New York'
+          WHEN 'colorado' THEN 'Colorado'
+          ELSE state_slug
+        END as state,
+        COUNT(*) as agent_count
+      FROM professionals
+      WHERE active = true AND state_slug IS NOT NULL
+      GROUP BY state_slug
+    ) p ON p.state = c.state
+    WHERE c.active = true ${stateFilter}
+    GROUP BY c.state, p.agent_count
+    ORDER BY c.state
+  `;
 
   const { data, error } = await supabase.rpc("run_sql", { query: sql });
   if (error) throw new Error(`Database error: ${error.message}`);
