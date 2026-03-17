@@ -10,6 +10,7 @@ const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const AdminLogin = lazy(() => import("./pages/AdminLogin"));
 const AdminExportAgents = lazy(() => import("./pages/AdminExportAgents"));
 const BotAnalyticsDashboard = lazy(() => import("./pages/BotAnalyticsDashboard"));
+const GeoDashboard = lazy(() => import("./pages/GeoDashboard"));
 const AgentBotAnalyticsDashboard = lazy(() => import("./pages/AgentBotAnalyticsDashboard"));
 const MobilePreview = lazy(() => import("./pages/MobilePreview"));
 const OGPreview = lazy(() => import("./pages/OGPreview"));
@@ -50,6 +51,7 @@ export function AdminRoutes() {
       <Route path="/admin/neighborhood-writeups" element={<AdminRouteGuard><Navigate to="/404" replace /></AdminRouteGuard>} />
       <Route path="/admin/export-agents" element={<AdminRouteGuard><AdminExportAgents /></AdminRouteGuard>} />
       <Route path="/a/bot-analytics" element={<AdminRouteGuard><BotAnalyticsDashboard /></AdminRouteGuard>} />
+      <Route path="/a/geo-dashboard" element={<AdminRouteGuard><GeoDashboard /></AdminRouteGuard>} />
       <Route path="/agent/bot-analytics" element={<AdminRouteGuard><AgentBotAnalyticsDashboard /></AdminRouteGuard>} />
       <Route path="/og-preview" element={<AdminRouteGuard><OGPreview /></AdminRouteGuard>} />
       <Route path="/crm" element={<AdminRouteGuard><CRM /></AdminRouteGuard>} />

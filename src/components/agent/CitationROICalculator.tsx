@@ -377,16 +377,19 @@ export function CitationROICalculator({ tierProjections, currentScore }: Citatio
                 </div>
               </div>
 
-              {/* CTA Button */}
+              {/* CTA Button -- scrolls to tier cards above */}
               <div className="mt-auto">
                 {isCertified ? (
-                  <button className="w-full py-2 rounded-lg text-xs font-bold bg-muted text-muted-foreground cursor-default">
+                  <div className="w-full py-2 rounded-lg text-xs font-bold bg-muted text-muted-foreground text-center cursor-default">
                     You are here
-                  </button>
+                  </div>
                 ) : (
-                  <button className={`w-full py-2 rounded-lg text-xs font-bold text-white ${
-                    isUnderwritten ? "bg-primary hover:bg-primary/90" : "bg-blue-600 hover:bg-blue-700"
-                  } transition-colors`}>
+                  <button
+                    className={`w-full py-2 rounded-lg text-xs font-bold text-white ${
+                      isUnderwritten ? "bg-primary hover:bg-primary/90" : "bg-blue-600 hover:bg-blue-700"
+                    } transition-colors`}
+                    onClick={() => document.getElementById('tier-cards')?.scrollIntoView({ behavior: 'smooth' })}
+                  >
                     Upgrade to {r.tier === "audited" ? "Audited" : "Underwritten"}
                   </button>
                 )}

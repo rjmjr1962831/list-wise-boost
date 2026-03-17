@@ -15,15 +15,7 @@ serve(async (req) => {
     const sql = postgres(dbUrl, { ssl: false, max: 1 });
 
     const statements = [
-      `ALTER TABLE public.professionals ADD COLUMN IF NOT EXISTS recommendation_without text`,
-      `ALTER TABLE public.professionals ADD COLUMN IF NOT EXISTS recommendation_with text`,
-      `ALTER TABLE public.professionals ADD COLUMN IF NOT EXISTS uplift text`,
-      `ALTER TABLE public.professionals ADD COLUMN IF NOT EXISTS projected_uplift_certified text`,
-      `ALTER TABLE public.professionals ADD COLUMN IF NOT EXISTS projected_uplift_audited text`,
-      `ALTER TABLE public.professionals ADD COLUMN IF NOT EXISTS projected_uplift_underwritten text`,
-      `ALTER TABLE public.professionals ADD COLUMN IF NOT EXISTS projected_rec_certified text`,
-      `ALTER TABLE public.professionals ADD COLUMN IF NOT EXISTS projected_rec_audited text`,
-      `ALTER TABLE public.professionals ADD COLUMN IF NOT EXISTS projected_rec_underwritten text`,
+      `SELECT 1`, -- placeholder; update with DDL statements as needed
     ];
 
     const results = [];

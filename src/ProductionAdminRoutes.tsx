@@ -10,6 +10,7 @@ export function ProductionAdminRoutes() {
     <>
       <Route path="/admin/*" element={<Navigate to="/404" replace />} />
       <Route path="/a/bot-analytics" element={<Navigate to="/404" replace />} />
+      <Route path="/a/geo-dashboard" element={<Navigate to="/404" replace />} />
       <Route path="/agent/bot-analytics" element={<Navigate to="/404" replace />} />
       <Route path="/og-preview" element={<Navigate to="/404" replace />} />
       <Route path="/crm" element={<Navigate to="/404" replace />} />

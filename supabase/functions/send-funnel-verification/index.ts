@@ -32,18 +32,46 @@ const handler = async (req: Request): Promise<Response> => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Generate a simple token
-    const verificationToken = crypto.randomUUID();
+    // Check if a permanent magic link token already exists (expires > 2099)
+    const { data: existing } = await supabase
+      .from('professionals')
+      .select('verification_token, verification_token_expires_at')
+      .eq('id', professionalId)
+      .maybeSingle();
+
+    let verificationToken: string;
+
+    if (existing?.verification_token && existing?.verification_token_expires_at) {
+      const expiresDate = new Date(existing.verification_token_expires_at);
+      if (expiresDate.getFullYear() >= 2099) {
+        // Permanent token exists -- reuse it, do not overwrite
+        console.log(`♻️ Reusing permanent magic link token for ${professionalId}`);
+        verificationToken = existing.verification_token;
+      } else {
+        // Expired or short-lived token -- generate new one
+        verificationToken = crypto.randomUUID();
+      }
+    } else {
+      verificationToken = crypto.randomUUID();
+    }
+
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(); // 24 hours
 
-    // Store the verification token
+    // Only update token if we generated a new one (preserve permanent tokens)
+    const isPermanent = existing?.verification_token === verificationToken &&
+      new Date(existing?.verification_token_expires_at ?? 0).getFullYear() >= 2099;
+
+    const updatePayload: Record<string, string> = {
+      verification_started_at: new Date().toISOString(),
+    };
+    if (!isPermanent) {
+      updatePayload.verification_token = verificationToken;
+      updatePayload.verification_token_expires_at = expiresAt;
+    }
+
     const { error: updateError } = await supabase
       .from('professionals')
-      .update({
-        verification_token: verificationToken,
-        verification_token_expires_at: expiresAt,
-        verification_started_at: new Date().toISOString(),
-      })
+      .update(updatePayload)
       .eq('id', professionalId);
 
     if (updateError) {

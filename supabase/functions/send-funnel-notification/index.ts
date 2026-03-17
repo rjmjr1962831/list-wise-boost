@@ -31,50 +31,10 @@ const getThrottleWindow = (eventType: string): number => {
   return THROTTLE_WINDOWS[eventType] || THROTTLE_WINDOWS.default;
 };
 
-// Helper function to call Pipedrive API with retry on rate limit (returns null on rate limit instead of throwing)
-async function fetchWithRetry(
-  url: string, 
-  options: RequestInit, 
-  maxRetries = 3,
-  initialDelay = 600
-): Promise<Response | null> {
-  for (let attempt = 0; attempt < maxRetries; attempt++) {
-    const response = await fetch(url, options);
-    
-    // If rate limited (429), wait and retry
-    if (response.status === 429) {
-      if (attempt < maxRetries - 1) {
-        const delay = initialDelay * Math.pow(2, attempt); // 600ms, 1200ms, 2400ms
-        console.log(`⏳ Pipedrive rate limited, retrying in ${delay}ms (attempt ${attempt + 1}/${maxRetries})...`);
-        await new Promise(resolve => setTimeout(resolve, delay));
-        continue;
-      }
-      // On final attempt, return null instead of throwing
-      console.log(`[rate-limited] Pipedrive rate limit exceeded after ${maxRetries} attempts`);
-      return null;
-    }
-    
-    return response;
-  }
-  
-  return null;
-}
-
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
-
-// Events that should create Pipedrive activities
-const PIPEDRIVE_ACTIVITY_EVENTS = [
-  'accuracy_confirmed',
-  'profile_approved', 
-  'pricing_viewed',
-  'checkout_started',
-  'checkout_completed',
-  'cities_selected',
-  'neighborhoods_selected'
-];
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -88,8 +48,6 @@ serve(async (req) => {
 
   try {
     const ADMIN_EMAIL = Deno.env.get('ADMIN_EMAIL') || 'robert@top10lists.us';
-    const PIPEDRIVE_API_TOKEN = Deno.env.get('PIPEDRIVE_API_TOKEN');
-    const PIPEDRIVE_DOMAIN = Deno.env.get('PIPEDRIVE_DOMAIN') || 'top10lists';
 
     const { event_type, agent_name, agent_email, agent_id, city_name, profile_link, cities_selected, neighborhoods_selected } = await req.json();
 
@@ -388,104 +346,6 @@ serve(async (req) => {
         await smtpClient.close();
       } catch (closeError) {
         console.warn('SMTP close error:', closeError);
-      }
-    }
-
-    // Create Pipedrive activity for key events
-    if (PIPEDRIVE_ACTIVITY_EVENTS.includes(event_type) && agent_id && PIPEDRIVE_API_TOKEN) {
-      try {
-        console.log(`📊 Creating Pipedrive activity for ${event_type}...`);
-        
-        // Look up Pipedrive person ID
-        const { data: syncState } = await supabase
-          .from("pipedrive_sync_state")
-          .select("pipedrive_person_id")
-          .eq("professional_id", agent_id)
-          .maybeSingle();
-        
-        const pipedrivePersonId = syncState?.pipedrive_person_id;
-        
-        if (pipedrivePersonId) {
-          // Create activity subject and note based on event type
-          let activitySubject = '';
-          let activityNote = '';
-          
-          switch (event_type) {
-            case 'accuracy_confirmed':
-              activitySubject = `✅ Profile Accuracy Confirmed`;
-              activityNote = `Agent ${agent_name} confirmed their profile information is accurate.\n\nTime: ${timestamp}\nCity: ${city_name || 'N/A'}\nProfile: ${profile_link || 'N/A'}`;
-              break;
-            case 'profile_approved':
-              activitySubject = `🎉 PROFILE APPROVED`;
-              activityNote = `Agent ${agent_name} officially approved their Top10Lists profile!\n\nTime: ${timestamp}\nCity: ${city_name || 'N/A'}\nProfile: ${profile_link || 'N/A'}\n\nThis is a key milestone - follow up to discuss premium placement.`;
-              break;
-            case 'pricing_viewed':
-              activitySubject = `🟡 Viewing Pricing Page`;
-              activityNote = `Agent ${agent_name} is viewing the pricing page.\n\nTime: ${timestamp}\nCity: ${city_name || 'N/A'}\nProfile: ${profile_link || 'N/A'}\n\nHOT LEAD - Consider following up.`;
-              break;
-            case 'checkout_started':
-              activitySubject = `🔥 CHECKOUT STARTED`;
-              activityNote = `Agent ${agent_name} has started the checkout process!\n\nTime: ${timestamp}\nCity: ${city_name || 'N/A'}\nProfile: ${profile_link || 'N/A'}\n\nVERY HOT - Watch for completion or abandonment.`;
-              break;
-            case 'checkout_completed':
-              activitySubject = `💰 PURCHASE COMPLETED`;
-              activityNote = `Agent ${agent_name} has completed their purchase!\n\nTime: ${timestamp}\nCity: ${city_name || 'N/A'}\nProfile: ${profile_link || 'N/A'}\n\nNew paying customer - ensure listing is live.`;
-              break;
-            case 'cities_selected':
-              const cityNames = cities_selected?.names?.join(', ') || 'Unknown';
-              const cityCount = cities_selected?.count || 0;
-              activitySubject = `🗺️ Selected ${cityCount} Cities`;
-              activityNote = `Agent ${agent_name} selected cities for coverage.\n\nCities (${cityCount}): ${cityNames}\n\nTime: ${timestamp}\nProfile: ${profile_link || 'N/A'}\n\nThis is the first step in the visibility funnel.`;
-              break;
-            case 'neighborhoods_selected':
-              const neighborhoodNames = neighborhoods_selected?.names?.join(', ') || 'Unknown';
-              const neighborhoodCount = neighborhoods_selected?.count || 0;
-              const monthlyTotal = neighborhoods_selected?.monthly_total || 0;
-              activitySubject = `📍 Selected ${neighborhoodCount} Neighborhoods ($${monthlyTotal}/mo)`;
-              activityNote = `Agent ${agent_name} selected neighborhood expertise areas.\n\nNeighborhoods (${neighborhoodCount}): ${neighborhoodNames}\nMonthly Total: $${monthlyTotal}\n\nTime: ${timestamp}\nProfile: ${profile_link || 'N/A'}\n\nHOT LEAD - Agent is considering paid placement.`;
-              break;
-          }
-          
-          // Create Pipedrive activity using v2 API
-          const activityData: Record<string, any> = {
-            subject: activitySubject,
-            type: 'task',
-            public_description: activityNote,
-            due_date: new Date().toISOString().split('T')[0],
-            due_time: '09:00',
-            done: event_type === 'checkout_completed', // Mark as done only for completed purchases
-            person_id: Number(pipedrivePersonId)
-          };
-          
-          console.log('📤 Creating Pipedrive activity:', activityData);
-          
-          const response = await fetchWithRetry(
-            `https://${PIPEDRIVE_DOMAIN}.pipedrive.com/api/v2/activities?api_token=${PIPEDRIVE_API_TOKEN}`,
-            {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(activityData)
-            }
-          );
-          
-          // Handle rate limit (fetchWithRetry returns null)
-          if (!response) {
-            console.log(`[rate-limited] Pipedrive activity for ${event_type}`);
-          } else {
-            const result = await response.json();
-            
-            if (response.ok && result.success) {
-              console.log(`✅ Pipedrive activity created: ${result.data?.id}`);
-            } else {
-              console.error('⚠️ Pipedrive API error (non-fatal):', result);
-            }
-          }
-        } else {
-          console.log(`⚠️ No Pipedrive person ID found for agent ${agent_id}`);
-        }
-      } catch (pipedriveError) {
-        console.error('⚠️ Pipedrive activity creation failed (non-fatal):', pipedriveError);
-        // Don't throw - email was sent successfully, Pipedrive is optional
       }
     }
 

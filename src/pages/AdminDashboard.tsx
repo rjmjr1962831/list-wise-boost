@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { LogOut, Briefcase, CreditCard, LayoutDashboard, MailCheck, BarChart3, Smartphone, TestTube2, Presentation } from "lucide-react";
+import { LogOut, Briefcase, CreditCard, LayoutDashboard, MailCheck, BarChart3, Smartphone, TestTube2, Presentation, Search } from "lucide-react";
 import { toast } from "sonner";
 
 const AdminDashboard = () => {
@@ -190,7 +190,7 @@ const AdminDashboard = () => {
           </div>
         </div>
 
-        <div className="p-4 bg-card rounded-lg border">
+        <div className="p-4 bg-card rounded-lg border flex gap-4">
           <Button
             onClick={() => navigate("/a/bot-analytics")}
             variant="outline"
@@ -198,6 +198,14 @@ const AdminDashboard = () => {
           >
             <BarChart3 className="mr-2 h-4 w-4" />
             Bot Analytics
+          </Button>
+          <Button
+            onClick={() => navigate("/a/geo-dashboard")}
+            variant="outline"
+            className="h-auto py-3 border-green-500 text-green-600 hover:bg-green-50"
+          >
+            <Search className="mr-2 h-4 w-4" />
+            GEO SERP Dashboard
           </Button>
         </div>
       </div>
