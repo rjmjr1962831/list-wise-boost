@@ -10,3 +10,5 @@ docs/takeaways/
 PENDING_UPDATES.md
 docs/MIGRATION_DOCUMENT.md
 Top10Lists_MASTER_BASELINE.md
+docs/COMPREHENSIVE_KNOWLEDGE_DOCUMENT.md
+docs/prompts/
