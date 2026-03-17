@@ -52,6 +52,20 @@ function nextVerification(
   return d.toISOString();
 }
 
+const STATE_SLUG_MAP: Record<string, string> = {
+  arizona: "Arizona",
+  california: "California",
+  texas: "Texas",
+  florida: "Florida",
+  "new-york": "New York",
+  colorado: "Colorado",
+};
+
+function stateNameFromSlug(slug: string | null): string | null {
+  if (!slug) return null;
+  return STATE_SLUG_MAP[slug.toLowerCase()] ?? slug;
+}
+
 function normalizeTier(raw: string | null | undefined): string {
   if (!raw) return "listed";
   const t = raw.toLowerCase().trim();
@@ -348,18 +362,15 @@ async function handleSearchAgents(
     SELECT
       p.id, p.name, p.badge_tier, p.active, p.canonical_slug, p.state_slug,
       p.business_city, p.website, p.years_experience,
+      p.license_number, p.license_status, p.license_type,
       g.score_listed, g.score_certified, g.score_audited, g.score_underwritten,
       g.pillar_identity, g.pillar_authority, g.pillar_social, g.pillar_technical,
       g.pillar_citability, g.review_count, g.review_rating, g.platforms_found,
       g.gap_no_linkedin, g.gap_no_schema, g.gap_no_google_business,
       g.has_linkedin, g.has_zillow, g.has_realtor,
-      g.recency_label, g.most_recent_signal, g.current_tier, g.audited_at,
-      sl.license_number, sl.state as license_state, sl.license_type as license_type
+      g.recency_label, g.most_recent_signal, g.current_tier, g.audited_at
     FROM professionals p
     LEFT JOIN geo_audit_results g ON g.agent_id = p.id
-    LEFT JOIN LATERAL (
-      SELECT * FROM state_licenses WHERE professional_id = p.id LIMIT 1
-    ) sl ON true
     WHERE p.active = true
   `;
 
@@ -433,7 +444,7 @@ async function handleSearchAgents(
     const license: LicenseRow = {
       professional_id: row.id as number,
       license_number: row.license_number as string | null,
-      state: row.license_state as string | null,
+      state: stateNameFromSlug(row.state_slug as string | null),
     };
 
     return shapeAgentPayload(agent, audit, license);
@@ -448,20 +459,19 @@ async function handleVerifyAgent(
 ) {
   const sql = `
     SELECT
-      sl.license_number, sl.state, sl.license_type,
       p.id, p.name, p.badge_tier, p.active, p.canonical_slug, p.state_slug,
       p.business_city, p.website, p.years_experience,
+      p.license_number, p.license_status, p.license_type,
       g.score_listed, g.score_certified, g.score_audited, g.score_underwritten,
       g.pillar_identity, g.pillar_authority, g.pillar_social, g.pillar_technical,
       g.pillar_citability, g.review_count, g.review_rating, g.platforms_found,
       g.gap_no_linkedin, g.gap_no_schema, g.gap_no_google_business,
       g.has_linkedin, g.has_zillow, g.has_realtor,
       g.recency_label, g.most_recent_signal, g.current_tier, g.audited_at
-    FROM state_licenses sl
-    JOIN professionals p ON p.id = sl.professional_id
+    FROM professionals p
     LEFT JOIN geo_audit_results g ON g.agent_id = p.id
-    WHERE sl.license_number = '${params.license_number.replace(/'/g, "''")}'
-      AND LOWER(sl.state) = LOWER('${params.state.replace(/'/g, "''")}')
+    WHERE p.license_number = '${params.license_number.replace(/'/g, "''")}'
+      AND p.active = true
     LIMIT 1
   `;
 
@@ -522,18 +532,19 @@ async function handleVerifyAgent(
     audited_at: row.audited_at,
   };
 
+  const agentState = stateNameFromSlug(row.state_slug);
   const license: LicenseRow = {
     professional_id: row.id,
     license_number: row.license_number,
-    state: row.state,
+    state: agentState,
   };
 
   return {
     verified: true,
     license_number: params.license_number,
-    license_state: params.state,
-    license_type: row.license_type ?? "active",
-    license_registry_url: registryUrl(params.state, params.license_number),
+    license_state: agentState,
+    license_status: row.license_status ?? "Active",
+    license_registry_url: agentState ? registryUrl(agentState, params.license_number) : null,
     in_directory: row.active === true,
     agent: shapeAgentPayload(agent, audit, license),
   };
@@ -548,18 +559,15 @@ async function handleGetAgentProfile(
       p.id, p.name, p.badge_tier, p.active, p.canonical_slug, p.state_slug,
       p.business_city, p.website, p.social_linkedin, p.social_facebook,
       p.zillow_profile_url, p.years_experience, p.phone, p.email,
+      p.license_number, p.license_status, p.license_type,
       g.score_listed, g.score_certified, g.score_audited, g.score_underwritten,
       g.pillar_identity, g.pillar_authority, g.pillar_social, g.pillar_technical,
       g.pillar_citability, g.review_count, g.review_rating, g.platforms_found,
       g.gap_no_linkedin, g.gap_no_schema, g.gap_no_google_business,
       g.has_linkedin, g.has_zillow, g.has_realtor,
-      g.recency_label, g.most_recent_signal, g.current_tier, g.audited_at,
-      sl.license_number, sl.state as license_state, sl.license_type as license_type
+      g.recency_label, g.most_recent_signal, g.current_tier, g.audited_at
     FROM professionals p
     LEFT JOIN geo_audit_results g ON g.agent_id = p.id
-    LEFT JOIN LATERAL (
-      SELECT * FROM state_licenses WHERE professional_id = p.id LIMIT 1
-    ) sl ON true
     WHERE p.canonical_slug = '${params.slug.replace(/'/g, "''")}'
     LIMIT 1
   `;
