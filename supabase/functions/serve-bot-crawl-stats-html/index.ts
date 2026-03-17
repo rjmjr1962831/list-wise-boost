@@ -270,12 +270,17 @@ async function renderCrawlStats(): Promise<string> {
   const searchVisits = searchBots.reduce((s, b) => s + b.visits, 0);
   const intentVisits = mergedIntent.reduce((s, i) => s + i.visits, 0);
 
-  /* Section A: Bot breakdown table */
-  const botTableRows = mergedBots
-    .map((b) => {
+  /* Section A: Split into human-triggered vs automated bots */
+  const humanBots = mergedBots.filter((b) => INTENT_BOTS.has(b.bot_name));
+  const autoBots = mergedBots.filter((b) => !INTENT_BOTS.has(b.bot_name));
+  const humanVisits = humanBots.reduce((s, b) => s + b.visits, 0);
+  const autoVisits = autoBots.reduce((s, b) => s + b.visits, 0);
+
+  function buildBotRows(list: BotRow[], total: number): string {
+    return list.map((b) => {
       const cat = botCategory(b.bot_name);
       const display = BOT_DISPLAY[b.bot_name] || esc(b.bot_name);
-      const pct = summary.total_crawls > 0 ? ((b.visits / summary.total_crawls) * 100).toFixed(1) : "0";
+      const pct = total > 0 ? ((b.visits / total) * 100).toFixed(1) : "0";
       return `<tr>
       <td>${esc(display)} <span class="badge badge-${cat}">${categoryLabel(cat)}</span></td>
       <td class="num">${fmt(b.visits)}</td>
@@ -283,8 +288,11 @@ async function renderCrawlStats(): Promise<string> {
       <td class="num">${fmt(b.agents_covered)}</td>
       <td class="timestamp">${formatTimestamp(b.last_seen)}</td>
     </tr>`;
-    })
-    .join("\n");
+    }).join("\n");
+  }
+
+  const humanBotRows = buildBotRows(humanBots, humanVisits);
+  const autoBotRows = buildBotRows(autoBots, autoVisits);
 
   /* Section B: Market verification table */
   const maxMarketCrawls = markets.length > 0 ? markets[0].crawls : 1;
@@ -402,16 +410,30 @@ async function renderCrawlStats(): Promise<string> {
   </div>
 
   <!-- ═══════════════════════════════════════════════════════════════════ -->
-  <!-- SECTION A: Ecosystem Consensus                                     -->
+  <!-- SECTION A1: Human-Triggered Crawls                                 -->
   <!-- ═══════════════════════════════════════════════════════════════════ -->
   <section>
-    <h2>A. Ecosystem Consensus (All Bots, Last 30 Days)</h2>
-    <p>Full breakdown of every bot type crawling Top10Lists.us. AI assistant crawls account for <strong>${fmt(aiVisits)}</strong> visits (${summary.total_crawls > 0 ? ((aiVisits / summary.total_crawls) * 100).toFixed(1) : "0"}%), search engines add <strong>${fmt(searchVisits)}</strong>.</p>
+    <h2>A1. Human-Triggered Crawls (Consumer Queries, Last 30 Days)</h2>
+    <p>These crawls are triggered by real people asking AI assistants questions. Each row represents a bot that fetched our data because a consumer asked for real estate agent recommendations. <strong>${fmt(humanVisits)}</strong> human-triggered crawls total.</p>
     <table>
       <thead>
         <tr><th>Bot</th><th class="num">Crawls</th><th class="num">Share</th><th class="num">Agents</th><th>Last Seen</th></tr>
       </thead>
-      <tbody>${botTableRows}</tbody>
+      <tbody>${humanBotRows}</tbody>
+    </table>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <!-- SECTION A2: Automated Bot Crawls                                   -->
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <section>
+    <h2>A2. Automated Bot Crawls (Indexing &amp; Training, Last 30 Days)</h2>
+    <p>These crawls are automated -- bots indexing, training, or auditing our data without a specific consumer query. They build the knowledge base that future consumer queries draw from. <strong>${fmt(autoVisits)}</strong> automated crawls total.</p>
+    <table>
+      <thead>
+        <tr><th>Bot</th><th class="num">Crawls</th><th class="num">Share</th><th class="num">Agents</th><th>Last Seen</th></tr>
+      </thead>
+      <tbody>${autoBotRows}</tbody>
     </table>
   </section>
 
