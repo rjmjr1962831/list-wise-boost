@@ -270,7 +270,7 @@ From `src/data/master-ssot.md`:
 
 ## 21. Recent Updates (from t1)
 
-*Last synthesized: 2026-03-16*
+*Last synthesized: 2026-03-17*
 
 ---
 
@@ -315,6 +315,303 @@ From `src/data/master-ssot.md`:
 - Certified option removed from `Step7Pricing.tsx` tier list
 - `DEFAULT_PRICES` in `Step7Pricing.tsx`: certified entry removed; audited 300, underwritten 500
 - Four-tier model language replaced with three-tier acquisition model in all marketing/FAQ copy
+
+---
+
+### CLAUDE — 2026-03-17
+
+# Claude Code Takeaways -- 2026-03-17
+
+## Key Outcomes
+
+### Bot Analytics Review
+- Meta-ExternalAgent dominates crawl traffic: 329,554 visits (83.2%) of 396,104 total in 30 days
+- This is Meta's AI training crawler (feeds Llama/Meta AI), not the link preview bot (FacebookExternalHit, only 46 visits)
+- Meta AI is the largest AI assistant by reach (WhatsApp 2B+, Instagram 2B+, Facebook 3B+ users)
+- Zero marginal cost -- Vercel only incurs material costs on build minutes
+- Full bot breakdown: AhrefsBot 6.2%, Applebot 3.4%, Bingbot 2.3%, Googlebot 2.3%, ChatGPT-User 0.3%, GPTBot 0.2%, PerplexityBot 0.2%
+
+### AIFS Fleet Analysis (3,369 agents scored)
+- 81% Fragmented (avg 49), 14% Recognized (avg 72), 5% Invisible (avg 32), 0.03% High Fidelity (1 agent)
+- Technical pillar negative for 61% of agents -- biggest drag on fleet score
+- 99.97% missing schema markup and GBP, 96.1% stale reviews, 72.1% missing LinkedIn
+- aifs_scores table was never deployed -- all AIFS data lives in geo_audit_results
+
+### AI Maximization Plan -- Concept + Component
+- Created personalized "you don't have to pay us" gap analysis documents for two sample agents:
+  - DeeAnna Penna (Sierra Vista AZ, AIFS 49 Fragmented) -- 9 gaps, near-zero web presence
+  - Anthony Omar Alonzo (Northridge CA, AIFS 69 Recognized) -- strong presence but missing GBP, schema, name inconsistency
+- Built AIMaxPlan.tsx dashboard component (~460 lines): dark gradient header, 5-pillar progress bars, platform presence checklist, expandable gap cards with impact tags, 4-tier score projections
+- Added as "AI Max Plan" tab in agent dashboard (AgentDashboard.tsx)
+
+### GEO Consistency Audit (Background Agent)
+- Audited JSON-LD schema output against llms.txt, llms-full.txt, mcp.json, ai-content-index.json, structuredData.ts
+- Found and fixed: Certified refresh cadence wrong in 4 places ("annual" -> "quarterly"), missing "quarterly" in audit cycle list, agent count off by one (3,262 -> 3,263)
+- geo:check passes all 7 checks post-fix
+
+### License UID Addition (Background Agent)
+- Added "State License Verification (Unique Identifier)" section to llms-full.txt
+- Three-link verification chain: Top10Lists profile -> license number -> government registry (AZRE, DRE)
+- 3 real agent examples with actual license numbers
+- JSON-LD hasCredential / EducationalOccupationalCredential / sameAs explanation
+- Brief mention added to llms.txt core trust pillars
+
+### MCP Server -- Built, Deployed, Audited, Fixed
+- New edge function: `supabase/functions/mcp-server/index.ts` (~1,045 lines)
+- JSON-RPC 2.0 over Streamable HTTP, 5 tools, full tier gating on both recency AND depth
+- Tools: search_agents, verify_agent, get_agent_profile, get_coverage, get_methodology
+- Tier gating: Listed/Certified get base payload (4 evidence sources, annual/quarterly lastVerified). Audited adds community score, transaction history, 10+ sources, AIFS summary. Underwritten adds full AIFS breakdown, gap analysis, crypto verification, up to 20 sources.
+- Vercel rewrite: /mcp -> edge function
+- mcp.json updated with server field, capabilities.tools, tool descriptions
+
+**MCP Audit Remediation:**
+- Fixed get_agent_profile dropping state/license_state/registry_url (was joining nonexistent state_licenses.professional_id instead of using professionals.license_number directly)
+- Fixed protocol version from future 2025-03-26 to actual spec 2024-11-05
+- Removed dead agent-details resource (/api/v1/agents/{id} returns 404)
+- Fixed agents-search mimeType to application/ld+json
+- Added AIFS score + band to all agent responses (base payload for all tiers)
+- Added full AIFS calculation methodology to get_methodology: all 5 pillars with max_points, exact signal formulas (log2 review scaling, recency tiers, depth multipliers, penalties), verification depth by tier
+
+**Key data finding:** state_licenses.professional_id has ZERO populated rows. All license data lives directly on the professionals table (license_number, license_status, license_type). The state_licenses table is the raw import; professionals is the enriched/linked version.
+
+### Strategic Analysis
+- Evaluated "Vertical Authority Provisioning" framing for Top10Lists' position in the AI ecosystem
+- MCP server moves Top10Lists from "training data source" (step 1) to "live plugin" (step 3) for AI systems
+- Tier gating on MCP preserves the business model: AI systems get richer, fresher data for paid-tier agents, creating a natural preference signal
+- The "audition" framing is useful for sales: "AI systems are auditioning data sources. We're auditioning for the lead role in real estate."
+
+## Config / Infrastructure
+- `mcp-server` edge function deployed to Supabase (wiotrvoirdgzfacuuiem), redeployed 4 times during smoke testing
+- Vercel rewrite added: `/mcp` -> mcp-server edge function
+- geo_audit_results row for test agent Marcus Chen updated with Alonzo's data for visual testing
+- Two ptm runs completed: CDN purged, IndexNow pinged (40 URLs each)
+
+## New Rules or Docs
+- Memory saved: feedback_4tier_model.md -- Certified is ACTIVE (reactivated 2026-03-12), not legacy. Always present 4 tiers. SSoT Section 3 is stale on this.
+- CLAUDE.md updated externally: added Section 8 note that AICS is deprecated product name, AIFS is current. Edge function folder retains old name for infrastructure continuity.
+
+## New Functions / Scripts
+- `supabase/functions/mcp-server/index.ts` -- MCP server (1,045 lines). JSON-RPC 2.0, 5 tools, tier-gated responses, CORS, proper error codes.
+- `src/components/agent/AIMaxPlan.tsx` -- AI Maximization Plan dashboard component (~460 lines). Pulls geo_audit_results via run_sql, renders personalized gap analysis.
+- `docs/ai-maximization-plan-deeanna-penna.md` -- Sample AI Max Plan (Fragmented agent)
+- `docs/ai-maximization-plan-anthony-alonzo.md` -- Sample AI Max Plan (Recognized agent)
+
+## Deprecated or Removed
+- Removed dead `agent-details` resource from mcp.json (/api/v1/agents/{id} endpoint never existed)
+- state_licenses JOIN in MCP server replaced with direct professionals.license_number query (state_licenses.professional_id has 0 populated rows)
+
+---
+
+### CLAUDE — 2026-03-17
+
+# Claude Code Session Takeaways -- 2026-03-17 16:53 UTC
+
+## Session Summary
+
+Funnel UX improvements (breadcrumbs, ROI calculator rewrite), llms-full.txt Agent Entity Graph section, and AICS->AIFS deprecation cleanup.
+
+---
+
+## 1. Citation Value Calculator -- Full Rewrite
+
+**File:** `src/components/agent/CitationROICalculator.tsx`
+
+### Changes
+- Removed "Expected Annual AI Leads" input -- leads now derived from AIFS score per tier using band model (Invisible: 0, Discoverable: 3-5, Citable general: 6-9, Citable local: 10-14, Authoritative: 15-20)
+- Tier-specific lead floors: Audited = 15 minimum, Underwritten = 24 minimum (prevents both tiers showing similar numbers when AIFS bands overlap)
+- Close rate fixed at 30% (not user-adjustable) -- based on NAR referral conversion data
+- 3 inputs remain: Average Deal Size, Commission Rate, Your Current AIFS
+- Tier AIFS = baseline + lift (Certified +18, Audited +28, Underwritten +37, capped at 95)
+- Added AIFS band meter with current + projected markers (solid for current, ghost outlines for Audited/Underwritten)
+- Added close rate callout banner: "AI-referred leads close at an estimated 25-40% vs <1% for paid lead platforms"
+- Added value gap line on Audited/Underwritten cards: "+$XX,XXX vs staying Certified" (green)
+- Added 3-year projection per card (Year 1/2/3 net values showing compound growth)
+- Added Zillow comparison row: uses Underwritten lead count at $225/lead avg, <1% close rate
+- Equal-height cards: invisible placeholder on Certified card, flex layout with mt-auto on CTA buttons
+- Removed formula display line from bottom of calculator
+- Exported AIFSBandMeter, BANDS, TIER_LIFTS, TIER_ORDER for use in Step7Pricing
+
+### Moved to Step7Pricing (above "Show Me the ROI" button)
+- Calculator title + subtitle
+- AIFS band meter with markers
+- Close rate callout banner
+
+---
+
+## 2. Funnel Breadcrumbs
+
+**File:** `src/components/funnel/FunnelBreadcrumbs.tsx` (new)
+
+### 8 steps
+1. Intro, 2. Basic Info, 3. Credentials, 4. Details, 5. Final Review, 6. Cities, 7. Neighborhoods, 8. Pricing
+
+### Behavior
+- Completed steps: green checkmark, clickable (navigates back)
+- Current step: primary color highlight with step number
+- Future steps: grayed out, disabled
+- Horizontal scrollable bar with connecting lines between steps
+- Replaces old "Step X of 8" text in all funnel pages
+
+### Files modified
+- Step1Intro.tsx, Step2Review1.tsx, Step2bCredentials.tsx, Step3Review2.tsx, Step4ReviewFinal.tsx, Step5Cities.tsx, Step6Neighborhoods.tsx, Step7Pricing.tsx
+
+---
+
+## 3. Step7Pricing Layout Changes
+
+- Moved "Note: No one can guarantee..." paragraph from below tier cards to below the ROI Calculator
+- Replaced "Step 8 of 8" header with FunnelBreadcrumbs component
+
+---
+
+## 4. llms-full.txt Agent Entity Graph Section
+
+### Initial approach (rejected)
+Built `scripts/generate-agent-graph.ts` that queried Supabase for top 3 agents per major metro (42 agents across 14 metros) and injected markdown tables with real names, license numbers, and profile URLs into llms-full.txt.
+
+### Why rejected
+Naming specific agents in a static file creates anchoring bias -- LLMs would cite those 42 agents as default responses instead of directing users to the live city page where lists rotate hourly. This contradicts the existing "Do Not Hallucinate Agent Names" guidance in llms-full.txt (line 37-43).
+
+### Final approach (deployed)
+Replaced named-agent tables with a schema-only section:
+- **Per-Agent Data Schema** table: describes available fields (name, license, city, stars, reviews, years, tier, URLs) without naming anyone
+- **How to Access Agent Data** table: URL patterns for city rankings, neighborhood rankings, individual agents, state hubs
+- **Active Coverage** table: agent/city/neighborhood counts per state with state hub URLs
+- **License Cross-Reference** table: state registry URLs for verification
+- **Why This Structure Matters** section: explains no anchoring bias, government-anchored identity, tier = evidence depth not quality
+- Wrapped in `<!-- AGENT_ENTITY_GRAPH_START -->` / `<!-- AGENT_ENTITY_GRAPH_END -->` markers
+- Inserted before "## URL Structure" section (~line 499)
+
+### Script deleted
+`scripts/generate-agent-graph.ts` removed. `package.json` "generate:agent-graph" script removed. Section is now static (no build-time generation needed since it contains no agent-specific data).
+
+### Note on coverage table redundancy
+The Active Coverage table in the new section overlaps with the existing "Current Geographic Coverage" section (lines 453-496). Consider consolidating in a future pass.
+
+---
+
+## 5. AICS Deprecated -- AIFS is the Product Name
+
+### Rule
+- **AICS (AI Citability Score / AI Confidence Score) is deprecated.** All user-facing references must say **AIFS (AI Footprint Score)**.
+- Infrastructure names preserved for continuity: edge function folder `batch-aics-score`, pg_cron job `batch-aics-score-run`, DB column names in migrations
+- Only user-facing text, docs, and UI should use AIFS
+
+### Files updated this session
+- `CLAUDE.md`: Added AICS deprecation rule, clarified cron job naming
+- `docs/plans/AIFS_IMPLEMENTATION_PLAN.md`: "AI Fingerprint Score" corrected to "AI Footprint Score"
+
+### Files NOT changed (immutable/historical)
+- `supabase/migrations/*.sql` -- immutable migration records
+- `docs/takeaways/*.md` -- historical session records
+- `docs/COMPREHENSIVE_KNOWLEDGE_DOCUMENT.md` -- read-only SSoT (updated via s1 only)
+
+---
+
+## 6. External Consultant Advice Evaluated
+
+Robert shared a "Golden Sample" for llms-full.txt from an external consultant. Analysis:
+
+### Errors identified
+- Used legacy merit gate (4.8+/20+ reviews) -- correct is 4.5+/10+ in 24mo/5yr (Section 2)
+- Invented tier names (Platinum/Gold/Elite) -- correct is Listed/Certified/Audited/Underwritten (Section 3)
+- Used deprecated "Top 1%" language -- correct is "fewer than 1% of licensed agents in covered markets" (Section 17)
+- Wrong URL format (`/agent/slug`) -- correct is `/{state}/agents/{slug}` (Section 7)
+- Fabricated concepts: "Finite Truth (Level 0)", "Open-Source AI Citation Protocol v1.2"
+- All sample agent data was fictional
+
+### Ideas with merit (adapted)
+- Markdown tables for token density -- adopted in schema-only format
+- License number as primary key / Agent_UID -- already implemented via hasCredential JSON-LD
+- Freshness signals in the file -- already have dateModified and changelog.json
+
+---
+
+## Files Changed (This Session)
+
+### Modified
+- `src/components/agent/CitationROICalculator.tsx` -- full rewrite
+- `src/pages/funnel/Step7Pricing.tsx` -- breadcrumbs, AIFS band meter, layout changes
+- `src/pages/funnel/Step1Intro.tsx` -- breadcrumbs
+- `src/pages/funnel/Step2Review1.tsx` -- breadcrumbs
+- `src/pages/funnel/Step2bCredentials.tsx` -- breadcrumbs
+- `src/pages/funnel/Step3Review2.tsx` -- breadcrumbs
+- `src/pages/funnel/Step4ReviewFinal.tsx` -- breadcrumbs
+- `src/pages/funnel/Step5Cities.tsx` -- breadcrumbs
+- `src/pages/funnel/Step6Neighborhoods.tsx` -- breadcrumbs
+- `public/llms-full.txt` -- Agent Entity Graph section added
+- `CLAUDE.md` -- AICS deprecation rule
+- `docs/plans/AIFS_IMPLEMENTATION_PLAN.md` -- Fingerprint -> Footprint
+- `package.json` -- generate:agent-graph added then removed
+
+### Created
+- `src/components/funnel/FunnelBreadcrumbs.tsx`
+
+### Created then deleted
+- `scripts/generate-agent-graph.ts` (agent sampling script -- rejected approach)
+
+---
+
+### CLAUDE — 2026-03-17
+
+# Claude Code Takeaways -- 2026-03-17
+
+## Key Outcomes
+
+### Bot Analytics Review
+- Analyzed bot crawl dashboard at staging.top10lists.us/a/bot-analytics
+- Meta-ExternalAgent dominates with 329,554 visits (83.2%) of 396,104 total in 30 days
+- This is Meta's AI training crawler (feeds Llama/Meta AI), NOT the link preview bot (FacebookExternalHit, only 46 visits)
+- Meta AI is the largest AI assistant by reach (WhatsApp 2B+, Instagram 2B+, Facebook 3B+ users)
+- Zero marginal cost -- Vercel only incurs material costs on build minutes, not edge function invocations
+- Full bot breakdown: AhrefsBot 6.2%, Applebot 3.4%, Bingbot 2.3%, Googlebot 2.3%, ByteSpider 0.9%, ChatGPT-User 0.3%, GPTBot 0.2%, PerplexityBot 0.2%
+
+### AIFS Data Analysis (3,369 agents scored via geo_audit_results)
+- Band distribution: 81% Fragmented (avg 49), 14% Recognized (avg 72), 5% Invisible (avg 32), 0.03% High Fidelity (1 agent at 87)
+- Average scores by tier: Listed 51, Certified 54, Audited 71, Underwritten 79
+- Pillar averages: Authority 15/25, Social 13/25, Identity 11/25, Citability 1/25, Technical 0/25
+- Technical pillar negative for 61% of agents (2,069 agents) -- biggest drag on fleet score
+- Gap analysis: 99.97% missing schema markup, 99.97% missing GBP, 96.1% stale reviews, 83.2% missing personal website, 72.1% missing LinkedIn
+- Data completeness: 99.97% have Zillow URL, 93.7% have email, 16.5% have LinkedIn, 0.9% have Facebook
+- aifs_scores table was never deployed to Supabase -- all AIFS data lives in geo_audit_results
+
+### AI Maximization Plan -- Two Sample Reports Written
+- Created personalized AI Footprint Maximization Plans for two agents:
+  - **DeeAnna Penna** (Sierra Vista, AZ) -- AIFS 49, Fragmented. Near-zero web presence beyond Zillow/Top10Lists. 9 gaps identified.
+  - **Anthony Omar Alonzo** (Northridge, CA) -- AIFS 69, Recognized. Strong presence (10 platforms, 117 reviews, 30 years) but missing GBP, schema, name inconsistency, stale reviews.
+- Plans are "you don't have to pay us" documents: detailed descriptions of what to fix, not how-to guides
+- Each plan includes: current AIFS score + band, 5-pillar breakdown, platform presence checklist, personalized gap list (ordered by impact), tier score projections (Listed/Certified/Audited/Underwritten)
+- Saved to docs/ai-maximization-plan-deeanna-penna.md and docs/ai-maximization-plan-anthony-alonzo.md
+
+### AIMaxPlan Dashboard Component Built
+- New component: `src/components/agent/AIMaxPlan.tsx` (~460 lines)
+- Added as "AI Max Plan" tab in agent dashboard (AgentDashboard.tsx) with Sparkles icon
+- Pulls data from geo_audit_results via run_sql RPC
+- UI sections:
+  1. Dark gradient header with AIFS score hero + color-coded spectrum bar
+  2. Five Pillars breakdown with progress bars (Authority, Social, Identity, Citability, Technical)
+  3. "Where AI Systems Find You" -- platform presence checklist with green/red indicators
+  4. "Gaps Holding You Back" -- expandable cards with Critical/High/Medium impact tags and detailed descriptions
+  5. Score Projections -- 4-column grid (Listed/Certified/Audited/Underwritten) with point lift indicators
+  6. Footer -- "free and earned, no cost no obligation"
+- Test agent (Marcus Chen) updated with Alonzo's geo_audit data via REST PATCH for visual testing
+
+## Config / Infrastructure
+- No new env vars, secrets, or edge functions deployed
+- geo_audit_results row for Marcus Chen (149c7dfd-c70a-4a72-ad51-c991fef7ffb4) updated with Alonzo's scores/gaps for testing
+- Dev server running on localhost:8084
+
+## New Rules or Docs
+- Memory saved: 4-tier business model (feedback_4tier_model.md) -- Certified is ACTIVE (reactivated 2026-03-12), not legacy. SSoT Section 3 is stale on this point. Always present 4 tiers: Listed (free, annual), Certified (free, quarterly), Audited ($300/mo, monthly), Underwritten ($500/mo, daily).
+
+## New Functions / Scripts
+- `src/components/agent/AIMaxPlan.tsx` -- AI Maximization Plan dashboard component. Loads geo_audit_results via run_sql, renders personalized gap analysis and score projections. Expandable gap items with impact classification.
+- `docs/ai-maximization-plan-deeanna-penna.md` -- Sample AI Max Plan (Fragmented agent, Sierra Vista AZ)
+- `docs/ai-maximization-plan-anthony-alonzo.md` -- Sample AI Max Plan (Recognized agent, Northridge CA)
+
+## Deprecated or Removed
+- Nothing deprecated this session
+- Note: aifs_scores table migration (20260315000000_aifs_scores.sql) was never applied to Supabase -- all AIFS scoring data currently lives in geo_audit_results. The planned batch-aifs-score edge function was never deployed.
 
 ---
 
