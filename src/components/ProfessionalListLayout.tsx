@@ -258,7 +258,7 @@ export const ProfessionalListLayout = ({
       {/* Footer */}
       <footer className="border-t bg-muted/30 py-6">
         <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
-          <p>&copy; 2025 Top10Lists.us. All rights reserved.</p>
+          <p>&copy; 2026 Top10Lists.us. All rights reserved.</p>
           <Link to="/" className="hover:text-foreground transition-colors inline-block mt-2">
             Return to Homepage
           </Link>
