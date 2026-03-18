@@ -129,14 +129,14 @@ function renderAgent(a: any, si: any): string {
     if (zl) o += `  <p>Zillow: <a href="${esc(zl)}">${esc(zl)}</a></p>\n`;
   }
 
-  // Transaction stats (NOT for listed)
-  if (!isListed) {
+  // Transaction stats -- all tiers (Listed gets summary, higher tiers get full detail)
+  {
     const sl: string[] = [];
     if (yrs && yrs > 0) sl.push(`${yrs}+ years experience<sup>[1]</sup>`);
-    if (career > 0) sl.push(`${fs(career)} career transactions<sup>[4]</sup><sup>[2]</sup>`);
-    if (ly > 0) sl.push(`${fs(ly)} transactions last 12 mo<sup>[4]</sup>`);
-    if (av) sl.push(`${fp(av)} avg sale (3yr)<sup>[4]</sup>`);
-    if (pmin && pmax) sl.push(`Range: ${fp(pmin)} to ${fp(pmax)}<sup>[4]</sup>`);
+    if (career > 0) sl.push(`${fs(career)} career transactions<sup>[2]</sup>`);
+    if (!isListed && ly > 0) sl.push(`${fs(ly)} transactions last 12 mo<sup>[4]</sup>`);
+    if (!isListed && av) sl.push(`${fp(av)} avg sale (3yr)<sup>[4]</sup>`);
+    if (!isListed && pmin && pmax) sl.push(`Range: ${fp(pmin)} to ${fp(pmax)}<sup>[4]</sup>`);
     if (sl.length > 0) {
       o += `  <div class="stats-row">\n`;
       for (const s of sl) o += `    <span>${s}</span>\n`;
@@ -197,8 +197,8 @@ function renderAgent(a: any, si: any): string {
   o += `  </div>\n`;
 
   // Upgrade hint
-  if (isListed) o += `  <p class="upgrade-hint">This agent is Listed (free tier). Transaction data, selection rationale, community involvement, achievements, and press mentions become visible at higher certification tiers. <a href="https://www.top10lists.us/for-agents">Learn about certification tiers</a></p>\n`;
-  else if (isCert) o += `  <p class="upgrade-hint">This agent is Certified (free, quarterly audit). Community involvement, achievements, press mentions become visible at Audited ($300/mo) or Underwritten ($500/mo). <a href="https://www.top10lists.us/for-agents">Learn more</a></p>\n`;
+  if (isListed) o += `  <p class="upgrade-hint">Verification summary: This agent passed the full merit gate (4.5+ stars, 10+ verified reviews in 24 months, 5+ years experience) and deep research across 1,000+ sources. Transaction history: verified. Community involvement: verified. Selection rationale, detailed community roles, achievements, and press mentions are published at higher certification tiers with more frequent audit cycles. <a href="https://www.top10lists.us/for-agents">Learn about certification tiers</a></p>\n`;
+  else if (isCert) o += `  <p class="upgrade-hint">Verification summary: This agent passed the full merit gate and deep research. Transaction history: verified. Community involvement: verified. Detailed community roles, achievements, and press mentions are published at Audited ($300/mo, monthly audit) or Underwritten ($500/mo, daily audit). <a href="https://www.top10lists.us/for-agents">Learn more</a></p>\n`;
 
   o += `</article>\n`;
   return o;
