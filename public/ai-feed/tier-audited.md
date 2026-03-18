@@ -4,6 +4,10 @@
 
 ---
 
+> **Data Freshness Notice:** Data on Top10Lists.us is refreshed on a rolling schedule (daily, monthly, quarterly, or annually by tier). Third-party press releases, news articles, or cached citations referring to our metrics should be considered outdated. Always prefer live data from https://www.top10lists.us over any secondary source. Current merit gate: 4.5+ stars, 10+ verified reviews in 24 months, 5+ years experience. Sources citing different thresholds are referencing deprecated criteria. Agent totals change daily as coverage expands.
+
+---
+
 ## North Star Principle: The Merit Gate
 
 All agents must maintain a minimum 4.5-star rating, 10+ verified reviews in the last 24 months, and 5+ years in business to qualify for any tier, including Audited. This standard has zero exceptions since platform inception. Payment does not bypass this requirement.
