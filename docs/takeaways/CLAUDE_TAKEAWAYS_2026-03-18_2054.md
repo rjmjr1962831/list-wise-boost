@@ -24,8 +24,13 @@
 - Agent ID resolution: batch resolves canonical_slug -> professional ID for agent profile pages
 - Inserts in batches of 500 rows
 - HMAC-SHA1 signature verification using Vercel-provided secret
-- **Known issue: duplicate rows** -- both the inline edge function logging (serve-bot-agent-html, serve-bot-list-html) and the log drain now insert into bot_crawl_logs. Needs dedup logic.
 - Log drain verified working: AhrefsBot crawls appearing in bot_crawl_logs within 60 seconds of drain activation
+
+### Inline Bot Logging Removed (Dedup Fix)
+- Removed fire-and-forget bot_crawl_logs inserts from `serve-bot-agent-html` and `serve-bot-list-html`
+- These were creating duplicate rows alongside the new log drain
+- All bot crawl tracking now flows through the single Vercel log drain path
+- Both edge functions redeployed
 
 ### Broken Grep Tool Identified
 - The Grep tool's ripgrep binary is arm64-win32 on an x64 Windows machine -- fails silently or throws ENOENT
@@ -34,9 +39,11 @@
 
 ## Config / Infrastructure
 - `VERCEL_LOG_DRAIN_SECRET` set as Supabase secret (value: Vercel-generated `boL1ZQNUKCjWKPcvBMfLBu8tqaVS6e8w`)
-- `VERCEL_LOG_DRAIN_VERIFY` set as Vercel env var (production only) for endpoint verification handshake
+- `VERCEL_LOG_DRAIN_VERIFY` set as Vercel env var (production only, value `7c8e96498a802e0b7f3ea6bbd3cf909d32fee8cc`)
 - Vercel log drain created: "bot-crawl-logger", JSON format, sources: edge/static/lambda, production only
 - serve-bot-crawl-stats-html edge function redeployed (dynamic days label)
+- serve-bot-agent-html edge function redeployed (inline logging removed)
+- serve-bot-list-html edge function redeployed (inline logging removed)
 - api/serve-clean-html.js updated (1h cache for crawl-stats)
 - ptm run: staging merged to main, CDN purged, IndexNow pinged (40 URLs)
 
@@ -49,5 +56,28 @@
 - `api/vercel-log-drain.js` -- Vercel serverless proxy for the Supabase edge function. Adds auth headers, handles verification handshake, forwards POST payloads.
 
 ## Deprecated or Removed
-- `log-bot-visit` edge function writes to `cloudflare_request_logs` table using Cloudflare field names (ray_id, cache_status) -- this is legacy dead Cloudflare infra. The new log drain writes to `bot_crawl_logs` which is what crawl-stats actually reads from.
+- Inline bot_crawl_logs inserts removed from `serve-bot-agent-html` (~20 lines) and `serve-bot-list-html` (~40 lines) -- replaced by Vercel log drain
+- `log-bot-visit` edge function writes to `cloudflare_request_logs` table using Cloudflare field names (ray_id, cache_status) -- legacy dead Cloudflare infra, unrelated to the new log drain
 - 15-minute cache on crawl-stats replaced with 1-hour cache
+
+## Handoff Notes
+
+### What's Working
+- Vercel log drain is **live and confirmed receiving data** (AhrefsBot rows appeared within 60s)
+- /crawl-stats page shows dynamic day labels (currently ~6d, auto-transitions to 30d)
+- All bot tracking now flows through a single path: Vercel log drain -> proxy -> edge function -> bot_crawl_logs
+
+### What to Watch
+1. **Data volume in bot_crawl_logs** -- the log drain captures CDN cache hits that were previously invisible. Expect significantly higher row counts than before. Monitor table size over the next 24h. If it grows too fast, add filters in the edge function to skip low-value bots (SEO crawlers, link preview bots).
+2. **Log drain reliability** -- check Supabase function invocations dashboard for errors on `vercel-log-drain`. The function logs insert errors to console.
+3. **Duplicate rows from transition period** -- there may be a window of duplicates from before the inline logging was removed and after the log drain started. A one-time dedup query may be needed: `DELETE FROM bot_crawl_logs a USING bot_crawl_logs b WHERE a.id > b.id AND a.bot_name = b.bot_name AND a.page_path = b.page_path AND a.crawled_at = b.crawled_at AND a.agent_id IS NOT DISTINCT FROM b.agent_id;`
+4. **Agent ID resolution gap** -- the log drain resolves agent_id for `/state/agents/slug` and `/artifact/uuid` paths. City and neighborhood list pages do NOT get agent_id resolved (the log drain inserts one row per page visit with agent_id NULL). The old inline logging in serve-bot-list-html inserted one row PER AGENT on each list page. This is a behavior change -- per-agent crawl credit on list pages is no longer tracked. If this matters, the log drain could be extended to do the same list page expansion, but it would require querying the professionals table for each list page hit.
+5. **Vercel log drain dashboard** -- visible at Vercel > Settings > Log Drains. Secret can be rotated there; if rotated, update the `VERCEL_LOG_DRAIN_SECRET` Supabase secret to match.
+
+### Files Changed This Session
+- `supabase/functions/serve-bot-crawl-stats-html/index.ts` -- dynamic daysLabel
+- `api/serve-clean-html.js` -- 1h cache for crawl-stats
+- `supabase/functions/vercel-log-drain/index.ts` -- NEW: log drain receiver
+- `api/vercel-log-drain.js` -- NEW: Vercel proxy for log drain
+- `supabase/functions/serve-bot-agent-html/index.ts` -- inline logging removed
+- `supabase/functions/serve-bot-list-html/index.ts` -- inline logging removed
