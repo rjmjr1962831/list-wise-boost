@@ -112,7 +112,7 @@ serve(async (req) => {
               .select("role")
               .eq("id", userId);
             adminBypass = adminRoles?.some((r: { role: string }) =>
-              r.role === "admin" || r.role === "superadmin"
+              ["admin", "superadmin", "owner"].includes(r.role)
             ) ?? false;
           }
         }
@@ -124,7 +124,7 @@ serve(async (req) => {
     // Allow: admin bypass, funnel_status approved, or certified/audited/underwritten
     const tier = (professional.current_tier || "").toLowerCase();
     const hasPaidTier = ["certified", "audited", "underwritten"].includes(tier);
-    const isApproved = professional.funnel_status === "approved";
+    const isApproved = professional.funnel_status === "approved" || professional.funnel_status === "confirmed";
 
     if (!adminBypass && !isApproved && !hasPaidTier) {
       console.log(`[create-session-from-token] Funnel status is '${professional.funnel_status}', tier '${tier}' - not approved`);
