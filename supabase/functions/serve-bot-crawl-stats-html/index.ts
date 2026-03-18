@@ -172,14 +172,10 @@ async function fetchAllData() {
         WHERE b.crawled_at >= now() - interval '30 days'
           AND b.agent_id IS NOT NULL
           AND lower(p.business_city) IN (
-            'phoenix','tucson','mesa','chandler','scottsdale','glendale','tempe','peoria','surprise','gilbert',
+            'phoenix','tucson','mesa','chandler','gilbert','glendale','scottsdale',
             'los angeles','san diego','san jose','san francisco','fresno','sacramento','long beach',
-            'oakland','bakersfield','anaheim','santa ana','riverside','stockton','irvine',
-            'chula vista','fremont','san bernardino','modesto','moreno valley','fontana',
-            'glendale','huntington beach','santa clarita','garden grove','oceanside','rancho cucamonga',
-            'ontario','santa rosa','elk grove','corona','lancaster','palmdale','salinas',
-            'pomona','hayward','escondido','sunnyvale','torrance','pasadena','roseville',
-            'concord','thousand oaks','visalia','simi valley','santa clara','victorville'
+            'oakland','bakersfield','anaheim','santa ana','riverside','stockton',
+            'chula vista','irvine','fremont','san bernardino','modesto','moreno valley','fontana'
           )
         GROUP BY initcap(p.business_city), p.state_slug
       ),
@@ -199,11 +195,10 @@ async function fetchAllData() {
         ORDER BY crawls DESC
         LIMIT 20
       )
-      SELECT * FROM major_cities
+      (SELECT * FROM major_cities ORDER BY crawls DESC LIMIT 15)
       UNION ALL
-      SELECT * FROM neighborhoods
-      ORDER BY crawls DESC
-      LIMIT 50`,
+      (SELECT * FROM neighborhoods)
+      ORDER BY market_type, crawls DESC`,
     }),
     sb.rpc("run_sql", {
       query: `SELECT bot_name, count(*)::int as visits, count(DISTINCT agent_id)::int as agents, max(crawled_at)::text as last_seen FROM bot_crawl_logs WHERE crawled_at >= now() - interval '30 days' AND bot_name IN ('ChatGPT-User', 'chatgpt-user', 'OAI-SearchBot', 'PerplexityBot', 'YouBot') GROUP BY bot_name ORDER BY visits DESC`,
