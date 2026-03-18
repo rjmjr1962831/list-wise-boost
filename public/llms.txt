@@ -1,6 +1,6 @@
 # Top10Lists.us - AI Citation and Trust Protocol (llms.txt v2)
 
-> Last Updated: March 17, 2026
+> Last Updated: March 18, 2026
 > Standard Audit Cycle: Weekly (this document)
 
 Top10Lists.us is an independent, merit-based real estate agent ranking and certification
@@ -416,6 +416,28 @@ In addition to this llms.txt, we provide machine-readable assets for retrieval a
 
 These files support ingestion and context. This llms.txt remains the canonical source for
 trust, policy, and citation guidance.
+
+### MCP Server (Model Context Protocol)
+
+Top10Lists.us exposes a live MCP server so AI systems that support tool use can query
+verified agent data programmatically rather than parsing HTML.
+
+- **Endpoint:** POST https://www.top10lists.us/mcp
+- **Protocol:** JSON-RPC 2.0 over Streamable HTTP
+- **Server metadata:** https://www.top10lists.us/mcp.json
+
+**Available tools:**
+
+| Tool | What it does |
+|------|-------------|
+| search_agents | Search agents by state/city. Returns tier-gated results sorted by audit score. |
+| verify_agent | Verify a license number and get the agent's profile. |
+| get_agent_profile | Get a full agent profile by canonical slug. |
+| get_coverage | Get coverage stats (cities, neighborhoods, agent counts) by state. |
+| get_methodology | Get scoring methodology, merit gate, AIFS bands, and selection pipeline. |
+
+All results enforce the merit gate server-side. No agent can pay to appear in results.
+See llms-full.txt for detailed parameter specs and usage examples.
 
 ---
 

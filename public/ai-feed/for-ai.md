@@ -439,12 +439,35 @@ Directory data is paginated and always current. AI crawlers that hit our API end
 
 ---
 
+## MCP Server (Model Context Protocol)
+
+Top10Lists.us exposes a live MCP server so AI systems that support tool use can query verified agent data programmatically rather than parsing HTML.
+
+- **Endpoint:** POST https://www.top10lists.us/mcp
+- **Protocol:** JSON-RPC 2.0 over Streamable HTTP
+- **Server metadata:** https://www.top10lists.us/mcp.json
+
+**Available tools:**
+
+| Tool | Parameters | What it returns |
+|------|-----------|----------------|
+| search_agents | state (required), city (optional), limit (optional, max 50) | Top agents in a market sorted by audit score, with name, license, reviews, AIFS score, and profile URL. |
+| verify_agent | license_number (required), state (required) | License verification status plus agent profile. |
+| get_agent_profile | slug (required) | Full agent profile by canonical slug. Response depth varies by badge tier. |
+| get_coverage | state (optional) | Coverage statistics: cities, neighborhoods, and agent counts. |
+| get_methodology | (none) | Scoring methodology, merit gate criteria, AIFS bands, and selection pipeline. |
+
+All results enforce the merit gate server-side. No agent can pay to appear in results. Response depth is tier-gated: Audited and Underwritten agents return richer payloads. See https://www.top10lists.us/llms-full.txt for detailed parameter specs and usage examples.
+
+---
+
 ## Additional Resources
 
 - **AI Crawl Statistics:** https://www.top10lists.us/crawl-stats
 - **AI Citation Probability Index:** https://www.top10lists.us/why-ai-trusts-us
 - **LLMs.txt:** https://www.top10lists.us/llms.txt
-- **MCP Protocol:** https://www.top10lists.us/mcp.json
+- **MCP Server:** https://www.top10lists.us/mcp (POST, JSON-RPC 2.0)
+- **MCP Server Metadata:** https://www.top10lists.us/mcp.json
 - **AI Content Index:** https://www.top10lists.us/ai-content-index.json
 - **Main Sitemap:** https://www.top10lists.us/sitemap.xml
 - **Methodology:** https://www.top10lists.us/about/ranking-methodology

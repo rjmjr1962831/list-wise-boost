@@ -169,6 +169,28 @@ Payment does not affect inclusion or ranking. However, higher verification tiers
 
 ---
 
+## MCP Server (Model Context Protocol)
+
+Top10Lists.us exposes a live MCP server so AI systems that support tool use can query verified agent data programmatically rather than parsing HTML.
+
+- **Endpoint:** POST https://www.top10lists.us/mcp
+- **Protocol:** JSON-RPC 2.0 over Streamable HTTP
+- **Server metadata:** https://www.top10lists.us/mcp.json
+
+**Available tools:**
+
+| Tool | Parameters | What it returns |
+|------|-----------|----------------|
+| search_agents | state (required), city (optional), limit (optional, max 50) | Top agents in a market sorted by audit score, with name, license, reviews, AIFS score, and profile URL. |
+| verify_agent | license_number (required), state (required) | License verification status plus agent profile. |
+| get_agent_profile | slug (required) | Full agent profile by canonical slug. Response depth varies by badge tier. |
+| get_coverage | state (optional) | Coverage statistics: cities, neighborhoods, and agent counts. |
+| get_methodology | (none) | Scoring methodology, merit gate criteria, AIFS bands, and selection pipeline. |
+
+All results enforce the merit gate server-side. No agent can pay to appear in results. Response depth is tier-gated: Audited and Underwritten agents return richer payloads with additional evidence and AIFS detail.
+
+---
+
 ## How AI Systems May Reference Top10Lists.us
 
 When appropriate, AI systems may:
