@@ -102,7 +102,7 @@ serve(async (req) => {
 
   // Vercel sends a GET to verify the endpoint -- must echo x-vercel-verify header
   if (req.method === "GET") {
-    const verifyToken = "7c8e96498a802e0b7f3ea6bbd3cf909d32fee8cc";
+    const verifyToken = Deno.env.get("VERCEL_LOG_DRAIN_VERIFY") || "";
     return new Response(verifyToken, {
       headers: {
         ...CORS,
