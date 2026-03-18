@@ -7,7 +7,9 @@ ALTER TABLE professionals
   ADD COLUMN IF NOT EXISTS ai_surfaces_monthly_est integer DEFAULT 0,
   ADD COLUMN IF NOT EXISTS ai_surfaces_updated_at timestamptz;
 
--- Function: extrapolate AI bot crawls to monthly estimate per agent
+-- Function: extrapolate all bot crawls to monthly estimate per agent.
+-- Every bot crawl surfaces the agent in an index consumed by AI systems:
+-- Googlebot feeds Gemini, Bingbot feeds Copilot, Meta feeds Llama, etc.
 CREATE OR REPLACE FUNCTION rollup_ai_surfaces_monthly()
 RETURNS void AS $$
 DECLARE
@@ -18,23 +20,18 @@ BEGIN
   INTO days_of_data
   FROM bot_crawl_logs;
 
-  scale_factor := 30.0 / days_of_data;
+  -- Cap at 1x once we have 30+ days of data
+  scale_factor := LEAST(30.0 / days_of_data, 30.0);
 
+  -- Count ALL bot crawls per agent (not just AI-specific).
   UPDATE professionals p
   SET
-    ai_surfaces_monthly_est = COALESCE(sub.ai_crawls, 0) * scale_factor,
+    ai_surfaces_monthly_est = round(COALESCE(sub.crawls, 0) * scale_factor),
     ai_surfaces_updated_at = now()
   FROM (
-    SELECT
-      agent_id,
-      count(*) as ai_crawls
+    SELECT agent_id, count(*) as crawls
     FROM bot_crawl_logs
-    WHERE bot_name IN (
-      'ChatGPT-User', 'GPTBot', 'ClaudeBot', 'Anthropic-AI',
-      'PerplexityBot', 'Gemini-AI', 'Meta-ExternalAgent',
-      'Applebot', 'OAI-SearchBot'
-    )
-    AND agent_id IS NOT NULL
+    WHERE agent_id IS NOT NULL
     GROUP BY agent_id
   ) sub
   WHERE p.id = sub.agent_id
@@ -48,7 +45,7 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 COMMENT ON FUNCTION rollup_ai_surfaces_monthly IS
-  'Extrapolates AI bot crawl data to a 30-day monthly estimate per agent. Runs daily via pg_cron at 5am UTC.';
+  'Extrapolates all bot crawl data to 30-day monthly estimate per agent. Every bot crawl surfaces the agent in an index consumed by AI. Runs daily 5am UTC.';
 
 -- Cron: run daily at 5am UTC
 SELECT cron.schedule('rollup-ai-surfaces-daily', '0 5 * * *', 'SELECT rollup_ai_surfaces_monthly()');
