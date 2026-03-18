@@ -10,6 +10,8 @@
     "generate:faq": "tsx scripts/generate-faq-json.ts",
     "generate:sitemaps": "tsx scripts/generate-static-sitemaps.ts",
     "generate:counts": "tsx scripts/generate-dynamic-counts.ts",
+    "backfill:licenses": "node scripts/backfill-license-numbers.mjs",
+    "backfill:licenses:dry": "node scripts/backfill-license-numbers.mjs --dry-run",
     "prebuild": "node scripts/guard-stale-html.mjs && node scripts/stamp-llms-dates.mjs && npm run generate:faq",
     "build:dev": "vite build --mode development",
     "lint": "eslint . --max-warnings -1",
