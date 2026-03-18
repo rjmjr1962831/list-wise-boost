@@ -1,6 +1,14 @@
 # CLAUDE.md -- Top10Lists.us (list-wise-boost)
 
-**This file is the operating manual.** Every Claude instance (Code, Web, Cursor) should load this at session start. For the full SSoT with recent updates, run `ryt` to fetch `docs/COMPREHENSIVE_KNOWLEDGE_DOCUMENT.md`.
+**This file is the operating manual.** Every Claude instance (Code, Web, Cursor) should load this at session start. For the full SSoT with recent updates, load the documents below.
+
+### Required Reading (load these at session start)
+
+1. **This file** (CLAUDE.md) -- operating manual, business rules, execution rules
+2. **Single Source of Truth (SSoT):** [`docs/COMPREHENSIVE_KNOWLEDGE_DOCUMENT.md`](https://github.com/rjmjr1962831/list-wise-boost/blob/staging/docs/COMPREHENSIVE_KNOWLEDGE_DOCUMENT.md) -- full project knowledge including Section 21 (recent session updates). This is on the **staging** branch.
+3. **Claude Web project knowledge:** [`docs/prompts/claude-web-project-knowledge.md`](https://github.com/rjmjr1962831/list-wise-boost/blob/staging/docs/prompts/claude-web-project-knowledge.md) -- condensed version of COMPREHENSIVE for Claude Web sessions. Also on **staging**.
+
+**If you are Claude Web** (no local file access): read the SSoT link above. It contains everything -- project overview, business model, merit gate, tech stack, and all recent session updates. CLAUDE.md alone is not sufficient.
 
 ---
 
