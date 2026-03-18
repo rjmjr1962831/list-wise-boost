@@ -4,11 +4,11 @@
 
 ### Required Reading (load these at session start)
 
-1. **This file** (CLAUDE.md) -- operating manual, business rules, execution rules
+1. **This file** (CLAUDE.md): [`CLAUDE.md`](https://github.com/rjmjr1962831/list-wise-boost/blob/staging/CLAUDE.md) -- operating manual, business rules, execution rules
 2. **Single Source of Truth (SSoT):** [`docs/COMPREHENSIVE_KNOWLEDGE_DOCUMENT.md`](https://github.com/rjmjr1962831/list-wise-boost/blob/staging/docs/COMPREHENSIVE_KNOWLEDGE_DOCUMENT.md) -- full project knowledge including Section 21 (recent session updates). This is on the **staging** branch.
 3. **Claude Web project knowledge:** [`docs/prompts/claude-web-project-knowledge.md`](https://github.com/rjmjr1962831/list-wise-boost/blob/staging/docs/prompts/claude-web-project-knowledge.md) -- condensed version of COMPREHENSIVE for Claude Web sessions. Also on **staging**.
 
-**If you are Claude Web** (no local file access): read the SSoT link above. It contains everything -- project overview, business model, merit gate, tech stack, and all recent session updates. CLAUDE.md alone is not sufficient.
+**If you are Claude Web** (no local file access): read ALL THREE documents above. Start with this file (CLAUDE.md) for rules, then load the SSoT for full project context and recent updates. CLAUDE.md alone is not sufficient.
 
 ---
 
