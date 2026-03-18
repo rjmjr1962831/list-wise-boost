@@ -90,6 +90,26 @@
       "source": "/:state/:city/:zip(\\d{5})/:neighborhood/top10realestateagents",
       "destination": "/:state/:city/:neighborhood/top10realestateagents",
       "permanent": true
+    },
+    {
+      "source": "/:state(arizona|california)/:city/best-real-estate-agents",
+      "destination": "/:state/:city/top10realestateagents",
+      "permanent": true
+    },
+    {
+      "source": "/:state(arizona|california)/:city/best-real-estate-agents-:year(\\d{4})",
+      "destination": "/:state/:city/top10realestateagents",
+      "permanent": true
+    },
+    {
+      "source": "/:state(arizona|california)/:city/best-realtors",
+      "destination": "/:state/:city/top10realestateagents",
+      "permanent": true
+    },
+    {
+      "source": "/:state(arizona|california)/:city/top-real-estate-agents",
+      "destination": "/:state/:city/top10realestateagents",
+      "permanent": true
     }
   ],
   "rewrites": [
