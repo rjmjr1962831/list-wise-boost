@@ -114,6 +114,19 @@ function Merge-StagingToMain {
             }
         }
 
+        # Remove all .sql files from main (anywhere in the repo)
+        $sqlFiles = git ls-files "*.sql" 2>$null
+        if ($sqlFiles) {
+            $sqlList = $sqlFiles -split "`n" | Where-Object { $_ -match '\S' }
+            if ($sqlList.Count -gt 0) {
+                Write-Host "Excluding $($sqlList.Count) .sql files from main"
+                foreach ($sf in $sqlList) {
+                    git rm -f $sf 2>$null
+                }
+                $removed += "*.sql ($($sqlList.Count) files)"
+            }
+        }
+
         if ($removed.Count -gt 0) {
             git commit -m "chore: exclude internal documents from main`n`nRemoved from production (staging-only): $($removed -join ', ')"
         }
