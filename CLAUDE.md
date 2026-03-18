@@ -254,6 +254,10 @@ These paths exist on staging only and are excluded from main by merge-to-main:
 - docs/prompts/
 - PENDING_UPDATES.md
 - docs/MIGRATION_DOCUMENT.md
+- CLAUDE.md
+- .sql migration files
+
+**NEVER publish internal documents to any public-facing HTTPS site, CDN, or web-accessible URL.** This includes production (top10lists.us), staging (staging.top10lists.us), Vercel preview deployments, Supabase storage, or any other publicly reachable endpoint. Internal documents are accessible only via the private GitHub repo. The GitHub repo links in the Required Reading section above are repo links, not public site URLs -- that is the only acceptable way to share them.
 
 ---
 
