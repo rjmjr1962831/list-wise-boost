@@ -102,13 +102,12 @@ serve(async (req) => {
 
   // Vercel sends a GET to verify the endpoint -- must echo x-vercel-verify header
   if (req.method === "GET") {
-    const url = new URL(req.url);
-    // Vercel may pass the verify token as a query param or expect it as a response header
-    return new Response(JSON.stringify({ ok: true }), {
+    const verifyToken = "7c8e96498a802e0b7f3ea6bbd3cf909d32fee8cc";
+    return new Response(verifyToken, {
       headers: {
         ...CORS,
-        "Content-Type": "application/json",
-        "x-vercel-verify": "7c8e96498a802e0b7f3ea6bbd3cf909d32fee8cc",
+        "Content-Type": "text/plain",
+        "x-vercel-verify": verifyToken,
       },
     });
   }
