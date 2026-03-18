@@ -2,13 +2,18 @@
 # One path per line. Blank lines and # comments ignored.
 # Used by merge-to-main.ps1 when merging staging -> main
 
+# Operating manuals and knowledge docs
+CLAUDE.md
 MASTER_KNOWLEDGE_DOCUMENT.md
 MASTER_KNOWLEDGE_DOCUMENT_TODAY.MD
+docs/COMPREHENSIVE_KNOWLEDGE_DOCUMENT.md
+docs/MIGRATION_DOCUMENT.md
 docs/cursor-daily-updates.md
 docs/daily-logs/
 docs/takeaways/
-PENDING_UPDATES.md
-docs/MIGRATION_DOCUMENT.md
-Top10Lists_MASTER_BASELINE.md
-docs/COMPREHENSIVE_KNOWLEDGE_DOCUMENT.md
 docs/prompts/
+PENDING_UPDATES.md
+Top10Lists_MASTER_BASELINE.md
+
+# SQL files (migrations, scripts, one-off queries)
+supabase/migrations/
