@@ -396,6 +396,7 @@ async function renderCrawlStats(): Promise<string> {
     <h1>AI Crawl Statistics</h1>
     <p>Live, rolling 30-day bot crawl data for Top10Lists.us. Which AI systems, search engines, and crawlers are actively indexing our verified agent directory -- and where.</p>
     <p class="muted">Generated: ${generatedAt} -- Data window: <time datetime="${new Date(summary.earliest).toISOString()}">${esc(formatDate(summary.earliest))}</time> to <time datetime="${new Date(summary.latest).toISOString()}">${esc(formatDate(summary.latest))}</time></p>
+    <p class="muted"><strong>Note:</strong> Bot crawl recording began on <time datetime="2026-03-12T21:41:56Z">2026-03-12</time>. Until <time datetime="2026-04-12T00:00:00Z">2026-04-12</time>, the 30-day rolling window contains less than 30 days of data. Treat all figures as covering the period from 2026-03-12 to the generated timestamp above, not a full 30-day window.</p>
   </div>
 
   <div class="stats">
