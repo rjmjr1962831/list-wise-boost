@@ -291,6 +291,7 @@ From `src/data/master-ssot.md`:
 - Annual pricing: Audited $3,000/yr, Underwritten $5,000/yr (2 free months with annual commitment)
 - RealTrends pricing updated to "$195/year" across HomepageFAQSection and schema.org JSON-LD
 - Team pricing starting point: Leader $1,000/mo (includes Web of Truth setup), teammate badge $100/mo each
+- No 7-day free trial. Cancellation policy: service runs to end of paid period, cancel 15 days prior to avoid next billing.
 
 ### AIFS (AI Footprint Score)
 
@@ -324,7 +325,7 @@ From `src/data/master-ssot.md`:
 
 - Clean room HTML at `/crawl-stats` via `serve-bot-crawl-stats-html` edge function
 - 5 sections: Human-Triggered Crawls, Automated Bot Crawls, Market Verification (top 30 cities), Consumer Intent, Crawl-to-Return Rate, Live Activity Stream
-- JSON-LD Dataset schema; `<time datetime="ISO8601">` tags; 15-minute cache TTL
+- JSON-LD Dataset schema; `<time datetime="ISO8601">` tags; 1-hour cache TTL
 - Added to all 7 AI discovery surfaces (llms.txt, llms-full.txt, ai-feed/for-ai.md, ai-content-index.json, mcp.json, sitemap-pages.xml, serve-bot-content-html footer)
 
 ### Vercel Log Drain (Bot Crawl -- deployed 2026-03-18)
@@ -414,7 +415,7 @@ From `src/data/master-ssot.md`:
 - `geo-consistency-check.cjs` (`npm run geo:check`): all 7 checks pass
 - Vercel AI Gateway replaced by DeepSeek API for market stats
 - Dead `/p/:code` short codes 301 redirect to `/`
-- `serve-clean-html.js` proxy: tiered caching (15m crawl-stats, 5m agent/list/state, 0 content)
+- `serve-clean-html.js` proxy: tiered caching (1h crawl-stats, 5m agent/list/state, 0 content)
 - 2 agent `image_url` refs to dead Supabase project fixed to `wiotrvoirdgzfacuuiem`
 
 ### Enrichment Tool Evaluation
