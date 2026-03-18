@@ -114,6 +114,10 @@
   ],
   "rewrites": [
     {
+      "source": "/.well-known/mcp.json",
+      "destination": "/mcp.json"
+    },
+    {
       "source": "/.well-known/jwks.json",
       "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/signing-keys"
     },
