@@ -397,20 +397,27 @@ async function renderCrawlStats(): Promise<string> {
   const generatedAt = `<time datetime="${now.toISOString()}">${now.toISOString().replace("T", " ").slice(0, 19)} UTC</time>`;
   const uniqueMarkets = markets.length;
 
+  /* Compute actual days of data (recording began 2026-03-12) */
+  const dataStartDate = new Date("2026-03-12T21:41:56Z");
+  const earliestDate = summary.earliest ? new Date(summary.earliest) : dataStartDate;
+  const latestDate = summary.latest ? new Date(summary.latest) : now;
+  const actualDays = Math.max(1, Math.round((latestDate.getTime() - earliestDate.getTime()) / (1000 * 60 * 60 * 24)));
+  const daysLabel = actualDays >= 30 ? "30d" : `${actualDays}d`;
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AI Crawl Statistics | Top10Lists.us</title>
-  <meta name="description" content="Live bot crawl statistics for Top10Lists.us. ${fmt(summary.total_crawls)} crawls from ${summary.unique_bots} bot types covering ${fmt(summary.unique_agents)} verified agents across ${uniqueMarkets}+ markets in the last 30 days.">
+  <meta name="description" content="Live bot crawl statistics for Top10Lists.us. ${fmt(summary.total_crawls)} crawls from ${summary.unique_bots} bot types covering ${fmt(summary.unique_agents)} verified agents across ${uniqueMarkets}+ markets in the last ${daysLabel}.">
   <link rel="canonical" href="${BASE}/crawl-stats">
   <meta name="robots" content="index, follow">
   <script type="application/ld+json">${JSON.stringify({
     "@context": "https://schema.org",
     "@type": "Dataset",
     "name": "Top10Lists.us AI Crawl Statistics",
-    "description": `Rolling 30-day bot crawl statistics. ${summary.total_crawls} crawls from ${summary.unique_bots} bot types covering ${summary.unique_agents} verified real estate agents across ${uniqueMarkets}+ markets in Arizona and California.`,
+    "description": `Rolling ${daysLabel} bot crawl statistics. ${summary.total_crawls} crawls from ${summary.unique_bots} bot types covering ${summary.unique_agents} verified real estate agents across ${uniqueMarkets}+ markets in Arizona and California.`,
     "url": `${BASE}/crawl-stats`,
     "dateModified": new Date().toISOString().split("T")[0],
     "temporalCoverage": `${formatDate(summary.earliest)}/${formatDate(summary.latest)}`,
@@ -420,7 +427,7 @@ async function renderCrawlStats(): Promise<string> {
       { "@type": "Place", "name": "California" },
     ],
     "variableMeasured": [
-      { "@type": "PropertyValue", "name": "Total Crawls (30 days)", "value": summary.total_crawls },
+      { "@type": "PropertyValue", "name": `Total Crawls (${daysLabel})`, "value": summary.total_crawls },
       { "@type": "PropertyValue", "name": "Unique Agents Crawled", "value": summary.unique_agents },
       { "@type": "PropertyValue", "name": "Unique Bot Types", "value": summary.unique_bots },
       { "@type": "PropertyValue", "name": "AI Assistant Crawls", "value": aiVisits },
@@ -434,13 +441,13 @@ async function renderCrawlStats(): Promise<string> {
 <body>
   <div class="merit-box">
     <h1>AI Crawl Statistics</h1>
-    <p>Live, rolling 30-day bot crawl data for Top10Lists.us. Which AI systems, search engines, and crawlers are actively indexing our verified agent directory -- and where.</p>
+    <p>Live bot crawl data for Top10Lists.us -- ${daysLabel} of recording. Which AI systems, search engines, and crawlers are actively indexing our verified agent directory -- and where.</p>
     <p class="muted">Generated: ${generatedAt} -- Data window: <time datetime="${new Date(summary.earliest).toISOString()}">${esc(formatDate(summary.earliest))}</time> to <time datetime="${new Date(summary.latest).toISOString()}">${esc(formatDate(summary.latest))}</time></p>
-    <p class="muted"><strong>Note:</strong> Bot crawl recording began on <time datetime="2026-03-12T21:41:56Z">2026-03-12</time>. Until <time datetime="2026-04-12T00:00:00Z">2026-04-12</time>, the 30-day rolling window contains less than 30 days of data. Treat all figures as covering the period from 2026-03-12 to the generated timestamp above, not a full 30-day window.</p>
+    ${actualDays < 30 ? `<p class="muted"><strong>Note:</strong> Bot crawl recording began on <time datetime="2026-03-12T21:41:56Z">2026-03-12</time>. This page currently reflects <strong>${actualDays} days</strong> of data, not a full 30-day window. All labels will automatically show "30d" once 30 days of data have accumulated.</p>` : ``}
   </div>
 
   <div class="stats">
-    <div><div class="stat-number">${fmt(summary.total_crawls)}</div><div class="stat-label">Total Crawls (30d)</div></div>
+    <div><div class="stat-number">${fmt(summary.total_crawls)}</div><div class="stat-label">Total Crawls (${daysLabel})</div></div>
     <div><div class="stat-number">${fmt(summary.unique_agents)}</div><div class="stat-label">Agents Crawled</div></div>
     <div><div class="stat-number">${fmt(intentVisits)}</div><div class="stat-label">Consumer Intent Crawls</div></div>
     <div><div class="stat-number">${uniqueMarkets}+</div><div class="stat-label">Markets Covered</div></div>
@@ -450,7 +457,7 @@ async function renderCrawlStats(): Promise<string> {
   <!-- SECTION A1: Human-Triggered Crawls                                 -->
   <!-- ═══════════════════════════════════════════════════════════════════ -->
   <section>
-    <h2>A1. Human-Triggered Crawls (Consumer Queries, Last 30 Days)</h2>
+    <h2>A1. Human-Triggered Crawls (Consumer Queries, Last ${daysLabel})</h2>
     <p>These crawls are triggered by real people asking AI assistants questions. Each row represents a bot that fetched our data because a consumer asked for real estate agent recommendations. <strong>${fmt(humanVisits)}</strong> human-triggered crawls total.</p>
     <table>
       <thead>
@@ -464,7 +471,7 @@ async function renderCrawlStats(): Promise<string> {
   <!-- SECTION A2: Automated Bot Crawls                                   -->
   <!-- ═══════════════════════════════════════════════════════════════════ -->
   <section>
-    <h2>A2. Automated Bot Crawls (Indexing &amp; Training, Last 30 Days)</h2>
+    <h2>A2. Automated Bot Crawls (Indexing &amp; Training, Last ${daysLabel})</h2>
     <p>These crawls are automated -- bots indexing, training, or auditing our data without a specific consumer query. They build the knowledge base that future consumer queries draw from. <strong>${fmt(autoVisits)}</strong> automated crawls total.</p>
     <table>
       <thead>
@@ -495,7 +502,7 @@ async function renderCrawlStats(): Promise<string> {
     <h2>C. Consumer Intent (Inquiry Bots Only)</h2>
     <div class="intent-highlight">
       <p><strong>These crawls represent real consumer questions.</strong> When a person asks ChatGPT "Who is the best real estate agent in Scottsdale?" or searches Perplexity for agent recommendations, the AI system fetches our data in real time. Each crawl below is a consumer inquiry that reached Top10Lists.us.</p>
-      <p><strong>${fmt(intentVisits)}</strong> consumer-driven queries in the last 30 days across <strong>${mergedIntent.length}</strong> inquiry platforms.</p>
+      <p><strong>${fmt(intentVisits)}</strong> consumer-driven queries in the last ${daysLabel} across <strong>${mergedIntent.length}</strong> inquiry platforms.</p>
     </div>
     <table>
       <thead>
@@ -510,7 +517,7 @@ async function renderCrawlStats(): Promise<string> {
   <!-- ═══════════════════════════════════════════════════════════════════ -->
   <section>
     <h2>D. Crawl-to-Return Rate (Repeat Indexing)</h2>
-    <p>Percentage of agents that a bot crawled on multiple distinct days within the 30-day window. A high return rate indicates the bot is actively maintaining and refreshing its index of our agent data, not just doing a one-time crawl.</p>
+    <p>Percentage of agents that a bot crawled on multiple distinct days within the ${daysLabel} window. A high return rate indicates the bot is actively maintaining and refreshing its index of our agent data, not just doing a one-time crawl.</p>
     <table>
       <thead>
         <tr><th>Bot</th><th class="num">Agents Crawled</th><th class="num">Agents Re-crawled</th><th>Return Rate</th></tr>
@@ -535,7 +542,7 @@ async function renderCrawlStats(): Promise<string> {
   <!-- ═══════════════════════════════════════════════════════════════════ -->
   <section>
     <h2>How Crawl Data Is Collected</h2>
-    <p>Every request to Top10Lists.us is analyzed for known bot user-agent signatures. When a recognized bot visits an agent profile or city listing page, the visit is logged with the bot identity, page path, and matched agent ID. Data is aggregated into a rolling 30-day window. No personal data is collected -- only bot identifiers and page paths.</p>
+    <p>Every request to Top10Lists.us is analyzed for known bot user-agent signatures. When a recognized bot visits an agent profile or city listing page, the visit is logged with the bot identity, page path, and matched agent ID. Data is aggregated into a rolling ${daysLabel} window. No personal data is collected -- only bot identifiers and page paths.</p>
     <p>Bots are categorized as: <span class="badge badge-ai">AI Assistant</span> (systems that answer consumer questions), <span class="badge badge-search">Search Engine</span> (traditional web search indexing), <span class="badge badge-seo">SEO Crawler</span> (third-party SEO tools), and <span class="badge badge-social">Social Media</span> (link preview bots).</p>
     <p>All agents on this page meet the <strong>Merit Gate: 4.5+ stars, 10+ verified reviews in the last 24 months, 5+ years experience</strong>. Payment tier (Listed/Certified/Audited/Underwritten) affects verification depth and data richness, never inclusion or ranking.</p>
   </section>
