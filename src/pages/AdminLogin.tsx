@@ -19,9 +19,21 @@ const AdminLogin = () => {
   const [searchParams] = useSearchParams();
   const redirectTo = searchParams.get("redirect") || "/admin";
 
-  // Auto-pass: if browser already has a valid admin session, skip login
+  // Auto-pass: dev mode skips login; production checks for existing session
   useEffect(() => {
     (async () => {
+      const isDev = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+      if (isDev) {
+        // Dev mode: auto-login with env creds, skip the form
+        const email = import.meta.env.VITE_ADMIN_EMAIL;
+        const password = import.meta.env.VITE_ADMIN_PASSWORD;
+        if (email && password) {
+          await supabase.auth.signInWithPassword({ email, password });
+          const target = redirectTo.startsWith("/") && !redirectTo.startsWith("//") ? redirectTo : "/admin";
+          navigate(target, { replace: true });
+          return;
+        }
+      }
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session?.user) { setCheckingSession(false); return; }

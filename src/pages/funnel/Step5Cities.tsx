@@ -161,13 +161,13 @@ export default function Step5Cities() {
         <meta name="robots" content="noindex, nofollow" />
         <meta name="googlebot" content="noindex, nofollow" />
       </SafeHead>
-      <div className="min-h-screen bg-gradient-to-b from-background to-muted py-12 px-4">
+      <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 py-12 px-4">
         <div className="max-w-4xl mx-auto">
-          <Card>
+          <FunnelBreadcrumbs currentStep={6} />
+          <Card className="!bg-white/5 border-white/10 mt-3">
             <CardHeader>
-              <FunnelBreadcrumbs currentStep={6} />
-              <CardTitle>Which cities do you serve?</CardTitle>
-              <p className="text-sm text-muted-foreground">
+              <CardTitle className="text-white">Which cities do you serve?</CardTitle>
+              <p className="text-sm text-slate-400">
                 Add bundles to select your coverage areas. City listings are free.
               </p>
             </CardHeader>
@@ -179,7 +179,7 @@ export default function Step5Cities() {
               />
 
               {cityCount > 0 && (
-                <div className="text-sm text-muted-foreground">
+                <div className="text-sm text-slate-400">
                   {cityCount} {cityCount === 1 ? 'city' : 'cities'} selected
                 </div>
               )}
@@ -188,7 +188,7 @@ export default function Step5Cities() {
                 <Button
                   variant="outline"
                   onClick={() => navigate(`/funnel/${token}/review-final`)}
-                  className="gap-2"
+                  className="gap-2 border-white/20 text-slate-300 hover:text-white hover:bg-white/10"
                 >
                   <ArrowLeft className="h-4 w-4" />
                   Back

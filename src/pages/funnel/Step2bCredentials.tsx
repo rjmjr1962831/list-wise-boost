@@ -85,13 +85,13 @@ export default function Step2bCredentials() {
         <meta name="robots" content="noindex, nofollow" />
         <meta name="googlebot" content="noindex, nofollow" />
       </SafeHead>
-      <div className="min-h-screen bg-gradient-to-b from-background to-muted py-12 px-4">
+      <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 py-12 px-4">
         <div className="max-w-2xl mx-auto">
-          <Card>
+          <FunnelBreadcrumbs currentStep={3} />
+          <Card className="!bg-white/5 border-white/10 mt-3">
             <CardHeader>
-              <FunnelBreadcrumbs currentStep={3} />
-              <CardTitle>Review your credentials on file</CardTitle>
-              <p className="text-sm text-muted-foreground">
+              <CardTitle className="text-white">Review your credentials on file</CardTitle>
+              <p className="text-sm text-slate-400">
                 This information was sourced from public records and third-party data. You cannot edit it directly. If anything is incorrect or missing, request a review and we will verify and update it.
               </p>
             </CardHeader>
@@ -106,20 +106,20 @@ export default function Step2bCredentials() {
                   <div key={field} className="space-y-2">
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex-1">
-                        <p className="text-sm font-medium">{label}</p>
-                        <p className="text-xs text-muted-foreground mb-1">{description}</p>
-                        <div className={`rounded-md border px-3 py-2 text-sm ${hasData ? 'bg-muted/50' : 'bg-muted/20 text-muted-foreground italic'}`}>
+                        <p className="text-sm font-medium text-slate-300">{label}</p>
+                        <p className="text-xs text-slate-500 mb-1">{description}</p>
+                        <div className={`rounded-md border border-white/10 px-3 py-2 text-sm ${hasData ? 'bg-white/5 text-white' : 'bg-white/[0.02] text-slate-500 italic'}`}>
                           {value}
                         </div>
                       </div>
                       <div className="shrink-0 mt-6">
                         {wasSubmitted ? (
-                          <div className="flex items-center gap-1 text-xs text-green-700 font-medium px-3 py-2 bg-green-50 border border-green-200 rounded-md">
+                          <div className="flex items-center gap-1 text-xs text-emerald-400 font-medium px-3 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-md">
                             <CheckCircle className="h-3.5 w-3.5" />
                             Review requested
                           </div>
                         ) : !isOpen ? (
-                          <Button type="button" variant="outline" size="sm" onClick={() => setReviewField(field)}>
+                          <Button type="button" variant="outline" size="sm" onClick={() => setReviewField(field)} className="border-white/20 text-slate-300 hover:text-white hover:bg-white/10">
                             <HelpCircle className="h-4 w-4 mr-1" />
                             Request review
                           </Button>
@@ -143,7 +143,7 @@ export default function Step2bCredentials() {
               })}
 
               <div className="flex justify-between pt-4">
-                <Button variant="outline" onClick={() => navigate('/funnel/' + token + '/review-1')}>
+                <Button variant="outline" onClick={() => navigate('/funnel/' + token + '/review-1')} className="border-white/20 text-slate-300 hover:text-white hover:bg-white/10">
                   <ArrowLeft className="h-4 w-4 mr-2" />
                   Back
                 </Button>

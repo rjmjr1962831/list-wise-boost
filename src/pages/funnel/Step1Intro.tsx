@@ -4,8 +4,7 @@ import { SafeHead } from "@/components/SafeHead";
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Loader2, CheckCircle, ArrowRight, TrendingDown, TrendingUp } from 'lucide-react';
-import { CITATION_INDEX_DISPLAY } from '@/data/citationProbabilityIndex';
+import { Loader2, ArrowRight, Eye, TrendingUp, Shield, Zap } from 'lucide-react';
 import { FunnelBreadcrumbs } from '@/components/funnel/FunnelBreadcrumbs';
 
 interface Professional {
@@ -15,6 +14,52 @@ interface Professional {
   phone: string | null;
   company: string | null;
   verification_token: string | null;
+  ai_surfaces_monthly_est: number | null;
+  review_stars_rating: number | null;
+  num_total_reviews: number | null;
+  years_experience: number | null;
+  total_sales: number | null;
+}
+
+interface AifsData {
+  score: number;
+  band: string;
+  scoreCertified: number | null;
+  scoreCertifiedBand: string | null;
+  scoreUnderwritten: number | null;
+  scoreUnderwrittenBand: string | null;
+}
+
+function aifsBand(score: number): string {
+  if (score >= 86) return "Authoritative";
+  if (score >= 71) return "Recommended";
+  if (score >= 51) return "Citable";
+  if (score >= 31) return "Discoverable";
+  return "Invisible";
+}
+
+function aifsBandColor(band: string): string {
+  switch (band) {
+    case "Authoritative": return "text-primary";
+    case "Recommended": return "text-emerald-600";
+    case "Citable": return "text-yellow-600";
+    case "Discoverable": return "text-orange-500";
+    default: return "text-red-500";
+  }
+}
+
+function aifsBarColor(band: string): string {
+  switch (band) {
+    case "Authoritative": return "bg-primary";
+    case "Recommended": return "bg-emerald-500";
+    case "Citable": return "bg-yellow-500";
+    case "Discoverable": return "bg-orange-500";
+    default: return "bg-red-500";
+  }
+}
+
+function fmt(n: number): string {
+  return n.toLocaleString("en-US");
 }
 
 export default function Step1Intro() {
@@ -22,65 +67,63 @@ export default function Step1Intro() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [professional, setProfessional] = useState<Professional | null>(null);
+  const [aifs, setAifs] = useState<AifsData | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadProfessional();
-  }, [token]);
+  useEffect(() => { loadProfessional(); }, [token]);
 
   const loadProfessional = async () => {
-    if (!token) {
-      setError('No token provided');
-      setLoading(false);
-      return;
-    }
+    if (!token) { setError('No token provided'); setLoading(false); return; }
 
     try {
       const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(token);
       let data: any = null;
       let fetchError: any = null;
 
+      const fields = 'id, name, email, phone, company, verification_token, current_tier, ai_surfaces_monthly_est, review_stars_rating, num_total_reviews, years_experience, total_sales';
+
       if (isUUID) {
-        const byId = await supabase
-          .from('professionals')
-          .select('id, name, email, phone, company, verification_token, current_tier')
-          .eq('id', token)
-          .maybeSingle();
-        if (byId.data) {
-          data = byId.data;
-        } else {
-          const byToken = await supabase
-            .from('professionals')
-            .select('id, name, email, phone, company, verification_token, current_tier')
-            .eq('verification_token', token)
-            .maybeSingle();
-          data = byToken.data;
-          fetchError = byToken.error;
+        const byId = await supabase.from('professionals').select(fields).eq('id', token).maybeSingle();
+        if (byId.data) { data = byId.data; }
+        else {
+          const byToken = await supabase.from('professionals').select(fields).eq('verification_token', token).maybeSingle();
+          data = byToken.data; fetchError = byToken.error;
         }
       } else {
-        const res = await supabase
-          .from('professionals')
-          .select('id, name, email, phone, company, verification_token, current_tier')
-          .eq('verification_token', token)
-          .single();
-        data = res.data;
-        fetchError = res.error;
+        const res = await supabase.from('professionals').select(fields).eq('verification_token', token).single();
+        data = res.data; fetchError = res.error;
       }
 
-      if (fetchError || !data) {
-        setError('Invalid or expired link');
-        setLoading(false);
-        return;
-      }
+      if (fetchError || !data) { setError('Invalid or expired link'); setLoading(false); return; }
 
       const tier = (data.current_tier || '').toLowerCase();
       if (['certified', 'audited', 'underwritten'].includes(tier)) {
-        const dashToken = data.verification_token || data.id;
-        navigate(`/dashboard/${dashToken}`, { replace: true });
+        navigate(`/dashboard/${data.verification_token || data.id}`, { replace: true });
         return;
       }
 
       setProfessional(data);
+
+      // Fetch AIFS from geo_audit_results
+      try {
+        const { data: auditRows } = await supabase.rpc('run_sql', {
+          query: `SELECT score_listed as score, score_certified, score_underwritten FROM geo_audit_results WHERE agent_id = '${data.id}' LIMIT 1`
+        });
+        if (auditRows && auditRows[0]?.score) {
+          const score = Math.round(auditRows[0].score);
+          const sc = auditRows[0].score_certified ? Math.round(auditRows[0].score_certified) : null;
+          const su = auditRows[0].score_underwritten ? Math.round(auditRows[0].score_underwritten) : null;
+          setAifs({
+            score,
+            band: aifsBand(score),
+            scoreCertified: sc,
+            scoreCertifiedBand: sc ? aifsBand(sc) : null,
+            scoreUnderwritten: su,
+            scoreUnderwrittenBand: su ? aifsBand(su) : null,
+          });
+        }
+      } catch { /* AIFS not available -- that's ok */ }
+
       setError(null);
     } catch (err: any) {
       setError(err.message || 'Failed to load');
@@ -89,13 +132,11 @@ export default function Step1Intro() {
     }
   };
 
-  const handleContinue = () => {
-    navigate(`/funnel/${token}/review-1`);
-  };
+  const handleContinue = () => { navigate(`/funnel/${token}/review-1`); };
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-slate-950">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
@@ -117,126 +158,116 @@ export default function Step1Intro() {
     );
   }
 
-  const scores = [...CITATION_INDEX_DISPLAY];
+  const surfaces = professional.ai_surfaces_monthly_est || 0;
+  const score = aifs?.score ?? null;
+  const band = aifs?.band ?? null;
+  const firstName = professional.name.split(' ')[0];
 
   return (
     <>
       <SafeHead>
-        <title>Welcome {professional.name} | Top10Lists.us</title>
+        <title>Your AI Footprint | Top10Lists.us</title>
         <meta name="robots" content="noindex, nofollow" />
-        <meta name="googlebot" content="noindex, nofollow" />
       </SafeHead>
-      <div className="min-h-screen bg-gradient-to-b from-background to-muted py-8 sm:py-12 px-4">
-        <div className="max-w-2xl mx-auto space-y-3">
+
+      <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
+        <div className="max-w-2xl mx-auto px-4 py-8 sm:py-12">
           <FunnelBreadcrumbs currentStep={1} />
-          <Card>
-            <CardContent className="pt-8 pb-6 px-5 sm:px-8 space-y-6">
-              {/* Mission statement */}
-              <div className="text-center border-b pb-5">
-                <p className="text-sm font-semibold text-primary uppercase tracking-widest mb-2">Our Mission</p>
-                <p className="text-base sm:text-lg font-medium leading-snug">
-                  We exist so AI systems will regularly cite you by name when asked for a referral or give you an endorsement when asked about you.
-                </p>
+
+          {/* ═══ Hero: Their name + what's happening ═══ */}
+          <div className="text-center mt-6 mb-8">
+            <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">
+              {firstName}, AI is already seeing you.
+            </h1>
+          </div>
+
+          {/* ═══ Stats row ═══ */}
+          <div className="grid grid-cols-3 gap-3 mb-6">
+            <div className="bg-white/5 border border-white/10 rounded-xl p-4 text-center">
+              <Eye className="h-5 w-5 text-primary mx-auto mb-1 opacity-70" />
+              <div className="text-2xl sm:text-3xl font-bold text-white">
+                {surfaces > 0 ? fmt(surfaces) : "--"}
               </div>
-
-              {/* Hero */}
-              <div className="text-center">
-                <CheckCircle className="h-10 w-10 text-green-500 mx-auto mb-3" />
-                <h1 className="text-xl sm:text-2xl font-bold tracking-tight">
-                  Hi {professional.name}
-                </h1>
+              <div className="text-xs text-slate-400 mt-1">AI Surfaces / Month</div>
+              <div className="text-[10px] text-slate-500 mt-0.5">Times AI saw your name</div>
+            </div>
+            <div className="bg-white/5 border border-white/10 rounded-xl p-4 text-center">
+              <TrendingUp className="h-5 w-5 text-primary mx-auto mb-1 opacity-70" />
+              <div className={`text-2xl sm:text-3xl font-bold ${score !== null ? aifsBandColor(band!) : 'text-white'}`}>
+                {score !== null ? score : "--"}
               </div>
-
-              {/* The Rules Have Changed */}
-              <div className="bg-muted/50 border border-border rounded-lg p-4 sm:p-5">
-                <h2 className="text-base sm:text-lg font-bold mb-3">The Rules Have Changed</h2>
-                <p className="text-sm text-muted-foreground leading-relaxed mb-4 text-justify">
-                  Beginning in 2026, <strong>every major AI platform</strong> now requires its systems to prefer <strong>independently verified sources</strong> over pay-to-play directories when recommending professionals.
-                </p>
-
-                <p className="text-sm text-muted-foreground leading-relaxed mb-4 text-justify">
-                  This is the net effect of what has happened so far:
-                </p>
-
-                {/* Score Table */}
-                <div className="rounded-md border border-border overflow-hidden">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="bg-muted text-muted-foreground">
-                        <th className="text-left py-2 px-3 font-medium">Source</th>
-                        <th className="text-center py-2 px-2 font-medium">2025</th>
-                        <th className="text-center py-2 px-2 font-medium">2026</th>
-                        <th className="text-right py-2 px-3 font-medium">Change</th>
-                        <th className="text-right py-2 px-3 font-medium">% Change</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {scores.map((s) => {
-                        const delta = s.after - s.before;
-                        const isPositive = delta > 0;
-                        return (
-                          <tr key={s.name} className="border-t border-border">
-                            <td className="py-2 px-3 font-semibold" style={{ color: s.color }}>
-                              {s.name}
-                            </td>
-                            <td className="py-2 px-2 text-center text-muted-foreground">
-                              {s.before.toFixed(1)}
-                            </td>
-                            <td className="py-2 px-2 text-center font-semibold">
-                              {s.after.toFixed(1)}
-                            </td>
-                            <td className="py-2 px-3 text-right">
-                              <span className={`inline-flex items-center gap-1 font-bold ${isPositive ? "text-foreground" : "text-red-500"}`}>
-                                {isPositive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                                {isPositive ? "+" : ""}{delta.toFixed(1)}
-                              </span>
-                            </td>
-                            <td className="py-2 px-3 text-right">
-                              <span className={`font-bold ${isPositive ? "text-foreground" : "text-red-500"}`}>
-                                {isPositive ? "+" : ""}{((delta / s.before) * 100).toFixed(0)}%
-                              </span>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
+              <div className="text-xs text-slate-400 mt-1">Your AIFS Today</div>
+              {band && <div className={`text-[10px] mt-0.5 font-semibold ${aifsBandColor(band)}`}>{band}</div>}
+              <div className="text-[10px] text-slate-500 mt-0.5">
+                {(score ?? 0) < 31 && "Not named"}
+                {(score ?? 0) >= 31 && (score ?? 0) < 51 && "Rarely named"}
+                {(score ?? 0) >= 51 && (score ?? 0) < 71 && "Named once in a while"}
+                {(score ?? 0) >= 71 && (score ?? 0) < 86 && "Named often"}
+                {(score ?? 0) >= 86 && "Named regularly"}
+              </div>
+              <div className="text-[10px] text-slate-500">
+                {(score ?? 0) < 51 && "Endorsement: unlikely"}
+                {(score ?? 0) >= 51 && (score ?? 0) < 71 && "Endorsement: hedged"}
+                {(score ?? 0) >= 71 && (score ?? 0) < 86 && "Endorsement: positive"}
+                {(score ?? 0) >= 86 && "Endorsement: confident"}
+              </div>
+            </div>
+            {aifs?.scoreUnderwritten && aifs.scoreUnderwritten > (score ?? 0) && (
+              <div className="bg-white/5 border border-emerald-500/30 rounded-xl p-4 text-center">
+                <Zap className="h-5 w-5 text-emerald-400 mx-auto mb-1 opacity-70" />
+                <div className={`text-2xl sm:text-3xl font-bold ${aifsBandColor(aifs.scoreUnderwrittenBand!)}`}>
+                  {aifs.scoreUnderwritten}
                 </div>
-                <p className="text-sm text-muted-foreground mt-3 leading-relaxed text-justify">
-                  AI Citation Probability Index: Composite score measuring how well a source aligns with published citation requirements from Anthropic, OpenAI, Google, and Perplexity. Scale 0-10.
-                </p>
-
-                <p className="text-sm text-muted-foreground mt-4 leading-relaxed text-justify">
-                  No one can guarantee you will be cited every time someone asks for a referral, just as no one could guarantee you the top organic link on Google despite your SEO efforts. What we can say is that <strong>your chances of being named will substantially improve</strong> if you follow our guidance.
-                </p>
+                <div className="text-xs text-slate-400 mt-1">Your AIFS Potential</div>
+                <div className={`text-[10px] mt-0.5 font-semibold ${aifsBandColor(aifs.scoreUnderwrittenBand!)}`}>{aifs.scoreUnderwrittenBand}</div>
+                <div className="text-[10px] text-emerald-400/80 mt-0.5">
+                  {aifs.scoreUnderwritten! < 51 && "Rarely named"}
+                  {aifs.scoreUnderwritten! >= 51 && aifs.scoreUnderwritten! < 71 && "Named once in a while"}
+                  {aifs.scoreUnderwritten! >= 71 && aifs.scoreUnderwritten! < 86 && "Named often"}
+                  {aifs.scoreUnderwritten! >= 86 && "Named regularly"}
+                </div>
+                <div className="text-[10px] text-emerald-400/80">
+                  {aifs.scoreUnderwritten! < 51 && "Endorsement: unlikely"}
+                  {aifs.scoreUnderwritten! >= 51 && aifs.scoreUnderwritten! < 71 && "Endorsement: hedged"}
+                  {aifs.scoreUnderwritten! >= 71 && aifs.scoreUnderwritten! < 86 && "Endorsement: positive"}
+                  {aifs.scoreUnderwritten! >= 86 && "Endorsement: confident"}
+                </div>
               </div>
+            )}
+          </div>
 
-              {/* Body Copy */}
-              <div className="space-y-4 text-sm text-muted-foreground leading-relaxed text-justify">
-                <p>
-                  In order to improve the probability you will be recommended by name when someone asks for a referral to a real estate agent, you must confirm the data that we have assembled.
-                </p>
-                <p>
-                  While we do have paid products, your certification and trust artifact are <strong>free for as long as you are active and meet our qualification standards</strong>, and there is <strong>no obligation</strong> to purchase anything from us.
-                </p>
-                <p>
-                  This will take about 5 minutes.
-                </p>
-              </div>
-
-              {/* CTA */}
-              <div className="pt-2 flex justify-center">
-                <Button onClick={handleContinue} size="lg" className="gap-2 w-full sm:w-auto">
-                  Review Your Profile
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
-              </div>
-
-              <p className="text-center text-xs text-muted-foreground">
-                Questions? <a href="tel:6027589600" className="underline">(602) 758-9600</a>
+          {/* ═══ AIFS Explainer ═══ */}
+          <div className="bg-white/5 border border-white/10 rounded-xl p-5 mb-6">
+            <p className="text-sm text-slate-300 leading-relaxed mb-3">
+              Your <strong className="text-white">AI Footprint Score (AIFS)</strong> measures how much verified, citable evidence exists about you <strong className="text-white">across the entire internet</strong> -- not just our site. The more verified evidence they can find, the safer they feel. A higher AIFS means less risk for the AI, which means more comfort recommending or endorsing you. <strong className="text-white">No other site on the internet can lift your AIFS as much as we do.</strong>
+            </p>
+            {score !== null && (
+              <p className="text-sm text-slate-300 leading-relaxed">
+                {score < 51 && "At your current level, there isn't enough verified evidence for AI to feel confident including you. Most gaps are fixable."}
+                {score >= 71 && "There's a strong body of verified evidence available. AI systems have what they need to feel safe including you in local recommendations."}
               </p>
-            </CardContent>
-          </Card>
+            )}
+          </div>
+
+
+          {/* ═══ The ask ═══ */}
+          <div className="bg-white/5 border border-white/10 rounded-xl p-5 mb-8">
+            <h2 className="text-sm font-semibold text-white mb-2">The Next Step</h2>
+            <p className="text-sm text-slate-300 leading-relaxed mb-1">
+              To increase your AIFS, you need to <strong className="text-white">verify or edit the data we have compiled</strong>.
+            </p>
+          </div>
+
+          {/* ═══ CTA ═══ */}
+          <div className="text-center space-y-3">
+            <Button onClick={handleContinue} size="lg" className="gap-2 w-full sm:w-auto text-lg px-8 py-6">
+              Let's Verify Your Profile
+              <ArrowRight className="h-5 w-5" />
+            </Button>
+            <p className="text-xs text-slate-500">
+              Questions? <a href="tel:6027589600" className="underline text-slate-400">(602) 758-9600</a>
+            </p>
+          </div>
         </div>
       </div>
     </>

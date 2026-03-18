@@ -51,7 +51,7 @@ interface Professional {
 
 function ReviewRequested() {
   return (
-    <span className="inline-flex items-center gap-1 text-xs text-green-700 font-medium px-2 py-0.5 bg-green-50 border border-green-200 rounded-md ml-2">
+    <span className="inline-flex items-center gap-1 text-xs text-emerald-400 font-medium px-2 py-0.5 bg-emerald-500/10 border border-emerald-500/20 rounded-md ml-2">
       <CheckCircle className="h-3 w-3" />
       Review requested
     </span>
@@ -171,9 +171,9 @@ export default function Step4ReviewFinal() {
 
   const Row = ({ label, value, fieldName, width = 'w-32' }: { label: string; value: string | null | undefined; fieldName?: string; width?: string }) => (
     <div className="flex gap-2 items-start">
-      <dt className={`font-medium ${width} shrink-0`}>{label}:</dt>
-      <dd className="flex-1 flex items-center flex-wrap gap-1">
-        {value || 'Not provided'}
+      <dt className={`font-medium text-slate-400 ${width} shrink-0`}>{label}:</dt>
+      <dd className="flex-1 flex items-center flex-wrap gap-1 text-white">
+        {value || <span className="text-slate-500">Not provided</span>}
         {fieldName && reviewed(fieldName) && <ReviewRequested />}
       </dd>
     </div>
@@ -186,23 +186,23 @@ export default function Step4ReviewFinal() {
         <meta name="robots" content="noindex, nofollow" />
         <meta name="googlebot" content="noindex, nofollow" />
       </SafeHead>
-      <div className="min-h-screen bg-gradient-to-b from-background to-muted py-12 px-4">
+      <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 py-12 px-4">
         <div className="max-w-3xl mx-auto">
-          <Card>
+          <FunnelBreadcrumbs currentStep={5} />
+          <Card className="!bg-white/5 border-white/10 mt-3">
             <CardHeader>
-              <FunnelBreadcrumbs currentStep={5} />
-              <CardTitle>Does everything look correct?</CardTitle>
-              <p className="text-sm text-muted-foreground">
+              <CardTitle className="text-white">Does everything look correct?</CardTitle>
+              <p className="text-sm text-slate-400">
                 Review your information before we move forward. Fields marked with a green badge have a pending review request.
               </p>
             </CardHeader>
             <CardContent className="space-y-6">
 
               {/* Contact Information */}
-              <div className="border rounded-lg p-4">
+              <div className="border border-white/10 rounded-lg p-4">
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-semibold">Contact Information</h3>
-                  <Button variant="ghost" size="sm" onClick={() => navigate(`/funnel/${token}/review-1`)} className="gap-2">
+                  <h3 className="font-semibold text-white">Contact Information</h3>
+                  <Button variant="ghost" size="sm" onClick={() => navigate(`/funnel/${token}/review-1`)} className="gap-2 text-slate-400 hover:text-white">
                     <Edit className="h-3 w-3" />Edit
                   </Button>
                 </div>
@@ -215,10 +215,10 @@ export default function Step4ReviewFinal() {
               </div>
 
               {/* Credentials & Background */}
-              <div className="border rounded-lg p-4">
+              <div className="border border-white/10 rounded-lg p-4">
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-semibold">Credentials {"&"} Background</h3>
-                  <Button variant="ghost" size="sm" onClick={() => navigate(`/funnel/${token}/review-credentials`)} className="gap-2">
+                  <h3 className="font-semibold text-white">Credentials {"&"} Background</h3>
+                  <Button variant="ghost" size="sm" onClick={() => navigate(`/funnel/${token}/review-credentials`)} className="gap-2 text-slate-400 hover:text-white">
                     <Edit className="h-3 w-3" />Edit
                   </Button>
                 </div>
@@ -231,10 +231,10 @@ export default function Step4ReviewFinal() {
               </div>
 
               {/* Professional Details */}
-              <div className="border rounded-lg p-4">
+              <div className="border border-white/10 rounded-lg p-4">
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-semibold">Professional Details</h3>
-                  <Button variant="ghost" size="sm" onClick={() => navigate(`/funnel/${token}/review-2`)} className="gap-2">
+                  <h3 className="font-semibold text-white">Professional Details</h3>
+                  <Button variant="ghost" size="sm" onClick={() => navigate(`/funnel/${token}/review-2`)} className="gap-2 text-slate-400 hover:text-white">
                     <Edit className="h-3 w-3" />Edit
                   </Button>
                 </div>
@@ -244,12 +244,12 @@ export default function Step4ReviewFinal() {
                   <Row label="Total Sales" value={professional.total_sales != null ? (floorSales(professional.total_sales) ?? null) : null}                fieldName="Total Sales" />
                   <Row label="Rating"      value={professional.review_stars_rating ? `${professional.review_stars_rating} stars` : null}            fieldName="Reviews" />
                   <Row label="Reviews"     value={professional.num_total_reviews != null ? `${floorReviews(professional.num_total_reviews) ?? professional.num_total_reviews} reviews` : null} />
-                  {volumeDisplay && <Row label="Volume (3yr)" value={volumeDisplay} />}
+                  {volumeDisplay && <Row label="Volume (3yr)" value={volumeDisplay} fieldName="Volume (3yr)" />}
                   <Row label="Website"     value={professional.website} />
                   <Row label="Title"       value={professional.title} />
                   <Row label="Headline"    value={professional.headline} />
                   <Row label="Address"     value={addressDisplay} />
-                  <Row label="Specialties" value={Array.isArray(professional.specialty) ? professional.specialty.join(', ') : null} />
+                  <Row label="Specialties" value={Array.isArray(professional.specialty) ? professional.specialty.join(', ') : null} fieldName="Specialties" />
                   {professional.social_facebook || professional.social_instagram || professional.social_linkedin ? (
                     <Row label="Social" value={[professional.social_facebook, professional.social_instagram, professional.social_linkedin].filter(Boolean).join(' · ')} />
                   ) : null}
@@ -261,7 +261,7 @@ export default function Step4ReviewFinal() {
               </div>
 
               <div className="flex gap-3 pt-4">
-                <Button variant="outline" onClick={() => navigate(`/funnel/${token}/review-2`)} className="gap-2">
+                <Button variant="outline" onClick={() => navigate(`/funnel/${token}/review-2`)} className="gap-2 border-white/20 text-slate-300 hover:text-white hover:bg-white/10">
                   <ArrowLeft className="h-4 w-4" />Back
                 </Button>
                 <Button onClick={handleAccept} className="flex-1 gap-2">

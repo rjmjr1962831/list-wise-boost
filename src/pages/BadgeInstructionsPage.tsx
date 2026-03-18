@@ -93,11 +93,12 @@ export default function BadgeInstructionsPage() {
   const agent = pro ?? sessionPro;
   const badgeId = agent?.short_code || agent?.id || "";
   const artifactToken = agent?.verification_token || agent?.id || "";
+  const badgeSvgUrl = badgeId ? `${BASE}/api/badge/${badgeId}.svg` : "";
   const badgeImageUrl = badgeId ? `${BASE}/api/v1/badge/${badgeId}/image` : "";
   const artifactUrl = artifactToken ? `${BASE}/artifact/${artifactToken}` : "";
   const tierLabel = (agent?.current_tier ?? "certified").replace(/_/g, " ");
-  const htmlSnippet = badgeImageUrl && artifactUrl
-    ? `<a href="${artifactUrl}" target="_blank" rel="noopener noreferrer"><img src="${badgeImageUrl}" alt="Top10Lists.us ${tierLabel} certification" width="120" height="60" style="border:0;" /></a>`
+  const htmlSnippet = badgeSvgUrl && artifactUrl
+    ? `<a href="${artifactUrl}" target="_blank" rel="noopener noreferrer"><img src="${badgeSvgUrl}" alt="Top10Lists.us ${tierLabel} certification" width="200" height="60" style="border:0;" /></a>`
     : "";
 
   if (loading) {
@@ -156,16 +157,23 @@ export default function BadgeInstructionsPage() {
         </CardHeader>
         <CardContent className="space-y-3">
           <p className="text-sm text-muted-foreground">
-            Right-click the image below and choose &quot;Save image as…&quot; to save the PNG. Or use the badge URL anywhere—it always serves your current tier.
+            Your badge is a dynamic SVG that always reflects your current tier. Embed it anywhere using the URL below -- it updates automatically when your tier changes.
           </p>
-          {badgeImageUrl && (
+          {badgeSvgUrl && (
             <>
               <a href={artifactUrl} target="_blank" rel="noopener noreferrer" className="inline-block">
-                <img src={badgeImageUrl} alt={`Top10Lists.us ${tierLabel} certification`} width={120} height={60} className="border rounded" />
+                <img src={badgeSvgUrl} alt={`Top10Lists.us ${tierLabel} certification`} width={200} height={60} className="border rounded" />
               </a>
+              <div className="flex flex-wrap items-center gap-2 mt-2">
+                <code className="text-xs bg-muted px-2 py-1 rounded break-all">{badgeSvgUrl}</code>
+                <CopyButton text={badgeSvgUrl} label="SVG badge URL" />
+              </div>
+              <p className="text-xs text-muted-foreground mt-2">
+                PNG version also available:
+              </p>
               <div className="flex flex-wrap items-center gap-2">
                 <code className="text-xs bg-muted px-2 py-1 rounded break-all">{badgeImageUrl}</code>
-                <CopyButton text={badgeImageUrl} label="badge URL" />
+                <CopyButton text={badgeImageUrl} label="PNG badge URL" />
               </div>
             </>
           )}

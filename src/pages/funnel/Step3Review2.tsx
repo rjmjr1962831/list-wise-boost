@@ -263,13 +263,13 @@ export default function Step3Review2() {
         <meta name="robots" content="noindex, nofollow" />
         <meta name="googlebot" content="noindex, nofollow" />
       </SafeHead>
-      <div className="min-h-screen bg-gradient-to-b from-background to-muted py-12 px-4">
+      <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 py-12 px-4">
         <div className="max-w-2xl mx-auto">
-          <Card>
+          <FunnelBreadcrumbs currentStep={4} />
+          <Card className="!bg-white/5 border-white/10 mt-3">
             <CardHeader>
-              <FunnelBreadcrumbs currentStep={4} />
-              <CardTitle>Review your profile fields</CardTitle>
-              <p className="text-sm text-muted-foreground">
+              <CardTitle className="text-white">Review your profile fields</CardTitle>
+              <p className="text-sm text-slate-400">
                 Fields you can edit are open inputs. Some fields require a review request to change. Your changes save when you continue.
               </p>
             </CardHeader>
@@ -277,13 +277,13 @@ export default function Step3Review2() {
               <div className="space-y-4">
                 {/* Read-only fields with Request Review */}
                 <div className="flex flex-col gap-2">
-                  <Label>License Number</Label>
+                  <Label className="text-slate-300">License Number</Label>
                   <div className="flex items-center gap-2">
-                    <div className="flex-1 rounded-md border bg-muted/50 px-3 py-2 text-sm font-mono">
+                    <div className="flex-1 rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-white font-mono">
                       {professional?.license_number || 'Not provided'}
                     </div>
                     {submittedReviews.has('license_number') ? (
-                      <div className="flex items-center gap-1 text-xs text-green-700 font-medium px-3 py-2 bg-green-50 border border-green-200 rounded-md shrink-0">
+                      <div className="flex items-center gap-1 text-xs text-emerald-400 font-medium px-3 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-md shrink-0">
                         <CheckCircle className="h-3.5 w-3.5" />
                         Review requested
                       </div>
@@ -293,14 +293,14 @@ export default function Step3Review2() {
                         variant="outline"
                         size="sm"
                         onClick={() => setReviewField('license_number')}
-                        className="shrink-0"
+                        className="shrink-0 border-white/20 text-slate-300 hover:text-white hover:bg-white/10"
                       >
                         <HelpCircle className="h-4 w-4 mr-1" />
                         Request review
                       </Button>
                     ) : null}
                   </div>
-                  <p className="text-xs text-muted-foreground">To change your license number, request a review.</p>
+                  <p className="text-xs text-slate-500">To change your license number, request a review.</p>
                   {reviewField === 'license_number' && professional && (
                     <InlineReviewForm
                       fieldName="License Number"
@@ -316,13 +316,13 @@ export default function Step3Review2() {
 
                 {/* Reviews: read-only with request review */}
                 <div className="flex flex-col gap-2">
-                  <Label>Reviews</Label>
+                  <Label className="text-slate-300">Reviews</Label>
                   <div className="flex items-center gap-2">
-                    <div className="flex-1 rounded-md border bg-muted/50 px-3 py-2 text-sm">
+                    <div className="flex-1 rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-white">
                       {professional?.review_stars_rating ?? '—'} stars · {professional?.num_total_reviews != null ? (floorReviews(professional.num_total_reviews) ?? professional.num_total_reviews) : 0} reviews
                     </div>
                     {submittedReviews.has('reviews') ? (
-                      <div className="flex items-center gap-1 text-xs text-green-700 font-medium px-3 py-2 bg-green-50 border border-green-200 rounded-md shrink-0">
+                      <div className="flex items-center gap-1 text-xs text-emerald-400 font-medium px-3 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-md shrink-0">
                         <CheckCircle className="h-3.5 w-3.5" />
                         Review requested
                       </div>
@@ -332,14 +332,14 @@ export default function Step3Review2() {
                         variant="outline"
                         size="sm"
                         onClick={() => setReviewField('reviews')}
-                        className="shrink-0"
+                        className="shrink-0 border-white/20 text-slate-300 hover:text-white hover:bg-white/10"
                       >
                         <HelpCircle className="h-4 w-4 mr-1" />
                         Request review
                       </Button>
                     ) : null}
                   </div>
-                  <p className="text-xs text-muted-foreground">To change your review data, request a review.</p>
+                  <p className="text-xs text-slate-500">To change your review data, request a review.</p>
                   {reviewField === 'reviews' && professional && (
                     <InlineReviewForm
                       fieldName="Reviews"
@@ -354,13 +354,13 @@ export default function Step3Review2() {
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  <Label>Years of Experience</Label>
+                  <Label className="text-slate-300">Years of Experience</Label>
                   <div className="flex items-center gap-2">
-                    <div className="flex-1 rounded-md border bg-muted/50 px-3 py-2 text-sm">
+                    <div className="flex-1 rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-white">
                       {professional?.years_experience != null ? `${professional.years_experience} years` : 'Not provided'}
                     </div>
                     {submittedReviews.has('years_experience') ? (
-                      <div className="flex items-center gap-1 text-xs text-green-700 font-medium px-3 py-2 bg-green-50 border border-green-200 rounded-md shrink-0">
+                      <div className="flex items-center gap-1 text-xs text-emerald-400 font-medium px-3 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-md shrink-0">
                         <CheckCircle className="h-3.5 w-3.5" />
                         Review requested
                       </div>
@@ -370,14 +370,14 @@ export default function Step3Review2() {
                         variant="outline"
                         size="sm"
                         onClick={() => setReviewField('years_experience')}
-                        className="shrink-0"
+                        className="shrink-0 border-white/20 text-slate-300 hover:text-white hover:bg-white/10"
                       >
                         <HelpCircle className="h-4 w-4 mr-1" />
                         Request review
                       </Button>
                     ) : null}
                   </div>
-                  <p className="text-xs text-muted-foreground">To change your years of experience, request a review.</p>
+                  <p className="text-xs text-slate-500">To change your years of experience, request a review.</p>
                   {reviewField === 'years_experience' && professional && (
                     <InlineReviewForm
                       fieldName="Years of Experience"
@@ -393,11 +393,11 @@ export default function Step3Review2() {
 
                 <div className="flex flex-col gap-2">
                   <div className="flex items-center gap-1.5">
-                    <Label>Total Sales</Label>
+                    <Label className="text-slate-300">Total Sales</Label>
                     <div className="relative group">
                       <button
                         type="button"
-                        className="text-muted-foreground hover:text-foreground"
+                        className="text-slate-500 hover:text-white"
                         onClick={(e) => {
                           const tip = e.currentTarget.nextElementSibling;
                           if (tip) tip.classList.toggle('hidden');
@@ -405,18 +405,18 @@ export default function Step3Review2() {
                       >
                         <HelpCircle className="h-3.5 w-3.5" />
                       </button>
-                      <div className="hidden absolute z-50 left-0 top-6 w-72 rounded-md border bg-popover p-3 text-xs text-popover-foreground shadow-md">
+                      <div className="hidden absolute z-50 left-0 top-6 w-72 rounded-md border border-white/10 bg-slate-800 p-3 text-xs text-slate-300 shadow-md">
                         <p className="font-medium mb-1">Why the + sign?</p>
                         <p>AI systems see different numbers on different sites. If we published an exact count, any discrepancy would reduce AI trust in your profile. By showing a verified floor (e.g. 150+), the AI understands this is a minimum we stand behind, and that variation elsewhere is expected. This protects your citation score.</p>
                       </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="flex-1 rounded-md border bg-muted/50 px-3 py-2 text-sm">
+                    <div className="flex-1 rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-white">
                       {totalSalesDisplay != null ? (floorSales(totalSalesDisplay) ?? `${totalSalesDisplay.toLocaleString()}+`) : 'Not provided'}
                     </div>
                     {submittedReviews.has('total_sales') ? (
-                      <div className="flex items-center gap-1 text-xs text-green-700 font-medium px-3 py-2 bg-green-50 border border-green-200 rounded-md shrink-0">
+                      <div className="flex items-center gap-1 text-xs text-emerald-400 font-medium px-3 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-md shrink-0">
                         <CheckCircle className="h-3.5 w-3.5" />
                         Review requested
                       </div>
@@ -426,14 +426,14 @@ export default function Step3Review2() {
                         variant="outline"
                         size="sm"
                         onClick={() => setReviewField('total_sales')}
-                        className="shrink-0"
+                        className="shrink-0 border-white/20 text-slate-300 hover:text-white hover:bg-white/10"
                       >
                         <HelpCircle className="h-4 w-4 mr-1" />
                         Request review
                       </Button>
                     ) : null}
                   </div>
-                  <p className="text-xs text-muted-foreground">To change your total sales count, request a review.</p>
+                  <p className="text-xs text-slate-500">To change your total sales count, request a review.</p>
                   {reviewField === 'total_sales' && professional && (
                     <InlineReviewForm
                       fieldName="Total Sales"
@@ -450,15 +450,15 @@ export default function Step3Review2() {
                 {/* Volume (read-only, display only) */}
                 {getVolume() && (
                   <div>
-                    <Label>Volume (3yr)</Label>
-                    <div className="rounded-md border bg-muted/50 px-3 py-2 text-sm">{getVolume()}</div>
+                    <Label className="text-slate-300">Volume (3yr)</Label>
+                    <div className="rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-white">{getVolume()}</div>
                   </div>
                 )}
 
                 {/* Editable fields */}
                 <div>
                   <Label htmlFor="website">Website URL</Label>
-                  <p className="text-xs text-muted-foreground mb-1">You can edit this field directly.</p>
+                  <p className="text-xs text-slate-500 mb-1">You can edit this field directly.</p>
                   <Input
                     id="website"
                     type="url"
@@ -470,7 +470,7 @@ export default function Step3Review2() {
 
                 <div>
                   <Label htmlFor="title">Title (e.g. DDS, DMD)</Label>
-                  <p className="text-xs text-muted-foreground mb-1">You can edit this field directly.</p>
+                  <p className="text-xs text-slate-500 mb-1">You can edit this field directly.</p>
                   <Input
                     id="title"
                     value={formData.title}
@@ -481,8 +481,8 @@ export default function Step3Review2() {
 
                 {/* Specialty autocomplete */}
                 <div>
-                  <Label>Specialties</Label>
-                  <p className="text-xs text-muted-foreground mb-2">Start typing to see suggestions, or enter your own. Press Enter or click to add.</p>
+                  <Label className="text-slate-300">Specialties</Label>
+                  <p className="text-xs text-slate-500 mb-2">Start typing to see suggestions, or enter your own. Press Enter or click to add.</p>
 
                   {/* Selected specialties as chips */}
                   {selectedSpecialties.length > 0 && (
@@ -525,7 +525,7 @@ export default function Step3Review2() {
                           variant="outline"
                           size="sm"
                           onClick={() => addSpecialty(specialtyInput)}
-                          className="shrink-0"
+                          className="shrink-0 border-white/20 text-slate-300 hover:text-white hover:bg-white/10"
                         >
                           <Plus className="h-4 w-4 mr-1" />
                           Add
@@ -556,7 +556,7 @@ export default function Step3Review2() {
 
                 <div>
                   <Label htmlFor="zillow">Zillow Profile URL</Label>
-                  <p className="text-xs text-muted-foreground mb-1">You can edit this field directly.</p>
+                  <p className="text-xs text-slate-500 mb-1">You can edit this field directly.</p>
                   <Input
                     id="zillow"
                     type="url"
@@ -568,7 +568,7 @@ export default function Step3Review2() {
 
                 <div>
                   <Label htmlFor="video">YouTube Video URL</Label>
-                  <p className="text-xs text-muted-foreground mb-1">You can edit this field directly.</p>
+                  <p className="text-xs text-slate-500 mb-1">You can edit this field directly.</p>
                   <Input
                     id="video"
                     type="url"
@@ -580,7 +580,7 @@ export default function Step3Review2() {
 
                 <div>
                   <Label htmlFor="business_name">Business Name</Label>
-                  <p className="text-xs text-muted-foreground mb-1">You can edit this field directly.</p>
+                  <p className="text-xs text-slate-500 mb-1">You can edit this field directly.</p>
                   <Input
                     id="business_name"
                     value={formData.business_name}
@@ -589,8 +589,18 @@ export default function Step3Review2() {
                   />
                 </div>
 
-                <p className="text-sm text-muted-foreground">If you have any of these, put the link here. It is very helpful for your citation score.</p>
+                <p className="text-sm text-slate-400">Each verified profile link strengthens your AIFS. Paste the direct URL to your profile on each platform.</p>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <Label htmlFor="social_li">LinkedIn</Label>
+                    <Input
+                      id="social_li"
+                      type="url"
+                      value={formData.social_linkedin}
+                      onChange={(e) => setFormData({ ...formData, social_linkedin: e.target.value })}
+                      placeholder="https://linkedin.com/in/yourname"
+                    />
+                  </div>
                   <div>
                     <Label htmlFor="social_fb">Facebook</Label>
                     <Input
@@ -598,7 +608,7 @@ export default function Step3Review2() {
                       type="url"
                       value={formData.social_facebook}
                       onChange={(e) => setFormData({ ...formData, social_facebook: e.target.value })}
-                      placeholder="URL"
+                      placeholder="https://facebook.com/yourpage"
                     />
                   </div>
                   <div>
@@ -608,17 +618,7 @@ export default function Step3Review2() {
                       type="url"
                       value={formData.social_instagram}
                       onChange={(e) => setFormData({ ...formData, social_instagram: e.target.value })}
-                      placeholder="URL"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="social_li">LinkedIn</Label>
-                    <Input
-                      id="social_li"
-                      type="url"
-                      value={formData.social_linkedin}
-                      onChange={(e) => setFormData({ ...formData, social_linkedin: e.target.value })}
-                      placeholder="URL"
+                      placeholder="https://instagram.com/yourhandle"
                     />
                   </div>
                 </div>
@@ -631,7 +631,7 @@ export default function Step3Review2() {
                       type="url"
                       value={formData.social_twitter}
                       onChange={(e) => setFormData({ ...formData, social_twitter: e.target.value })}
-                      placeholder="URL"
+                      placeholder="https://x.com/yourhandle"
                     />
                   </div>
                   <div>
@@ -641,7 +641,7 @@ export default function Step3Review2() {
                       type="url"
                       value={formData.social_tiktok}
                       onChange={(e) => setFormData({ ...formData, social_tiktok: e.target.value })}
-                      placeholder="URL"
+                      placeholder="https://tiktok.com/@yourhandle"
                     />
                   </div>
                 </div>
@@ -653,7 +653,7 @@ export default function Step3Review2() {
                 <Button
                   variant="outline"
                   onClick={() => navigate(`/funnel/${token}/review-1`)}
-                  className="gap-2"
+                  className="gap-2 border-white/20 text-slate-300 hover:text-white hover:bg-white/10"
                 >
                   <ArrowLeft className="h-4 w-4" />
                   Back

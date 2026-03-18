@@ -85,9 +85,33 @@ export default function AgentDashboard() {
 
   useEffect(() => {
     window.scrollTo(0, 0);
+    const isDev = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
     if (magicToken) {
       // Magic link flow: create session from dashboard_token
       handleMagicToken(magicToken);
+    } else if (professionalIdParam && isDev) {
+      // Dev mode: load professional directly from DB, skip all auth
+      (async () => {
+        setAuthStatus("Loading (dev mode)...");
+        try {
+          const { data, error } = await supabase
+            .from("professionals")
+            .select("*")
+            .eq("id", professionalIdParam)
+            .maybeSingle();
+          if (error || !data) {
+            setAuthStatus("Agent not found.");
+            setLoading(false);
+            return;
+          }
+          setProfessional(data);
+          setSessionToken("dev-mode");
+          setLoading(false);
+        } catch (err) {
+          setAuthStatus("Dev load failed.");
+          setLoading(false);
+        }
+      })();
     } else if (professionalIdParam) {
       // Admin: open test agent dashboard by professional id
       handleAdminOpenDashboard(professionalIdParam);

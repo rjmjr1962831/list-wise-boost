@@ -1,20 +1,23 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Award, BadgeCheck, Shield, Zap, Sparkles, CheckCircle, XCircle, TrendingUp } from "lucide-react";
+import { Activity, Shield, Zap, BadgeCheck, CheckCircle, XCircle, TrendingUp, ChevronRight, Bot } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { DataPayloadExpander } from "@/components/agent/DataPayloadExpander";
-import { AIFSGauge, type AIFSData } from "@/components/agent/AIFSGauge";
-import { BotCrawlCard } from "@/components/agent/BotCrawlCard";
 import { supabase } from "@/integrations/supabase/client";
 
 interface OverviewSectionProps {
   professional: any;
 }
 
-/** Normalize tier for display. Listed/unknown = Certified. */
+const BOT_DISPLAY: Record<string, string> = {
+  "ChatGPT-User": "ChatGPT", "OAI-SearchBot": "ChatGPT Search",
+  "Googlebot": "Google", "Google-Extended": "Google AI",
+  "Applebot": "Apple", "Applebot-Extended": "Apple AI",
+  "Meta-ExternalAgent": "Meta AI", "bingbot": "Microsoft Bing", "Bingbot": "Microsoft Bing",
+  "ByteSpider": "TikTok/ByteDance", "ClaudeBot": "Claude (Anthropic)",
+  "PerplexityBot": "Perplexity", "Gemini-AI": "Google Gemini", "GPTBot": "OpenAI",
+};
+const SEO_BOTS = new Set(["AhrefsBot", "semrushbot", "SEMrushBot", "DotBot", "AdsBot-Google", "MJ12bot"]);
+
 function normalizeTier(t: string | null): string {
   const t0 = (t || "").toLowerCase();
   if (t0 === "accredited" || t0 === "audited") return "audited";
@@ -22,246 +25,227 @@ function normalizeTier(t: string | null): string {
   return "certified";
 }
 
-/** Estimate AIFS when no projection exists */
-function estimateAIFS(base: number | null, current: string, target: string): number | null {
-  const lift: Record<string, number> = {
-    listed: 4,
-    certified: 11,
-    audited: 23,
-    underwritten: 33,
-  };
-  const baseScore = base ?? 55;
-  const targetLift = lift[target] ?? 11;
-  return Math.min(100, Math.round(baseScore - (lift[current] ?? 11) + targetLift));
+const TIER_LABELS: Record<string, string> = {
+  certified: "Certified (Free)",
+  audited: "Audited ($300/mo)",
+  underwritten: "Underwritten ($500/mo)",
+};
+
+interface CrawlStats {
+  total_crawls_30d: number;
+  profile_crawls_30d: number;
+  list_crawls_30d: number;
+  bot_names_30d: string[];
+  last_crawled_at: string | null;
 }
 
-const TIERS = [
-  { id: "certified", name: "Certified", price: "Free", icon: BadgeCheck, features: ["Standard Top10Lists badge", "Standard artifact, monthly refresh", "Core credentials published to AI systems"] },
-  { id: "audited", name: "Audited", price: "$300/mo", icon: Shield, features: ["Richer data payload", "Monthly refresh", "Community involvement, transaction stats"] },
-  { id: "underwritten", name: "Underwritten", price: "$500/mo", icon: Zap, features: ["Maximum data richness", "Daily refresh", "Full neighborhood endorsement"] },
-] as const;
-
-/** Convert third-person pronouns to second person for "Why We Selected You" context. */
-function toSecondPerson(text: string): string {
-  return text
-    .replace(/\bSelected for your\b/g, "You were selected for your")
-    .replace(/\bHis\b/g, "Your")
-    .replace(/\bhis\b/g, "your")
-    .replace(/\bHim\b/g, "You")
-    .replace(/\bhim\b/g, "you")
-    .replace(/\bhimself\b/gi, "yourself")
-    .replace(/\bHe\b/g, "You")
-    .replace(/\bhe\b/g, "you");
+interface AuditScores {
+  score_listed: number | null;
+  score_certified: number | null;
+  score_audited: number | null;
+  score_underwritten: number | null;
 }
 
 export function OverviewSection({ professional }: OverviewSectionProps) {
   const navigate = useNavigate();
-  const [isAnnual, setIsAnnual] = useState(false);
-  const [aifsData, setAifsData] = useState<AIFSData | null>(null);
   const rawTier = professional.current_tier || professional.badge_tier || "certified";
   const currentTier = normalizeTier(rawTier);
-  const baseScore = professional.signal_score ?? professional.certified_projected_signal ?? null;
+
+  const [crawlStats, setCrawlStats] = useState<CrawlStats | null>(null);
+  const [scores, setScores] = useState<AuditScores | null>(null);
 
   useEffect(() => {
     if (!professional?.id) return;
+    const pid = professional.id.replace(/'/g, "''");
+
+    // Fetch crawl stats and AIFS scores in parallel
     supabase
-      .from("aifs_scores" as any)
-      .select("aifs_total, aifs_band, serp_knowledge_graph, serp_knowledge_graph_score, serp_sitelink_salience, serp_sitelink_salience_score, serp_related_citations, serp_related_citations_score, serp_third_party_count, serp_third_party_score, serp_organic_visibility_score, internal_data_freshness_days, internal_data_freshness_score, internal_selection_rationale, internal_selection_rationale_score, internal_crypto_verified, internal_crypto_verified_score, internal_data_score, gap_analysis, tier_lift_projection")
-      .eq("agent_id", professional.id)
-      .maybeSingle()
-      .then(({ data }) => { if (data) setAifsData(data as unknown as AIFSData); });
+      .rpc("run_sql" as any, {
+        query: `SELECT total_crawls_30d, profile_crawls_30d, list_crawls_30d, bot_names_30d, last_crawled_at FROM agent_bot_crawl_stats WHERE agent_id = '${pid}'`,
+      })
+      .then(({ data }: any) => {
+        const rows = data as CrawlStats[] | null;
+        if (rows && rows.length > 0) setCrawlStats(rows[0]);
+      });
+
+    supabase
+      .rpc("run_sql" as any, {
+        query: `SELECT score_listed, score_certified, score_audited, score_underwritten FROM geo_audit_results WHERE agent_id = '${pid}'`,
+      })
+      .then(({ data }: any) => {
+        const rows = data as AuditScores[] | null;
+        if (rows && rows.length > 0) setScores(rows[0]);
+      });
   }, [professional?.id]);
 
-  const getAIFS = (tierId: string): number | null => {
-    if (tierId === "listed") return 10;
-    if (tierId === "certified")
-      return professional.certified_projected_signal ?? professional.signal_score ?? 25;
-    if (tierId === "audited")
-      return professional.audited_projected_signal ?? 65;
-    if (tierId === "underwritten") return 95;
-    return null;
-  };
+  const currentScore = scores
+    ? (currentTier === "underwritten" ? scores.score_underwritten
+      : currentTier === "audited" ? scores.score_audited
+      : scores.score_certified) ?? 25
+    : professional.signal_score ?? 25;
 
-  const getPrice = (tierId: string) => {
-    if (tierId === "certified") return "Free";
-    if (tierId === "audited") return isAnnual ? "$3,000/year" : "$300/mo";
-    if (tierId === "underwritten") return isAnnual ? "$5,000/year" : "$500/mo";
-    return "—";
-  };
+  const maxScore = scores?.score_underwritten ?? 95;
 
-  const handleUpgrade = (tierId: string) => {
+  const aiBots = (crawlStats?.bot_names_30d || []).filter((b) => !SEO_BOTS.has(b));
+  const displayBots = [...new Set(aiBots.map((b) => BOT_DISPLAY[b] || b))].sort();
+
+  const handleUpgrade = () => {
     const token = professional.verification_token || professional.id;
-    if (token && (tierId === "audited" || tierId === "underwritten")) {
-      navigate(`/funnel/${token}/pricing`);
-    }
+    navigate(`/funnel/${token}/pricing`);
   };
+
+  const pctCurrent = Math.min(100, currentScore);
+  const pctMax = Math.min(100, maxScore);
 
   return (
     <div className="space-y-6">
-      {/* Our Tiered Product Structure */}
-      <Card>
-        <CardHeader className="space-y-4">
-          <div>
-            <CardTitle className="text-lg">Our Tiered Product Structure</CardTitle>
-  
-          </div>
-          {/* AIFS + Web of Truth™ */}
-          <div className="grid gap-3 sm:grid-cols-2">
-            {/* AI Footprint Score */}
-            <AIFSGauge data={aifsData} currentTier={currentTier} compact />
 
-            {/* Web of Truth™ */}
-            <div className="rounded-lg border bg-muted/30 p-4">
-              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Your Web of Truth<sup>™</sup></p>
-              {professional.profile_link ? (
-                <div className="flex items-center gap-2 mt-1">
-                  <CheckCircle className="h-5 w-5 text-green-500 shrink-0" />
-                  <span className="text-sm font-semibold text-green-700">Enabled</span>
-                </div>
-              ) : (
-                <div className="flex items-center gap-2 mt-1">
-                  <XCircle className="h-5 w-5 text-muted-foreground shrink-0" />
-                  <span className="text-sm font-semibold text-muted-foreground">Disabled</span>
-                </div>
-              )}
-              <p className="text-xs text-muted-foreground mt-2">Your public trust artifact that AI systems can cite</p>
+      {/* ── ROW 1: Command Center Metrics ── */}
+      <div className="grid gap-4 sm:grid-cols-3">
+
+        {/* Card 1: AI Engine Crawls (Hero) */}
+        <div className="rounded-xl border bg-gradient-to-br from-slate-900 to-slate-800 p-5 text-white sm:col-span-1">
+          <div className="flex items-center gap-2 mb-3">
+            <Activity className="h-4 w-4 text-emerald-400" />
+            <p className="text-xs uppercase tracking-wide text-slate-400">AI Surfaces / Month</p>
+          </div>
+          <p className="text-4xl font-black tabular-nums">
+            {professional.ai_surfaces_monthly_est
+              ? professional.ai_surfaces_monthly_est.toLocaleString()
+              : crawlStats ? crawlStats.total_crawls_30d.toLocaleString() : "--"}
+          </p>
+          <p className="text-xs text-slate-400 mt-1">
+            Times your profile appeared to AI systems (est. 30 days)
+          </p>
+
+          {/* Bot pills */}
+          {displayBots.length > 0 && (
+            <div className="mt-3 flex flex-wrap gap-1">
+              {displayBots.map((bot) => (
+                <span key={bot} className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                  {bot}
+                </span>
+              ))}
+            </div>
+          )}
+
+        </div>
+
+        {/* Card 2: AIFS Score */}
+        <div className="rounded-xl border p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <BadgeCheck className="h-4 w-4 text-primary" />
+            <p className="text-xs uppercase tracking-wide text-muted-foreground">Your AIFS Score</p>
+          </div>
+          <div className="flex items-baseline gap-1">
+            <span className="text-4xl font-black">{currentScore}</span>
+            <span className="text-lg text-muted-foreground font-medium">/ 100</span>
+          </div>
+          <p className="text-xs text-muted-foreground mt-1">
+            Current tier: {TIER_LABELS[currentTier]}
+          </p>
+
+          {/* Mini score bar */}
+          <div className="mt-3 h-2 bg-muted rounded-full overflow-hidden">
+            <div
+              className="h-full bg-primary rounded-full transition-all duration-500"
+              style={{ width: `${pctCurrent}%` }}
+            />
+          </div>
+          <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
+            <span>0</span>
+            <span>95</span>
+          </div>
+        </div>
+
+        {/* Card 3: Web of Truth */}
+        <div className="rounded-xl border p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <Shield className="h-4 w-4 text-primary" />
+            <p className="text-xs uppercase tracking-wide text-muted-foreground">Web of Truth&trade; Artifact</p>
+          </div>
+          {professional.profile_link ? (
+            <>
+              <div className="flex items-center gap-2">
+                <CheckCircle className="h-5 w-5 text-green-500" />
+                <span className="text-lg font-bold text-green-600">Enabled</span>
+              </div>
+              <p className="text-xs text-muted-foreground mt-2">Your trust artifact is live and citable by AI systems.</p>
+            </>
+          ) : (
+            <>
+              <div className="flex items-center gap-2">
+                <XCircle className="h-5 w-5 text-red-400" />
+                <span className="text-lg font-bold text-red-500">Disabled</span>
+              </div>
+              <p className="text-xs text-muted-foreground mt-2">
+                Enable your artifact so AI systems can cite your verified credentials.
+              </p>
+              <button className="mt-2 text-xs font-semibold text-primary flex items-center gap-1 hover:underline">
+                Enable Artifact <ChevronRight className="h-3 w-3" />
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* ── ROW 2: Upgrade Gap ── */}
+      {currentTier !== "underwritten" && (
+        <div className="rounded-xl border bg-gradient-to-r from-primary/5 to-primary/10 p-6">
+          <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+            <TrendingUp className="h-5 w-5 text-primary" />
+            Maximize Your AI Visibility
+          </h3>
+
+          {/* Score comparison */}
+          <div className="grid sm:grid-cols-2 gap-4 mb-4">
+            {/* Current */}
+            <div className="rounded-lg border bg-background p-4">
+              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Your Current Score</p>
+              <p className="text-3xl font-black">{currentScore}<span className="text-sm text-muted-foreground font-medium"> / 100</span></p>
+              <div className="mt-2 h-3 bg-muted rounded-full overflow-hidden">
+                <div className="h-full bg-amber-500 rounded-full" style={{ width: `${pctCurrent}%` }} />
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">{TIER_LABELS[currentTier]}</p>
+            </div>
+
+            {/* Potential */}
+            <div className="rounded-lg border border-primary/30 bg-background p-4">
+              <p className="text-xs text-primary uppercase tracking-wide mb-1">Underwritten Potential</p>
+              <p className="text-3xl font-black text-primary">{maxScore}<span className="text-sm text-muted-foreground font-medium"> / 100</span></p>
+              <div className="mt-2 h-3 bg-muted rounded-full overflow-hidden">
+                <div className="h-full bg-primary rounded-full" style={{ width: `${pctMax}%` }} />
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">Underwritten ($500/mo) -- daily refresh</p>
             </div>
           </div>
 
-          {/* Bot Crawl Activity */}
-          <BotCrawlCard professionalId={professional.id} city={professional.city_name} />
-
-          {/* Ways to improve */}
-          <div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
-            <p className="text-sm font-semibold flex items-center gap-2 mb-2">
-              <TrendingUp className="h-4 w-4 text-primary" />
-              Ways to improve your score
-            </p>
-            <ul className="space-y-1.5 text-sm text-muted-foreground">
-              <li className="flex items-center gap-2">
-                <span className="text-primary">•</span>
-                Upgrade your tier
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="text-primary">•</span>
-                {professional.profile_link ? "Your Web of Truth™ is active" : (
-                  <span>Enable your Web of Truth™ <span className="text-xs text-green-600 font-medium">(free)</span></span>
-                )}
-              </li>
-            </ul>
-          </div>
-
-          {/* Ask any AI challenge */}
-          <div className="rounded-lg border bg-muted/30 p-4">
-            <p className="text-sm font-medium text-foreground mb-1">Ask any AI:</p>
-            <p className="text-sm text-muted-foreground italic leading-relaxed">
-              &ldquo;Look at top10lists.us. Will an upgrade to their paid tiers increase my likelihood of being cited by AI assistants?&rdquo;
-            </p>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-3">
-            {TIERS.map((tier) => {
-              const Icon = tier.icon;
-              const isCurrent = currentTier === tier.id;
-              const aifs = getAIFS(tier.id);
-              const isPaid = tier.id === "audited" || tier.id === "underwritten";
-
-              return (
-                <div
-                  key={tier.id}
-                  className={`relative rounded-lg border p-4 ${tier.id === "audited" ? "pt-6" : ""} ${isCurrent ? "border-primary ring-2 ring-primary/20" : "border-border"}`}
-                >
-                  {tier.id === "audited" && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                      <span className="bg-primary text-primary-foreground text-xs font-semibold px-3 py-1 rounded-full">
-                        Most Popular
-                      </span>
-                    </div>
-                  )}
-                  {isCurrent && (
-                    <p className="text-sm font-semibold text-primary mb-2">You are on this tier</p>
-                  )}
-                  <div className="flex items-center gap-2 mb-2">
-                    <Icon className="h-5 w-5 text-primary" />
-                    <span className="font-semibold">{tier.name}</span>
-                  </div>
-                  <p className="text-2xl font-bold text-foreground mb-3">{getPrice(tier.id)}</p>
-                  <div className={`flex items-center justify-center gap-2 mb-3 ${tier.id === "certified" ? "opacity-50 pointer-events-none" : ""}`} onClick={(e) => e.stopPropagation()}>
-                    <Label htmlFor={`overview-billing-${tier.id}`} className="text-xs">Monthly</Label>
-                    <Switch id={`overview-billing-${tier.id}`} checked={isAnnual} onCheckedChange={setIsAnnual} disabled={tier.id === "certified"} />
-                    <Label htmlFor={`overview-billing-${tier.id}`} className="text-xs">Annual (2 mo free)</Label>
-                  </div>
-                  <div className="p-3 rounded-lg bg-muted/50 border mb-2">
-                    <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">AI Footprint Score</p>
-                    <p className="text-xl font-bold">{aifs != null ? `${aifs}/100` : "Pending"}</p>
-                  </div>
-                  {tier.id === "certified" && (
-                    <div className="mb-3">
-                      <DataPayloadExpander tier="certified" triggerText="View data and sources" professional={professional} />
-                    </div>
-                  )}
-                  {tier.id === "audited" && (
-                    <div className="mb-3">
-                      <DataPayloadExpander tier="audited" triggerText="View data and sources" />
-                    </div>
-                  )}
-                  {tier.id === "underwritten" && (
-                    <div className="mb-3">
-                      <DataPayloadExpander tier="underwritten" triggerText="View data and sources" />
-                    </div>
-                  )}
-                  <ul className="text-sm text-muted-foreground space-y-1 mb-4">
-                    {tier.features.map((f, i) => (
-                      <li key={i} className="flex items-start gap-2">
-                        <span className="text-primary mt-0.5">•</span>
-                        {f}
-                      </li>
-                    ))}
-                  </ul>
-                  {isPaid && !isCurrent && (
-                    <Button size="sm" className="w-full" onClick={() => handleUpgrade(tier.id)}>
-                      Upgrade to {tier.name}
-                    </Button>
-                  )}
-                  {tier.id === "certified" && !isCurrent && (
-                    <p className="text-xs text-muted-foreground text-center">Free tier</p>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-          <p className="text-sm text-muted-foreground mt-6 text-center">
-            No one can guarantee that you will be named when an AI is asked for a recommendation. What we can say is that the higher your score, the more likely you are to be cited by name.
+          <p className="text-sm text-muted-foreground mb-4">
+            Agents with an Underwritten score of 85+ are cited as primary authoritative sources by AI models. Upgrade to unlock daily data refreshes and maximum artifact depth.
           </p>
-        </CardContent>
-      </Card>
 
-      {/* How AI Citation Works */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-primary" />
-            How We Help AI Systems Cite You
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            When someone asks ChatGPT, Claude, Gemini, or Perplexity "Who are the best real estate agents
-            in my area?", those AI systems need a trusted, verifiable source to cite. That is where Top10Lists comes in.
+          <Button onClick={handleUpgrade} className="w-full sm:w-auto">
+            View Upgrade Options <ChevronRight className="h-4 w-4 ml-1" />
+          </Button>
+        </div>
+      )}
+
+      {/* ── ROW 3: Quick AI Activity Context ── */}
+      {crawlStats && crawlStats.total_crawls_30d > 0 && (
+        <div className="rounded-xl border p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <Bot className="h-4 w-4 text-primary" />
+            <p className="text-sm font-semibold">What these crawls mean for you</p>
+          </div>
+          <p className="text-sm text-muted-foreground leading-relaxed mb-2">
+            <strong className="text-foreground">Note:</strong> This is not the number of times an AI has explicitly recommended you to a consumer -- no platform can track that. Before an AI takes the risk of endorsing you, it must see your verified information frequently, across multiple trusted platforms, to build algorithmic confidence.
           </p>
           <p className="text-sm text-muted-foreground leading-relaxed">
-            We independently verify every agent's credentials through state licensing databases, review
-            platforms, IRS 990 filings, and public records. This verification is the same for every
-            agent on our platform, regardless of tier. Every number we publish, we stand behind.
+            What this number actually means is that AI models have studied, verified, and learned about your business{" "}
+            <strong className="text-foreground">{(professional.ai_surfaces_monthly_est || crawlStats.total_crawls_30d).toLocaleString()} times</strong> in the last 30 days -- far more than your competitors. Every crawl deepens your machine-trust moat, drastically increasing the probability that an AI will confidently recommend you over an unverified competitor.
           </p>
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            We then package your verified data into a structured payload that AI systems can read and
-            cite with confidence. Higher tiers publish more of this verified data to AI systems,
-            giving them a fuller picture and more reasons to recommend you by name.
-          </p>
-        </CardContent>
-      </Card>
+        </div>
+      )}
     </div>
   );
 }
