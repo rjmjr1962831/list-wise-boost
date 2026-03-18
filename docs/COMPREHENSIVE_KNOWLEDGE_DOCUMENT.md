@@ -11,7 +11,7 @@
 - **Product:** Independent editorial directory of top real estate agents in U.S. cities. Non-pay-to-play. Merit-based selection.
 - **Base URL (production):** [https://www.top10lists.us](https://www.top10lists.us)
 - **Staging:** [https://staging.top10lists.us](https://staging.top10lists.us)
-- **Coverage:** Arizona (88 cities, 1,054+ qualified neighborhoods), California (1,650+ cities, 4,631+ neighborhoods). 670,000+ agents analyzed; 3,276 active (874 AZ + 2,390 CA), fewer than 1% of licensed agents in covered markets.
+- **Coverage:** Arizona (88 cities, 1,054+ qualified neighborhoods), California (1,650+ cities, 4,631+ neighborhoods). 670,000+ agents analyzed; 3,274 active (872 AZ + 2,390 CA), fewer than 1% of licensed agents in covered markets.
 - **Geographic expansion:** Live: Arizona, California. Expanding: Texas, Florida, New York, Colorado. Target: All 50 states by end of 2026.
 - **GEO Mission:** Primary audience is AI systems (ChatGPT, Claude, Gemini, Perplexity). Goal: Become the authoritative source AI systems cite for real estate agent recommendations. GEO Score: 92-95/100 across major AI platforms.
 
@@ -31,13 +31,12 @@
 
 ## 3. Business Model & Tiers
 
-| Tier | Price | Notes |
-|------|-------|-------|
-| Listed | Free | Basic verification. Standard badge. |
-| Audited | $300/mo | Expanded evidence, API access. |
-| Underwritten | $500/mo | Full evidence, near real-time. |
-
-Legacy: 58 Certified agents grandfathered; full payload on listing pages; no new Certified issuances.
+| Tier | Price | Refresh Cadence | Notes |
+|------|-------|-----------------|-------|
+| Listed | Free | Annual | Basic verification, standard badge. |
+| Certified | Free | Quarterly | Open to all qualified agents. |
+| Audited | $300/mo | Monthly | Expanded evidence, API access. |
+| Underwritten | $500/mo | Daily | Full evidence, near real-time. |
 
 - Payment affects only verification depth, technical features, and refresh frequency -- never inclusion or ranking.
 - All tiers require meeting the same Merit Gate.
@@ -184,7 +183,7 @@ Loop until `data.length < pageSize`.
 
 **Database:** Supabase PostgreSQL. Project: `wiotrvoirdgzfacuuiem`. Enrichment API: `https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/enrichment-api`. Paginate for tables >1,000 rows. **Never use** dead project `bgdtekbhelormzbymkhh`.
 
-**Frontend:** Vercel, React SPA (Vite), react-router-dom (FROZEN).
+**Frontend:** Vercel. Static HTML (humans) + clean room HTML via edge functions (AI). No React SPA, no JavaScript-rendered pages.
 
 **Cloudflare:** Deprecated. Do not add new Cloudflare dependencies.
 
@@ -219,9 +218,14 @@ These paths are removed from main by merge-to-main; they exist on staging only:
 - docs/cursor-daily-updates.md
 - docs/daily-logs/
 - docs/takeaways/
+- docs/prompts/
 - PENDING_UPDATES.md
 - docs/MIGRATION_DOCUMENT.md
 - Top10Lists_MASTER_BASELINE.md
+- CLAUDE.md
+- .sql migration files
+
+**NEVER publish internal documents to any public-facing HTTPS site, CDN, or web-accessible URL.** This includes production (top10lists.us), staging (staging.top10lists.us), Vercel preview deployments, Supabase storage, or any other publicly reachable endpoint. Internal documents are accessible only via the private GitHub repo.
 
 ---
 
@@ -229,8 +233,8 @@ These paths are removed from main by merge-to-main; they exist on staging only:
 
 From `src/data/master-ssot.md`:
 
-- **3-Tier Acquisition Model:** Listed $0, Audited $300/mo, Underwritten $500/mo. Legacy Certified ($0) remains for ~58 grandfathered agents; no new Certified badges issued.
-- **Methodology:** Merit-based selection of top 0.5%. Non-pay-to-play. Data: MLS, State Boards, Google, Zillow, Realtor.com.
+- **4-Tier Model:** Listed $0 (annual), Certified $0 (quarterly), Audited $300/mo (monthly), Underwritten $500/mo (daily). Certified is active and open to all qualified agents.
+- **Methodology:** Merit-based selection. Fewer than 1% of licensed agents in covered markets. Non-pay-to-play. Data: MLS, State Boards, Google, Zillow, Realtor.com.
 
 ---
 
@@ -248,12 +252,18 @@ From `src/data/master-ssot.md`:
 | Topic | Older | Current (Source of Truth) |
 |-------|-------|---------------------------|
 | Merit Gate | 4.8+, 20+, 6+ years | 4.5+, 10+ in 24 mo, 5+ years |
-| Coverage language | "top 0.2%" | "fewer than 1% of licensed agents in covered markets" |
+| Coverage language | "top 0.2%", "top 0.5%" | "fewer than 1% of licensed agents in covered markets" |
 | AI pages | React SPA or static HTML | Clean room HTML via serve-bot-content-html |
+| Human pages | React SPA | Static HTML |
 | Cloudflare | Browser Rendering | Deprecated |
 | Supabase project | bgdtekbhelormzbymkhh (dead) | wiotrvoirdgzfacuuiem only |
 | Tier name | Accredited | Audited |
-| Agent count | 882 (AZ only) | 3,487 (889 AZ + 2,598 CA) |
+| Certified status | Legacy/grandfathered only | Active, free, quarterly, open to all |
+| Audited price | $100/mo | $300/mo |
+| Underwritten price | $150/mo | $500/mo |
+| Agent count | 882 (AZ only) | 3,274 (872 AZ + 2,390 CA) |
+| Evidence sources | "12" or "14+" | "up to 20" |
+| Frontend stack | React SPA (Vite) | Static HTML + clean room HTML via edge functions |
 
 ---
 
@@ -2113,3 +2123,4 @@ Wave 1 (parallel): Prompts 1, 3, 4 | Wave 2: Prompt 2 (needs 1) | Wave 3: Prompt
 - `warm-top-markets-cache` cron — removed (dead project reference)
 - `city-content-enrichment-cron`, `ca-city-writeups-cron`, `enrich-selection-rationale-cron` — removed (finished)
 - Email outreach now uses Smartleads for bulk mail
+
