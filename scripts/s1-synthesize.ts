@@ -232,14 +232,15 @@ async function main() {
   copyFileSync(COMPREHENSIVE_PATH, CLAUDE_WEB_PATH);
   console.log('s1: Updated COMPREHENSIVE + claude-web-project-knowledge.md');
 
-  // 7. Commit locally
+  // 7. Commit and push to staging
   execSync('git add docs/COMPREHENSIVE_KNOWLEDGE_DOCUMENT.md docs/prompts/claude-web-project-knowledge.md', { stdio: 'inherit' });
   const status = execSync('git diff --cached --name-only', { encoding: 'utf-8' }).trim();
   if (status.length === 0) {
     console.log('No changes to commit; COMPREHENSIVE already up to date.');
   } else {
     execSync('git commit -m "s1: synthesize Section 21 via DeepSeek"', { stdio: 'inherit' });
-    console.log('s1: committed locally. Run pts when ready to push.');
+    execSync('git push origin staging', { stdio: 'inherit' });
+    console.log('s1: committed and pushed to staging.');
   }
 }
 
