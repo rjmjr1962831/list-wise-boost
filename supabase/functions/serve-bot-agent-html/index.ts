@@ -220,28 +220,8 @@ serve(async (req) => {
     const a = { ...row };
     const city = { id: row.city_id, name: row.city_name, slug: row.city_slug, state_slug: row.city_state_slug, state: row.city_state };
 
-    // Fire-and-forget bot crawl log — never awaited, never allowed to affect response
-    const rawUa = req.headers.get("x-forwarded-user-agent") || req.headers.get("user-agent") || "";
-    if (rawUa) {
-      const ua = rawUa.toLowerCase();
-      const BOT_PATTERNS = [
-        "gptbot", "chatgpt-user", "oai-searchbot", "claudebot", "anthropic-ai",
-        "claude-web", "perplexitybot", "cohere-ai", "gemini", "mistral",
-        "googlebot", "google-extended", "bingbot", "bingpreview", "yandexbot",
-        "duckduckbot", "slurp", "baiduspider", "applebot",
-        "facebookexternalhit", "twitterbot", "linkedinbot",
-        "bytespider", "ccbot", "semrushbot", "ahrefsbot", "ia_archiver",
-      ];
-      const matched = BOT_PATTERNS.find((pat) => ua.includes(pat));
-      if (matched) {
-        sb.from("bot_crawl_logs").insert({
-          agent_id: a.id,
-          page_path: path,
-          user_agent: rawUa.slice(0, 500),
-          bot_name: matched,
-        }).then(() => {}).catch(() => {});
-      }
-    }
+    // Bot crawl logging removed -- now handled by Vercel log drain (vercel-log-drain edge function)
+    // which captures ALL requests including CDN cache hits
 
     // Tier flags
     const t   = tierOf(a);
