@@ -327,6 +327,7 @@ From `src/data/master-ssot.md`:
 - 5 sections: Human-Triggered Crawls, Automated Bot Crawls, Market Verification (top 30 cities), Consumer Intent, Crawl-to-Return Rate, Live Activity Stream
 - JSON-LD Dataset schema; `<time datetime="ISO8601">` tags; 1-hour cache TTL
 - Added to all 7 AI discovery surfaces (llms.txt, llms-full.txt, ai-feed/for-ai.md, ai-content-index.json, mcp.json, sitemap-pages.xml, serve-bot-content-html footer)
+- All "30d" labels are computed dynamically from actual data span (earliest record to latest); currently shows "6d" until 30 days of data accumulate
 
 ### Vercel Log Drain (Bot Crawl -- deployed 2026-03-18)
 
@@ -390,6 +391,28 @@ From `src/data/master-ssot.md`:
 - Step 8 (Pricing): "Bottom Line Up Front" -- micro-summary, dollar lift per tier, AIFS + ROI side by side, permanent magic links, ROI calculator
 - CitationROICalculator: leads from AIFS band model, tier-specific lead floors, 30% close rate, 3-year projections, Zillow comparison
 - `AIMaxPlan.tsx` (~460 lines): dark gradient header, 5-pillar progress bars, platform presence checklist, expandable gap cards, 4-tier score projections
+- Tier card ROI numbers sync dynamically with calculator inputs (deal size, commission rate). Default deal size $500,000, commission 3%, AIFS input locked to agent's actual tier score.
+
+### Agent Dashboard -- Command Center Rebuild
+
+- OverviewSection rebuilt as SaaS command center.
+- **Row 1 -- Three metric cards:** AI Surfaces/Month (hero, uses `ai_surfaces_monthly_est`), AIFS Score (from `geo_audit_results`), Web of Truth status.
+- **Row 2 -- Upgrade Gap** (hidden for Underwritten): side-by-side current vs potential score.
+- **Row 3 -- Crawl Explainer:** "What these crawls mean for you" with machine-trust moat copy.
+- Removed: "How We Help AI Systems Cite You" marketing card, "Ask any AI" challenge box, three large pricing cards.
+
+### Dynamic Badge Endpoint & Instructions
+
+- `/api/badge/[agentId].svg` -- renders text-free glowing orb SVG (80x80). Tier colors: Certified=blue, Audited=bronze/gold, Underwritten=gold. 5-minute cache, CORS-enabled.
+- Badge Instructions Page: two snippet modes (Visible Orb and Invisible 1px AI-only). Metadata-rich HTML with `alt`, `rel="author"`, `title`. Link destination: `/artifact/{token}` (public payload page -- to be built).
+
+### Auth / Login Fixes
+
+- `get-agent-profile` edge function was never deployed to Supabase -- deployed it. This was the root cause of the dashboard login loop.
+- `create-session-from-token` edge function: added `owner` role to admin bypass, `confirmed` to valid funnel_status values.
+- AdminLogin: auto-pass on existing valid session (checks `admin_users` on mount, skips form if found). Added `owner` to role check.
+- AgentDashboard: role check accepts `owner` in addition to admin/superadmin.
+- Dev mode (localhost): AdminLogin auto-signs in via `VITE_ADMIN_EMAIL`/`VITE_ADMIN_PASSWORD` env vars. AgentDashboard loads professional directly from DB.
 
 ### GEO Uplift Analysis
 
@@ -407,6 +430,7 @@ From `src/data/master-ssot.md`:
 
 - CLAUDE.md and 258 .sql files removed from main branch
 - `internal-documents.txt` exclusion list updated; `merge-to-main.ps1` glob pass strips all *.sql from main
+- Rule: internal documents must NEVER be published to any public-facing HTTPS URL (production, staging site, Vercel previews, Supabase storage). Accessible only via private GitHub repo.
 
 ### Infrastructure & Config Changes
 
@@ -417,6 +441,7 @@ From `src/data/master-ssot.md`:
 - Dead `/p/:code` short codes 301 redirect to `/`
 - `serve-clean-html.js` proxy: tiered caching (1h crawl-stats, 5m agent/list/state, 0 content)
 - 2 agent `image_url` refs to dead Supabase project fixed to `wiotrvoirdgzfacuuiem`
+- `/.well-known/mcp.json` Vercel rewrite added for MCP server auto-discovery.
 
 ### Enrichment Tool Evaluation
 
@@ -430,3 +455,8 @@ From `src/data/master-ssot.md`:
 - Never use em dashes (use -- instead)
 - Never link out of funnel pages
 - No outcome claims on pricing pages -- sell inputs/mechanism only
+- Never publish .sql files to main branch. SQL migrations must stay on staging only.
+- Never publish internal docs to any public HTTPS URL.
+- Always use `bash grep`, never the Grep tool (broken ripgrep binary).
+- Never ask permission except for ptm and GEO-detrimental changes.
+- Tooltip component (`src/components/ui/tooltip.tsx`) is a non-functional shim -- use custom CSS hover or the InfoTip pattern.
