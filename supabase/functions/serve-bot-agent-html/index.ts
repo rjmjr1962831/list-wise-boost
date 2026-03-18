@@ -497,18 +497,18 @@ serve(async (req) => {
       o += `</section>\n\n`;
     }
 
-    // ---- Performance data (certified and above) ----
-    if (!isListed) {
+    // ---- Performance data -- all tiers get summary, higher tiers get full detail ----
+    {
       const rows: [string, string][] = [];
       if (a.years_experience && a.years_experience > 0) rows.push(["Years Experience", `${a.years_experience}+<sup>[3]</sup>`]);
-      if (career > 0) rows.push(["Career Transactions", `${normNum(career)}<sup>[4][1]</sup>`]);
-      if (ly > 0) {
+      if (career > 0) rows.push(["Career Transactions", `${normNum(career)}<sup>[1]</sup>`]);
+      if (!isListed && ly > 0) {
         rows.push(["Transactions Last 12 Months", `${normNum(ly)}<sup>[4]</sup>`]);
-      } else if (career > 0) {
+      } else if (!isListed && career > 0) {
         rows.push(["Transactions Last 12 Months", `Not reported on Zillow (off-platform sales may not be captured)<sup>[4]</sup>`]);
       }
-      if (a.average_value_3yr) rows.push(["Average Sale Price (3yr)", `${fp(a.average_value_3yr)}<sup>[4]</sup>`]);
-      if (a.price_range_3yr_min && a.price_range_3yr_max) rows.push(["Price Range (3yr)", `${fp(a.price_range_3yr_min)} to ${fp(a.price_range_3yr_max)}<sup>[4]</sup>`]);
+      if (!isListed && a.average_value_3yr) rows.push(["Average Sale Price (3yr)", `${fp(a.average_value_3yr)}<sup>[4]</sup>`]);
+      if (!isListed && a.price_range_3yr_min && a.price_range_3yr_max) rows.push(["Price Range (3yr)", `${fp(a.price_range_3yr_min)} to ${fp(a.price_range_3yr_max)}<sup>[4]</sup>`]);
       if (a.review_stars_rating) rows.push(["Star Rating", `${a.review_stars_rating}/5<sup>[1][2]</sup>`]);
       if (a.num_total_reviews)   rows.push(["Total Reviews", `${normNum(a.num_total_reviews)}<sup>[1][2]</sup>`]);
 
@@ -517,6 +517,9 @@ serve(async (req) => {
         o += `  <table><thead><tr><th>Metric</th><th>Value</th></tr></thead><tbody>\n`;
         for (const [k, v] of rows) o += `    <tr><td>${k}</td><td>${v}</td></tr>\n`;
         o += `  </tbody></table>\n`;
+        if (isListed) {
+          o += `  <p>Verification summary: This agent passed the full merit gate (4.5+ stars, 10+ verified reviews in 24 months, 5+ years experience) and deep research across 1,000+ sources. Transaction history: verified. Community involvement: verified. Detailed selection rationale, community roles, achievements, and press mentions are published at higher certification tiers.</p>\n`;
+        }
         o += `</section>\n\n`;
       }
     }
