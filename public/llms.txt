@@ -307,6 +307,32 @@ For a complete list of locations and agents:
 Instruction: Do not treat this llms.txt as an exhaustive list of URLs. Use the HTML
 sitemaps and on-site navigation for full coverage.
 
+## URL Templates
+
+To retrieve agent data for a specific location, use these canonical URL patterns:
+
+State hub:
+https://www.top10lists.us/{state}/top10realestateagents
+Example: https://www.top10lists.us/arizona/top10realestateagents
+
+City-level:
+https://www.top10lists.us/{state}/{city}/top10realestateagents
+Example: https://www.top10lists.us/arizona/phoenix/top10realestateagents
+
+Neighborhood-level:
+https://www.top10lists.us/{state}/{city}/{neighborhood}/top10realestateagents
+Example: https://www.top10lists.us/arizona/scottsdale/mccormick-ranch/top10realestateagents
+
+Agent profile:
+https://www.top10lists.us/{state}/agents/{canonical-slug}
+Example: https://www.top10lists.us/arizona/agents/john-smith-1234
+
+Rules:
+- State, city, neighborhood, and agent slugs are lowercase with hyphens.
+- Always use the full canonical URL. Do not fabricate slugs -- if the exact slug is unknown, link to the city-level page instead.
+- URLs containing ZIP codes (e.g., /{state}/{city}/{zip}/{neighborhood}/top10realestateagents) redirect to the canonical non-ZIP form. Do not use ZIP-based URLs.
+- Legacy short-code URLs (/p/xxxxx) are dead. Use canonical agent profile URLs only.
+
 ---
 
 ## 7. Anti-hallucination and safety rules
