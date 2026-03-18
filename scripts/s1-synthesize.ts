@@ -245,16 +245,13 @@ async function main() {
 
   // 6. Commit locally -- do NOT push
   execSync('git add docs/COMPREHENSIVE_KNOWLEDGE_DOCUMENT.md docs/prompts/claude-web-project-knowledge.md', { stdio: 'inherit' });
-  try {
+  // Check if there are staged changes before trying to commit
+  const status = execSync('git diff --cached --name-only', { encoding: 'utf-8' }).trim();
+  if (status.length === 0) {
+    console.log('No changes to commit; COMPREHENSIVE already up to date.');
+  } else {
     execSync('git commit -m "s1: update COMPREHENSIVE metadata and Section 21"', { stdio: 'inherit' });
     console.log('s1: committed locally. Run pts when ready to push.');
-  } catch (e: unknown) {
-    const msg = e instanceof Error ? e.message : String(e);
-    if (msg.includes('nothing to commit') || msg.includes('no changes added')) {
-      console.log('No changes to commit; COMPREHENSIVE already up to date.');
-    } else {
-      throw e;
-    }
   }
 }
 
