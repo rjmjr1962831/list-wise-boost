@@ -24,41 +24,26 @@ function normalizeTier(t) {
 }
 
 /**
- * Tier color schemes
+ * Tier orb color schemes (HAL 9000 inspired)
  */
 const TIER_COLORS = {
   certified: {
-    primary: '#1E3A5F',      // dark navy
-    secondary: '#2563EB',    // blue
-    accent: '#94A3B8',       // silver
-    accentLight: '#CBD5E1',  // light silver
-    badge: '#E2E8F0',        // silver badge bg
-    text: '#FFFFFF',
-    tierText: '#1E3A5F',
-    verifiedBg: '#16A34A',
-    verifiedText: '#FFFFFF',
+    core: '#3B82F6',        // blue core
+    glow: '#60A5FA',        // blue glow
+    outerGlow: '#1D4ED8',   // deep blue outer
+    ring: '#93C5FD',        // light blue ring
   },
   audited: {
-    primary: '#1E3A5F',      // dark navy
-    secondary: '#1D4ED8',    // deeper blue
-    accent: '#D97706',       // gold
-    accentLight: '#FCD34D',  // light gold
-    badge: '#FEF3C7',        // gold badge bg
-    text: '#FFFFFF',
-    tierText: '#92400E',
-    verifiedBg: '#16A34A',
-    verifiedText: '#FFFFFF',
+    core: '#D97706',        // amber/bronze core
+    glow: '#F59E0B',        // gold glow
+    outerGlow: '#B45309',   // deep bronze outer
+    ring: '#FCD34D',        // light gold ring
   },
   underwritten: {
-    primary: '#4C1D95',      // deep purple
-    secondary: '#7C3AED',    // purple
-    accent: '#D97706',       // gold
-    accentLight: '#FCD34D',  // light gold
-    badge: '#FEF3C7',        // gold badge bg
-    text: '#FFFFFF',
-    tierText: '#92400E',
-    verifiedBg: '#16A34A',
-    verifiedText: '#FFFFFF',
+    core: '#F59E0B',        // gold core
+    glow: '#FBBF24',        // bright gold glow
+    outerGlow: '#D97706',   // deep gold outer
+    ring: '#FDE68A',        // pale gold ring
   },
 };
 
@@ -66,53 +51,62 @@ function renderBadgeSvg(tier) {
   const colors = TIER_COLORS[tier];
   if (!colors) return null;
 
-  const tierLabel = tier.toUpperCase();
-
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="60" viewBox="0 0 200 60">
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 80 80">
   <defs>
-    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="${colors.primary}" />
-      <stop offset="100%" stop-color="${colors.secondary}" />
-    </linearGradient>
-    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="${colors.accent}" />
-      <stop offset="100%" stop-color="${colors.accentLight}" />
-    </linearGradient>
+    <!-- Outer ambient glow -->
+    <radialGradient id="ambientGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="${colors.outerGlow}" stop-opacity="0.3" />
+      <stop offset="70%" stop-color="${colors.outerGlow}" stop-opacity="0.08" />
+      <stop offset="100%" stop-color="${colors.outerGlow}" stop-opacity="0" />
+    </radialGradient>
+    <!-- Orb body gradient -->
+    <radialGradient id="orbBody" cx="40%" cy="35%" r="50%">
+      <stop offset="0%" stop-color="${colors.glow}" />
+      <stop offset="60%" stop-color="${colors.core}" />
+      <stop offset="100%" stop-color="${colors.outerGlow}" />
+    </radialGradient>
+    <!-- Specular highlight -->
+    <radialGradient id="specular" cx="38%" cy="30%" r="30%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.7" />
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0" />
+    </radialGradient>
+    <!-- Inner lens depth -->
+    <radialGradient id="lens" cx="50%" cy="50%" r="35%">
+      <stop offset="0%" stop-color="#000000" stop-opacity="0.4" />
+      <stop offset="50%" stop-color="#000000" stop-opacity="0.1" />
+      <stop offset="100%" stop-color="#000000" stop-opacity="0" />
+    </radialGradient>
   </defs>
 
-  <!-- Main background -->
-  <rect width="200" height="60" rx="6" ry="6" fill="url(#bg)" />
+  <!-- Ambient glow -->
+  <circle cx="40" cy="40" r="39" fill="url(#ambientGlow)" />
 
-  <!-- Accent border (top) -->
-  <rect x="0" y="0" width="200" height="3" rx="6" ry="6" fill="url(#accentGrad)" />
+  <!-- Outer ring -->
+  <circle cx="40" cy="40" r="30" fill="none" stroke="${colors.ring}" stroke-width="1.5" opacity="0.4" />
 
-  <!-- TOP 10 text -->
-  <text x="14" y="22" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="${colors.text}" letter-spacing="1">TOP 10</text>
+  <!-- Orb body -->
+  <circle cx="40" cy="40" r="26" fill="url(#orbBody)" />
 
-  <!-- LISTS.US text -->
-  <text x="14" y="37" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="400" fill="${colors.accentLight}" letter-spacing="0.5">LISTS.US</text>
+  <!-- Inner lens depth -->
+  <circle cx="40" cy="40" r="18" fill="url(#lens)" />
 
-  <!-- Divider line -->
-  <line x1="82" y1="8" x2="82" y2="52" stroke="${colors.accent}" stroke-width="1" opacity="0.5" />
+  <!-- Specular highlight -->
+  <circle cx="36" cy="34" r="12" fill="url(#specular)" />
 
-  <!-- Tier badge pill -->
-  <rect x="90" y="8" width="102" height="22" rx="4" ry="4" fill="${colors.badge}" />
-  <text x="141" y="23" font-family="Arial, Helvetica, sans-serif" font-size="10" font-weight="700" fill="${colors.tierText}" text-anchor="middle" letter-spacing="0.8">${tierLabel}</text>
-
-  <!-- Verified pill -->
-  <rect x="90" y="34" width="62" height="18" rx="9" ry="9" fill="${colors.verifiedBg}" />
-  <text x="121" y="46" font-family="Arial, Helvetica, sans-serif" font-size="8" font-weight="600" fill="${colors.verifiedText}" text-anchor="middle" letter-spacing="0.5">VERIFIED</text>
-
-  <!-- Checkmark circle -->
-  <circle cx="106" cy="43" r="5" fill="none" stroke="${colors.verifiedText}" stroke-width="1" opacity="0.6" />
-  <polyline points="103,43 105.5,45.5 109,40.5" fill="none" stroke="${colors.verifiedText}" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" />
+  <!-- Inner ring detail -->
+  <circle cx="40" cy="40" r="20" fill="none" stroke="${colors.ring}" stroke-width="0.5" opacity="0.3" />
 </svg>`;
 }
 
 function renderNotFoundSvg() {
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="60" viewBox="0 0 200 60">
-  <rect width="200" height="60" rx="6" ry="6" fill="#6B7280" />
-  <text x="100" y="35" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#D1D5DB" text-anchor="middle">Badge Not Available</text>
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 80 80">
+  <defs>
+    <radialGradient id="grayOrb" cx="40%" cy="35%" r="50%">
+      <stop offset="0%" stop-color="#9CA3AF" />
+      <stop offset="100%" stop-color="#4B5563" />
+    </radialGradient>
+  </defs>
+  <circle cx="40" cy="40" r="26" fill="url(#grayOrb)" opacity="0.5" />
 </svg>`;
 }
 
