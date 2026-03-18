@@ -9,7 +9,7 @@ import { Loader2, Shield, Zap, CheckCircle2, AlertTriangle, ExternalLink, Info, 
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { DataPayloadExpander } from '@/components/agent/DataPayloadExpander';
 import { AIFSGauge, type AIFSData } from '@/components/agent/AIFSGauge';
-import { CitationROICalculator, AIFSBandMeter, BANDS, TIER_LIFTS, TIER_ORDER } from '@/components/agent/CitationROICalculator';
+import { CitationROICalculator, AIFSBandMeter, BANDS, TIER_LIFTS, TIER_ORDER, TIER_COSTS, COMPOUND_MULTIPLIERS, leadsFromAIFS } from '@/components/agent/CitationROICalculator';
 import { FunnelBreadcrumbs } from '@/components/funnel/FunnelBreadcrumbs';
 import { toast } from 'sonner';
 
@@ -203,6 +203,8 @@ export default function Step7Pricing() {
   const [professional, setProfessional] = useState<Professional | null>(null);
   const [audit, setAudit] = useState<AuditData | null>(null);
   const [aifsData, setAifsData] = useState<AIFSData | null>(null);
+  const [roiDealSize, setRoiDealSize] = useState(500000);
+  const [roiCommRate, setRoiCommRate] = useState(3);
   // Pre-funnel score: Listed score represents before Certified activation
   const prevScore = audit?.score_listed ?? null;
 
@@ -424,134 +426,103 @@ export default function Step7Pricing() {
         <meta name="googlebot" content="noindex, nofollow" />
       </SafeHead>
 
-      <div className="min-h-screen bg-gradient-to-b from-background to-muted/40 py-10 px-4">
+      <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 py-10 px-4">
         <div className="max-w-4xl mx-auto space-y-8">
 
           {/* ── Step header ── */}
           <FunnelBreadcrumbs currentStep={8} />
 
-          {/* ── Activation banner (only when arriving from funnel flow) ── */}
-          {fromFunnel && currentScore != null && (() => {
-            const certScore = getAIFS('certified');
-            const priorScore = prevScore;
-            const showLift = priorScore != null && certScore != null && certScore > priorScore;
-            return (
-              <div className="rounded-2xl border border-green-300 bg-green-50 dark:border-green-800 dark:bg-green-950/40 p-6 text-center space-y-3">
-                <p className="text-2xl font-black text-green-700 dark:text-green-400">
-                  Great work, {professional?.name?.split(' ')[0] || 'Agent'}!
-                </p>
-                <p className="text-base font-semibold text-green-800 dark:text-green-300">
-                  You&rsquo;re more citable than you were 5 minutes ago.
-                </p>
-                {showLift && (
-                  <div className="flex items-center justify-center gap-4 py-2">
-                    <div className="text-center">
-                      <p className="text-xs text-muted-foreground uppercase tracking-wide mb-0.5">Before</p>
-                      <p className={`text-3xl font-black ${bandColor(priorScore!)}`}>{priorScore}</p>
-                      <div className="mt-1"><BandLabel score={priorScore!} /></div>
-                    </div>
-                    <div className="text-3xl text-green-500 font-black">&rarr;</div>
-                    <div className="text-center">
-                      <p className="text-xs text-muted-foreground uppercase tracking-wide mb-0.5">After Certified</p>
-                      <p className={`text-3xl font-black ${bandColor(certScore!)}`}>{certScore}</p>
-                      <div className="mt-1"><BandLabel score={certScore!} /></div>
-                    </div>
-                  </div>
-                )}
-                <p className="text-sm text-green-700 dark:text-green-400">
-                  Activating Certified is free and publishes your verified data to AI systems today.
-                  Want to go further? Audited and Underwritten tiers are below.
-                </p>
-              </div>
-            );
-          })()}
-
           {/* ══════════════════════════════════════════════════════
-              AIFS SCORE
+              MICRO-SUMMARY HEADER
           ══════════════════════════════════════════════════════ */}
-          <div className="rounded-2xl border bg-card p-8 space-y-5 shadow-sm">
-            <AIFSGauge data={aifsGaugeData} currentTier={currentTier} />
+          <div className="text-center py-2">
+            <h2 className="text-xl font-bold text-white">
+              {professional?.name?.split(' ')[0] || 'Agent'}, your verified AIFS is currently{' '}
+              <span className={currentScore != null ? bandColor(currentScore) : 'text-white'}>
+                {currentScore ?? '--'}
+              </span>
+              {currentScore != null && (
+                <span className="text-slate-400 font-normal text-base ml-1">
+                  ({bandLabel(currentScore)})
+                </span>
+              )}
+            </h2>
+            <p className="text-sm text-slate-400 mt-1">
+              Select a tier below to strengthen your AI citation probability and confidence when someone asks if they should do business with you.
+            </p>
           </div>
-
-          {/* ══════════════════════════════════════════════════════
-              CITATION VALUE PREVIEW + AIFS BAND METER
-          ══════════════════════════════════════════════════════ */}
-          {(() => {
-            const baseline = currentScore ?? 42;
-            const tierScoresForMeter: Record<string, number> = {};
-            for (const tier of TIER_ORDER) {
-              tierScoresForMeter[tier] = Math.min(95, baseline + TIER_LIFTS[tier]);
-            }
-            return (
-              <div className="rounded-2xl border bg-card p-8 space-y-5 shadow-sm">
-                <div className="text-center">
-                  <h3 className="text-lg font-bold text-foreground">Citation Value Calculator</h3>
-                  <p className="text-xs text-muted-foreground mt-1">Estimated projections based on AIFS citation frequency model -- not guaranteed outcomes</p>
-                </div>
-
-                <div className="px-2 pt-2 pb-6">
-                  <AIFSBandMeter baseline={baseline} tiers={tierScoresForMeter} />
-                </div>
-
-                <div className="rounded-lg border border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950/30 px-4 py-3 text-center">
-                  <p className="text-sm font-semibold text-green-800 dark:text-green-300">
-                    AI-referred leads close at an estimated 25-40% vs &lt;1% for paid lead platforms
-                  </p>
-                  <p className="text-[10px] text-green-700 dark:text-green-400 mt-0.5">Based on NAR referral conversion data</p>
-                </div>
-              </div>
-            );
-          })()}
 
           {/* ══════════════════════════════════════════════════════
               TIER CARDS
           ══════════════════════════════════════════════════════ */}
           <div id="tier-cards" className="space-y-4">
 
-            {/* Show me ROI button */}
-            <div className="text-center">
-              <Button
-                size="lg"
-                className="font-black text-base px-8 py-6 shadow-lg"
-                onClick={() => document.getElementById('roi-calculator')?.scrollIntoView({ behavior: 'smooth' })}
-              >
-                <DollarSign className="h-5 w-5 mr-2" />
-                Show Me the ROI
-              </Button>
-            </div>
-
             {/* Billing toggle */}
             <div className="flex items-center justify-center gap-3">
-              <Label htmlFor="billing-toggle" className="text-sm">Monthly</Label>
+              <Label htmlFor="billing-toggle" className="text-sm text-slate-300">Monthly</Label>
               <Switch id="billing-toggle" checked={isAnnual} onCheckedChange={setIsAnnual} />
-              <Label htmlFor="billing-toggle" className="text-sm">
+              <Label htmlFor="billing-toggle" className="text-sm text-slate-300">
                 Annual <span className="text-primary font-medium">(2 months free)</span>
               </Label>
             </div>
 
             {/* Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
               {(['certified', 'audited', 'underwritten'] as const).map((tier) => {
                 const meta = TIER_FEATURES[tier];
                 const Icon = meta.icon;
                 const { display } = getPrice(tier);
-                const aifs = getAIFS(tier);
                 const isCurrent = currentTier === tier;
                 const isMostPopular = tier === 'audited';
-                const aifsScore = aifsData?.aifs_total ?? currentScore;
+                const aifs = isCurrent ? currentScore : getAIFS(tier);
+                const aifsScore = currentScore;
                 const lift = aifs != null && aifsScore != null ? aifs - aifsScore : null;
+
+                // Compute $ lift vs Certified for this tier
+                const certAifsScore = Math.min(95, (currentScore ?? 42) + TIER_LIFTS.certified);
+                const tierAifsScore = Math.min(95, (currentScore ?? 42) + TIER_LIFTS[tier]);
+                const avgDeal = roiDealSize;
+                const commRate = roiCommRate / 100;
+                const closeRateDec = 0.30;
+                const certLeads = Math.max(leadsFromAIFS(certAifsScore), 0);
+                const tierLeads = Math.max(leadsFromAIFS(tierAifsScore), tier === 'audited' ? 15 : tier === 'underwritten' ? 24 : 0);
+                const certNet = (certLeads * closeRateDec * avgDeal * commRate * (COMPOUND_MULTIPLIERS.certified || 1)) - TIER_COSTS.certified;
+                const tierNet = (tierLeads * closeRateDec * avgDeal * commRate * (COMPOUND_MULTIPLIERS[tier] || 1)) - TIER_COSTS[tier];
+                const dollarLift = tierNet - certNet;
+                const tierRoi = TIER_COSTS[tier] > 0 ? Math.round(((tierNet + TIER_COSTS[tier] - TIER_COSTS[tier]) / TIER_COSTS[tier]) * 100) : null;
+                const fmtDollar = (n: number) => '$' + Math.round(Math.abs(n)).toLocaleString();
 
                 return (
                   <div
                     key={tier}
-                    className={`relative rounded-xl border p-5 flex flex-col ${
+                    className={`relative rounded-xl border px-5 py-3 flex flex-col bg-slate-900/80 ${
                       isCurrent
-                        ? 'border-primary bg-primary/5 ring-2 ring-primary/20 shadow-sm'
+                        ? 'border-primary bg-primary/10 ring-2 ring-primary/20 shadow-sm'
                         : isMostPopular
-                          ? 'pt-8 border-primary shadow-md'
-                          : 'border-border'
+                          ? 'pt-5 border-primary shadow-md'
+                          : 'border-slate-700'
                     }`}
                   >
+                    {/* Top banner: $ lift or Current Tier -- same size, same style */}
+                    <div className="rounded-md bg-emerald-500/10 border border-emerald-500/20 px-3 py-2 text-center mb-0">
+                      {isCurrent ? (
+                        <>
+                          <p className="text-lg font-black text-emerald-400">Your Current Tier</p>
+                          <p className="text-[10px] text-emerald-400/70">Free -- no cost</p>
+                        </>
+                      ) : dollarLift > 0 ? (
+                        <>
+                          <p className="text-lg font-black text-emerald-400">+{fmtDollar(dollarLift)}</p>
+                          <p className="text-[10px] text-emerald-400/70">vs staying Certified</p>
+                        </>
+                      ) : (
+                        <>
+                          <p className="text-lg font-black text-emerald-400">&mdash;</p>
+                          <p className="text-[10px] text-emerald-400/70">&nbsp;</p>
+                        </>
+                      )}
+                    </div>
+
                     {/* Badge image */}
                     <img
                       src={`/badges/${tier}.png`}
@@ -567,92 +538,33 @@ export default function Step7Pricing() {
                       </div>
                     )}
 
-                    {isCurrent && (
-                      <div className="flex items-center gap-1.5 mb-2">
-                        <CheckCircle2 className="h-4 w-4 text-primary" />
-                        <p className="text-xs font-bold text-primary uppercase tracking-wide">Your active tier</p>
-                      </div>
-                    )}
-
                     {/* Tier name + price */}
-                    <div className="flex items-center gap-2 mb-0.5">
-                      <Icon className="h-4 w-4 text-primary shrink-0" />
-                      <h3 className="text-base font-semibold">{meta.name}</h3>
-                    </div>
-                    <p className="text-3xl font-black text-foreground">{display}</p>
-                    <p className="text-xs text-muted-foreground mb-4">
-                      {meta.evidenceSources} &middot; {meta.refreshFrequency} refresh
-                    </p>
+                    <h3 className="text-base font-semibold text-white mt-1">{meta.name}</h3>
+                    <p className="text-3xl font-black text-white mb-1">{display}</p>
 
-                    {/* AIFS block -- current tier shows actual score, others show projection + lift */}
-                    {isCurrent ? (
-                      <div className="rounded-lg p-3 mb-4 border bg-primary/5 border-primary/30">
-                        <p className="text-[10px] text-primary uppercase tracking-wide font-semibold mb-0.5">Your current AIFS</p>
-                        <div className="flex items-baseline gap-1">
-                          <span className={`text-3xl font-black ${aifs != null ? bandColor(aifs) : 'text-muted-foreground'}`}>
-                            {aifs ?? '—'}
+                    {/* AIFS + Estimated ROI */}
+                    <div className="rounded-lg p-2 mb-1 border bg-muted/40">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <p className="text-xs text-white uppercase tracking-wide font-bold mb-0.5">AIFS Score</p>
+                          <div className="flex items-baseline gap-1">
+                            <span className={`text-2xl font-black ${aifs != null ? bandColor(aifs) : 'text-muted-foreground'}`}>
+                              {aifs ?? '—'}
+                            </span>
+                            <span className="text-xs text-muted-foreground">/ 95</span>
+                          </div>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-xs text-white uppercase tracking-wide font-bold mb-0.5">Est. ROI</p>
+                          <span className="text-2xl font-black text-white">
+                            {isCurrent ? '∞' : tierRoi != null && tierRoi > 0 ? `${tierRoi.toLocaleString()}%` : '—'}
                           </span>
-                          <span className="text-sm text-muted-foreground">/ 100</span>
                         </div>
-                        {aifs != null && (
-                          <div className="mt-0.5"><BandLabel score={aifs} /></div>
-                        )}
-                        {aifs != null && (
-                          <div className="relative mt-2">
-                            <div className="h-1.5 rounded-full overflow-hidden flex">
-                              <div className="flex-[35] bg-red-300" />
-                              <div className="flex-[30] bg-orange-300" />
-                              <div className="flex-[20] bg-blue-300" />
-                              <div className="flex-[15] bg-green-400" />
-                            </div>
-                            <div
-                              className={`absolute -top-0.5 -translate-x-1/2 w-3 h-3 rounded-full border-2 border-white shadow ${bandBg(aifs)}`}
-                              style={{ left: `${Math.min(100, Math.round((aifs / 100) * 100))}%` }}
-                            />
-                          </div>
-                        )}
                       </div>
-                    ) : (
-                      <div className={`rounded-lg p-3 mb-4 border ${isMostPopular ? 'bg-primary/5 border-primary/20' : 'bg-muted/40'}`}>
-                        <div className="flex items-end justify-between">
-                          <div>
-                            <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-0.5">Projected AIFS</p>
-                            <div className="flex items-baseline gap-1">
-                              <span className={`text-3xl font-black ${aifs != null ? bandColor(aifs) : 'text-muted-foreground'}`}>
-                                {aifs ?? '—'}
-                              </span>
-                              <span className="text-sm text-muted-foreground">/ 100</span>
-                            </div>
-                            {aifs != null && (
-                              <div className="mt-0.5"><BandLabel score={aifs} /></div>
-                            )}
-                          </div>
-                          {lift != null && lift > 0 && (
-                            <div className="text-right">
-                              <span className="text-2xl font-black text-green-600">+{lift}</span>
-                              <p className="text-[10px] text-muted-foreground">from current</p>
-                            </div>
-                          )}
-                        </div>
-                        {aifs != null && (
-                          <div className="relative mt-2">
-                            <div className="h-1.5 rounded-full overflow-hidden flex">
-                              <div className="flex-[35] bg-red-300" />
-                              <div className="flex-[30] bg-orange-300" />
-                              <div className="flex-[20] bg-blue-300" />
-                              <div className="flex-[15] bg-green-400" />
-                            </div>
-                            <div
-                              className={`absolute -top-0.5 -translate-x-1/2 w-3 h-3 rounded-full border-2 border-white shadow ${bandBg(aifs)}`}
-                              style={{ left: `${Math.min(100, Math.round((aifs / 100) * 100))}%` }}
-                            />
-                          </div>
-                        )}
-                      </div>
-                    )}
+                    </div>
 
                     {/* Feature list */}
-                    <ul className="text-xs text-muted-foreground space-y-1.5 mb-4 flex-1">
+                    <ul className="text-xs text-muted-foreground space-y-0.5 mb-1 flex-1">
                       {meta.features.map((f, i) => (
                         <li key={i} className="flex items-start gap-2">
                           <CheckCircle2 className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0" />
@@ -660,10 +572,6 @@ export default function Step7Pricing() {
                         </li>
                       ))}
                     </ul>
-
-                    <div className="mb-3" onClick={(e) => e.stopPropagation()}>
-                      <DataPayloadExpander tier={tier} triggerText="View full data and sources" professional={professional} />
-                    </div>
 
                     {isCurrent ? (
                       <div className="w-full mt-auto rounded-lg border border-primary/30 bg-primary/10 py-2.5 text-center">
@@ -680,6 +588,10 @@ export default function Step7Pricing() {
                           : tier === 'certified' ? 'Activate Certified (Free)' : `Upgrade to ${meta.name}`}
                       </Button>
                     )}
+
+                    <div className="mt-1 text-center" onClick={(e) => e.stopPropagation()}>
+                      <DataPayloadExpander tier={tier} triggerText="View full data and sources" professional={professional} />
+                    </div>
                   </div>
                 );
               })}
@@ -692,15 +604,18 @@ export default function Step7Pricing() {
             <CitationROICalculator
               tierProjections={aifsGaugeData.tier_lift_projection}
               currentScore={currentScore ?? 0}
+              avgDealSize={roiDealSize}
+              commissionRate={roiCommRate}
+              onInputChange={(d, c) => { setRoiDealSize(d); setRoiCommRate(c); }}
             />
           )}
 
-          <p className="text-sm text-muted-foreground max-w-lg mx-auto text-center mt-2">
-            <span className="font-medium text-foreground">Note:</span>&nbsp;No one can guarantee that you will always be named. There are many factors that go into an AI&rsquo;s referral reasoning. Our Underwritten tier provides the largest single-action increase in AI citability. For agents who already have a strong web presence, it&rsquo;s the most impactful next step.
+          <p className="text-sm text-slate-500 max-w-lg mx-auto text-center mt-2">
+            <span className="font-medium text-slate-300">Note:</span>&nbsp;No one can guarantee that you will always be named. There are many factors that go into an AI&rsquo;s referral reasoning. Our Underwritten tier provides the largest single-action increase in AI citability. For agents who already have a strong web presence, it&rsquo;s the most impactful next step.
           </p>
 
-          <p className="text-center text-sm text-muted-foreground pb-4">
-            Questions? <a href="tel:6027589600" className="underline">(602) 758-9600</a>
+          <p className="text-center text-sm text-slate-500 pb-4">
+            Questions? <a href="tel:6027589600" className="underline text-slate-400">(602) 758-9600</a>
           </p>
 
         </div>
