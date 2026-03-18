@@ -1,288 +1,333 @@
-// DEPRECATED — This edge function is no longer in active use. See docs/takeaways for context.
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
 /**
  * backfill-license-numbers
- * 
- * Re-scrapes agents missing license numbers using Firecrawl.
- * Priority order:
- * 1. Arizona DRE (arizona_licenses table) - source of truth
- * 2. Zillow profile data - fallback only if not in DRE
+ *
+ * Matches active professionals missing license numbers against:
+ *   1. state_licenses table (CA, TX, FL -- exact name + nickname expansion + city disambiguation)
+ *   2. Serper search against realtor.com / AZRE.gov / BBB (AZ -- not in state_licenses)
+ *
+ * Run after memo23 enrichment or any agent discovery batch.
+ * Only processes agents that are already active=true.
+ *
+ * POST body:
+ *   { stateSlug?: "arizona"|"california", limit?: number, dryRun?: boolean }
  */
-
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-
-const FIRECRAWL_API_KEY = Deno.env.get('FIRECRAWL_API_KEY');
-const FIRECRAWL_API_URL = 'https://api.firecrawl.dev/v2/scrape';
-const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
-const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
 };
 
-/**
- * Extract license number from Zillow markdown/HTML
- * Patterns: "License #: SA123456789", "License #:SA123456789", "License: BR123456"
- */
-function extractLicenseFromContent(markdown: string, html: string): string | null {
-  // Try markdown first
-  const patterns = [
-    /(?:License|DRE|BRE)\s*(?:#|Number)\s*:?\s*\n*\s*([A-Z]{0,3}[\d-]+)/i,
-    /License\s*#?\s*:?\s*([A-Z]{2}\d{6,})/i,
-    /(?:SA|BR|LC|PC)-?\d{6,}/i  // Arizona license format
-  ];
+const PLACEHOLDERS = new Set([
+  "1522444", "N/A", "Not provided", "AZ License", "HSMOVE", "DV139", "",
+]);
 
-  for (const pattern of patterns) {
-    const match = markdown.match(pattern);
-    if (match) {
-      const license = match[1] || match[0];
-      if (license && license.length >= 6) {
-        console.log(`[License] Found in markdown: ${license}`);
-        return license.trim();
+const NICKNAMES: Record<string, string[]> = {
+  Bill: ["William", "Billy"], Bob: ["Robert", "Bobby"], Rich: ["Richard"],
+  Tom: ["Thomas"], Patty: ["Patricia", "Patti"],
+  Chris: ["Christopher", "Christine", "Christina"],
+  Dan: ["Daniel"], Dave: ["David"], Mike: ["Michael"],
+  Jeff: ["Jeffrey", "Geoffrey"], Becca: ["Rebecca"], Jen: ["Jennifer"],
+  Kris: ["Kristin", "Kristine", "Kristen"],
+  Shelly: ["Shelley", "Michelle"], Cindy: ["Cynthia"],
+  Rachael: ["Rachel"], Katie: ["Katherine", "Kathryn"],
+  Ray: ["Raymond"], Eddie: ["Edward"],
+  Frank: ["Francisco", "Franklin"], Steve: ["Stephen"], Len: ["Leonard"],
+  J: ["James", "John", "Jason", "Joseph", "Jeffrey"],
+  Jack: ["John", "Jackson"], Lew: ["Lewis"],
+  Pat: ["Patricia", "Patrick"], Jim: ["James"],
+  Dick: ["Richard"], Joe: ["Joseph"], Ed: ["Edward", "Edwin"],
+  Sam: ["Samuel"], Ben: ["Benjamin"], Nick: ["Nicholas"],
+  Matt: ["Matthew"], Alex: ["Alexander", "Alexandra"],
+  Tony: ["Anthony"], Megan: ["Margaret"],
+};
+
+const STATE_ABBR: Record<string, string> = {
+  arizona: "AZ", california: "CA", texas: "TX", florida: "FL",
+  "new-york": "NY", colorado: "CO",
+};
+
+interface MatchResult {
+  license: string;
+  via: string;
+  confidence: "high" | "medium";
+}
+
+// ── state_licenses matching (CA, TX, FL, etc.) ──────────────────────
+async function tryStateLicenses(
+  supabase: any,
+  agentName: string,
+  stateAbbr: string,
+  city: string
+): Promise<MatchResult | null> {
+  if (!stateAbbr) return null;
+
+  const parts = agentName.trim().split(/\s+/);
+  if (parts.length < 2) return null;
+
+  const firstName = parts[0];
+  const lastName = parts[parts.length - 1];
+  const firstNames = [firstName, ...(NICKNAMES[firstName] || [])];
+
+  for (const fn of firstNames) {
+    const pattern = `${fn}%${lastName}`;
+    const { data, error } = await supabase
+      .from("state_licenses")
+      .select("name, license_number, city")
+      .eq("state", stateAbbr)
+      .ilike("name", pattern)
+      .limit(10);
+
+    if (error || !data || data.length === 0) continue;
+
+    if (data.length === 1) {
+      return {
+        license: data[0].license_number,
+        via: `state_licenses (${fn})`,
+        confidence: "high",
+      };
+    }
+
+    // City disambiguation
+    if (city) {
+      const cm = data.filter(
+        (r: any) => r.city && r.city.toUpperCase().includes(city.toUpperCase())
+      );
+      if (cm.length === 1) {
+        return {
+          license: cm[0].license_number,
+          via: `state_licenses + city (${fn})`,
+          confidence: "high",
+        };
       }
     }
   }
 
-  // Try HTML if markdown didn't work
-  if (html) {
-    for (const pattern of patterns) {
-      const match = html.match(pattern);
-      if (match) {
-        const license = match[1] || match[0];
-        if (license && license.length >= 6) {
-          console.log(`[License] Found in HTML: ${license}`);
-          return license.trim();
+  return null;
+}
+
+// ── Serper search (AZ agents + team designated brokers) ─────────────
+async function trySerper(
+  agentName: string,
+  city: string,
+  stateSlug: string,
+  serperKey: string
+): Promise<MatchResult | null> {
+  if (!serperKey) return null;
+
+  const isTeam =
+    /team|realty|group|associates|real estate|compass|coldwell|remax|exp |brokery|built by|selling|property|windermere|emprea|elite/i.test(
+      agentName
+    );
+
+  const stateWord =
+    stateSlug === "california" ? "California" : "Arizona";
+
+  const queries = isTeam
+    ? [
+        `"${agentName}" ${city || stateWord} designated broker license number`,
+        `"${agentName}" ${stateWord} REALTOR broker owner license`,
+      ]
+    : [
+        `"${agentName}" ${city || ""} ${stateWord} real estate license number site:realtor.com`,
+        `"${agentName}" ${city || ""} ${stateWord} license AZRE OR DRE`,
+      ];
+
+  for (const q of queries) {
+    try {
+      const resp = await fetch("https://google.serper.dev/search", {
+        method: "POST",
+        headers: {
+          "X-API-KEY": serperKey,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ q, num: 5 }),
+      });
+      const data = await resp.json();
+      const snippets = (data.organic || [])
+        .map((r: any) => `${r.title || ""} ${r.snippet || ""}`)
+        .join(" ");
+
+      // AZ pattern: SA/BR + 9 digits
+      const azMatch = snippets.match(
+        /(?:license\s*#?\s*|License:\s*|#)((?:SA|BR)\d{9})/i
+      );
+      if (azMatch) {
+        return {
+          license: azMatch[1],
+          via: `serper (${isTeam ? "team DB" : "individual"})`,
+          confidence: "medium",
+        };
+      }
+
+      // Also try looser pattern
+      const looseMatch = snippets.match(/((?:SA|BR)\d{9})/);
+      if (looseMatch) {
+        return {
+          license: looseMatch[1],
+          via: `serper loose (${isTeam ? "team DB" : "individual"})`,
+          confidence: "medium",
+        };
+      }
+
+      // CA pattern: 8 digits (DRE)
+      if (stateSlug === "california") {
+        const caMatch = snippets.match(
+          /(?:DRE|license)\s*#?\s*:?\s*(\d{8})/i
+        );
+        if (caMatch) {
+          return {
+            license: caMatch[1],
+            via: `serper CA DRE`,
+            confidence: "medium",
+          };
         }
       }
+    } catch {
+      // continue
     }
+    await new Promise((r) => setTimeout(r, 250));
   }
-
   return null;
 }
 
-/**
- * Try to find license in Arizona DRE first (source of truth)
- */
-async function findLicenseInDRE(
-  supabase: any,
-  agentName: string
-): Promise<string | null> {
-  // Parse first and last name
-  const nameParts = agentName.trim().split(/\s+/);
-  if (nameParts.length < 2) return null;
-
-  const firstName = nameParts[0];
-  const lastName = nameParts[nameParts.length - 1];
-
-  console.log(`[DRE] Searching for: ${firstName} ${lastName}`);
-
-  // Try exact match first
-  const { data: exactMatch } = await supabase
-    .from('arizona_licenses')
-    .select('license_number, first_name, last_name')
-    .ilike('first_name', firstName)
-    .ilike('last_name', lastName)
-    .limit(1)
-    .maybeSingle();
-
-  if (exactMatch?.license_number) {
-    console.log(`[DRE] Found exact match: ${exactMatch.license_number}`);
-    return exactMatch.license_number;
-  }
-
-  // Try partial match (first 3 chars of first name)
-  if (firstName.length >= 3) {
-    const { data: partialMatch } = await supabase
-      .from('arizona_licenses')
-      .select('license_number, first_name, last_name')
-      .ilike('first_name', `${firstName.substring(0, 3)}%`)
-      .ilike('last_name', lastName)
-      .limit(1)
-      .maybeSingle();
-
-    if (partialMatch?.license_number) {
-      console.log(`[DRE] Found partial match: ${partialMatch.license_number} (${partialMatch.first_name} ${partialMatch.last_name})`);
-      return partialMatch.license_number;
-    }
-  }
-
-  console.log(`[DRE] No match found for: ${agentName}`);
-  return null;
-}
-
-/**
- * Scrape Zillow profile for license number using Firecrawl
- */
-async function scrapeLicenseFromZillow(zillowUrl: string): Promise<string | null> {
-  if (!FIRECRAWL_API_KEY) {
-    throw new Error('FIRECRAWL_API_KEY not configured');
-  }
-
-  console.log(`[Firecrawl] Scraping: ${zillowUrl}`);
-
-  const response = await fetch(FIRECRAWL_API_URL, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${FIRECRAWL_API_KEY}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      url: zillowUrl,
-      formats: ['markdown', 'html'],
-      onlyMainContent: false,
-      waitFor: 2000
-    })
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error(`[Firecrawl] Error: ${errorText}`);
-    return null;
-  }
-
-  const result = await response.json();
-  if (!result.success) {
-    console.log(`[Firecrawl] Scrape failed`);
-    return null;
-  }
-
-  const markdown = result.data?.markdown || '';
-  const html = result.data?.html || '';
-
-  return extractLicenseFromContent(markdown, html);
-}
-
-Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') {
+// ── Main ─────────────────────────────────────────────────────────────
+serve(async (req) => {
+  if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+  const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const serperKey = Deno.env.get("SERPER_API_KEY") || "";
+  const supabase = createClient(supabaseUrl, supabaseKey);
+
   try {
-    const { limit = 10, dryRun = false } = await req.json().catch(() => ({}));
+    const body = await req.json().catch(() => ({}));
+    const stateSlug: string = body.stateSlug || "";
+    const limit: number = body.limit || 50;
+    const dryRun: boolean = body.dryRun || false;
 
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    console.log(
+      `[backfill] state=${stateSlug || "all"} limit=${limit} dryRun=${dryRun}`
+    );
 
-    // Find active agents missing license numbers with Zillow URLs
-    const { data: agents, error: fetchError } = await supabase
-      .from('professionals')
-      .select('id, name, license_number, zillow_profile_url')
-      .eq('active', true)
-      .not('zillow_profile_url', 'is', null)
-      .or('license_number.is.null,license_number.eq.,license_number.eq.N/A')
-      .limit(limit);
+    // Build placeholder filter for SQL
+    const phList = [...PLACEHOLDERS]
+      .filter((p) => p)
+      .map((p) => `'${p}'`)
+      .join(",");
 
-    if (fetchError) {
-      throw new Error(`Failed to fetch agents: ${fetchError.message}`);
+    let query = `
+      SELECT id, name, business_city, state_slug
+      FROM professionals
+      WHERE active = true
+        AND (license_number IS NULL
+             OR license_number IN (${phList})
+             OR license_number = '')
+    `;
+    if (stateSlug) {
+      query += ` AND state_slug = '${stateSlug.replace(/'/g, "''")}'`;
+    } else {
+      query += ` AND state_slug IN ('arizona','california')`;
+    }
+    query += ` ORDER BY name LIMIT ${limit}`;
+
+    const { data: agents, error: err } = await supabase.rpc("run_sql", {
+      query,
+    });
+    if (err) throw new Error(`fetch agents: ${err.message}`);
+    if (!agents || agents.length === 0) {
+      return json({
+        success: true,
+        message: "No agents missing license numbers",
+        matched: 0,
+        unmatched: 0,
+      });
     }
 
-    console.log(`[Backfill] Found ${agents?.length || 0} agents missing license numbers`);
+    console.log(`[backfill] ${agents.length} agents missing license numbers`);
 
-    const results = {
-      total: agents?.length || 0,
-      foundInDRE: 0,
-      foundInZillow: 0,
-      notFound: 0,
-      errors: 0,
-      details: [] as any[]
-    };
+    const matched: Array<{
+      id: string;
+      name: string;
+      license: string;
+      via: string;
+    }> = [];
+    const unmatched: Array<{
+      name: string;
+      city: string;
+      state: string;
+    }> = [];
 
-    for (const agent of agents || []) {
-      try {
-        console.log(`\n[Processing] ${agent.name}`);
-        
-        let licenseNumber: string | null = null;
-        let source: string = 'none';
+    for (const agent of agents) {
+      const stateAbbr = STATE_ABBR[agent.state_slug] || "";
+      const city = agent.business_city || "";
 
-        // Step 1: Try Arizona DRE first (source of truth)
-        licenseNumber = await findLicenseInDRE(supabase, agent.name);
-        if (licenseNumber) {
-          source = 'arizona_dre';
-          results.foundInDRE++;
-        }
+      // Step 1: state_licenses table (works for CA, TX, FL)
+      let result = await tryStateLicenses(supabase, agent.name, stateAbbr, city);
 
-        // Step 2: If not in DRE, try Zillow profile
-        if (!licenseNumber && agent.zillow_profile_url) {
-          licenseNumber = await scrapeLicenseFromZillow(agent.zillow_profile_url);
-          if (licenseNumber) {
-            source = 'zillow';
-            results.foundInZillow++;
-          }
-        }
+      // Step 2: Serper (for AZ or if state_licenses missed)
+      if (!result && serperKey) {
+        result = await trySerper(agent.name, city, agent.state_slug, serperKey);
+      }
 
-        if (!licenseNumber) {
-          results.notFound++;
-          results.details.push({
-            name: agent.name,
-            id: agent.id,
-            status: 'not_found',
-            source: 'none'
-          });
-          continue;
-        }
-
-        // Update the professional record
+      if (result) {
         if (!dryRun) {
-          const { error: updateError } = await supabase
-            .from('professionals')
-            .update({ 
-              license_number: licenseNumber,
-              updated_at: new Date().toISOString()
-            })
-            .eq('id', agent.id);
-
-          if (updateError) {
-            console.error(`[Update] Error for ${agent.name}: ${updateError.message}`);
-            results.errors++;
-            results.details.push({
-              name: agent.name,
-              id: agent.id,
-              status: 'error',
-              error: updateError.message
-            });
+          const { error: ue } = await supabase
+            .from("professionals")
+            .update({ license_number: result.license })
+            .eq("id", agent.id);
+          if (ue) {
+            console.error(`[backfill] FAIL ${agent.name}: ${ue.message}`);
+            unmatched.push({ name: agent.name, city, state: agent.state_slug });
             continue;
           }
         }
-
-        console.log(`[Success] ${agent.name}: ${licenseNumber} (${source})`);
-        results.details.push({
-          name: agent.name,
+        matched.push({
           id: agent.id,
-          status: 'updated',
-          licenseNumber,
-          source
-        });
-
-        // Small delay between requests
-        await new Promise(resolve => setTimeout(resolve, 500));
-
-      } catch (error) {
-        const errorMsg = error instanceof Error ? error.message : String(error);
-        console.error(`[Error] ${agent.name}: ${errorMsg}`);
-        results.errors++;
-        results.details.push({
           name: agent.name,
-          id: agent.id,
-          status: 'error',
-          error: errorMsg
+          license: result.license,
+          via: result.via,
         });
+        console.log(
+          `[backfill] OK: ${agent.name} -> ${result.license} [${result.via}]`
+        );
+      } else {
+        unmatched.push({ name: agent.name, city, state: agent.state_slug });
+        console.log(`[backfill] NO MATCH: ${agent.name} (${city})`);
       }
     }
 
-    console.log(`\n[Complete] DRE: ${results.foundInDRE}, Zillow: ${results.foundInZillow}, Not Found: ${results.notFound}, Errors: ${results.errors}`);
+    console.log(
+      `[backfill] Done: ${matched.length} matched, ${unmatched.length} unmatched`
+    );
 
-    return new Response(JSON.stringify(results), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    return json({
+      success: true,
+      dryRun,
+      matched: matched.length,
+      unmatched: unmatched.length,
+      matchedAgents: matched,
+      unmatchedAgents: unmatched,
     });
-
-  } catch (error) {
-    const errorMsg = error instanceof Error ? error.message : String(error);
-    console.error('[Fatal Error]', error);
-    return new Response(JSON.stringify({ 
-      error: errorMsg,
-      success: false 
-    }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-    });
+  } catch (error: any) {
+    console.error("[backfill] Fatal:", error);
+    return new Response(
+      JSON.stringify({ success: false, error: error.message }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      }
+    );
   }
 });
+
+function json(body: unknown) {
+  return new Response(JSON.stringify(body, null, 2), {
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+}

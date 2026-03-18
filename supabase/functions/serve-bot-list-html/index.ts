@@ -603,7 +603,7 @@ serve(async (req) => {
       }
     }
 
-    return new Response(o, { status: zeroAgents ? 404 : 200, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": zeroAgents ? "public, max-age=3600" : "public, max-age=86400, stale-while-revalidate=86400", "X-Agents-Count": String(na), "X-Page-Type": isNh ? "neighborhood" : "city", ...CORS } });
+    return new Response(o, { status: zeroAgents ? 404 : 200, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": zeroAgents ? "public, max-age=3600" : "public, max-age=0, s-maxage=60, stale-while-revalidate=30", "X-Agents-Count": String(na), "X-Page-Type": isNh ? "neighborhood" : "city", ...CORS } });
   } catch (_e: unknown) {
     console.error("serve-bot-list-html error:", pp.stateSlug, pp.citySlug, pp.neighborhoodSlug, _e instanceof Error ? _e.message : String(_e), _e instanceof Error ? _e.stack : "");
     // Build a proper clean-room error page with canonical + JSON-LD so crawlers

@@ -138,8 +138,33 @@ serve(async (req) => {
     const nextOffset = offset + batchSize;
     const hasMore = nextOffset < (totalCount || 0);
 
+    // ── Post-enrichment: backfill license numbers for newly enriched agents ──
+    // Only runs when batch is complete (no more agents to process)
+    let backfillResult = null;
+    if (!hasMore) {
+      try {
+        console.log(`[memo23] Batch complete. Triggering license backfill for ${stateSlug}...`);
+        const bfResp = await fetch(`${supabaseUrl}/functions/v1/backfill-license-numbers`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${supabaseKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ stateSlug, limit: 50 }),
+        });
+        if (bfResp.ok) {
+          backfillResult = await bfResp.json();
+          console.log(`[memo23] License backfill: ${backfillResult.matched} matched, ${backfillResult.unmatched} unmatched`);
+        } else {
+          console.warn(`[memo23] License backfill returned ${bfResp.status}`);
+        }
+      } catch (bfErr: any) {
+        console.warn(`[memo23] License backfill error (non-fatal): ${bfErr.message}`);
+      }
+    }
+
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         success: true,
         completed: !hasMore,
         batchResults,
@@ -151,7 +176,8 @@ serve(async (req) => {
           total: totalCount,
           remaining: Math.max(0, (totalCount || 0) - nextOffset)
         },
-        nextOffset: hasMore ? nextOffset : null
+        nextOffset: hasMore ? nextOffset : null,
+        licenseBackfill: backfillResult
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

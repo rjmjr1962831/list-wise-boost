@@ -88,14 +88,14 @@ export default async function handler(req, res) {
 
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     // Browser + Vercel CDN caching (ptm purges CDN on deploy)
-    // Crawl stats: 15 min cache (heavy queries, 30-day rolling data barely changes)
+    // Crawl stats: 1 hour cache (heavy queries, rolling data barely changes)
     // Agent/list/state pages: 5 min cache
     // Content pages (for-ai, transparency, faq): no CDN cache for real-time updates
     const cacheable5m = ['serve-bot-agent-html', 'serve-bot-list-html', 'serve-bot-state-html'];
-    const cacheable15m = ['serve-bot-crawl-stats-html'];
-    if (cacheable15m.includes(fn)) {
-      res.setHeader('Cache-Control', 'public, max-age=900, stale-while-revalidate=3600');
-      res.setHeader('Vercel-CDN-Cache-Control', 's-maxage=900, stale-while-revalidate=3600');
+    const cacheable1h = ['serve-bot-crawl-stats-html'];
+    if (cacheable1h.includes(fn)) {
+      res.setHeader('Cache-Control', 'public, max-age=3600, stale-while-revalidate=7200');
+      res.setHeader('Vercel-CDN-Cache-Control', 's-maxage=3600, stale-while-revalidate=7200');
     } else if (cacheable5m.includes(fn)) {
       res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=3600');
       res.setHeader('Vercel-CDN-Cache-Control', 's-maxage=300, stale-while-revalidate=3600');

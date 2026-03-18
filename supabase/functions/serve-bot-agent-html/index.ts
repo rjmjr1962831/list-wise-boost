@@ -739,7 +739,7 @@ serve(async (req) => {
       status: 200,
       headers: {
         "Content-Type": "text/html; charset=utf-8",
-        "Cache-Control": "public, max-age=86400, stale-while-revalidate=86400",
+        "Cache-Control": "public, max-age=0, s-maxage=60, stale-while-revalidate=30",
         "X-Agent-Name": a.name,
         "X-Agent-Tier": tl(t),
         "X-Page-Type": "agent-profile",
