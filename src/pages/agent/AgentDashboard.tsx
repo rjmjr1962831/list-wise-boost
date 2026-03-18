@@ -129,7 +129,7 @@ export default function AgentDashboard() {
         .from("admin_users")
         .select("role")
         .eq("id", user.id);
-      if (!roles?.some((r: { role: string }) => r.role === "admin" || r.role === "superadmin")) {
+      if (!roles?.some((r: { role: string }) => ["admin", "superadmin", "owner"].includes(r.role))) {
         setAuthStatus("Admin access required to open a test agent dashboard.");
         setLoading(false);
         return;

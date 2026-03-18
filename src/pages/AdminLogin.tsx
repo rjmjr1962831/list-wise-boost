@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { SafeHead } from "@/components/SafeHead";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,10 +13,33 @@ const AdminLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [checkingSession, setCheckingSession] = useState(true);
   const [debug, setDebug] = useState<string | null>(null);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const redirectTo = searchParams.get("redirect") || "/admin";
+
+  // Auto-pass: if browser already has a valid admin session, skip login
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.user) { setCheckingSession(false); return; }
+        const { data: roles } = await supabase
+          .from("admin_users")
+          .select("role")
+          .eq("id", session.user.id);
+        if (roles && roles.length > 0) {
+          const target = redirectTo.startsWith("/") && !redirectTo.startsWith("//") ? redirectTo : "/admin";
+          navigate(target, { replace: true });
+          return;
+        }
+      } catch {
+        // fall through to login form
+      }
+      setCheckingSession(false);
+    })();
+  }, []);
   
   const handleAuth = async (e?: React.FormEvent) => {
     if (e) {
@@ -73,6 +96,10 @@ const AdminLogin = () => {
       setIsLoading(false);
     }
   };
+
+  if (checkingSession) {
+    return <div className="min-h-screen flex items-center justify-center"><p className="text-muted-foreground">Checking session...</p></div>;
+  }
 
   return (
     <>
