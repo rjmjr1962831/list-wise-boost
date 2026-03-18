@@ -31,11 +31,16 @@ const COMPREHENSIVE_PATH = resolve(process.cwd(), 'docs/COMPREHENSIVE_KNOWLEDGE_
 const CLAUDE_WEB_PATH = resolve(process.cwd(), 'docs/prompts/claude-web-project-knowledge.md');
 const TAKEAWAYS_GLOB = /^[A-Z_]+_TAKEAWAYS_\d{4}-\d{2}-\d{2}(_\d{4})?\.md$/;
 
-function getTakeawaysFiles(): string[] {
+function getTakeawaysFiles(sinceDate: string | null): string[] {
   if (!existsSync(TAKEAWAYS_DIR)) return [];
-  return readdirSync(TAKEAWAYS_DIR)
+  const all = readdirSync(TAKEAWAYS_DIR)
     .filter((f) => TAKEAWAYS_GLOB.test(f))
     .sort();
+  if (!sinceDate) return all;
+  return all.filter((f) => {
+    const m = f.match(/(\d{4}-\d{2}-\d{2})/);
+    return m ? m[1] > sinceDate : false;
+  });
 }
 
 function readAllTakeaways(files: string[]): string {
@@ -45,6 +50,13 @@ function readAllTakeaways(files: string[]): string {
     chunks.push(`--- FILE: ${f} ---\n${content.trim()}`);
   }
   return chunks.join('\n\n');
+}
+
+function getLastSynthesizedDate(): string | null {
+  if (!existsSync(COMPREHENSIVE_PATH)) return null;
+  const doc = readFileSync(COMPREHENSIVE_PATH, 'utf-8');
+  const match = doc.match(/\*Last synthesized: (\d{4}-\d{2}-\d{2})/);
+  return match?.[1] ?? null;
 }
 
 function splitComprehensive(doc: string): { sections1to20: string; section21: string } {
@@ -65,29 +77,41 @@ async function synthesizeWithLLM(takeawaysText: string, currentSection21: string
 
   const today = new Date().toISOString().slice(0, 10);
 
-  const systemPrompt = `You are a technical editor synthesizing software project session logs into a compact knowledge document section.
+  const isIncremental = currentSection21.length > 0;
+
+  const systemPrompt = isIncremental
+    ? `You are a technical editor merging NEW session takeaways into an existing synthesized knowledge section.
+
+Rules:
+- You will receive the EXISTING Section 21 and NEW takeaways only
+- Merge new information into the existing topic groups where it fits
+- Add new topic groups (### headers) only if new info doesn't fit existing ones
+- If new info supersedes something in the existing section, REPLACE the old info
+- Remove redundancy -- don't add what's already covered
+- Drop ephemeral session details (file lists, "what we did today" narratives)
+- Keep ONLY: decisions made, things deployed/live, things deprecated/removed, current state, standing rules, config changes, new edge functions/scripts
+- Use -- instead of em dashes
+- Keep dates only where they matter
+- Output the complete updated Section 21
+- Start with exactly: ## 21. Recent Updates (from t1)\\n\\n*Last synthesized: ${today}*\\n\\n---`
+    : `You are a technical editor synthesizing software project session logs into a compact knowledge document section.
 
 Rules:
 - Group by TOPIC, not by session or date
 - Remove all redundancy -- if the same fact appears in multiple sessions, keep one instance
 - Drop anything superseded (e.g., "plan to do X" when a later session says X was done)
 - Drop ephemeral session details (file lists, "what we did today" narratives)
-- Keep ONLY: decisions made, things deployed/live, things deprecated/removed, current state of in-progress work, standing rules, config changes, new edge functions/scripts
+- Keep ONLY: decisions made, things deployed/live, things deprecated/removed, current state, standing rules, config changes, new edge functions/scripts
 - Use ### headers for topic groups (e.g., "### AIFS", "### Bot Crawl Analytics", "### GEO Audit")
 - Use bullet points (- ) under each header
-- Keep dates only where they matter (e.g., "reactivated 2026-03-12")
-- No session headers like "CLAUDE -- 2026-03-14"
+- Keep dates only where they matter
 - Use -- instead of em dashes
 - Target 150-250 lines total
 - Start with exactly: ## 21. Recent Updates (from t1)\\n\\n*Last synthesized: ${today}*\\n\\n---`;
 
-  const userPrompt = `Here are all the raw session takeaways to synthesize:
-
-${takeawaysText}
-
-${currentSection21 ? `Here is the current Section 21 for reference (may contain useful structure to preserve):\n\n${currentSection21}` : ''}
-
-Produce the synthesized Section 21. Output ONLY the markdown content, starting with the ## 21 header.`;
+  const userPrompt = isIncremental
+    ? `Here is the EXISTING Section 21:\n\n${currentSection21}\n\nHere are the NEW session takeaways to merge in:\n\n${takeawaysText}\n\nProduce the updated Section 21. Output ONLY the markdown content, starting with the ## 21 header.`
+    : `Here are all the raw session takeaways to synthesize:\n\n${takeawaysText}\n\nProduce the synthesized Section 21. Output ONLY the markdown content, starting with the ## 21 header.`;
 
   const response = await fetch('https://api.deepseek.com/chat/completions', {
     method: 'POST',
@@ -161,23 +185,27 @@ function fmt(n: number): string {
 async function main() {
   const today = new Date().toISOString().slice(0, 10);
 
-  // 1. Read takeaways
-  const files = getTakeawaysFiles();
-  if (files.length === 0) {
-    console.log('No t1 takeaways files found in docs/takeaways/. Run "t1" on each AI first.');
-    process.exit(0);
-    return;
-  }
-  console.log(`s1: Found ${files.length} takeaway files.`);
-  const takeawaysText = readAllTakeaways(files);
-
-  // 2. Read current doc and split
+  // 1. Read current doc and split
   let doc = readFileSync(COMPREHENSIVE_PATH, 'utf-8');
   const { sections1to20, section21 } = splitComprehensive(doc);
 
-  // 3. Synthesize with LLM
-  console.log('s1: Sending to DeepSeek for synthesis...');
-  const synthesized = await synthesizeWithLLM(takeawaysText, section21);
+  // 2. Find only NEW takeaways since last synthesis
+  const lastSynth = getLastSynthesizedDate();
+  const files = getTakeawaysFiles(lastSynth);
+
+  let synthesized: string;
+  if (files.length === 0 && section21) {
+    console.log(`s1: No new takeaways since ${lastSynth}. Only updating date and counts.`);
+    synthesized = section21;
+  } else if (files.length === 0) {
+    console.log('No t1 takeaways files found in docs/takeaways/. Run "t1" on each AI first.');
+    process.exit(0);
+    return;
+  } else {
+    console.log(`s1: ${files.length} new takeaways since ${lastSynth ?? 'never'}. Synthesizing...`);
+    const takeawaysText = readAllTakeaways(files);
+    synthesized = await synthesizeWithLLM(takeawaysText, section21);
+  }
   const lineCount = synthesized.split('\n').length;
   console.log(`s1: Synthesized Section 21: ${lineCount} lines.`);
 
