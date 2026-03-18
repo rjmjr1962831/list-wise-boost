@@ -1,18 +1,23 @@
 /**
- * s1 -- Master Synthesis. Gathers all per-AI takeaways and updates COMPREHENSIVE_KNOWLEDGE_DOCUMENT.
+ * s1 -- Update COMPREHENSIVE_KNOWLEDGE_DOCUMENT metadata and Section 21.
  *
  * Usage: npm run s1
  *
- * Strategy:
- * 1. Reads all *TAKEAWAYS*.md in docs/takeaways/
- * 2. Splits each into sections (Key Outcomes, Config, New Rules, New Functions, Deprecated)
- * 3. Deduplicates bullet points across all files (keeps first occurrence)
- * 4. Groups by topic, not by session/date
- * 5. Drops files older than RETENTION_DAYS from synthesis (they stay on disk for audit)
- * 6. Updates Section 21 of COMPREHENSIVE with compact, topic-grouped output
- * 7. Commits locally (does NOT push -- Robert batches pushes with pts)
+ * What it does:
+ * 1. Updates "Last consolidated" date
+ * 2. Updates live agent counts from Supabase (Section 1 coverage line)
+ * 3. Appends NEW takeaways (since last synthesis) to Section 21
+ *    - Only includes files newer than the "Last synthesized" date in Section 21
+ *    - Groups by the 5 t1 template sections, deduplicates by content
+ *    - Preserves any hand-curated content already in Section 21
+ * 4. Copies updated COMPREHENSIVE to docs/prompts/claude-web-project-knowledge.md
+ * 5. Commits locally (does NOT push -- Robert batches pushes with pts)
+ *
+ * IMPORTANT: Section 21 should be periodically hand-curated to stay compact.
+ * This script only appends incremental updates. Run a manual synthesis when
+ * Section 21 exceeds ~300 lines.
  */
-import { readFileSync, writeFileSync, readdirSync, existsSync } from 'fs';
+import { readFileSync, writeFileSync, readdirSync, existsSync, copyFileSync } from 'fs';
 import { execSync } from 'child_process';
 import { resolve } from 'path';
 import { createClient } from '@supabase/supabase-js';
@@ -28,141 +33,134 @@ if (existsSync(envPath)) {
 
 const TAKEAWAYS_DIR = resolve(process.cwd(), 'docs/takeaways');
 const COMPREHENSIVE_PATH = resolve(process.cwd(), 'docs/COMPREHENSIVE_KNOWLEDGE_DOCUMENT.md');
+const CLAUDE_WEB_PATH = resolve(process.cwd(), 'docs/prompts/claude-web-project-knowledge.md');
 const TAKEAWAYS_GLOB = /^[A-Z_]+_TAKEAWAYS_\d{4}-\d{2}-\d{2}(_\d{4})?\.md$/;
-const RETENTION_DAYS = 14;
 
-// Canonical topic buckets that map to t1 template sections
-const TOPIC_MAP: Record<string, string> = {
-  'key outcomes': 'Key Outcomes',
-  'config / infrastructure': 'Config / Infrastructure',
-  'config/infrastructure': 'Config / Infrastructure',
-  'new rules or docs': 'New Rules or Docs',
-  'new functions / scripts': 'New Functions / Scripts',
-  'new functions/scripts': 'New Functions / Scripts',
-  'deprecated or removed': 'Deprecated or Removed',
-};
+// t1 template section headers -> canonical names
+const SECTION_NAMES = [
+  'Key Outcomes',
+  'Config / Infrastructure',
+  'New Rules or Docs',
+  'New Functions / Scripts',
+  'Deprecated or Removed',
+];
 
-interface ParsedTakeaway {
-  ai: string;
-  date: string;
-  sections: Map<string, string[]>; // topic -> bullet lines
+function classifyHeading(heading: string): string | null {
+  const lower = heading.toLowerCase();
+  if (lower.includes('key outcomes')) return 'Key Outcomes';
+  if (lower.includes('config') && lower.includes('infrastructure')) return 'Config / Infrastructure';
+  if (lower.includes('new rules') || lower.includes('new docs')) return 'New Rules or Docs';
+  if (lower.includes('new functions') || lower.includes('new scripts')) return 'New Functions / Scripts';
+  if (lower.includes('deprecated') || lower.includes('removed')) return 'Deprecated or Removed';
+  return null;
 }
 
-function getTakeawaysFiles(): string[] {
+function getLastSynthesizedDate(): string | null {
+  if (!existsSync(COMPREHENSIVE_PATH)) return null;
+  const doc = readFileSync(COMPREHENSIVE_PATH, 'utf-8');
+  const match = doc.match(/\*Last synthesized: (\d{4}-\d{2}-\d{2})/);
+  return match?.[1] ?? null;
+}
+
+function getNewTakeawaysFiles(sinceDate: string | null): string[] {
   if (!existsSync(TAKEAWAYS_DIR)) return [];
-  return readdirSync(TAKEAWAYS_DIR)
+  const files = readdirSync(TAKEAWAYS_DIR)
     .filter((f) => TAKEAWAYS_GLOB.test(f))
     .sort();
-}
 
-function filterByRetention(files: string[]): string[] {
-  const cutoff = new Date();
-  cutoff.setDate(cutoff.getDate() - RETENTION_DAYS);
-  const cutoffStr = cutoff.toISOString().slice(0, 10);
+  if (!sinceDate) return files;
+
   return files.filter((f) => {
     const dateMatch = f.match(/(\d{4}-\d{2}-\d{2})/);
-    return dateMatch ? dateMatch[1] >= cutoffStr : false;
+    return dateMatch ? dateMatch[1] > sinceDate : false;
   });
 }
 
-function normalizeLine(line: string): string {
-  return line.replace(/^[-*]\s+/, '').trim().toLowerCase();
+interface SectionBullets {
+  section: string;
+  bullets: string[];
 }
 
-function classifySection(heading: string): string {
-  const lower = heading.toLowerCase().trim();
-  for (const [key, canonical] of Object.entries(TOPIC_MAP)) {
-    if (lower.includes(key)) return canonical;
-  }
-  // Anything else goes into Key Outcomes
-  return 'Key Outcomes';
-}
-
-function parseTakeawaysFile(filePath: string): ParsedTakeaway {
+function parseTakeawaysFile(filePath: string): SectionBullets[] {
   const content = readFileSync(filePath, 'utf-8');
-  const match = filePath.match(/([A-Z_]+)_TAKEAWAYS_(\d{4}-\d{2}-\d{2})(_\d{4})?\.md$/);
-  const ai = match?.[1] ?? 'UNKNOWN';
-  const date = match?.[2] ?? '';
-
-  const sections = new Map<string, string[]>();
-  let currentTopic = 'Key Outcomes';
+  const result: SectionBullets[] = [];
+  let currentSection = 'Key Outcomes';
+  let currentBullets: string[] = [];
 
   for (const line of content.split('\n')) {
-    // Detect section headers (## Key Outcomes, ## Config / Infrastructure, etc.)
     const headingMatch = line.match(/^#{1,3}\s+(.+)/);
     if (headingMatch) {
       const heading = headingMatch[1];
-      // Skip the file title line (e.g., "# Claude Code Takeaways -- 2026-03-14")
       if (heading.toLowerCase().includes('takeaways')) continue;
-      currentTopic = classifySection(heading);
+      const classified = classifyHeading(heading);
+      if (classified && classified !== currentSection) {
+        if (currentBullets.length > 0) {
+          result.push({ section: currentSection, bullets: [...currentBullets] });
+          currentBullets = [];
+        }
+        currentSection = classified;
+      }
       continue;
     }
 
-    // Only keep bullet lines (- or *)
-    if (/^\s*[-*]\s+/.test(line) && line.trim().length > 5) {
-      if (!sections.has(currentTopic)) sections.set(currentTopic, []);
-      sections.get(currentTopic)!.push(line.trim());
+    if (/^\s*[-*]\s+/.test(line) && line.trim().length > 10) {
+      currentBullets.push(line.trim());
     }
   }
 
-  return { ai, date, sections };
-}
-
-function synthesizeTakeaways(files: string[]): string {
-  const today = new Date().toISOString().slice(0, 10);
-  const allParsed = files.map((f) => parseTakeawaysFile(resolve(TAKEAWAYS_DIR, f)));
-
-  // Collect all bullets per topic, deduplicating by normalized content
-  const topicBullets = new Map<string, string[]>();
-  const seen = new Set<string>();
-  const topicOrder = ['Key Outcomes', 'Config / Infrastructure', 'New Rules or Docs', 'New Functions / Scripts', 'Deprecated or Removed'];
-
-  for (const topic of topicOrder) {
-    topicBullets.set(topic, []);
+  if (currentBullets.length > 0) {
+    result.push({ section: currentSection, bullets: currentBullets });
   }
 
-  // Process newest first so we keep the most recent phrasing
-  for (const parsed of [...allParsed].reverse()) {
-    for (const [topic, bullets] of parsed.sections) {
-      const canonicalTopic = topicOrder.includes(topic) ? topic : 'Key Outcomes';
-      if (!topicBullets.has(canonicalTopic)) topicBullets.set(canonicalTopic, []);
+  return result;
+}
 
+function buildIncrementalSection(files: string[]): string {
+  const today = new Date().toISOString().slice(0, 10);
+  const sectionBullets = new Map<string, string[]>();
+  const seen = new Set<string>();
+
+  for (const name of SECTION_NAMES) {
+    sectionBullets.set(name, []);
+  }
+
+  // Process newest first to keep latest phrasing
+  const sortedFiles = [...files].reverse();
+  for (const f of sortedFiles) {
+    const parsed = parseTakeawaysFile(resolve(TAKEAWAYS_DIR, f));
+    for (const { section, bullets } of parsed) {
+      const bucket = sectionBullets.get(section) ?? sectionBullets.get('Key Outcomes')!;
       for (const bullet of bullets) {
-        const normalized = normalizeLine(bullet);
-        // Skip very short or generic lines
-        if (normalized.length < 10) continue;
-        // Deduplicate by first 80 chars of normalized content
-        const dedupeKey = normalized.slice(0, 80);
-        if (seen.has(dedupeKey)) continue;
-        seen.add(dedupeKey);
-        topicBullets.get(canonicalTopic)!.push(bullet);
+        const normalized = bullet.replace(/^[-*]\s+/, '').trim().toLowerCase().slice(0, 60);
+        if (seen.has(normalized)) continue;
+        seen.add(normalized);
+        bucket.push(bullet);
       }
     }
   }
 
-  // Build output
-  const dateRange = allParsed.length > 0
-    ? `${allParsed[0].date} to ${allParsed[allParsed.length - 1].date}`
-    : today;
-
+  // Only emit sections that have content
   const lines: string[] = [
-    `## 21. Recent Updates (from t1)`,
     ``,
-    `*Last synthesized: ${today} -- covering ${files.length} sessions from ${dateRange}*`,
+    `### Incremental Updates (${today})`,
+    ``,
+    `*${files.length} sessions since last synthesis*`,
     ``,
   ];
 
-  for (const topic of topicOrder) {
-    const bullets = topicBullets.get(topic) ?? [];
+  let hasContent = false;
+  for (const name of SECTION_NAMES) {
+    const bullets = sectionBullets.get(name) ?? [];
     if (bullets.length === 0) continue;
-    lines.push(`### ${topic}`, ``);
+    hasContent = true;
+    lines.push(`#### ${name}`, ``);
     for (const b of bullets) {
       lines.push(b);
     }
     lines.push(``);
   }
 
-  return lines.join('\n');
+  return hasContent ? lines.join('\n') : '';
 }
 
 async function getLiveCounts(): Promise<{ total: number; az: number; ca: number } | null> {
@@ -191,17 +189,17 @@ function fmt(n: number): string {
   return n.toLocaleString('en-US');
 }
 
-async function updateComprehensive(synthesis: string): Promise<void> {
-  let doc = readFileSync(COMPREHENSIVE_PATH, 'utf-8');
+async function main() {
   const today = new Date().toISOString().slice(0, 10);
+  let doc = readFileSync(COMPREHENSIVE_PATH, 'utf-8');
 
-  // Update Last consolidated date
+  // 1. Update Last consolidated date
   doc = doc.replace(
     /\*\*Last consolidated:\*\* .+/,
     `**Last consolidated:** ${today}`
   );
 
-  // Update live agent counts in Section 1 coverage line
+  // 2. Update live agent counts
   const counts = await getLiveCounts();
   if (counts) {
     doc = doc.replace(
@@ -211,44 +209,44 @@ async function updateComprehensive(synthesis: string): Promise<void> {
     console.log(`s1: Updated coverage counts -> ${fmt(counts.total)} active (${fmt(counts.az)} AZ + ${fmt(counts.ca)} CA)`);
   }
 
-  // Remove ALL existing "## 21. Recent Updates" sections (may be duplicated from prior bugs)
-  doc = doc.replace(/\n---\s*\n+## 21\. Recent Updates \(from t1\)[\s\S]*$/, '');
+  // 3. Find new takeaways since last synthesis
+  const lastSynth = getLastSynthesizedDate();
+  const newFiles = getNewTakeawaysFiles(lastSynth);
+  console.log(`s1: Last synthesized: ${lastSynth ?? 'never'}. Found ${newFiles.length} new takeaway files.`);
 
-  // Append new synthesis at end
-  doc = doc.trimEnd() + '\n\n---\n\n' + synthesis.trim() + '\n';
-
-  writeFileSync(COMPREHENSIVE_PATH, doc, 'utf-8');
-}
-
-async function main() {
-  const allFiles = getTakeawaysFiles();
-  if (allFiles.length === 0) {
-    console.log('No t1 takeaways files found in docs/takeaways/. Run "t1" on each AI first.');
-    process.exit(0);
-    return;
-  }
-
-  const recentFiles = filterByRetention(allFiles);
-  console.log(`Found ${allFiles.length} total takeaways, ${recentFiles.length} within ${RETENTION_DAYS}-day retention window.`);
-
-  if (recentFiles.length === 0) {
-    console.log('No recent takeaways within retention window. Section 21 will be empty.');
-    const today = new Date().toISOString().slice(0, 10);
-    await updateComprehensive(`## 21. Recent Updates (from t1)\n\n*Last synthesized: ${today} -- no recent sessions*\n`);
+  if (newFiles.length > 0) {
+    const incremental = buildIncrementalSection(newFiles);
+    if (incremental) {
+      // Append incremental section before the final newline
+      doc = doc.trimEnd() + '\n' + incremental + '\n';
+      console.log(`s1: Appended incremental updates from ${newFiles.length} sessions.`);
+    } else {
+      console.log('s1: New takeaways had no unique bullets to add.');
+    }
   } else {
-    console.log(`Synthesizing: ${recentFiles.join(', ')}`);
-    const synthesis = synthesizeTakeaways(recentFiles);
-    const lineCount = synthesis.split('\n').length;
-    await updateComprehensive(synthesis);
-    console.log(`Section 21: ${lineCount} lines from ${recentFiles.length} sessions (deduped, topic-grouped).`);
+    console.log('s1: No new takeaways since last synthesis. Only updated date and counts.');
   }
 
-  console.log(`Updated docs/COMPREHENSIVE_KNOWLEDGE_DOCUMENT.md.`);
+  // Check Section 21 size and warn if manual synthesis needed
+  const section21Match = doc.match(/## 21\. Recent Updates[\s\S]*$/);
+  if (section21Match) {
+    const s21Lines = section21Match[0].split('\n').length;
+    if (s21Lines > 300) {
+      console.warn(`\n⚠️  Section 21 is ${s21Lines} lines. Consider a manual synthesis to keep it under 300 lines.`);
+    }
+  }
 
-  // Commit locally only -- do NOT push. Robert will batch pushes with pts.
-  execSync('git add docs/COMPREHENSIVE_KNOWLEDGE_DOCUMENT.md', { stdio: 'inherit' });
+  // 4. Write updated COMPREHENSIVE
+  writeFileSync(COMPREHENSIVE_PATH, doc, 'utf-8');
+
+  // 5. Copy to claude-web-project-knowledge.md
+  copyFileSync(COMPREHENSIVE_PATH, CLAUDE_WEB_PATH);
+  console.log('s1: Copied to docs/prompts/claude-web-project-knowledge.md');
+
+  // 6. Commit locally -- do NOT push
+  execSync('git add docs/COMPREHENSIVE_KNOWLEDGE_DOCUMENT.md docs/prompts/claude-web-project-knowledge.md', { stdio: 'inherit' });
   try {
-    execSync('git commit -m "s1: synthesize Section 21 from takeaways"', { stdio: 'inherit' });
+    execSync('git commit -m "s1: update COMPREHENSIVE metadata and Section 21"', { stdio: 'inherit' });
     console.log('s1: committed locally. Run pts when ready to push.');
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : String(e);
