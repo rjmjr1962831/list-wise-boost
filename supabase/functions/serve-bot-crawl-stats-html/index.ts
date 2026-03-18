@@ -142,7 +142,7 @@ function titleCase(s: string): string {
 /* ── Types ─────────────────────────────────────────────────────────────── */
 interface BotRow { bot_name: string; visits: number; agents_covered: number; last_seen: string; }
 interface SummaryRow { total_crawls: number; unique_agents: number; unique_bots: number; earliest: string; latest: string; }
-interface MarketRow { business_city: string; state_slug: string; crawls: number; bot_types: number; agents: number; }
+interface MarketRow { business_city: string; state_slug: string; crawls: number; bot_types: number; agents: number; market_type?: string; }
 interface IntentRow { bot_name: string; visits: number; agents: number; last_seen: string; }
 interface RecentRow { bot_name: string; page_path: string; crawled_at: string; name: string | null; business_city: string | null; }
 interface ReturnRow { bot_name: string; total_agents: number; returning_agents: number; }
@@ -161,7 +161,49 @@ async function fetchAllData() {
       query: `SELECT count(*)::int as total_crawls, count(DISTINCT agent_id)::int as unique_agents, count(DISTINCT bot_name)::int as unique_bots, min(crawled_at)::text as earliest, max(crawled_at)::text as latest FROM bot_crawl_logs WHERE crawled_at >= now() - interval '30 days'`,
     }),
     sb.rpc("run_sql", {
-      query: `SELECT initcap(p.business_city) as business_city, p.state_slug, count(*)::int as crawls, count(DISTINCT b.bot_name)::int as bot_types, count(DISTINCT b.agent_id)::int as agents FROM bot_crawl_logs b JOIN professionals p ON p.id = b.agent_id WHERE b.crawled_at >= now() - interval '30 days' AND b.agent_id IS NOT NULL AND p.business_city IS NOT NULL AND p.business_city !~ '^[0-9]' AND lower(p.business_city) NOT IN ('anytown') AND p.business_city !~ '\\n' AND length(p.business_city) <= 30 GROUP BY initcap(p.business_city), p.state_slug ORDER BY crawls DESC LIMIT 30`,
+      query: `WITH major_cities AS (
+        SELECT initcap(p.business_city) as business_city, p.state_slug,
+               count(*)::int as crawls,
+               count(DISTINCT b.bot_name)::int as bot_types,
+               count(DISTINCT b.agent_id)::int as agents,
+               'city' as market_type
+        FROM bot_crawl_logs b
+        JOIN professionals p ON p.id = b.agent_id
+        WHERE b.crawled_at >= now() - interval '30 days'
+          AND b.agent_id IS NOT NULL
+          AND lower(p.business_city) IN (
+            'phoenix','tucson','mesa','chandler','scottsdale','glendale','tempe','peoria','surprise','gilbert',
+            'los angeles','san diego','san jose','san francisco','fresno','sacramento','long beach',
+            'oakland','bakersfield','anaheim','santa ana','riverside','stockton','irvine',
+            'chula vista','fremont','san bernardino','modesto','moreno valley','fontana',
+            'glendale','huntington beach','santa clarita','garden grove','oceanside','rancho cucamonga',
+            'ontario','santa rosa','elk grove','corona','lancaster','palmdale','salinas',
+            'pomona','hayward','escondido','sunnyvale','torrance','pasadena','roseville',
+            'concord','thousand oaks','visalia','simi valley','santa clara','victorville'
+          )
+        GROUP BY initcap(p.business_city), p.state_slug
+      ),
+      neighborhoods AS (
+        SELECT
+          initcap(replace(split_part(b.page_path, '/', 4), '-', ' ')) as business_city,
+          split_part(b.page_path, '/', 2) as state_slug,
+          count(*)::int as crawls,
+          count(DISTINCT b.bot_name)::int as bot_types,
+          count(DISTINCT b.agent_id)::int as agents,
+          'neighborhood' as market_type
+        FROM bot_crawl_logs b
+        WHERE b.crawled_at >= now() - interval '30 days'
+          AND b.page_path ~ '^/[^/]+/[^/]+/[^/]+/top10realestateagents$'
+          AND b.agent_id IS NOT NULL
+        GROUP BY split_part(b.page_path, '/', 4), split_part(b.page_path, '/', 2)
+        ORDER BY crawls DESC
+        LIMIT 20
+      )
+      SELECT * FROM major_cities
+      UNION ALL
+      SELECT * FROM neighborhoods
+      ORDER BY crawls DESC
+      LIMIT 50`,
     }),
     sb.rpc("run_sql", {
       query: `SELECT bot_name, count(*)::int as visits, count(DISTINCT agent_id)::int as agents, max(crawled_at)::text as last_seen FROM bot_crawl_logs WHERE crawled_at >= now() - interval '30 days' AND bot_name IN ('ChatGPT-User', 'chatgpt-user', 'OAI-SearchBot', 'PerplexityBot', 'YouBot') GROUP BY bot_name ORDER BY visits DESC`,
@@ -295,8 +337,11 @@ async function renderCrawlStats(): Promise<string> {
     .map((m) => {
       const barWidth = Math.max(2, Math.round((m.crawls / maxMarketCrawls) * 100));
       const state = m.state_slug === "arizona" ? "AZ" : m.state_slug === "california" ? "CA" : esc(m.state_slug);
+      const isNh = m.market_type === "neighborhood";
+      const icon = isNh ? "&#x1F3D8;" : "&#x1F3D9;";
+      const label = isNh ? `<span class="muted" style="font-size:0.8rem">(neighborhood)</span>` : "";
       return `<tr>
-      <td><strong>${esc(m.business_city)}</strong>, ${state}</td>
+      <td>${icon} <strong>${esc(m.business_city)}</strong>, ${state} ${label}</td>
       <td class="num">${fmt(m.crawls)}</td>
       <td class="num">${m.bot_types}</td>
       <td class="num">${fmt(m.agents)}</td>
@@ -438,8 +483,8 @@ async function renderCrawlStats(): Promise<string> {
   <!-- SECTION B: Market Verification                                     -->
   <!-- ═══════════════════════════════════════════════════════════════════ -->
   <section>
-    <h2>B. Market Verification (Top 30 Cities by Crawl Volume)</h2>
-    <p>Per-city crawl activity showing which markets bots are actively indexing. Bot diversity (number of distinct bot types) indicates broad ecosystem coverage for that market.</p>
+    <h2>B. Market Verification (Major Cities &amp; Top Neighborhoods)</h2>
+    <p>Crawl activity for cities with 200,000+ population and top-crawled neighborhoods. Bot diversity (number of distinct bot types) indicates broad ecosystem coverage. Each crawl of a page surfaces every agent listed on it.</p>
     <table>
       <thead>
         <tr><th>Market</th><th class="num">Crawls</th><th class="num">Bot Types</th><th class="num">Agents</th><th>Relative Volume</th></tr>
