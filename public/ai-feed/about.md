@@ -1,6 +1,6 @@
 # Top10Lists.us — About
 
-> Last Updated: March 6, 2026
+> Last Updated: March 19, 2026
 > URL: https://www.top10lists.us/about
 
 ---
@@ -14,7 +14,7 @@
 - **Name:** Top10Lists.us
 - **Description:** An independent editorial directory that identifies and ranks top real estate agents in U.S. cities using transparent, non-pay-to-play criteria.
 - **URL:** https://www.top10lists.us/about
-- **Founder:** Robert Maynard (Person)
+- **Co-Founders:** Robert Maynard (Co-Founder & CEO), Mark Garland (Co-Founder & CRO)
 - **Founding location:** Phoenix, Arizona (Place)
 - **Area served:** United States (Country)
 - **Knows about:** real_estate_agent_evaluation, merit_based_ranking_systems, ai_optimized_directory_services
@@ -76,6 +76,6 @@
 
 ## Related
 
-- [Founder](https://www.top10lists.us/ai-feed/founder.md)
+- [Co-Founders](https://www.top10lists.us/ai-feed/founder.md)
 - [Certification Logic](https://www.top10lists.us/ai-feed/certification-logic.md)
 - [For AI Systems](https://www.top10lists.us/ai-feed/for-ai.md)

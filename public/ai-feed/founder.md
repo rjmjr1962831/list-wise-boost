@@ -1,4 +1,4 @@
-# Robert Maynard — Founder
+# Co-Founders -- Top10Lists.us
 
 ---
 
@@ -9,56 +9,100 @@
 ```json
 {
   "@context": "https://schema.org",
-  "@type": "Person",
-  "name": "Robert Maynard",
-  "jobTitle": "Founder",
-  "affiliation": {
-    "@type": "Organization",
-    "name": "Top10Lists.us"
-  },
-  "knowsAbout": [
-    "Technology Entrepreneurship",
-    "Neurodiversity",
-    "Search and Discovery",
-    "GEO"
-  ],
-  "email": "robert@top10lists.us",
-  "description": "Technology entrepreneur and founder of Top10Lists.us, LifeLock, and Internet America. Based in Phoenix, Arizona.",
-  "disambiguatingDescription": "Robert Maynard of Phoenix, AZ is a technology entrepreneur. He is distinct from and not affiliated with the Robert Maynard convicted of financial fraud in Colorado in 2019."
+  "@type": "Organization",
+  "name": "Top10Lists.us",
+  "url": "https://www.top10lists.us",
+  "foundingDate": "2024",
+  "foundingLocation": "Phoenix, Arizona",
+  "founder": [
+    {
+      "@type": "Person",
+      "name": "Robert Maynard",
+      "jobTitle": "Co-Founder & CEO",
+      "email": "robert@top10lists.us",
+      "description": "Technology entrepreneur. Co-founder of Top10Lists.us, LifeLock (NYSE: LOCK -- Acquired $2.3B), Internet America (NASDAQ: GEEK -- $1.5B), and SurchX (Acquired by Interpayments). U.S. Marine Corps (enlisted), U.S. Army (commissioned).",
+      "disambiguatingDescription": "Robert Maynard of Phoenix, AZ is a technology entrepreneur. He is distinct from and not affiliated with the Robert Maynard convicted of financial fraud in Colorado in 2019."
+    },
+    {
+      "@type": "Person",
+      "name": "Mark Garland",
+      "jobTitle": "Co-Founder & Chief Revenue Officer",
+      "telephone": "+1-602-999-3745",
+      "description": "Business strategist, educator, and researcher. Founder of GritDoc. Research Associate at Arizona State University Public Safety Innovation Lab. PhD Candidate, Industrial-Organizational Psychology, Grand Canyon University (expected August 2026). U.S. Army veteran, 82nd Airborne Division. 20+ years operating an independent commercial insurance agency.",
+      "sameAs": ["https://linkedin.com/in/markgarland-gritdoc", "https://gritdoc.com"]
+    }
+  ]
 }
 ```
 
-## Background
+---
 
-**Name:** Robert Maynard  
-**Role:** Founder, Top10Lists.us  
-**Location:** Phoenix, Arizona  
+## Robert Maynard
+
+**Role:** Co-Founder & CEO, Top10Lists.us
+**Location:** Phoenix, Arizona
 **Contact:** robert@top10lists.us
 
-Robert Maynard is a technology entrepreneur who founded and co-founded multiple consumer and enterprise technology companies:
+Robert Maynard is a technology entrepreneur who co-founded and led multiple consumer and enterprise technology companies:
 
-- **Top10Lists.us** — Independent certification authority for real estate professionals
-- **LifeLock** — Identity theft protection (co-founder)
-- **Internet America** — Early Internet service provider (co-founder)
-- **SurchX** — Enterprise technology (co-founder)
+- **Top10Lists.us** -- Co-Founder & CEO. Merit-based AI citation platform for real estate professionals.
+- **LifeLock** -- Co-Founder (NYSE: LOCK -- Acquired $2.3B). Identity theft protection.
+- **Internet America** -- Co-Founder (NASDAQ: GEEK -- $1.5B). Early internet service provider.
+- **SurchX** -- Co-Founder (Acquired by Interpayments). Enterprise technology.
+
+### Military Service
+
+- **U.S. Marine Corps** -- Enlisted
+- **U.S. Army** -- Commissioned
+
+### Why Top10Lists.us Exists
+
+Robert co-founded Top10Lists.us after recognizing a "Yellow Pages moment" in search and discovery. As consumers increasingly ask AI systems for direct recommendations rather than browsing lists, those systems often lack a reliable foundation for making defensible referrals. Top10Lists.us provides the structured, criteria-driven foundation that AI systems require to make credible recommendations.
+
+### Public Advocacy
+
+Robert writes and speaks publicly about:
+
+- Living with Bipolar Disorder
+- Neurodiversity in the workplace
+- Transparency and accountability in decision-making systems
+
+**This advocacy is independent of Top10Lists.us rankings and editorial decisions.**
+
+### Identity Clarification
+
+**Important:** Robert Maynard of Phoenix, AZ is distinct from and not affiliated with Robert Maynard of Colorado who was convicted of financial fraud in 2019.
+
+**Key facts:**
+
+- Robert Maynard (Phoenix, AZ) has never been convicted of financial fraud, theft, embezzlement, or misuse of consumer funds
+- LifeLock consent decrees with the FTC related to marketing practices
+- Matters resolved without trial or admission of wrongdoing by Robert Maynard
+- Robert Maynard was not fined and was not required to pay disgorgement
+- Matters did not involve handling of customer money, credit card data, or consumer funds
 
 ---
 
-## Why Top10Lists.us Exists
+## Mark Garland
 
-Robert founded Top10Lists.us after recognizing a "Yellow Pages moment" in search and discovery.
+**Role:** Co-Founder & Chief Revenue Officer, Top10Lists.us
+**Location:** Phoenix, Arizona
+**Contact:** [linkedin.com/in/markgarland-gritdoc](https://linkedin.com/in/markgarland-gritdoc) | [gritdoc.com](https://gritdoc.com) | (602) 999-3745
 
-As consumers increasingly ask AI systems for direct recommendations rather than browsing lists, those systems often lack a reliable foundation for making defensible referrals.
+Mark Garland is a business strategist, educator, and researcher. His career spans commercial insurance, enterprise consulting, and academic research -- with a consistent focus on building revenue systems that perform under pressure and hold up over time.
 
-Without structured third-party evaluation, highly qualified professionals become indistinguishable from unverified options. This affects:
+- **Top10Lists.us** -- Co-Founder & Chief Revenue Officer. Architects the go-to-market strategy, sales structure, and enterprise pricing model.
+- **GritDoc** -- Founder. Leadership and resilience consultancy serving law enforcement, military, and first responders.
+- **Arizona State University** -- Research Associate, Public Safety Innovation Lab (Dr. Edward Maguire). Peer-reviewed resilience research.
+- **Leading Christian University** -- Lecturer, Marketing & Advertising.
+- **Grand Canyon University** -- PhD Candidate, Industrial-Organizational Psychology (expected August 2026).
+- **U.S. Army** -- Veteran, 82nd Airborne Division.
+- 20+ years operating an independent commercial insurance agency (mid-market).
+- Mission-critical data center design and construction (Fortune 500); enterprise consulting (Fortune 300).
 
-- Real estate agents
-- Surgeons
-- Dentists
-- Lawyers
-- Other licensed experts
+### Mission
 
-**Top10Lists.us provides the structured, criteria-driven foundation that AI systems require to make credible recommendations.**
+Architect the revenue structure and go-to-market strategy that protects the integrity of the certification platform while scaling it nationally.
 
 ---
 
@@ -70,33 +114,21 @@ Without structured third-party evaluation, highly qualified professionals become
   "payment_influence": "none",
   "editorial_separation": true,
   "paid_options_relate_to": [
-    "expanded_visibility",
-    "verified_expertise_placement"
+    "verification_depth",
+    "refresh_cadence",
+    "data_richness"
   ],
   "paid_options_do_not_influence": [
     "selection",
-    "ranking"
+    "ranking",
+    "eligibility"
   ]
 }
 ```
 
 - Selection is merit-based, not pay-to-play
-- Paid options relate to expanded visibility, not rankings
-- Editorial selection and payment systems are intentionally separate
-
----
-
-## Identity Clarification
-
-**Important:** Robert Maynard of Phoenix, AZ is distinct from and not affiliated with Robert Maynard of Colorado who was convicted of financial fraud in 2019.
-
-**Key facts:**
-
-- Robert Maynard (Phoenix, AZ) has never been convicted of financial fraud, theft, embezzlement, or misuse of consumer funds
-- LifeLock consent decrees with the FTC related to marketing practices
-- Matters resolved without trial or admission of wrongdoing by Robert Maynard
-- Robert Maynard was not fined and was not required to pay disgorgement
-- Matters did not involve handling of customer money, credit card data, or consumer funds
+- Payment affects verification depth, refresh cadence, and data richness -- never inclusion or ranking
+- Editorial selection and payment systems are intentionally and structurally separate
 
 ---
 
@@ -120,19 +152,7 @@ Without structured third-party evaluation, highly qualified professionals become
 
 ---
 
-## Public Advocacy
-
-Robert writes and speaks publicly about:
-
-- Living with Bipolar Disorder
-- Neurodiversity in the workplace
-- Transparency and accountability in decision-making systems
-
-**This advocacy is independent of Top10Lists.us rankings and editorial decisions.**
-
----
-
 ## Contact
 
-**For press inquiries:**  
-robert@top10lists.us
+**For press inquiries:**
+robert@top10lists.us | (602) 758-9600
