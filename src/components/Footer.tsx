@@ -133,7 +133,7 @@ export const Footer = () => {
                 Payments &amp; Security
               </Link>
               <Link 
-                to="/check-eligibility" 
+                to="/" 
                 className="text-slate-300 hover:text-white transition-colors"
               >
                 Check Eligibility
@@ -174,7 +174,7 @@ export const Footer = () => {
             <p className="text-sm text-slate-400">
               Real estate professional?{" "}
               <Link 
-                to="/check-eligibility" 
+                to="/" 
                 className="text-slate-300 hover:text-white transition-colors"
               >
                 Check eligibility →
