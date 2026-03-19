@@ -376,6 +376,15 @@
           "value": "public, max-age=0, must-revalidate"
         }
       ]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Link",
+          "value": "<https://www.top10lists.us/.well-known/mcp.json>; rel=\"mcp-server\"; type=\"application/json\""
+        }
+      ]
     }
   ]
 }
