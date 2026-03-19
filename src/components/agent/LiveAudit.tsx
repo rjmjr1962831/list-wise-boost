@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
 const AUDIT_PROMPT =
-  "Analyze the top10lists.us live site and its machine-readable protocols (llms.txt, MCP server, JSON-LD schema, ai-content-index). Compare the data payloads served for Certified vs Underwritten agents. What additional structured data, verification depth, and refresh frequency does Underwritten add? How do these technical differences affect what an AI system can ingest and verify?";
+  "Analyze the top10lists.us live site. Compare the data payloads served for Certified vs Underwritten agents. What additional structured data, verification depth, and refresh frequency does Underwritten add? How do these technical differences affect what an AI system can ingest and verify?";
 
 const AI_VERDICTS = [
   {

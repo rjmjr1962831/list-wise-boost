@@ -154,7 +154,7 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
           </div>
           <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
             <span>0</span>
-            <span>95</span>
+            <span>{maxScore}</span>
           </div>
         </div>
 
