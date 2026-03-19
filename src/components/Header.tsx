@@ -207,12 +207,6 @@ export const Header = () => {
                 Admin
               </Link>
             )}
-            <Link 
-              to="/" 
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Check Eligibility
-            </Link>
             {isLoggedIn ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
