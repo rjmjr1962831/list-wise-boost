@@ -23,15 +23,29 @@ BEGIN
   -- Cap at 1x once we have 30+ days of data
   scale_factor := LEAST(30.0 / days_of_data, 30.0);
 
-  -- Count ALL bot crawls per agent (not just AI-specific).
+  -- Count ALL bot crawls per agent: direct profile crawls + list page crawls.
+  -- List page crawls (agent_id IS NULL) are attributed to agents matching
+  -- the city/state in the page path.
   UPDATE professionals p
   SET
-    ai_surfaces_monthly_est = round(COALESCE(sub.crawls, 0) * scale_factor),
+    ai_surfaces_monthly_est = round(COALESCE(sub.total_crawls, 0) * scale_factor),
     ai_surfaces_updated_at = now()
   FROM (
-    SELECT agent_id, count(*) as crawls
-    FROM bot_crawl_logs
-    WHERE agent_id IS NOT NULL
+    SELECT agent_id, count(*) as total_crawls
+    FROM (
+      -- Direct profile/artifact crawls (agent_id already resolved)
+      SELECT agent_id FROM bot_crawl_logs WHERE agent_id IS NOT NULL
+      UNION ALL
+      -- List page crawls: attribute to agents in that city/state
+      SELECT p2.id as agent_id
+      FROM bot_crawl_logs b
+      JOIN professionals p2
+        ON p2.active = true
+        AND b.agent_id IS NULL
+        AND b.page_path LIKE '%/top10realestateagents'
+        AND LOWER(p2.business_city) = LOWER(replace(split_part(b.page_path, '/', 3), '-', ' '))
+        AND p2.state_slug = split_part(b.page_path, '/', 2)
+    ) combined
     GROUP BY agent_id
   ) sub
   WHERE p.id = sub.agent_id
