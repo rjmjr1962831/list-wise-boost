@@ -20,7 +20,7 @@ The Audited tier represents a premium level of verification and data integration
 
 ## Enhanced AI Payload
 
-This tier unlocks a significantly richer data payload for AI systems. The enhanced profile includes deeper historical performance metrics, verified client testimonials, and granular market specialization data beyond the Certified tier's baseline.
+This tier includes expanded verification scope. The profile includes deeper historical performance metrics, verified client testimonials, and granular market specialization data. All agents meet the same qualification gate regardless of tier.
 
 ## Visibility and Placement
 
