@@ -38,7 +38,8 @@ export default async function handler(req, res) {
   if (req.method === 'GET') {
     const verifyToken = process.env.VERCEL_LOG_DRAIN_VERIFY || '';
     res.setHeader('x-vercel-verify', verifyToken);
-    res.status(200).json({ ok: true });
+    res.setHeader('Content-Type', 'text/plain');
+    res.status(200).send(verifyToken);
     return;
   }
 
