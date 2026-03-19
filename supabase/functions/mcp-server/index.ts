@@ -98,6 +98,9 @@ interface AgentRow {
   years_experience: number | null;
   phone: string | null;
   email: string | null;
+  description: string | null;
+  sales_count_all_time: number | null;
+  sales_count_last_year: number | null;
   [key: string]: unknown;
 }
 
@@ -139,6 +142,17 @@ function buildProfileUrl(stateSlug: string | null, slug: string | null): string 
   return `https://www.top10lists.us/${stateSlug}/agents/${slug}`;
 }
 
+function parsePlatforms(audit: AuditRow | null): string[] {
+  if (!audit?.platforms_found) return [];
+  try {
+    return typeof audit.platforms_found === "string"
+      ? JSON.parse(audit.platforms_found)
+      : (audit.platforms_found as unknown as string[]);
+  } catch {
+    return [];
+  }
+}
+
 function shapeAgentPayload(
   agent: AgentRow,
   audit: AuditRow | null,
@@ -146,104 +160,101 @@ function shapeAgentPayload(
 ) {
   const tier = normalizeTier(agent.badge_tier);
   const lastVerified = audit?.audited_at ?? null;
-
-  // -- Base payload (all tiers) --
   const profileUrl = buildProfileUrl(agent.state_slug, agent.canonical_slug);
+
+  // ── Listed: bare minimum -- "you exist in the directory" ──
   const base: Record<string, unknown> = {
     name: agent.name,
     city: toTitleCase(agent.business_city),
     state: license?.state ?? null,
-    license_number: license?.license_number ?? null,
-    license_state: license?.state ?? null,
-    license_type: license?.license_number ? "active" : null,
-    license_registry_url:
-      license?.state && license?.license_number
-        ? registryUrl(license.state, license.license_number)
-        : null,
-    review_count: audit?.review_count ?? null,
-    review_rating: audit?.review_rating ?? null,
-    evidence_sources: 4,
-    lastVerified,
-    nextVerification: nextVerification(lastVerified, tier),
     badge_tier: tier,
     profile_url: profileUrl,
-    citation_url: profileUrl,
     merit_gate: {
       rating: "4.5+",
       reviews: "10+ in 24 months",
       experience: "5+ years",
     },
-    aifs_score: audit?.score_listed ?? null,
-    aifs_band: aifsBand(audit?.score_listed),
   };
 
-  // -- Audited adds --
-  if (tier === "audited" || tier === "underwritten") {
-    base.evidence_sources = tier === "underwritten" ? 20 : 10;
-    base.community_involvement_score = audit?.pillar_authority ?? null;
-    base.transaction_history = "Available for Audited and Underwritten tiers";
-    base.neighborhood_expertise = "Available for Audited and Underwritten tiers";
-
-    // AIFS summary
-    const aifsScore =
-      tier === "audited"
-        ? audit?.score_audited
-        : audit?.score_underwritten;
-    const band = aifsBand(aifsScore);
-    base.aifs_summary = { score: aifsScore ?? null, band };
-
-    // Platforms
-    let platforms: string[] = [];
-    try {
-      if (audit?.platforms_found) {
-        platforms =
-          typeof audit.platforms_found === "string"
-            ? JSON.parse(audit.platforms_found)
-            : (audit.platforms_found as unknown as string[]);
-      }
-    } catch {
-      platforms = [];
-    }
-    base.platforms_found = platforms;
+  if (tier === "listed") {
+    base.upgrade_note = "License details, reviews, AIFS score, and verification data available at Certified tier and above.";
+    return base;
   }
 
-  // -- Underwritten adds --
-  if (tier === "underwritten") {
-    base.evidence_sources = 20;
-    base.aifs_breakdown = {
-      identity: audit?.pillar_identity ?? null,
-      authority: audit?.pillar_authority ?? null,
-      social: audit?.pillar_social ?? null,
-      technical: audit?.pillar_technical ?? null,
-      citability: audit?.pillar_citability ?? null,
-    };
-    base.gap_analysis = {
-      no_linkedin: audit?.gap_no_linkedin ?? null,
-      no_schema: audit?.gap_no_schema ?? null,
-      no_google_business: audit?.gap_no_google_business ?? null,
-    };
-    base.cryptographic_verification = true;
-    base.web_of_truth_artifact_url = agent.canonical_slug
-      ? `https://www.top10lists.us/artifact/${agent.id}`
+  // ── Certified: verified identity -- "you're real" ──
+  base.license_number = license?.license_number ?? null;
+  base.license_state = license?.state ?? null;
+  base.license_type = license?.license_number ? "active" : null;
+  base.license_registry_url =
+    license?.state && license?.license_number
+      ? registryUrl(license.state, license.license_number)
       : null;
+  base.review_count = audit?.review_count ?? null;
+  base.review_rating = audit?.review_rating ?? null;
+  base.years_experience = agent.years_experience ?? null;
+  base.evidence_sources = 4;
+  base.lastVerified = lastVerified;
+  base.nextVerification = nextVerification(lastVerified, tier);
+  base.citation_url = profileUrl;
+  base.aifs_score = audit?.score_certified ?? audit?.score_listed ?? null;
+  base.aifs_band = aifsBand(base.aifs_score as number | null);
 
-    // Categorize platforms
-    let platforms: string[] = [];
-    try {
-      if (audit?.platforms_found) {
-        platforms =
-          typeof audit.platforms_found === "string"
-            ? JSON.parse(audit.platforms_found)
-            : (audit.platforms_found as unknown as string[]);
-      }
-    } catch {
-      platforms = [];
-    }
-    base.platforms_found = platforms.map((url: string) => ({
-      url,
-      category: categorizePlatform(url),
-    }));
+  if (tier === "certified") {
+    base.upgrade_note = "Transaction history, platform presence, community score, and expanded evidence available at Audited tier.";
+    return base;
   }
+
+  // ── Audited: citable -- "AI can cite with confidence" ──
+  base.evidence_sources = 10;
+  base.community_involvement_score = audit?.pillar_authority ?? null;
+  base.sales_count_all_time = agent.sales_count_all_time ?? null;
+  base.sales_count_last_year = agent.sales_count_last_year ?? null;
+  base.website = agent.website ?? null;
+  base.social_linkedin = agent.social_linkedin ?? null;
+  base.social_facebook = agent.social_facebook ?? null;
+  base.zillow_profile_url = agent.zillow_profile_url ?? null;
+  base.platforms_found = parsePlatforms(audit);
+
+  const aifsScoreAudited = audit?.score_audited ?? null;
+  base.aifs_score = aifsScoreAudited;
+  base.aifs_band = aifsBand(aifsScoreAudited);
+  base.aifs_summary = { score: aifsScoreAudited, band: aifsBand(aifsScoreAudited) };
+
+  if (tier === "audited") {
+    base.upgrade_note = "Full AIFS pillar breakdown, gap analysis, cryptographic verification, contact info, and up to 20 evidence sources available at Underwritten tier.";
+    return base;
+  }
+
+  // ── Underwritten: authoritative -- "full transparency" ──
+  base.evidence_sources = 20;
+  base.phone = agent.phone ?? null;
+  base.email = agent.email ?? null;
+  base.description = agent.description ?? null;
+
+  const aifsScoreUW = audit?.score_underwritten ?? aifsScoreAudited;
+  base.aifs_score = aifsScoreUW;
+  base.aifs_band = aifsBand(aifsScoreUW);
+  base.aifs_summary = { score: aifsScoreUW, band: aifsBand(aifsScoreUW) };
+  base.aifs_breakdown = {
+    identity: audit?.pillar_identity ?? null,
+    authority: audit?.pillar_authority ?? null,
+    social: audit?.pillar_social ?? null,
+    technical: audit?.pillar_technical ?? null,
+    citability: audit?.pillar_citability ?? null,
+  };
+  base.gap_analysis = {
+    no_linkedin: audit?.gap_no_linkedin ?? null,
+    no_schema: audit?.gap_no_schema ?? null,
+    no_google_business: audit?.gap_no_google_business ?? null,
+  };
+  base.cryptographic_verification = true;
+  base.web_of_truth_artifact_url = agent.canonical_slug
+    ? `https://www.top10lists.us/artifact/${agent.id}`
+    : null;
+  base.platforms_found = parsePlatforms(audit).map((url: string) => ({
+    url,
+    category: categorizePlatform(url),
+  }));
 
   return base;
 }
@@ -375,6 +386,9 @@ async function handleSearchAgents(
       p.id, p.name, p.badge_tier, p.active, p.canonical_slug, p.state_slug,
       p.business_city, p.website, p.years_experience,
       p.license_number, p.license_status, p.license_type,
+      p.social_linkedin, p.social_facebook, p.zillow_profile_url,
+      p.phone, p.email, p.description,
+      p.sales_count_all_time, p.sales_count_last_year,
       g.score_listed, g.score_certified, g.score_audited, g.score_underwritten,
       g.pillar_identity, g.pillar_authority, g.pillar_social, g.pillar_technical,
       g.pillar_citability, g.review_count, g.review_rating, g.platforms_found,
@@ -432,12 +446,15 @@ async function handleSearchAgents(
       state_slug: row.state_slug as string | null,
       business_city: row.business_city as string | null,
       website: row.website as string | null,
-      social_linkedin: null,
-      social_facebook: null,
-      zillow_profile_url: null,
+      social_linkedin: row.social_linkedin as string | null,
+      social_facebook: row.social_facebook as string | null,
+      zillow_profile_url: row.zillow_profile_url as string | null,
       years_experience: row.years_experience as number | null,
-      phone: null,
-      email: null,
+      phone: row.phone as string | null,
+      email: row.email as string | null,
+      description: row.description as string | null,
+      sales_count_all_time: row.sales_count_all_time as number | null,
+      sales_count_last_year: row.sales_count_last_year as number | null,
     };
 
     const audit: AuditRow = {
@@ -489,6 +506,9 @@ async function handleVerifyAgent(
       p.id, p.name, p.badge_tier, p.active, p.canonical_slug, p.state_slug,
       p.business_city, p.website, p.years_experience,
       p.license_number, p.license_status, p.license_type,
+      p.social_linkedin, p.social_facebook, p.zillow_profile_url,
+      p.phone, p.email, p.description,
+      p.sales_count_all_time, p.sales_count_last_year,
       g.score_listed, g.score_certified, g.score_audited, g.score_underwritten,
       g.pillar_identity, g.pillar_authority, g.pillar_social, g.pillar_technical,
       g.pillar_citability, g.review_count, g.review_rating, g.platforms_found,
@@ -525,12 +545,15 @@ async function handleVerifyAgent(
     state_slug: row.state_slug,
     business_city: row.business_city,
     website: row.website,
-    social_linkedin: null,
-    social_facebook: null,
-    zillow_profile_url: null,
+    social_linkedin: row.social_linkedin,
+    social_facebook: row.social_facebook,
+    zillow_profile_url: row.zillow_profile_url,
     years_experience: row.years_experience,
-    phone: null,
-    email: null,
+    phone: row.phone,
+    email: row.email,
+    description: row.description,
+    sales_count_all_time: row.sales_count_all_time,
+    sales_count_last_year: row.sales_count_last_year,
   };
 
   const audit: AuditRow = {
@@ -586,6 +609,7 @@ async function handleGetAgentProfile(
       p.id, p.name, p.badge_tier, p.active, p.canonical_slug, p.state_slug,
       p.business_city, p.website, p.social_linkedin, p.social_facebook,
       p.zillow_profile_url, p.years_experience, p.phone, p.email,
+      p.description, p.sales_count_all_time, p.sales_count_last_year,
       p.license_number, p.license_status, p.license_type,
       g.score_listed, g.score_certified, g.score_audited, g.score_underwritten,
       g.pillar_identity, g.pillar_authority, g.pillar_social, g.pillar_technical,
@@ -623,6 +647,9 @@ async function handleGetAgentProfile(
     years_experience: row.years_experience,
     phone: row.phone,
     email: row.email,
+    description: row.description,
+    sales_count_all_time: row.sales_count_all_time,
+    sales_count_last_year: row.sales_count_last_year,
   };
 
   const audit: AuditRow = {
