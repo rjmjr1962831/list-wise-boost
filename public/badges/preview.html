@@ -5,13 +5,14 @@
   <style>
     body { background: #000; display: flex; justify-content: center; align-items: center; gap: 60px; min-height: 100vh; margin: 0; }
     figure { text-align: center; margin: 0; }
-    img { height: 200px; width: auto; }
+    img { height: 200px; width: auto; animation: pulse 2s ease-in-out infinite; }
+    @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.08); opacity: 0.85; } }
     figcaption { color: #fff; font-family: system-ui; font-size: 14px; margin-top: 12px; }
   </style>
 </head>
 <body>
-  <figure><img src="/badges/certified.png" alt="Certified"><figcaption>Certified</figcaption></figure>
-  <figure><img src="/badges/audited.png" alt="Audited"><figcaption>Audited</figcaption></figure>
-  <figure><img src="/badges/underwritten.png" alt="Underwritten"><figcaption>Underwritten</figcaption></figure>
+  <figure><img src="/badges/certified.png" alt="Certified"></figure>
+  <figure><img src="/badges/audited.png" alt="Audited"></figure>
+  <figure><img src="/badges/underwritten.png" alt="Underwritten"></figure>
 </body>
 </html>

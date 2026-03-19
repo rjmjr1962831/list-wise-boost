@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Badge Payload Reference | Top10Lists.us</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root { --navy:#0B1628; --gold:#C9A84C; --gold-light:#E8C97A; --cream:#FAF8F4; --white:#fff; --border:rgba(11,22,40,0.12); --txt:#0B1628; --txt2:#4A5568; --txt3:#718096; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:'DM Sans',system-ui,sans-serif; background:var(--cream); color:var(--txt); line-height:1.6; }
+  .nav { background:var(--navy); padding:18px 48px; display:flex; align-items:center; justify-content:space-between; }
+  .nav-logo { font-family:'Playfair Display',serif; color:var(--gold); font-size:21px; font-weight:600; text-decoration:none; }
+  .nav-back { color:rgba(255,255,255,0.5); text-decoration:none; font-size:13px; }
+  .nav-back:hover { color:var(--gold); }
+
+  .hero { background:var(--navy); padding:48px 48px 40px; text-align:center; }
+  .hero h1 { font-family:'Playfair Display',serif; font-size:36px; color:#fff; font-weight:700; margin-bottom:12px; }
+  .hero p { font-size:15px; color:rgba(255,255,255,0.5); max-width:640px; margin:0 auto; }
+
+  .main { max-width:1200px; margin:0 auto; padding:48px; }
+
+  /* Tier cards */
+  .tiers { display:grid; grid-template-columns:repeat(4,1fr); gap:20px; margin-bottom:48px; }
+  .tier-card { background:var(--white); border:0.5px solid var(--border); border-radius:14px; overflow:hidden; }
+  .tier-head { padding:20px 20px 16px; border-bottom:0.5px solid var(--border); position:relative; }
+  .tier-head.listed { background:#f8f9fa; }
+  .tier-head.certified { background:linear-gradient(135deg,#1e3a5f,#1a2d4d); color:#fff; }
+  .tier-head.audited { background:linear-gradient(135deg,#5c4a1e,#3d3213); color:#fff; }
+  .tier-head.underwritten { background:linear-gradient(135deg,#6b5a1e,#4a3f12); color:#fff; }
+  .tier-name { font-family:'Playfair Display',serif; font-size:20px; font-weight:600; margin-bottom:2px; }
+  .tier-price { font-size:13px; opacity:0.7; }
+  .tier-badge { position:absolute; top:16px; right:16px; width:40px; height:40px; }
+  .tier-count { display:inline-block; background:rgba(201,168,76,0.15); color:var(--gold); font-size:11px; font-weight:600; padding:3px 8px; border-radius:4px; margin-top:8px; }
+  .tier-body { padding:16px 20px 20px; }
+
+  /* Field rows */
+  .field { display:flex; align-items:flex-start; gap:8px; padding:6px 0; border-bottom:0.5px solid rgba(0,0,0,0.04); font-size:12px; }
+  .field:last-child { border-bottom:none; }
+  .field-name { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--navy); font-weight:500; min-width:160px; flex-shrink:0; }
+  .field-desc { color:var(--txt3); font-size:11px; line-height:1.5; }
+  .field-new { background:rgba(201,168,76,0.1); border-radius:3px; padding:1px 5px; font-size:9px; color:var(--gold); font-weight:600; text-transform:uppercase; letter-spacing:0.05em; margin-left:4px; }
+
+  /* Section headers within cards */
+  .section-label { font-size:10px; font-weight:600; color:var(--gold); text-transform:uppercase; letter-spacing:0.1em; padding:10px 0 4px; margin-top:6px; }
+
+  /* Comparison table */
+  .compare { width:100%; border-collapse:collapse; margin-top:32px; background:var(--white); border-radius:12px; overflow:hidden; border:0.5px solid var(--border); }
+  .compare th { background:var(--navy); color:var(--gold); font-size:11px; text-transform:uppercase; letter-spacing:0.08em; padding:12px 14px; text-align:left; font-weight:500; }
+  .compare th.tier-col { text-align:center; min-width:100px; }
+  .compare td { padding:8px 14px; border-bottom:0.5px solid rgba(0,0,0,0.04); font-size:12px; color:var(--txt2); }
+  .compare td.field-col { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--navy); font-weight:500; }
+  .compare td.center { text-align:center; }
+  .check { color:#2A8A52; font-weight:700; }
+  .dash { color:#D1D5DB; }
+  .compare tr:hover { background:rgba(201,168,76,0.03); }
+
+  @media (max-width:1000px) {
+    .tiers { grid-template-columns:1fr 1fr; }
+    .main { padding:24px; }
+  }
+  @media (max-width:600px) {
+    .tiers { grid-template-columns:1fr; }
+    .compare { font-size:10px; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a class="nav-logo" href="/">Top10Lists</a>
+  <a class="nav-back" href="/badges/preview.html">Badge Preview</a>
+</nav>
+
+<section class="hero">
+  <h1>Badge Payload Reference</h1>
+  <p>What AI systems receive when they query an agent via MCP, clean room HTML, or structured data -- by tier.</p>
+</section>
+
+<main class="main">
+
+<div class="tiers">
+
+  <!-- LISTED -->
+  <div class="tier-card">
+    <div class="tier-head listed">
+      <div class="tier-name">Listed</div>
+      <div class="tier-price">Free -- Annual refresh</div>
+      <div class="tier-count">7 fields</div>
+      <img class="tier-badge" src="/badges/certified.png" alt="" style="opacity:0.3;filter:grayscale(1);">
+    </div>
+    <div class="tier-body">
+      <div class="field"><span class="field-name">name</span><span class="field-desc">Agent full name</span></div>
+      <div class="field"><span class="field-name">city</span><span class="field-desc">Business city</span></div>
+      <div class="field"><span class="field-name">state</span><span class="field-desc">State name</span></div>
+      <div class="field"><span class="field-name">badge_tier</span><span class="field-desc">"listed"</span></div>
+      <div class="field"><span class="field-name">profile_url</span><span class="field-desc">Public profile link</span></div>
+      <div class="field"><span class="field-name">merit_gate</span><span class="field-desc">4.5+ / 10+ / 5yr object</span></div>
+      <div class="field"><span class="field-name">upgrade_note</span><span class="field-desc">What next tier unlocks</span></div>
+    </div>
+  </div>
+
+  <!-- CERTIFIED -->
+  <div class="tier-card">
+    <div class="tier-head certified">
+      <div class="tier-name">Certified</div>
+      <div class="tier-price">Free -- Quarterly refresh</div>
+      <div class="tier-count">20 fields</div>
+      <img class="tier-badge" src="/badges/certified.png" alt="">
+    </div>
+    <div class="tier-body">
+      <div class="field"><span class="field-name">name</span><span class="field-desc">Agent full name</span></div>
+      <div class="field"><span class="field-name">city</span><span class="field-desc">Business city</span></div>
+      <div class="field"><span class="field-name">state</span><span class="field-desc">State name</span></div>
+      <div class="field"><span class="field-name">badge_tier</span><span class="field-desc">"certified"</span></div>
+      <div class="field"><span class="field-name">profile_url</span><span class="field-desc">Public profile link</span></div>
+      <div class="field"><span class="field-name">merit_gate</span><span class="field-desc">4.5+ / 10+ / 5yr object</span></div>
+      <div class="field"><span class="field-name">license_number</span><span class="field-desc">State license ID</span></div>
+      <div class="field"><span class="field-name">license_state</span><span class="field-desc">Issuing state</span></div>
+      <div class="field"><span class="field-name">license_type</span><span class="field-desc">"active"</span></div>
+      <div class="field"><span class="field-name">license_registry_url</span><span class="field-desc">State verification link</span></div>
+      <div class="field"><span class="field-name">review_count</span><span class="field-desc">Total verified reviews</span></div>
+      <div class="field"><span class="field-name">review_rating</span><span class="field-desc">Weighted average rating</span></div>
+      <div class="field"><span class="field-name">years_experience</span><span class="field-desc">From license date</span></div>
+      <div class="field"><span class="field-name">evidence_sources</span><span class="field-desc">4</span></div>
+      <div class="field"><span class="field-name">lastVerified</span><span class="field-desc">Last audit timestamp</span></div>
+      <div class="field"><span class="field-name">nextVerification</span><span class="field-desc">Computed from cadence</span></div>
+      <div class="field"><span class="field-name">citation_url</span><span class="field-desc">Canonical cite URL</span></div>
+      <div class="field"><span class="field-name">aifs_score</span><span class="field-desc">Certified-tier score</span></div>
+      <div class="field"><span class="field-name">aifs_band</span><span class="field-desc">Score band label</span></div>
+      <div class="field"><span class="field-name">upgrade_note</span><span class="field-desc">What Audited unlocks</span></div>
+    </div>
+  </div>
+
+  <!-- AUDITED -->
+  <div class="tier-card">
+    <div class="tier-head audited">
+      <div class="tier-name">Audited</div>
+      <div class="tier-price">$300/mo -- Monthly refresh</div>
+      <div class="tier-count">28 fields</div>
+      <img class="tier-badge" src="/badges/audited.png" alt="">
+    </div>
+    <div class="tier-body">
+      <div class="field"><span class="field-name">name</span><span class="field-desc">Agent full name</span></div>
+      <div class="field"><span class="field-name">city</span><span class="field-desc">Business city</span></div>
+      <div class="field"><span class="field-name">state</span><span class="field-desc">State name</span></div>
+      <div class="field"><span class="field-name">badge_tier</span><span class="field-desc">"audited"</span></div>
+      <div class="field"><span class="field-name">profile_url</span><span class="field-desc">Public profile link</span></div>
+      <div class="field"><span class="field-name">merit_gate</span><span class="field-desc">4.5+ / 10+ / 5yr object</span></div>
+      <div class="field"><span class="field-name">license_number</span><span class="field-desc">State license ID</span></div>
+      <div class="field"><span class="field-name">license_state</span><span class="field-desc">Issuing state</span></div>
+      <div class="field"><span class="field-name">license_type</span><span class="field-desc">"active"</span></div>
+      <div class="field"><span class="field-name">license_registry_url</span><span class="field-desc">State verification link</span></div>
+      <div class="field"><span class="field-name">review_count</span><span class="field-desc">Total verified reviews</span></div>
+      <div class="field"><span class="field-name">review_rating</span><span class="field-desc">Weighted average rating</span></div>
+      <div class="field"><span class="field-name">years_experience</span><span class="field-desc">From license date</span></div>
+      <div class="field"><span class="field-name">lastVerified</span><span class="field-desc">Last audit timestamp</span></div>
+      <div class="field"><span class="field-name">nextVerification</span><span class="field-desc">Computed from cadence</span></div>
+      <div class="field"><span class="field-name">citation_url</span><span class="field-desc">Canonical cite URL</span></div>
+      <div class="field"><span class="field-name">aifs_band</span><span class="field-desc">Score band label</span></div>
+      <div class="field"><span class="field-name">evidence_sources</span><span class="field-desc">10</span></div>
+      <div class="field"><span class="field-name">community_involvement_score</span><span class="field-desc">IRS 990 / ProPublica verified</span></div>
+      <div class="field"><span class="field-name">sales_count_all_time</span><span class="field-desc">Career transaction count</span></div>
+      <div class="field"><span class="field-name">sales_count_last_year</span><span class="field-desc">Last 12 months</span></div>
+      <div class="field"><span class="field-name">website</span><span class="field-desc">Agent website URL</span></div>
+      <div class="field"><span class="field-name">social_linkedin</span><span class="field-desc">LinkedIn profile</span></div>
+      <div class="field"><span class="field-name">social_facebook</span><span class="field-desc">Facebook profile</span></div>
+      <div class="field"><span class="field-name">zillow_profile_url</span><span class="field-desc">Zillow profile</span></div>
+      <div class="field"><span class="field-name">platforms_found</span><span class="field-desc">Array of platform URLs</span></div>
+      <div class="field"><span class="field-name">aifs_score</span><span class="field-desc">Audited-tier score</span></div>
+      <div class="field"><span class="field-name">aifs_summary</span><span class="field-desc">Score + band object</span></div>
+      <div class="field"><span class="field-name">upgrade_note</span><span class="field-desc">What Underwritten unlocks</span></div>
+    </div>
+  </div>
+
+  <!-- UNDERWRITTEN -->
+  <div class="tier-card">
+    <div class="tier-head underwritten">
+      <div class="tier-name">Underwritten</div>
+      <div class="tier-price">$500/mo -- Daily refresh</div>
+      <div class="tier-count">35 fields</div>
+      <img class="tier-badge" src="/badges/underwritten.png" alt="">
+    </div>
+    <div class="tier-body">
+      <div class="field"><span class="field-name">name</span><span class="field-desc">Agent full name</span></div>
+      <div class="field"><span class="field-name">city</span><span class="field-desc">Business city</span></div>
+      <div class="field"><span class="field-name">state</span><span class="field-desc">State name</span></div>
+      <div class="field"><span class="field-name">badge_tier</span><span class="field-desc">"underwritten"</span></div>
+      <div class="field"><span class="field-name">profile_url</span><span class="field-desc">Public profile link</span></div>
+      <div class="field"><span class="field-name">merit_gate</span><span class="field-desc">4.5+ / 10+ / 5yr object</span></div>
+      <div class="field"><span class="field-name">license_number</span><span class="field-desc">State license ID</span></div>
+      <div class="field"><span class="field-name">license_state</span><span class="field-desc">Issuing state</span></div>
+      <div class="field"><span class="field-name">license_type</span><span class="field-desc">"active"</span></div>
+      <div class="field"><span class="field-name">license_registry_url</span><span class="field-desc">State verification link</span></div>
+      <div class="field"><span class="field-name">review_count</span><span class="field-desc">Total verified reviews</span></div>
+      <div class="field"><span class="field-name">review_rating</span><span class="field-desc">Weighted average rating</span></div>
+      <div class="field"><span class="field-name">years_experience</span><span class="field-desc">From license date</span></div>
+      <div class="field"><span class="field-name">lastVerified</span><span class="field-desc">Last audit timestamp</span></div>
+      <div class="field"><span class="field-name">nextVerification</span><span class="field-desc">Computed from cadence</span></div>
+      <div class="field"><span class="field-name">citation_url</span><span class="field-desc">Canonical cite URL</span></div>
+      <div class="field"><span class="field-name">aifs_band</span><span class="field-desc">Score band label</span></div>
+      <div class="field"><span class="field-name">community_involvement_score</span><span class="field-desc">IRS 990 / ProPublica verified</span></div>
+      <div class="field"><span class="field-name">sales_count_all_time</span><span class="field-desc">Career transaction count</span></div>
+      <div class="field"><span class="field-name">sales_count_last_year</span><span class="field-desc">Last 12 months</span></div>
+      <div class="field"><span class="field-name">website</span><span class="field-desc">Agent website URL</span></div>
+      <div class="field"><span class="field-name">social_linkedin</span><span class="field-desc">LinkedIn profile</span></div>
+      <div class="field"><span class="field-name">social_facebook</span><span class="field-desc">Facebook profile</span></div>
+      <div class="field"><span class="field-name">zillow_profile_url</span><span class="field-desc">Zillow profile</span></div>
+      <div class="field"><span class="field-name">aifs_summary</span><span class="field-desc">Score + band object</span></div>
+      <div class="field"><span class="field-name">evidence_sources</span><span class="field-desc">20</span></div>
+      <div class="field"><span class="field-name">phone</span><span class="field-desc">Agent phone number</span></div>
+      <div class="field"><span class="field-name">email</span><span class="field-desc">Agent email address</span></div>
+      <div class="field"><span class="field-name">description</span><span class="field-desc">Agent bio / profile text</span></div>
+      <div class="field"><span class="field-name">aifs_score</span><span class="field-desc">Underwritten-tier score</span></div>
+      <div class="field"><span class="field-name">aifs_breakdown</span><span class="field-desc">5 pillars: identity, authority, social, technical, citability</span></div>
+      <div class="field"><span class="field-name">gap_analysis</span><span class="field-desc">no_linkedin, no_schema, no_google_business</span></div>
+      <div class="field"><span class="field-name">cryptographic_verification</span><span class="field-desc">Ed25519 signing enabled</span></div>
+      <div class="field"><span class="field-name">web_of_truth_artifact_url</span><span class="field-desc">Public verification artifact</span></div>
+      <div class="field"><span class="field-name">platforms_found</span><span class="field-desc">Array of {url, category} objects</span></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- COMPARISON TABLE -->
+<h2 style="font-family:'Playfair Display',serif;font-size:24px;color:var(--navy);margin-bottom:16px;">Field-by-Field Comparison</h2>
+
+<table class="compare">
+  <thead>
+    <tr>
+      <th>Field</th>
+      <th class="tier-col">Listed</th>
+      <th class="tier-col">Certified</th>
+      <th class="tier-col">Audited</th>
+      <th class="tier-col">Underwritten</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td class="field-col">name</td><td class="center"><span class="check">&#10003;</span></td><td class="center"><span class="check">&#10003;</span></td><td class="center"><span class="check">&#10003;</span></td><td class="center"><span class="check">&#10003;</span></td></tr>
+    <tr><td class="field-col">city</td><td class="center"><span class="check">&#10003;</span></td><td class="center"><span class="check">&#10003;</span></td><td class="center"><span class="check">&#10003;</span></td><td class="center"><span class="check">&#10003;</span></td></tr>
+    <tr><td class="field-col">state</td><td class="center"><span class="check">&#10003;</span></td><td class="center"><span class="check">&#10003;</span></td><td class="center"><span class="check">&#10003;</span></td><td class="center"><span class="check">&#10003;</span></td></tr>
+    <tr><td class="field-col">badge_tier</td><td class="center"><span class="check">&#10003;</span></td><td class="center"><span class="check">&#10003;</span></td><td class="center"><span class="check">&#10003;</span></td><td class="center"><span class="check">&#10003;</span></td></tr>
+    <tr><td class="field-col">profile_url</td><td class="center"><span class="check">&#10003;</span></td><td class="center"><span class="check">&#10003;</span></td><td class="center"><span class="check">&#10003;</span></td><td class="center"><span class="check">&#10003;</span></td></tr>
+    <tr><td class="field-col">merit_gate</td><td class="center"><span class="check">&#10003;</span></td><td class="center"><span class="check">&#10003;</span></td><td class="center"><span class="check">&#10003;</span></td><td class="center"><span class="check">&#10003;</span></td></tr>
+    <tr><td class="field-col">license_number</td><td class="center"><span class="dash">--</span></td><td class="center"><span class="check">&#10003;</span></td><td class="center"><span class="check">&#10003;</span></td><td class="center"><span class="check">&#10003;</span></td></tr>
+    <tr><td class="field-col">license_state</td><td class="center"><span class="dash">--</span></td><td class="center"><span class="check">&#10003;</span></td><td class="center"><span class="check">&#10003;</span></td><td class="center"><span class="check">&#10003;</span></td></tr>
+    <tr><td class="field-col">license_type</td><td class="center"><span class="dash">--</span></td><td class="center"><span class="check">&#10003;</span></td><td class="center"><span class="check">&#10003;</span></td><td class="center"><span class="check">&#10003;</span></td></tr>
+    <tr><td class="field-col">license_registry_url</td><td class="center"><span class="dash">--</span></td><td class="center"><span class="check">&#10003;</span></td><td class="center"><span class="check">&#10003;</span></td><td class="center"><span class="check">&#10003;</span></td></tr>
+    <tr><td class="field-col">review_count</td><td class="center"><span class="dash">--</span></td><td class="center"><span class="check">&#10003;</span></td><td class="center"><span class="check">&#10003;</span></td><td class="center"><span class="check">&#10003;</span></td></tr>
+    <tr><td class="field-col">review_rating</td><td class="center"><span class="dash">--</span></td><td class="center"><span class="check">&#10003;</span></td><td class="center"><span class="check">&#10003;</span></td><td class="center"><span class="check">&#10003;</span></td></tr>
+    <tr><td class="field-col">years_experience</td><td class="center"><span class="dash">--</span></td><td class="center"><span class="check">&#10003;</span></td><td class="center"><span class="check">&#10003;</span></td><td class="center"><span class="check">&#10003;</span></td></tr>
+    <tr><td class="field-col">evidence_sources</td><td class="center"><span class="dash">--</span></td><td class="center">4</td><td class="center">10</td><td class="center">20</td></tr>
+    <tr><td class="field-col">lastVerified</td><td class="center"><span class="dash">--</span></td><td class="center"><span class="check">&#10003;</span></td><td class="center"><span class="check">&#10003;</span></td><td class="center"><span class="check">&#10003;</span></td></tr>
+    <tr><td class="field-col">nextVerification</td><td class="center"><span class="dash">--</span></td><td class="center"><span class="check">&#10003;</span></td><td class="center"><span class="check">&#10003;</span></td><td class="center"><span class="check">&#10003;</span></td></tr>
+    <tr><td class="field-col">citation_url</td><td class="center"><span class="dash">--</span></td><td class="center"><span class="check">&#10003;</span></td><td class="center"><span class="check">&#10003;</span></td><td class="center"><span class="check">&#10003;</span></td></tr>
+    <tr><td class="field-col">aifs_score</td><td class="center"><span class="dash">--</span></td><td class="center">Certified</td><td class="center">Audited</td><td class="center">Underwritten</td></tr>
+    <tr><td class="field-col">aifs_band</td><td class="center"><span class="dash">--</span></td><td class="center"><span class="check">&#10003;</span></td><td class="center"><span class="check">&#10003;</span></td><td class="center"><span class="check">&#10003;</span></td></tr>
+    <tr><td class="field-col">community_involvement_score</td><td class="center"><span class="dash">--</span></td><td class="center"><span class="dash">--</span></td><td class="center"><span class="check">&#10003;</span></td><td class="center"><span class="check">&#10003;</span></td></tr>
+    <tr><td class="field-col">sales_count_all_time</td><td class="center"><span class="dash">--</span></td><td class="center"><span class="dash">--</span></td><td class="center"><span class="check">&#10003;</span></td><td class="center"><span class="check">&#10003;</span></td></tr>
+    <tr><td class="field-col">sales_count_last_year</td><td class="center"><span class="dash">--</span></td><td class="center"><span class="dash">--</span></td><td class="center"><span class="check">&#10003;</span></td><td class="center"><span class="check">&#10003;</span></td></tr>
+    <tr><td class="field-col">website</td><td class="center"><span class="dash">--</span></td><td class="center"><span class="dash">--</span></td><td class="center"><span class="check">&#10003;</span></td><td class="center"><span class="check">&#10003;</span></td></tr>
+    <tr><td class="field-col">social_linkedin</td><td class="center"><span class="dash">--</span></td><td class="center"><span class="dash">--</span></td><td class="center"><span class="check">&#10003;</span></td><td class="center"><span class="check">&#10003;</span></td></tr>
+    <tr><td class="field-col">social_facebook</td><td class="center"><span class="dash">--</span></td><td class="center"><span class="dash">--</span></td><td class="center"><span class="check">&#10003;</span></td><td class="center"><span class="check">&#10003;</span></td></tr>
+    <tr><td class="field-col">zillow_profile_url</td><td class="center"><span class="dash">--</span></td><td class="center"><span class="dash">--</span></td><td class="center"><span class="check">&#10003;</span></td><td class="center"><span class="check">&#10003;</span></td></tr>
+    <tr><td class="field-col">platforms_found</td><td class="center"><span class="dash">--</span></td><td class="center"><span class="dash">--</span></td><td class="center">URLs</td><td class="center">{url, category}</td></tr>
+    <tr><td class="field-col">aifs_summary</td><td class="center"><span class="dash">--</span></td><td class="center"><span class="dash">--</span></td><td class="center"><span class="check">&#10003;</span></td><td class="center"><span class="check">&#10003;</span></td></tr>
+    <tr><td class="field-col">phone</td><td class="center"><span class="dash">--</span></td><td class="center"><span class="dash">--</span></td><td class="center"><span class="dash">--</span></td><td class="center"><span class="check">&#10003;</span></td></tr>
+    <tr><td class="field-col">email</td><td class="center"><span class="dash">--</span></td><td class="center"><span class="dash">--</span></td><td class="center"><span class="dash">--</span></td><td class="center"><span class="check">&#10003;</span></td></tr>
+    <tr><td class="field-col">description</td><td class="center"><span class="dash">--</span></td><td class="center"><span class="dash">--</span></td><td class="center"><span class="dash">--</span></td><td class="center"><span class="check">&#10003;</span></td></tr>
+    <tr><td class="field-col">aifs_breakdown (5 pillars)</td><td class="center"><span class="dash">--</span></td><td class="center"><span class="dash">--</span></td><td class="center"><span class="dash">--</span></td><td class="center"><span class="check">&#10003;</span></td></tr>
+    <tr><td class="field-col">gap_analysis</td><td class="center"><span class="dash">--</span></td><td class="center"><span class="dash">--</span></td><td class="center"><span class="dash">--</span></td><td class="center"><span class="check">&#10003;</span></td></tr>
+    <tr><td class="field-col">cryptographic_verification</td><td class="center"><span class="dash">--</span></td><td class="center"><span class="dash">--</span></td><td class="center"><span class="dash">--</span></td><td class="center"><span class="check">&#10003;</span></td></tr>
+    <tr><td class="field-col">web_of_truth_artifact_url</td><td class="center"><span class="dash">--</span></td><td class="center"><span class="dash">--</span></td><td class="center"><span class="dash">--</span></td><td class="center"><span class="check">&#10003;</span></td></tr>
+  </tbody>
+</table>
+
+<div style="margin-top:40px;padding:20px 24px;background:var(--white);border:0.5px solid var(--border);border-radius:10px;">
+  <h3 style="font-family:'Playfair Display',serif;font-size:18px;color:var(--navy);margin-bottom:8px;">How AI systems use this data</h3>
+  <p style="font-size:13px;color:var(--txt2);line-height:1.7;margin-bottom:8px;">When an AI system queries an agent via MCP (JSON-RPC) or crawls their clean room HTML profile, the response depth is determined by the agent's tier. A Listed agent returns enough to confirm existence. An Underwritten agent returns enough for the AI to make a confident, defensible recommendation with full attribution.</p>
+  <p style="font-size:13px;color:var(--txt2);line-height:1.7;">Each <code style="background:#f3f4f6;padding:2px 6px;border-radius:4px;font-size:12px;">upgrade_note</code> field tells the AI exactly what data the next tier would provide -- creating a natural incentive for agents to invest in deeper verification.</p>
+</div>
+
+</main>
+
+</body>
+</html>
