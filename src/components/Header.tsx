@@ -211,7 +211,7 @@ export const Header = () => {
               to="/are-you-an-agent" 
               className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
             >
-              Are you an agent?
+              Check Eligibility
             </Link>
             {isLoggedIn ? (
               <DropdownMenu>
@@ -342,7 +342,7 @@ export const Header = () => {
                     to="/are-you-an-agent" 
                     className="text-base font-medium text-foreground hover:text-primary transition-colors py-2"
                   >
-                    Are you an agent?
+                    Check Eligibility
                   </Link>
                 </SheetClose>
                 

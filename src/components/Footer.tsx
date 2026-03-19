@@ -136,7 +136,7 @@ export const Footer = () => {
                 to="/are-you-an-agent" 
                 className="text-slate-300 hover:text-white transition-colors"
               >
-                Are You Ranked?
+                Check Eligibility
               </Link>
               <Link 
                 to="/login" 
@@ -177,7 +177,7 @@ export const Footer = () => {
                 to="/are-you-an-agent" 
                 className="text-slate-300 hover:text-white transition-colors"
               >
-                Check if you're ranked →
+                Check eligibility →
               </Link>
             </p>
           </div>
