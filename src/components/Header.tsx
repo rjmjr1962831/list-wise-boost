@@ -208,7 +208,7 @@ export const Header = () => {
               </Link>
             )}
             <Link 
-              to="/are-you-an-agent" 
+              to="/check-eligibility" 
               className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
             >
               Check Eligibility
@@ -339,7 +339,7 @@ export const Header = () => {
                 )}
                 <SheetClose asChild>
                   <Link 
-                    to="/are-you-an-agent" 
+                    to="/check-eligibility" 
                     className="text-base font-medium text-foreground hover:text-primary transition-colors py-2"
                   >
                     Check Eligibility
