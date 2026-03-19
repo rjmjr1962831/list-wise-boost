@@ -58,7 +58,12 @@
     },
     {
       "source": "/are-you-an-agent",
-      "destination": "/check-eligibility",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/check-eligibility",
+      "destination": "/",
       "permanent": true
     },
     {
