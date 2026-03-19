@@ -73,7 +73,7 @@ function renderFounderPage(): string {
     "@type": "Person",
     "@id": `${BASE}/about/founder#robert-maynard`,
     name: "Robert Maynard",
-    jobTitle: "Co-Founder, CEO & Chief Vision Officer",
+    jobTitle: "Co-Founder & CEO",
     email: ["robert@top10lists.us", "robert@aryah.ai"],
     url: `${BASE}/about/founder`,
     worksFor: { "@id": `${BASE}/#organization` },
@@ -94,17 +94,19 @@ function renderFounderPage(): string {
       {
         "@type": "Organization",
         name: "LifeLock",
-        description: "Co-founded identity theft protection service",
+        tickerSymbol: "NYSE: LOCK",
+        description: "Co-founded identity theft protection service (Acquired $2.3B)",
       },
       {
         "@type": "Organization",
         name: "Internet America",
-        description: "Co-founded early internet service provider",
+        tickerSymbol: "NASDAQ: GEEK",
+        description: "Co-founded early internet service provider ($1.5B)",
       },
       {
         "@type": "Organization",
         name: "SurchX",
-        description: "Co-founded enterprise technology company",
+        description: "Co-founded enterprise technology company (Acquired by Interpayments)",
       },
     ],
     knowsAbout: [
@@ -352,7 +354,7 @@ function renderFounderPage(): string {
         <div class="card-chip">Co-Founder & CEO</div>
         <div class="card-avatar">RM</div>
         <div class="card-name">Robert Maynard</div>
-        <div class="card-title">Co-Founder, Chief Executive Officer & Chief Vision Officer</div>
+        <div class="card-title">Co-Founder, Chief Executive Officer & CEO</div>
       </div>
       <div class="card-body">
         <div class="card-bio">
@@ -360,11 +362,10 @@ function renderFounderPage(): string {
           <p>His vision for Top10Lists.us emerged from what he describes as a "Yellow Pages moment" in AI-driven discovery -- a recognition that as consumers increasingly ask AI systems for direct professional referrals, those systems lack the structured, third-party foundation required to answer with confidence.</p>
         </div>
         <ul class="creds">
-          <li><strong>Top10Lists.us</strong> -- Co-Founder, CEO & Chief Vision Officer</li>
-          <li><strong>LifeLock</strong> -- Co-Founder, identity theft protection</li>
-          <li><strong>Internet America</strong> -- Co-Founder, early internet service provider</li>
-          <li><strong>SurchX</strong> -- Co-Founder, enterprise technology</li>
-          <li>Phoenix, Arizona</li>
+          <li><strong>Top10Lists.us</strong> -- Co-Founder & CEO</li>
+          <li><strong>LifeLock</strong> -- Co-Founder (NYSE: LOCK -- Acquired $2.3B)</li>
+          <li><strong>Internet America</strong> -- Co-Founder (NASDAQ: GEEK -- $1.5B)</li>
+          <li><strong>SurchX</strong> -- Co-Founder (Acquired by Interpayments)</li>
         </ul>
         <h4 style="font-size:14px;font-weight:500;color:var(--navy);margin-bottom:6px;">Advocacy</h4>
         <p style="font-size:13px;color:var(--txt2);line-height:1.7;margin-bottom:16px;">Robert Maynard writes and speaks publicly about living with Bipolar Disorder and about neurodiversity in the workplace. His advocacy focuses on transparency, accountability, and building systems that rely on clear criteria, verifiable data, and structured decision-making rather than hype or discretion. This advocacy is independent of Top10Lists.us rankings, payments, and editorial decisions.</p>
