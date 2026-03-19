@@ -17,16 +17,18 @@ import {
   X,
   Shield,
   Sparkles,
+  Search,
 } from "lucide-react";
 import { OverviewSection } from "@/components/agent/OverviewSection";
 import { ProfileSection } from "@/components/agent/ProfileSection";
 import { PayloadSection } from "@/components/agent/PayloadSection";
 import { BillingSection } from "@/components/agent/BillingSection";
 import { AIMaxPlan } from "@/components/agent/AIMaxPlan";
+import { LiveAudit } from "@/components/agent/LiveAudit";
 import { getValidImageUrl } from "@/utils/imageUrlValidator";
 import { cn } from "@/lib/utils";
 
-type NavSection = "overview" | "ai-max-plan" | "profile" | "payload" | "billing" | "badge";
+type NavSection = "overview" | "ai-max-plan" | "live-audit" | "profile" | "payload" | "billing" | "badge";
 
 interface NavItem {
   id: NavSection;
@@ -37,6 +39,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { id: "overview", label: "Overview", icon: LayoutDashboard },
   { id: "ai-max-plan", label: "AI Max Plan", icon: Sparkles },
+  { id: "live-audit", label: "Live Audit", icon: Search },
   { id: "profile", label: "Profile", icon: User },
   { id: "payload", label: "Payload", icon: Bot },
   { id: "badge", label: "Badge & sharing", icon: Shield },
@@ -489,6 +492,10 @@ export default function AgentDashboard() {
 
               {activeSection === "ai-max-plan" && (
                 <AIMaxPlan professional={professional} />
+              )}
+
+              {activeSection === "live-audit" && (
+                <LiveAudit professional={professional} />
               )}
 
               {activeSection === "profile" && (
