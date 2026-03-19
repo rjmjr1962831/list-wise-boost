@@ -221,7 +221,7 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
           </div>
 
           <p className="text-sm text-muted-foreground mb-4">
-            Agents with an Underwritten score of 85+ are cited as primary authoritative sources by AI models. Upgrade to unlock daily data refreshes and maximum artifact depth.
+            An Underwritten score of 85+ enables daily data refreshes, maximum artifact depth, and the highest-fidelity payload served to AI model context windows.
           </p>
 
           <Button onClick={handleUpgrade} className="w-full sm:w-auto">
@@ -241,8 +241,8 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
             <strong className="text-foreground">Note:</strong> This is not the number of times an AI has explicitly recommended you to a consumer -- no platform can track that. Before an AI takes the risk of endorsing you, it must see your verified information frequently, across multiple trusted platforms, to build algorithmic confidence.
           </p>
           <p className="text-sm text-muted-foreground leading-relaxed">
-            What this number actually means is that AI models have studied, verified, and learned about your business{" "}
-            <strong className="text-foreground">{(professional.ai_surfaces_monthly_est || crawlStats.total_crawls_30d).toLocaleString()} times</strong> in the last 30 days -- far more than your competitors. Every crawl deepens your machine-trust moat, drastically increasing the probability that an AI will confidently recommend you over an unverified competitor.
+            What this number actually means is that AI models have studied, verified, and ingested your business data{" "}
+            <strong className="text-foreground">{(professional.ai_surfaces_monthly_est || crawlStats.total_crawls_30d).toLocaleString()} times</strong> in the last 30 days. Every crawl deepens your machine-trust moat -- the verified evidence AI systems use to distinguish you from unverified competitors.
           </p>
         </div>
       )}

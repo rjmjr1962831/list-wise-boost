@@ -1116,6 +1116,31 @@ serve(async (req) => {
             );
         }
 
+        // Log MCP request timestamp for agent-resolving tools (debounced 1 min)
+        try {
+          let mcpWhere = "";
+          if (toolName === "search_agents") {
+            const st = (toolArgs.state as string || "").replace(/'/g, "''");
+            const ci = (toolArgs.city as string || "").replace(/'/g, "''");
+            mcpWhere = ci
+              ? `state_slug = '${st}' AND LOWER(business_city) = LOWER('${ci}') AND active = true`
+              : `state_slug = '${st}' AND active = true`;
+          } else if (toolName === "verify_agent") {
+            const ln = (toolArgs.license_number as string || "").replace(/'/g, "''");
+            mcpWhere = `license_number = '${ln}' AND active = true`;
+          } else if (toolName === "get_agent_profile") {
+            const sl = (toolArgs.slug as string || "").replace(/'/g, "''");
+            mcpWhere = `canonical_slug = '${sl}' AND active = true`;
+          }
+          if (mcpWhere) {
+            await supabase.rpc("run_sql", {
+              query: `UPDATE professionals SET mcp_last_request_at = now() WHERE ${mcpWhere} AND (mcp_last_request_at IS NULL OR mcp_last_request_at < now() - interval '1 minute')`,
+            });
+          }
+        } catch (_mcpLogErr) {
+          // Non-critical -- do not break the tool response
+        }
+
         result = {
           content: [
             {

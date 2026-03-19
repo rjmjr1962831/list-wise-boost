@@ -448,7 +448,7 @@ export default function Step7Pricing() {
               )}
             </h2>
             <p className="text-sm text-slate-400 mt-1">
-              Select a tier below to strengthen your AI citation probability and confidence when someone asks if they should do business with you.
+              Select a tier below to increase your verification depth, data freshness, and the richness of your AI-readable payload.
             </p>
           </div>
 
