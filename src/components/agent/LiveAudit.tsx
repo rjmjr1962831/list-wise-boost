@@ -144,8 +144,11 @@ export function LiveAudit({ professional }: LiveAuditProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Certified column */}
           <div className="rounded-lg border border-zinc-600 bg-zinc-800/50 p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <Shield className="h-4 w-4 text-blue-400" />
+            <div className="flex items-center gap-3 mb-3">
+              <div className="relative">
+                <img src="/badges/certified.png" alt="Certified" className="h-10 w-auto animate-pulse" />
+                <div className="absolute inset-0 rounded-full bg-blue-400/20 animate-ping" style={{ animationDuration: "3s" }} />
+              </div>
               <h3 className="text-sm font-bold text-blue-400">Certified Payload</h3>
             </div>
             <ul className="space-y-1.5">
@@ -160,8 +163,11 @@ export function LiveAudit({ professional }: LiveAuditProps) {
 
           {/* Underwritten column */}
           <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <Zap className="h-4 w-4 text-amber-400" />
+            <div className="flex items-center gap-3 mb-3">
+              <div className="relative">
+                <img src="/badges/underwritten.png" alt="Underwritten" className="h-10 w-auto animate-pulse" />
+                <div className="absolute inset-0 rounded-full bg-amber-400/20 animate-ping" style={{ animationDuration: "3s" }} />
+              </div>
               <h3 className="text-sm font-bold text-amber-400">Underwritten Payload</h3>
             </div>
             <ul className="space-y-1.5">
