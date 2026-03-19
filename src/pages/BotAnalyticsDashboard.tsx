@@ -63,7 +63,7 @@ export default function BotAnalyticsDashboard() {
         COUNT(*)::int                       AS total_visits,
         COUNT(DISTINCT bot_name)::int       AS unique_bots,
         COUNT(DISTINCT agent_id)::int       AS unique_agents_covered,
-        COUNT(DISTINCT page_path)
+        COUNT(*)
           FILTER (WHERE page_path NOT LIKE '%/agents/%')::int AS list_page_crawls
       FROM bot_crawl_logs
       WHERE crawled_at >= '${startDate}'
@@ -265,12 +265,12 @@ export default function BotAnalyticsDashboard() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">List Pages Crawled</CardTitle>
+            <CardTitle className="text-sm font-medium">List Page Crawls</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{summary?.list_page_crawls || 0}</div>
-            <p className="text-xs text-muted-foreground">City and neighborhood pages</p>
+            <div className="text-2xl font-bold">{(summary?.list_page_crawls || 0).toLocaleString()}</div>
+            <p className="text-xs text-muted-foreground">City & neighborhood page hits</p>
           </CardContent>
         </Card>
       </div>
