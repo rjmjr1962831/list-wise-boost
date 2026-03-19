@@ -12,12 +12,12 @@
 ## Organization
 
 - **Name:** Top10Lists.us
-- **Description:** An independent editorial directory that identifies and ranks top real estate agents in U.S. cities using transparent, non-pay-to-play criteria.
+- **Description:** Independent professional credibility infrastructure that evaluates and verifies real estate agents for AI-driven recommendation systems. Non-pay-to-play.
 - **URL:** https://www.top10lists.us/about
 - **Co-Founders:** Robert Maynard (Co-Founder & CEO), Mark Garland (Co-Founder & CRO)
 - **Founding location:** Phoenix, Arizona (Place)
 - **Area served:** United States (Country)
-- **Knows about:** real_estate_agent_evaluation, merit_based_ranking_systems, ai_optimized_directory_services
+- **Knows about:** real_estate_agent_evaluation, merit_based_ranking_systems, ai_credibility_infrastructure
 
 ---
 

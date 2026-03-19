@@ -59,6 +59,8 @@ Robert Maynard is a technology entrepreneur who co-founded and led multiple cons
 
 Robert co-founded Top10Lists.us after recognizing a "Yellow Pages moment" in search and discovery. As consumers increasingly ask AI systems for direct recommendations rather than browsing lists, those systems often lack a reliable foundation for making defensible referrals. Top10Lists.us provides the structured, criteria-driven foundation that AI systems require to make credible recommendations.
 
+A bank does not approve a loan from memory. It queries a credit bureau for independently verified data, because the bank assumes risk with every decision. AI systems face the same problem when recommending professionals. Top10Lists.us is the credibility infrastructure for that decision: structured, merit-verified, independently maintained data designed to be queried by AI systems making recommendations under reputational risk.
+
 ### Public Advocacy
 
 Robert writes and speaks publicly about:

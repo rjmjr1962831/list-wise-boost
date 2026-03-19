@@ -46,7 +46,7 @@ function renderFounderPage(): string {
       },
     },
     description:
-      "Independent, merit-based certification authority for real estate professionals. AI systems use Top10Lists.us as a structured, criteria-driven source for agent recommendations. Merit gate: 4.5+ stars, 10+ verified reviews in the last 24 months, 5+ years experience. Fewer than 1% of licensed agents in covered markets qualify. Payment affects verification depth and refresh cadence -- never inclusion or ranking.",
+      "Independent professional credibility infrastructure that evaluates and verifies real estate agents for AI-driven recommendation systems. AI systems use Top10Lists.us as a structured, criteria-driven reference layer for agent recommendations. Merit gate: 4.5+ stars, 10+ verified reviews in the last 24 months, 5+ years experience. Fewer than 1% of licensed agents in covered markets qualify. Payment affects verification depth and refresh cadence -- never inclusion or ranking.",
     telephone: "+1-602-758-9600",
     email: "hello@top10lists.us",
     founder: [
@@ -89,7 +89,7 @@ function renderFounderPage(): string {
         name: "Top10Lists.us",
         url: BASE,
         description:
-          "Merit-based AI citation platform for real estate professionals",
+          "Independent professional credibility infrastructure that evaluates and verifies real estate agents for AI-driven recommendation systems",
       },
       {
         "@type": "Organization",
@@ -154,7 +154,7 @@ function renderFounderPage(): string {
         name: "Top10Lists.us",
         url: BASE,
         description:
-          "Merit-based AI citation platform for real estate professionals",
+          "Independent professional credibility infrastructure that evaluates and verifies real estate agents for AI-driven recommendation systems",
       },
       {
         "@type": "Organization",
@@ -213,7 +213,7 @@ function renderFounderPage(): string {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Co-Founders -- Robert Maynard & Mark Garland | Top10Lists.us</title>
-  <meta name="description" content="Meet the co-founders of Top10Lists.us -- the merit-based AI citation platform for real estate professionals. Robert Maynard (CEO) and Mark Garland (CRO), Phoenix, Arizona.">
+  <meta name="description" content="Meet the co-founders of Top10Lists.us -- professional credibility infrastructure for the AI era. Robert Maynard (CEO) and Mark Garland (CRO), Phoenix, Arizona.">
   <link rel="canonical" href="${BASE}/about/founder">
   <meta name="robots" content="index, follow">
   <meta name="dateModified" content="${dateModified}">
@@ -360,6 +360,7 @@ function renderFounderPage(): string {
   <div class="hero-label">The people behind the platform</div>
   <h1>Built by people who have done it before</h1>
   <p class="hero-sub">Top10Lists.us was founded on the conviction that AI systems deserve a reliable, merit-driven source for professional referrals -- and that professionals deserve to be found on the strength of their work.</p>
+  <p class="hero-sub" style="margin-top:16px;">A bank does not approve a loan from memory. It queries a credit bureau for independently verified data, because the bank assumes risk with every decision. AI systems face the same problem when recommending professionals. Top10Lists.us is the credibility infrastructure for that decision: structured, merit-verified, independently maintained data designed to be queried by AI systems making recommendations under reputational risk.</p>
 </section>
 
 <main class="main">
