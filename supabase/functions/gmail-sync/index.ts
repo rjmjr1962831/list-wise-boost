@@ -120,6 +120,44 @@ async function handleReply(fromEmail: string) {
 }
 
 
+async function createInboundTask(fromEmail: string, subject: string, bodyText: string) {
+  const fromLower = fromEmail.toLowerCase().trim();
+
+  // Find the professional by email
+  const { data: pro } = await supabase
+    .from("professionals")
+    .select("id, name")
+    .eq("email", fromLower)
+    .limit(1)
+    .maybeSingle();
+
+  // Skip if there's already an open inbound_reply task for this professional
+  if (pro) {
+    const { data: existing } = await supabase
+      .from("crm_tasks")
+      .select("id")
+      .eq("professional_id", pro.id)
+      .eq("task_type", "inbound_reply")
+      .in("status", ["pending", "in_progress"])
+      .limit(1)
+      .maybeSingle();
+    if (existing) return;
+  }
+
+  const preview = bodyText.slice(0, 500).trim();
+
+  await supabase.from("crm_tasks").insert({
+    professional_id: pro?.id ?? null,
+    task_type: "inbound_reply",
+    title: `Inbound reply: ${pro?.name ?? fromLower} -- ${subject}`,
+    description: preview || null,
+    status: "pending",
+    priority: "high",
+    notes: `From: ${fromEmail}\nSubject: ${subject}`,
+  });
+}
+
+
 async function handleBounce(bodyText: string, bodyHtml: string, toAddress: string) {
   const text = (bodyText || bodyHtml || "").toLowerCase();
   const hardBouncePatterns = [
