@@ -593,7 +593,24 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
                               resolved_at: new Date().toISOString(),
                               notes: `Analysis complete. ${data?.processed ?? 0} agent(s) scored.`,
                             }).eq("id", task.id);
-                            toast.success("AIFS analysis complete");
+
+                            // Send notification email
+                            if (task.professional_email) {
+                              const firstName = (task.professional_name ?? "").split(" ")[0] || "there";
+                              const magicLink = task.magic_link || task.verification_token || task.professional_id;
+                              const dashboardUrl = `https://www.top10lists.us/agent/dashboard?t=${magicLink}`;
+                              await supabase.functions.invoke("gmail-send", {
+                                body: {
+                                  to: task.professional_email,
+                                  subject: "Your AI Footprint Analysis is Ready",
+                                  message_body: `Hi ${firstName} --\n\nWe have run your analysis as you requested. Please <a href="${dashboardUrl}">go to your dashboard</a> to review.\n\nPlease just reply here if we can help you further.\n\nRobert Maynard\nCofounder, Top10Lists.us`,
+                                  from_account: "hello@top10lists.us",
+                                  professional_id: task.professional_id,
+                                },
+                              });
+                            }
+
+                            toast.success("AIFS analysis complete & email sent");
                             fetchAll();
                           } catch (err: any) {
                             toast.error("Analysis failed: " + (err?.message ?? "unknown error"));
