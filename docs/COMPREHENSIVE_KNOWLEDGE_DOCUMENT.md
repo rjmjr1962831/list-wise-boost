@@ -1,7 +1,7 @@
 # Top10Lists.us — Comprehensive Knowledge Document
 
 **Purpose:** Single consolidated reference for agent2, Claude, and Cursor. Use latest updates as source of truth.
-**Last consolidated:** 2026-03-18
+**Last consolidated:** 2026-03-19
 **Conflict rule:** When sources conflict, this document wins. Deprecate earlier statements.
 
 ---
@@ -280,7 +280,7 @@ From `src/data/master-ssot.md`:
 
 ## 21. Recent Updates (from t1)
 
-*Last synthesized: 2026-03-18*
+*Last synthesized: 2026-03-19*
 
 ---
 
@@ -303,6 +303,7 @@ From `src/data/master-ssot.md`:
 - `batch-aics-score` edge function: supports `agent_ids`, `force_rescore`, `rescore_after` params; Exa result caching from `geo_audit_results.exa_sources`; log-scale review volume scoring; 0.5 tier amplification floor for unlisted agents
 - `aifs_scores` table migration exists but was never deployed -- all AIFS data lives in `geo_audit_results`
 - AIFS language rule: "measures verified evidence" not "measures likelihood of citation"
+- OverviewSection: AIFS score scale label now dynamic (`{maxScore}`) instead of hardcoded 95.
 
 ### AI Surfaces & Bot Crawl Analytics
 
@@ -313,6 +314,9 @@ From `src/data/master-ssot.md`:
 - Meta-ExternalAgent dominates: 83.2% of 396,104 visits in 30 days. Then AhrefsBot 6.2%, Applebot 3.4%, Bingbot 2.3%, Googlebot 2.3%, ChatGPT-User 0.3%, GPTBot 0.2%, PerplexityBot 0.2%
 - `agent_bot_crawl_stats` view: recreated with `security_invoker = true`. `bot_crawl_logs` and `geo_serp_results`: RLS enabled + `service_role_all` policy.
 - `rollup_bot_crawl_daily()` function + `rollup-bot-crawl-daily` cron at 4am UTC
+- **AI Surfaces Monthly Estimate Rollup Fix**: Rollup `rollup_ai_surfaces_monthly()` now JOINs list page crawls against professionals by city/state (was only counting `WHERE agent_id IS NOT NULL`). Agent surface average jumped from ~261/mo to ~811/mo after fix.
+- **Bot Analytics Dashboard Fixes**: List page crawls metric changed from `COUNT(DISTINCT page_path)` to `COUNT(*)`. Added "Agents Covered" column to List Page Crawls tab.
+- **Bot Crawl Data Purge Cron**: `purge-bot-crawl-logs` pg_cron job created: runs daily at 3am UTC, deletes rows older than 30 days from `bot_crawl_logs`.
 
 ### Bot Crawl Merge Fields (Email Personalization)
 
@@ -334,7 +338,9 @@ From `src/data/master-ssot.md`:
 - Architecture: Vercel log drain -> `www.top10lists.us/api/vercel-log-drain` (proxy) -> `vercel-log-drain` Supabase edge function -> `bot_crawl_logs` table
 - Inline bot logging removed from `serve-bot-agent-html` and `serve-bot-list-html` -- all tracking now single-path through log drain
 - Captures CDN cache hits previously invisible. Agent ID resolved for `/state/agents/slug` and `/artifact/uuid` paths only; list pages get `agent_id` NULL (one row per page, not per agent)
-- Verify token: hardcoded in `vercel-log-drain/index.ts` line ~108; also set as Vercel env var `VERCEL_LOG_DRAIN_VERIFY`. If rotated, both need updating.
+- **GitGuardian Secret Remediation**: Hardcoded verify token removed from `vercel-log-drain/index.ts`. Token moved to Supabase secret `VERCEL_LOG_DRAIN_VERIFY`, read via `Deno.env.get()`.
+- **Signature verification removed**: The Vercel proxy re-serializes the body, breaking HMAC verification. Signature check disabled -- proxy already authenticates with service role key.
+- **JSON array parsing**: Vercel json-type log drains send JSON arrays, not NDJSON. Parser now handles both formats (array-first, NDJSON fallback).
 - Monitor: data volume (filter low-value bots if too fast), function errors, dedup window (brief overlap before inline removal)
 
 ### GEO SERP Dashboard
@@ -361,6 +367,7 @@ From `src/data/master-ssot.md`:
 - `serve-bot-content-html`: clean room `/why-ai-trusts-us` page, 4-tier methodology, enriched transparency JSON-LD
 - Listed agents now show years experience and career transaction count
 - City names title-cased in areaServed JSON-LD; `sanitizeMeritGate()` applied to all rendered text including JSON-LD
+- **JSON-LD for MCP Discovery (GEO Enhancement)**: Underwritten agents in `serve-bot-agent-html` get `potentialAction` with `ConsumeAction` + `EntryPoint` pointing to `/mcp`. `additionalProperty` array with: verificationTier, refreshCadence (daily), mcpProtocolVersion (2024-11-05), evidenceSources (up to 20), cryptographicSigning (Ed25519).
 
 ### MCP Server
 
@@ -368,6 +375,7 @@ From `src/data/master-ssot.md`:
 - Tier gating: Listed/Certified get base payload. Audited adds community score, transaction history, 10+ sources, AIFS summary. Underwritten adds full AIFS breakdown, gap analysis, crypto verification, up to 20 sources.
 - Vercel rewrite: `/mcp` -> edge function. `/.well-known/mcp.json` for auto-discovery.
 - Protocol version: 2024-11-05
+- **MCP-Backed Authority Dashboard (LiveAudit.tsx)**: "What AI Models Receive" card shows side-by-side Certified (6 fields, annual refresh) vs Underwritten (8 fields, daily MCP feed, crypto signing, 20 sources). `mcp_last_request_at` column added to `professionals`, updated by MCP server after agent-resolving tool calls (debounced 1 min). Underwritten agents see "MCP PAYLOAD VISIBLE & ACTIVE" with real last-ingestion timestamp.
 
 ### AI Discovery & Freshness
 
@@ -392,6 +400,7 @@ From `src/data/master-ssot.md`:
 - CitationROICalculator: leads from AIFS band model, tier-specific lead floors, 30% close rate, 3-year projections, Zillow comparison
 - `AIMaxPlan.tsx` (~460 lines): dark gradient header, 5-pillar progress bars, platform presence checklist, expandable gap cards, 4-tier score projections
 - Tier card ROI numbers sync dynamically with calculator inputs (deal size, commission rate). Default deal size $500,000, commission 3%, AIFS input locked to agent's actual tier score.
+- **"Request My Analysis" CTA**: On AI Max Plan pending state -- creates high-priority `aifs_analysis` task in crm_tasks.
 
 ### Agent Dashboard -- Command Center Rebuild
 
@@ -400,11 +409,14 @@ From `src/data/master-ssot.md`:
 - **Row 2 -- Upgrade Gap** (hidden for Underwritten): side-by-side current vs potential score.
 - **Row 3 -- Crawl Explainer:** "What these crawls mean for you" with machine-trust moat copy.
 - Removed: "How We Help AI Systems Cite You" marketing card, "Ask any AI" challenge box, three large pricing cards.
+- **Live Audit tab added**: "Audit Our Architecture" copy-and-verify prompt, "Consensus of the Machines" AI verdict table (dated 2026-03-18), payload comparison (Certified vs Underwritten), "Visible Infrastructure" upsell copy, Machine-Trust Status for Underwritten agents. Pulsing badge images in payload comparison with colored glow rings.
 
 ### Dynamic Badge Endpoint & Instructions
 
 - `/api/badge/[agentId].svg` -- renders text-free glowing orb SVG (80x80). Tier colors: Certified=blue, Audited=bronze/gold, Underwritten=gold. 5-minute cache, CORS-enabled.
 - Badge Instructions Page: two snippet modes (Visible Orb and Invisible 1px AI-only). Metadata-rich HTML with `alt`, `rel="author"`, `title`. Link destination: `/artifact/{token}` (public payload page -- to be built).
+- **Badge images cropped**: certified.png, audited.png, underwritten.png cropped to orb-only -- removed baked-in text labels ("CERTIFIED", "AUDITED", "UNDERWRITTEN"). 512x1024 -> 312x270.
+- `public/badges/preview.html` -- badge preview page (all 3 badges).
 
 ### Auth / Login Fixes
 
@@ -436,18 +448,28 @@ From `src/data/master-ssot.md`:
 
 - DeepSeek key rotated; OpenAI key added; Exa key in .env; Perplexity key in Supabase secrets
 - `run_sql` endpoint in enrichment-api: replaced broken raw postgres with Supabase JS client `.rpc('run_sql')`
+- **`run_sql` Statement Timeout Fix**: Recreated `run_sql` function with `SET statement_timeout = '30s'` in the function definition (overrides caller's role timeout). As `bot_crawl_logs` grew past 500K rows, dashboard aggregate queries exceeded 3s timeout.
+- **`run-migration` Edge Function Fixed**: Now accepts `{"sql": "..."}` or `{"sql": ["stmt1", "stmt2"]}` from request body (was ignoring body, always ran `SELECT 1`). Critical for running DDL statements remotely.
 - `geo-consistency-check.cjs` (`npm run geo:check`): all 7 checks pass
 - Vercel AI Gateway replaced by DeepSeek API for market stats
 - Dead `/p/:code` short codes 301 redirect to `/`
 - `serve-clean-html.js` proxy: tiered caching (1h crawl-stats, 5m agent/list/state, 0 content)
 - 2 agent `image_url` refs to dead Supabase project fixed to `wiotrvoirdgzfacuuiem`
 - `/.well-known/mcp.json` Vercel rewrite added for MCP server auto-discovery.
+- **DeepSeek API used by s1 for synthesis** (~46K tokens per full run, ~$0.01)
+- **gmail-sync deployed to wiotrvoirdgzfacuuiem** with inbound reply task creation
+- Test agent "Chen" (id: 6a9f3aa0-f2c9-47f0-9083-58b29fcd4422) given dashboard_token "test-chen-2026"
 
 ### Enrichment Tool Evaluation
 
 - Serper.dev: $0.008/agent for qualified agents (social links, awards, press, license, Google Places). Cannot pre-qualify (no star/review data).
 - Exa.ai fast/instant with `includeDomains`: unreliable (~99% wrong person). Neural search untested.
 - Core gap: license table -> Zillow profile URL has no reliable automated bridge. Zillow scraper (memo23 Apify) is the only reliable path; price increased significantly.
+
+### CRM & Task Automation
+
+- **CRM TasksManager**: Purple "Run Analysis" button for `aifs_analysis` tasks invokes `batch-aics-score`, auto-marks done, auto-sends notification email from hello@top10lists.us with dashboard magic link.
+- **gmail-sync**: All inbound replies from known professionals now create high-priority `inbound_reply` CRM tasks. Deduplicates (skips if open task exists). Deployed live.
 
 ### Standing Rules Added
 
@@ -460,3 +482,26 @@ From `src/data/master-ssot.md`:
 - Always use `bash grep`, never the Grep tool (broken ripgrep binary).
 - Never ask permission except for ptm and GEO-detrimental changes.
 - Tooltip component (`src/components/ui/tooltip.tsx`) is a non-functional shim -- use custom CSS hover or the InfoTip pattern.
+- **Verify token is now a Supabase secret, not hardcoded**
+- **`run-migration` now accepts SQL from request body** (was broken since creation)
+- **Bot crawl data has 30-day retention via pg_cron purge**
+- **s1 now auto-pushes to staging** (no separate pts needed after s1)
+- **s1 only processes takeaways newer than last synthesis date** (incremental)
+
+### Outcome Claim Cleanup (5 violations fixed)
+
+- LiveAudit.tsx: audit prompt reframed to mechanism-only; "risk a recommendation" -> "direct AI ingestion"
+- OverviewSection.tsx: "cited as primary authoritative sources" -> mechanism language about payload depth
+- OverviewSection.tsx: "increasing probability of recommendation" -> "machine-trust moat" framing
+- Step7Pricing.tsx: "citation probability" -> "verification depth, data freshness, payload richness"
+
+### New Functions / Scripts
+
+- `src/components/agent/LiveAudit.tsx` -- Live Audit dashboard tab
+- `scripts/s1-synthesize.ts` -- rewritten with DeepSeek synthesis (intelligent incremental merge)
+- `public/badges/preview.html` -- badge preview page (all 3 badges)
+
+### Deprecated or Removed
+
+- Old s1 concatenation logic (was just appending raw takeaways verbatim)
+- Text labels on badge PNGs (baked into images, now removed)
