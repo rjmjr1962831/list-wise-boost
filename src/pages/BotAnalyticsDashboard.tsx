@@ -27,6 +27,7 @@ interface ListCrawl {
   page_type: "city" | "neighborhood";
   bot_name: string;
   crawl_count: number;
+  agents_covered: number;
   last_crawled: string;
 }
 
@@ -121,14 +122,19 @@ export default function BotAnalyticsDashboard() {
     // 4. List page crawls -- one row per distinct (page_path, bot_name) event window
     const { data: listRaw } = await supabase.rpc("run_sql", { query: `
       SELECT
-        page_path,
-        bot_name,
-        COUNT(*)::int                   AS crawl_count,
-        MAX(crawled_at)                 AS last_crawled
-      FROM bot_crawl_logs
-      WHERE crawled_at >= '${startDate}'
-        AND page_path NOT LIKE '%/agents/%'
-      GROUP BY page_path, bot_name
+        b.page_path,
+        b.bot_name,
+        COUNT(*)::int AS crawl_count,
+        MAX(b.crawled_at) AS last_crawled,
+        (SELECT count(*)::int FROM professionals p2
+         WHERE p2.active = true
+           AND p2.state_slug = split_part(b.page_path, '/', 2)
+           AND LOWER(p2.business_city) = LOWER(replace(split_part(b.page_path, '/', 3), '-', ' '))
+        ) AS agents_covered
+      FROM bot_crawl_logs b
+      WHERE b.crawled_at >= '${startDate}'
+        AND b.page_path NOT LIKE '%/agents/%'
+      GROUP BY b.page_path, b.bot_name
       ORDER BY last_crawled DESC
       LIMIT 100
     ` });
@@ -145,6 +151,7 @@ export default function BotAnalyticsDashboard() {
           page_type:      isNh ? "neighborhood" : "city",
           bot_name:       r.bot_name || "Unknown",
           crawl_count:    r.crawl_count,
+          agents_covered: r.agents_covered || 0,
           last_crawled:   r.last_crawled,
         } as ListCrawl;
       })
@@ -395,7 +402,7 @@ export default function BotAnalyticsDashboard() {
             <CardHeader>
               <CardTitle>City and Neighborhood List Crawls</CardTitle>
               <CardDescription>
-                Each row is a distinct (page, bot) combination. Page crawls shows how many times AI visited that listing page.
+                Each row is a distinct (page, bot) combination. Agent count shows how many listed agents received coverage from each crawl.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -406,13 +413,14 @@ export default function BotAnalyticsDashboard() {
                     <TableHead>Type</TableHead>
                     <TableHead>Bot</TableHead>
                     <TableHead className="text-right">Page Crawls</TableHead>
+                    <TableHead className="text-right">Agents Covered</TableHead>
                     <TableHead>Last Crawled</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {listCrawls.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                      <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
                         No list page crawls in this period.
                       </TableCell>
                     </TableRow>
@@ -431,6 +439,7 @@ export default function BotAnalyticsDashboard() {
                           </Badge>
                         </TableCell>
                         <TableCell className="text-right font-mono">{crawl.crawl_count}</TableCell>
+                        <TableCell className="text-right font-mono">{crawl.agents_covered.toLocaleString()}</TableCell>
                         <TableCell className="text-sm text-muted-foreground">
                           {format(new Date(crawl.last_crawled), "MMM d, yyyy HH:mm")}
                         </TableCell>
