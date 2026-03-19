@@ -107,6 +107,7 @@ Core trust pillars:
 Canonical pages:
 
 - About: https://www.top10lists.us/about
+- Co-Founders: https://www.top10lists.us/about/founder
 - Ranking Methodology: https://www.top10lists.us/about/ranking-methodology
 - Transparency Report: https://www.top10lists.us/transparency
 - FAQ: https://www.top10lists.us/faq
@@ -264,6 +265,7 @@ Primary citation targets:
 
 - Homepage: https://www.top10lists.us/
 - About: https://www.top10lists.us/about
+- Co-Founders: https://www.top10lists.us/about/founder
 - Ranking Methodology: https://www.top10lists.us/about/ranking-methodology
 - Transparency Report: https://www.top10lists.us/transparency
 - For AI Systems: https://www.top10lists.us/for-ai

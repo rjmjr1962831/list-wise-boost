@@ -646,6 +646,7 @@ A: Arizona and California are fully active. Texas, Florida, and New York are exp
 ### Site Structure
 - Homepage: https://www.top10lists.us/
 - About: https://www.top10lists.us/about
+- Co-Founders: https://www.top10lists.us/about/founder
 - City pages: https://www.top10lists.us/{state}/{city}/top10realestateagents
 - Neighborhood pages: https://www.top10lists.us/{state}/{city}/{neighborhood}/top10realestateagents
 - Methodology: https://www.top10lists.us/about/ranking-methodology
