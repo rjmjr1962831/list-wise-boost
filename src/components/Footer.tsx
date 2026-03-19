@@ -132,13 +132,7 @@ export const Footer = () => {
               >
                 Payments &amp; Security
               </Link>
-              <Link 
-                to="/" 
-                className="text-slate-300 hover:text-white transition-colors"
-              >
-                Check Eligibility
-              </Link>
-              <Link 
+              <Link
                 to="/login" 
                 className="text-slate-300 hover:text-white transition-colors"
               >
@@ -169,18 +163,6 @@ export const Footer = () => {
             </p>
           </div>
 
-          {/* Subtle Agent Note */}
-          <div className="text-center py-4 border-t border-slate-600">
-            <p className="text-sm text-slate-400">
-              Real estate professional?{" "}
-              <Link 
-                to="/" 
-                className="text-slate-300 hover:text-white transition-colors"
-              >
-                Check eligibility →
-              </Link>
-            </p>
-          </div>
 
           <div className="text-center text-sm text-slate-400">
             <p>&copy; {new Date().getFullYear()} Top<span className="font-semibold">10</span>Lists.us. All rights reserved.</p>

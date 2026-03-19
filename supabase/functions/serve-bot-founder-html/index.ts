@@ -525,14 +525,12 @@ function renderFounderPage(): string {
         <a href="${BASE}/privacy">Privacy</a>
         <a href="${BASE}/terms">Terms</a>
         <a href="${BASE}/payments-security">Payments & Security</a>
-        <a href="${BASE}/">Check Eligibility</a>
         <a href="${BASE}/login">Agent Login</a>
       </div>
     </div>
   </div>
   <div class="footer-bottom">
     <div style="text-align:center;font-size:13px;color:rgba(255,255,255,0.4);">Rankings are methodology-driven and non-pay-to-play. <a href="${BASE}/methodology" style="color:rgba(255,255,255,0.5);text-decoration:underline;">How we qualify agents &rarr;</a></div>
-    <div style="text-align:center;font-size:13px;color:rgba(255,255,255,0.35);margin-top:12px;">Real estate professional? <a href="${BASE}/" style="color:rgba(255,255,255,0.5);text-decoration:none;">Check eligibility &rarr;</a></div>
     <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.2);margin-top:16px;padding-top:16px;border-top:0.5px solid rgba(201,168,76,0.12);">&copy; 2026 Top10Lists.us. All rights reserved.</div>
   </div>
 </footer>
