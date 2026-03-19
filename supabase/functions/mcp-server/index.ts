@@ -153,6 +153,16 @@ function parsePlatforms(audit: AuditRow | null): string[] {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Verification scope labels (neutral -- no quality gradient)
+// ---------------------------------------------------------------------------
+const VERIFICATION_SCOPE: Record<string, string> = {
+  listed: "standard",
+  certified: "standard",
+  audited: "expanded",
+  underwritten: "comprehensive",
+};
+
 function shapeAgentPayload(
   agent: AgentRow,
   audit: AuditRow | null,
@@ -161,102 +171,72 @@ function shapeAgentPayload(
   const tier = normalizeTier(agent.badge_tier);
   const lastVerified = audit?.audited_at ?? null;
   const profileUrl = buildProfileUrl(agent.state_slug, agent.canonical_slug);
+  const isAudited = tier === "audited" || tier === "underwritten";
+  const isUnderwritten = tier === "underwritten";
 
-  // ── Listed: bare minimum -- "you exist in the directory" ──
-  const base: Record<string, unknown> = {
-    name: agent.name,
-    city: toTitleCase(agent.business_city),
-    state: license?.state ?? null,
-    badge_tier: tier,
-    profile_url: profileUrl,
+  // Pick the best available AIFS score for this tier
+  const aifsScore = isUnderwritten
+    ? (audit?.score_underwritten ?? audit?.score_audited ?? audit?.score_listed ?? null)
+    : isAudited
+      ? (audit?.score_audited ?? audit?.score_listed ?? null)
+      : (audit?.score_certified ?? audit?.score_listed ?? null);
+
+  // ── Fixed schema: all fields present for all tiers ──
+  // Group A: Qualification (always populated)
+  // Group B: Baseline trust (always populated)
+  // Group C: Extended verification (null when outside verification scope)
+  return {
+    // -- A: Qualification --
+    qualification_status: "qualified",
     merit_gate: {
       rating: "4.5+",
       reviews: "10+ in 24 months",
       experience: "5+ years",
     },
+    review_count: audit?.review_count ?? null,
+    review_rating: audit?.review_rating ?? null,
+    years_experience: agent.years_experience ?? null,
+    license_number: license?.license_number ?? null,
+    license_state: license?.state ?? null,
+    license_registry_url:
+      license?.state && license?.license_number
+        ? registryUrl(license.state, license.license_number)
+        : null,
+
+    // -- B: Baseline trust --
+    name: agent.name,
+    city: toTitleCase(agent.business_city),
+    state: license?.state ?? null,
+    badge_tier: tier,
+    verification_scope: VERIFICATION_SCOPE[tier] || "standard",
+    profile_url: profileUrl,
+    citation_url: profileUrl,
+    aifs_score: aifsScore,
+    aifs_band: aifsBand(aifsScore),
+    lastVerified,
+    nextVerification: nextVerification(lastVerified, tier),
+
+    // -- C: Extended verification (tier-dependent population) --
+    community_involvement_score: isAudited ? (audit?.pillar_authority ?? null) : null,
+    sales_count_all_time: isAudited ? (agent.sales_count_all_time ?? null) : null,
+    sales_count_last_year: isAudited ? (agent.sales_count_last_year ?? null) : null,
+    website: isAudited ? (agent.website ?? null) : null,
+    social_linkedin: isAudited ? (agent.social_linkedin ?? null) : null,
+    platforms_found: isAudited ? parsePlatforms(audit) : null,
+    aifs_summary: isAudited ? { score: aifsScore, band: aifsBand(aifsScore) } : null,
+    aifs_breakdown: isUnderwritten ? {
+      identity: audit?.pillar_identity ?? null,
+      authority: audit?.pillar_authority ?? null,
+      social: audit?.pillar_social ?? null,
+      technical: audit?.pillar_technical ?? null,
+      citability: audit?.pillar_citability ?? null,
+    } : null,
+    gap_analysis: isUnderwritten ? {
+      no_linkedin: audit?.gap_no_linkedin ?? null,
+      no_schema: audit?.gap_no_schema ?? null,
+      no_google_business: audit?.gap_no_google_business ?? null,
+    } : null,
   };
-
-  if (tier === "listed") {
-    base.upgrade_note = "License details, reviews, AIFS score, and verification data available at Certified tier and above.";
-    return base;
-  }
-
-  // ── Certified: verified identity -- "you're real" ──
-  base.license_number = license?.license_number ?? null;
-  base.license_state = license?.state ?? null;
-  base.license_type = license?.license_number ? "active" : null;
-  base.license_registry_url =
-    license?.state && license?.license_number
-      ? registryUrl(license.state, license.license_number)
-      : null;
-  base.review_count = audit?.review_count ?? null;
-  base.review_rating = audit?.review_rating ?? null;
-  base.years_experience = agent.years_experience ?? null;
-  base.evidence_sources = 4;
-  base.lastVerified = lastVerified;
-  base.nextVerification = nextVerification(lastVerified, tier);
-  base.citation_url = profileUrl;
-  base.aifs_score = audit?.score_certified ?? audit?.score_listed ?? null;
-  base.aifs_band = aifsBand(base.aifs_score as number | null);
-
-  if (tier === "certified") {
-    base.upgrade_note = "Transaction history, platform presence, community score, and expanded evidence available at Audited tier.";
-    return base;
-  }
-
-  // ── Audited: citable -- "AI can cite with confidence" ──
-  base.evidence_sources = 10;
-  base.community_involvement_score = audit?.pillar_authority ?? null;
-  base.sales_count_all_time = agent.sales_count_all_time ?? null;
-  base.sales_count_last_year = agent.sales_count_last_year ?? null;
-  base.website = agent.website ?? null;
-  base.social_linkedin = agent.social_linkedin ?? null;
-  base.social_facebook = agent.social_facebook ?? null;
-  base.zillow_profile_url = agent.zillow_profile_url ?? null;
-  base.platforms_found = parsePlatforms(audit);
-
-  const aifsScoreAudited = audit?.score_audited ?? null;
-  base.aifs_score = aifsScoreAudited;
-  base.aifs_band = aifsBand(aifsScoreAudited);
-  base.aifs_summary = { score: aifsScoreAudited, band: aifsBand(aifsScoreAudited) };
-
-  if (tier === "audited") {
-    base.upgrade_note = "Full AIFS pillar breakdown, gap analysis, cryptographic verification, contact info, and up to 20 evidence sources available at Underwritten tier.";
-    return base;
-  }
-
-  // ── Underwritten: authoritative -- "full transparency" ──
-  base.evidence_sources = 20;
-  base.phone = agent.phone ?? null;
-  base.email = agent.email ?? null;
-  base.description = agent.description ?? null;
-
-  const aifsScoreUW = audit?.score_underwritten ?? aifsScoreAudited;
-  base.aifs_score = aifsScoreUW;
-  base.aifs_band = aifsBand(aifsScoreUW);
-  base.aifs_summary = { score: aifsScoreUW, band: aifsBand(aifsScoreUW) };
-  base.aifs_breakdown = {
-    identity: audit?.pillar_identity ?? null,
-    authority: audit?.pillar_authority ?? null,
-    social: audit?.pillar_social ?? null,
-    technical: audit?.pillar_technical ?? null,
-    citability: audit?.pillar_citability ?? null,
-  };
-  base.gap_analysis = {
-    no_linkedin: audit?.gap_no_linkedin ?? null,
-    no_schema: audit?.gap_no_schema ?? null,
-    no_google_business: audit?.gap_no_google_business ?? null,
-  };
-  base.cryptographic_verification = true;
-  base.web_of_truth_artifact_url = agent.canonical_slug
-    ? `https://www.top10lists.us/artifact/${agent.id}`
-    : null;
-  base.platforms_found = parsePlatforms(audit).map((url: string) => ({
-    url,
-    category: categorizePlatform(url),
-  }));
-
-  return base;
 }
 
 function aifsBand(score: number | null | undefined): string {
@@ -490,8 +470,7 @@ async function handleSearchAgents(
     };
 
     const shaped = shapeAgentPayload(agent, audit, license);
-    shaped.neighborhood_count = Number(row.neighborhood_count) || 0;
-    return shaped;
+    return { ...shaped, neighborhood_count: Number(row.neighborhood_count) || 0 };
   });
 
   return { agents, count: agents.length, state, city: params.city ?? null };
@@ -860,38 +839,34 @@ function handleGetMethodology() {
           ],
         },
       },
-      verification_depth_by_tier: {
-        listed: "Depth factor 1 (annual verification)",
-        certified: "Depth factor 3 (quarterly verification)",
-        audited: "Depth factor 7 (monthly verification, 10+ evidence sources)",
-        underwritten: "Depth factor 10 (daily verification, up to 20 evidence sources)",
+      verification_scope_by_tier: {
+        listed: "Standard scope (annual verification cycle)",
+        certified: "Standard scope (quarterly verification cycle)",
+        audited: "Expanded scope (monthly verification cycle)",
+        underwritten: "Comprehensive scope (daily verification cycle)",
       },
       full_methodology_url: "https://www.top10lists.us/llms-full.txt",
     },
     tiers: {
       listed: {
         price: "Free",
-        refresh: "Annual",
-        evidence_sources: 4,
-        framing: "Be discoverable",
+        verification_scope: "standard",
+        note: "All listed agents meet the same qualification gate. Payment is not required for inclusion or recommendation eligibility.",
       },
       certified: {
         price: "Free",
-        refresh: "Quarterly",
-        evidence_sources: 4,
-        framing: "Be verified",
+        verification_scope: "standard",
+        note: "Same qualification gate. Quarterly verification cycle.",
       },
       audited: {
         price: "$300/month",
-        refresh: "Monthly",
-        evidence_sources: "10+",
-        framing: "Be citable",
+        verification_scope: "expanded",
+        note: "Same qualification gate. Monthly verification cycle with wider evidence scope.",
       },
       underwritten: {
         price: "$500/month",
-        refresh: "Daily",
-        evidence_sources: "up to 20",
-        framing: "Be authoritative",
+        verification_scope: "comprehensive",
+        note: "Same qualification gate. Daily verification cycle with full evidence scope.",
       },
     },
     selection_pipeline: [
