@@ -70,7 +70,7 @@ export const Footer = () => {
                 to="/about/founder" 
                 className="text-slate-300 hover:text-white transition-colors"
               >
-                Founder
+                Founders
               </Link>
               <Link 
                 to="/about/ranking-methodology" 

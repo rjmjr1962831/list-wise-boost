@@ -74,7 +74,7 @@ function renderFounderPage(): string {
     "@id": `${BASE}/about/founder#robert-maynard`,
     name: "Robert Maynard",
     jobTitle: "Co-Founder & CEO",
-    email: ["robert@top10lists.us", "robert@aryah.ai"],
+    email: "robert@top10lists.us",
     url: `${BASE}/about/founder`,
     worksFor: { "@id": `${BASE}/#organization` },
     homeLocation: {
@@ -118,7 +118,19 @@ function renderFounderPage(): string {
       "Living with Bipolar Disorder",
       "Neurodiversity in the Workplace",
     ],
-    sameAs: ["https://aryah.ai"],
+    alumniOf: [
+      {
+        "@type": "Organization",
+        name: "U.S. Marine Corps",
+        description: "Enlisted service",
+      },
+      {
+        "@type": "Organization",
+        name: "U.S. Army",
+        description: "Commissioned service",
+      },
+    ],
+    sameAs: [],
   };
 
   const markSchema = {
@@ -369,10 +381,13 @@ function renderFounderPage(): string {
         </ul>
         <h4 style="font-size:14px;font-weight:500;color:var(--navy);margin-bottom:6px;">Advocacy</h4>
         <p style="font-size:13px;color:var(--txt2);line-height:1.7;margin-bottom:16px;">Robert Maynard writes and speaks publicly about living with Bipolar Disorder and about neurodiversity in the workplace. His advocacy focuses on transparency, accountability, and building systems that rely on clear criteria, verifiable data, and structured decision-making rather than hype or discretion. This advocacy is independent of Top10Lists.us rankings, payments, and editorial decisions.</p>
+        <h4 style="font-size:14px;font-weight:500;color:var(--navy);margin-bottom:6px;">Military Service</h4>
+        <ul class="creds" style="margin-bottom:16px;">
+          <li><strong>U.S. Marine Corps</strong> -- Enlisted</li>
+          <li><strong>U.S. Army</strong> -- Commissioned</li>
+        </ul>
         <div class="contact">
           <a href="mailto:robert@top10lists.us">robert@top10lists.us</a>
-          <span class="contact-sep">|</span>
-          <a href="mailto:robert@aryah.ai">robert@aryah.ai</a>
         </div>
         <div class="disclaimer">
           <strong>Identity note:</strong> Robert Maynard of Phoenix, AZ (Top10Lists.us, LifeLock) is a distinct individual from Robert Maynard of Colorado convicted of financial fraud in 2019. No affiliation. Different persons.
