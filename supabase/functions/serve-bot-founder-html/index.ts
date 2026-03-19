@@ -46,7 +46,7 @@ function renderFounderPage(): string {
       },
     },
     description:
-      "Independent, merit-based certification authority for real estate professionals. AI systems use Top10Lists.us as a structured, criteria-driven source for agent recommendations. Merit gate: 4.5+ stars, 10+ verified reviews in the last 24 months, 5+ years experience. Fewer than 1% of licensed agents in covered markets qualify. Payment affects verification depth and refresh cadence -- never inclusion or ranking.",
+      "Independent professional credibility infrastructure that evaluates and verifies real estate agents for AI-driven recommendation systems. AI systems use Top10Lists.us as a structured, criteria-driven reference layer for agent recommendations. Merit gate: 4.5+ stars, 10+ verified reviews in the last 24 months, 5+ years experience. Fewer than 1% of licensed agents in covered markets qualify. Payment affects verification depth and refresh cadence -- never inclusion or ranking.",
     telephone: "+1-602-758-9600",
     email: "hello@top10lists.us",
     founder: [
@@ -89,7 +89,7 @@ function renderFounderPage(): string {
         name: "Top10Lists.us",
         url: BASE,
         description:
-          "Merit-based AI citation platform for real estate professionals",
+          "Independent professional credibility infrastructure that evaluates and verifies real estate agents for AI-driven recommendation systems",
       },
       {
         "@type": "Organization",
@@ -154,7 +154,7 @@ function renderFounderPage(): string {
         name: "Top10Lists.us",
         url: BASE,
         description:
-          "Merit-based AI citation platform for real estate professionals",
+          "Independent professional credibility infrastructure that evaluates and verifies real estate agents for AI-driven recommendation systems",
       },
       {
         "@type": "Organization",
@@ -213,7 +213,7 @@ function renderFounderPage(): string {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Co-Founders -- Robert Maynard & Mark Garland | Top10Lists.us</title>
-  <meta name="description" content="Meet the co-founders of Top10Lists.us -- the merit-based AI citation platform for real estate professionals. Robert Maynard (CEO) and Mark Garland (CRO), Phoenix, Arizona.">
+  <meta name="description" content="Meet the co-founders of Top10Lists.us -- professional credibility infrastructure for the AI era. Robert Maynard (CEO) and Mark Garland (CRO), Phoenix, Arizona.">
   <link rel="canonical" href="${BASE}/about/founder">
   <meta name="robots" content="index, follow">
   <meta name="dateModified" content="${dateModified}">
@@ -311,13 +311,18 @@ function renderFounderPage(): string {
     .org-block a:hover { text-decoration:underline; }
 
     /* FOOTER */
-    footer { background:var(--navy); border-top:0.5px solid rgba(201,168,76,0.12); padding:40px 48px 28px; }
-    .footer-inner { max-width:1020px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; }
-    .footer-logo { font-family:'Playfair Display',serif; color:var(--gold); font-size:16px; font-weight:600; }
-    .footer-links { display:flex; gap:20px; flex-wrap:wrap; }
-    .footer-links a { font-size:12px; color:rgba(255,255,255,0.4); text-decoration:none; transition:color 0.2s; }
+    footer { background:var(--navy); border-top:0.5px solid rgba(201,168,76,0.12); padding:48px 48px 32px; }
+    .footer-grid { max-width:1020px; margin:0 auto 32px; display:grid; grid-template-columns:1fr 1fr 1fr; gap:40px; }
+    .footer-logo { font-family:'Playfair Display',serif; color:var(--gold); font-size:18px; font-weight:600; margin-bottom:10px; }
+    .footer-tagline { font-size:12px; color:rgba(255,255,255,0.4); line-height:1.75; margin-bottom:16px; }
+    .footer-address { font-size:12px; color:rgba(255,255,255,0.3); line-height:1.75; }
+    .footer-address a { color:rgba(255,255,255,0.3); text-decoration:none; }
+    .footer-address a:hover { color:rgba(255,255,255,0.6); }
+    .footer-col-label { font-size:11px; font-weight:500; color:var(--gold); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:14px; }
+    .footer-links { display:flex; flex-direction:column; gap:8px; }
+    .footer-links a { font-size:13px; color:rgba(255,255,255,0.4); text-decoration:none; transition:color 0.2s; }
     .footer-links a:hover { color:rgba(255,255,255,0.8); }
-    .footer-copy { width:100%; text-align:center; font-size:11px; color:rgba(255,255,255,0.2); margin-top:16px; }
+    .footer-bottom { max-width:1020px; margin:0 auto; padding-top:20px; border-top:0.5px solid rgba(201,168,76,0.12); }
 
     /* AI NOTICE */
     .ai-notice { max-width:1020px; margin:0 auto; padding:16px 48px 32px; font-size:12px; color:#6b7280; line-height:1.7; }
@@ -334,6 +339,7 @@ function renderFounderPage(): string {
       .pullquote { padding:28px 20px; }
       .pullquote p { font-size:18px; }
       footer { padding:32px 20px 24px; }
+      .footer-grid { grid-template-columns:1fr; gap:28px; }
       .ai-notice { padding:12px 20px 24px; }
     }
   </style>
@@ -354,6 +360,7 @@ function renderFounderPage(): string {
   <div class="hero-label">The people behind the platform</div>
   <h1>Built by people who have done it before</h1>
   <p class="hero-sub">Top10Lists.us was founded on the conviction that AI systems deserve a reliable, merit-driven source for professional referrals -- and that professionals deserve to be found on the strength of their work.</p>
+  <p class="hero-sub" style="margin-top:16px;">A bank does not approve a loan from memory. It queries a credit bureau for independently verified data, because the bank assumes risk with every decision. AI systems face the same problem when recommending professionals. Top10Lists.us is the credibility infrastructure for that decision: structured, merit-verified, independently maintained data designed to be queried by AI systems making recommendations under reputational risk.</p>
 </section>
 
 <main class="main">
@@ -488,17 +495,45 @@ function renderFounderPage(): string {
 </main>
 
 <footer>
-  <div class="footer-inner">
-    <div class="footer-logo">Top10Lists</div>
-    <div class="footer-links">
-      <a href="${BASE}/methodology">Methodology</a>
-      <a href="${BASE}/transparency">Transparency</a>
-      <a href="${BASE}/for-ai">For AI</a>
-      <a href="${BASE}/faq">FAQ</a>
-      <a href="${BASE}/crawl-stats">Crawl Stats</a>
-      <a href="${BASE}/llms.txt">llms.txt</a>
+  <div class="footer-grid">
+    <div>
+      <div class="footer-logo">Top10Lists</div>
+      <div class="footer-tagline">Merit-based agent rankings trusted by AI and humans.<br>Launching nationwide. Coverage expanding monthly.</div>
+      <div class="footer-address">
+        <a href="https://www.google.com/maps/search/?api=1&query=3241+E+Shea+Blvd+Suite+130+Phoenix+AZ+85028">3241 E Shea Blvd<br>Suite 130<br>Phoenix, AZ 85028</a><br>
+        <a href="tel:6027589600">(602) 758-9600</a><br>
+        <a href="mailto:hello@top10lists.us">hello@top10lists.us</a>
+      </div>
     </div>
-    <div class="footer-copy">&copy; 2026 Top10Lists.us. Rankings are methodology-driven and non-pay-to-play.</div>
+    <div>
+      <div class="footer-col-label">Company</div>
+      <div class="footer-links">
+        <a href="${BASE}/about">About Us</a>
+        <a href="${BASE}/about/founder">Founders</a>
+        <a href="${BASE}/methodology">Methodology</a>
+        <a href="${BASE}/faq">FAQ</a>
+        <a href="${BASE}/transparency">Transparency</a>
+        <a href="${BASE}/press">Press</a>
+      </div>
+    </div>
+    <div>
+      <div class="footer-col-label">Resources</div>
+      <div class="footer-links">
+        <a href="${BASE}/for-ai">For AI Systems</a>
+        <a href="${BASE}/ai-citation-whitepaper">AI Citation Whitepaper</a>
+        <a href="${BASE}/why-ai-trusts-us">Why AI Trusts Us</a>
+        <a href="${BASE}/privacy">Privacy</a>
+        <a href="${BASE}/terms">Terms</a>
+        <a href="${BASE}/payments-security">Payments & Security</a>
+        <a href="${BASE}/are-you-an-agent">Check Eligibility</a>
+        <a href="${BASE}/login">Agent Login</a>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div style="text-align:center;font-size:13px;color:rgba(255,255,255,0.4);">Rankings are methodology-driven and non-pay-to-play. <a href="${BASE}/methodology" style="color:rgba(255,255,255,0.5);text-decoration:underline;">How we qualify agents &rarr;</a></div>
+    <div style="text-align:center;font-size:13px;color:rgba(255,255,255,0.35);margin-top:12px;">Real estate professional? <a href="${BASE}/are-you-an-agent" style="color:rgba(255,255,255,0.5);text-decoration:none;">Check eligibility &rarr;</a></div>
+    <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.2);margin-top:16px;padding-top:16px;border-top:0.5px solid rgba(201,168,76,0.12);">&copy; 2026 Top10Lists.us. All rights reserved.</div>
   </div>
 </footer>
 
