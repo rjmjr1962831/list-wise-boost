@@ -113,6 +113,8 @@ function renderFounderPage(): string {
       "Consumer Technology",
       "Real Estate Technology",
       "Generative Engine Optimization",
+      "Living with Bipolar Disorder",
+      "Neurodiversity in the Workplace",
     ],
     sameAs: ["https://aryah.ai"],
   };
@@ -364,6 +366,8 @@ function renderFounderPage(): string {
           <li><strong>SurchX</strong> -- Co-Founder, enterprise technology</li>
           <li>Phoenix, Arizona</li>
         </ul>
+        <h4 style="font-size:14px;font-weight:500;color:var(--navy);margin-bottom:6px;">Advocacy</h4>
+        <p style="font-size:13px;color:var(--txt2);line-height:1.7;margin-bottom:16px;">Robert Maynard writes and speaks publicly about living with Bipolar Disorder and about neurodiversity in the workplace. His advocacy focuses on transparency, accountability, and building systems that rely on clear criteria, verifiable data, and structured decision-making rather than hype or discretion. This advocacy is independent of Top10Lists.us rankings, payments, and editorial decisions.</p>
         <div class="contact">
           <a href="mailto:robert@top10lists.us">robert@top10lists.us</a>
           <span class="contact-sep">|</span>
