@@ -146,6 +146,9 @@ interface MarketRow { business_city: string; state_slug: string; crawls: number;
 interface IntentRow { bot_name: string; visits: number; agents: number; last_seen: string; }
 interface RecentRow { bot_name: string; page_path: string; crawled_at: string; name: string | null; business_city: string | null; }
 interface ReturnRow { bot_name: string; total_agents: number; returning_agents: number; }
+interface McpStatRow { tool_name: string; total_calls: number; distinct_cities: number; last_seen: string; }
+interface McpCityRow { city: string; calls: number; }
+interface McpSummaryRow { total_calls: number; last_activity: string; }
 
 /* ── Data fetching (all queries in parallel) ───────────────────────────── */
 async function fetchAllData() {
@@ -153,7 +156,7 @@ async function fetchAllData() {
   const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const sb = createClient(supabaseUrl, supabaseKey);
 
-  const [botResult, summaryResult, marketResult, intentResult, recentResult, returnResult] = await Promise.all([
+  const [botResult, summaryResult, marketResult, intentResult, recentResult, returnResult, mcpToolResult, mcpCityResult, mcpSummaryResult] = await Promise.all([
     sb.rpc("run_sql", {
       query: `SELECT bot_name, count(*)::int as visits, count(DISTINCT agent_id)::int as agents_covered, max(crawled_at)::text as last_seen FROM bot_crawl_logs WHERE crawled_at >= now() - interval '30 days' GROUP BY bot_name ORDER BY visits DESC`,
     }),
@@ -209,6 +212,15 @@ async function fetchAllData() {
     sb.rpc("run_sql", {
       query: `SELECT bot_name, count(DISTINCT agent_id)::int as total_agents, count(DISTINCT agent_id) FILTER (WHERE visit_days >= 2)::int as returning_agents FROM (SELECT bot_name, agent_id, count(DISTINCT crawled_at::date) as visit_days FROM bot_crawl_logs WHERE crawled_at >= now() - interval '30 days' AND agent_id IS NOT NULL GROUP BY bot_name, agent_id) sub GROUP BY bot_name ORDER BY total_agents DESC`,
     }),
+    sb.rpc("run_sql", {
+      query: `SELECT tool_name, count(*)::int as total_calls, count(DISTINCT city)::int as distinct_cities, max(created_at)::text as last_seen FROM mcp_request_logs WHERE created_at >= now() - interval '30 days' GROUP BY tool_name ORDER BY total_calls DESC`,
+    }),
+    sb.rpc("run_sql", {
+      query: `SELECT city, count(*)::int as calls FROM mcp_request_logs WHERE created_at >= now() - interval '30 days' AND city IS NOT NULL GROUP BY city ORDER BY calls DESC LIMIT 10`,
+    }),
+    sb.rpc("run_sql", {
+      query: `SELECT count(*)::int as total_calls, max(created_at)::text as last_activity FROM mcp_request_logs WHERE created_at >= now() - interval '30 days'`,
+    }),
   ]);
 
   return {
@@ -218,6 +230,9 @@ async function fetchAllData() {
     intent: (intentResult.data as IntentRow[]) || [],
     recent: (recentResult.data as RecentRow[]) || [],
     returns: (returnResult.data as ReturnRow[]) || [],
+    mcpTools: (mcpToolResult.data as McpStatRow[]) || [],
+    mcpCities: (mcpCityResult.data as McpCityRow[]) || [],
+    mcpSummary: (mcpSummaryResult.data as McpSummaryRow[])?.[0] || { total_calls: 0, last_activity: "" },
   };
 }
 
@@ -290,7 +305,7 @@ function mergeIntent(intent: IntentRow[]): IntentRow[] {
 
 /* ── Render ─────────────────────────────────────────────────────────────── */
 async function renderCrawlStats(): Promise<string> {
-  const { bots, summary, markets, intent, recent, returns } = await fetchAllData();
+  const { bots, summary, markets, intent, recent, returns, mcpTools, mcpCities, mcpSummary } = await fetchAllData();
 
   const mergedBots = mergeBots(bots);
   const mergedReturns = mergeReturns(returns);
@@ -434,6 +449,7 @@ async function renderCrawlStats(): Promise<string> {
       { "@type": "PropertyValue", "name": "Consumer Intent Crawls", "value": intentVisits },
       { "@type": "PropertyValue", "name": "Search Engine Crawls", "value": searchVisits },
       { "@type": "PropertyValue", "name": "Markets Covered", "value": uniqueMarkets },
+      { "@type": "PropertyValue", "name": "MCP Tool Calls", "value": mcpSummary.total_calls },
     ],
   })}</script>
   <style>${CSS}</style>
@@ -535,6 +551,45 @@ async function renderCrawlStats(): Promise<string> {
     <div style="border:1px solid #e5e7eb; border-radius:6px; padding:0.5rem 1rem; max-height:600px; overflow-y:auto;">
       ${streamItems}
     </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <!-- SECTION F: Direct AI Tool Calls (MCP)                              -->
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <section>
+    <h2>F. Direct AI Tool Calls (MCP)</h2>
+    <div class="intent-highlight">
+      <p><strong>These are the highest-intent signals we have.</strong> An AI system is actively answering a user's question and calling our MCP server's tools in real time via JSON-RPC to get verified agent data. Unlike page crawls (which build a knowledge base), MCP calls mean an AI is constructing a live response right now.</p>
+      <p><strong>${fmt(mcpSummary.total_calls)}</strong> direct MCP tool calls in the last ${daysLabel}.${mcpSummary.last_activity ? ` Last activity: ${formatTimeAbsolute(mcpSummary.last_activity)}.` : ''}</p>
+    </div>
+    ${mcpTools.length > 0 ? `
+    <h3>Tool Call Breakdown</h3>
+    <table>
+      <thead>
+        <tr><th>Tool</th><th class="num">Calls</th><th class="num">Distinct Cities</th><th>Last Called</th></tr>
+      </thead>
+      <tbody>
+        ${mcpTools.map((t: McpStatRow) => `<tr>
+          <td><strong>${esc(t.tool_name)}</strong></td>
+          <td class="num">${fmt(t.total_calls)}</td>
+          <td class="num">${t.distinct_cities}</td>
+          <td class="timestamp">${formatTimeAbsolute(t.last_seen)}</td>
+        </tr>`).join('\n')}
+      </tbody>
+    </table>` : '<p class="muted">No MCP tool calls recorded yet.</p>'}
+    ${mcpCities.length > 0 ? `
+    <h3>Top Cities Queried via MCP</h3>
+    <table>
+      <thead>
+        <tr><th>City</th><th class="num">Queries</th></tr>
+      </thead>
+      <tbody>
+        ${mcpCities.map((c: McpCityRow) => `<tr>
+          <td>${esc(titleCase(c.city))}</td>
+          <td class="num">${fmt(c.calls)}</td>
+        </tr>`).join('\n')}
+      </tbody>
+    </table>` : ''}
   </section>
 
   <!-- ═══════════════════════════════════════════════════════════════════ -->

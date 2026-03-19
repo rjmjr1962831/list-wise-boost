@@ -7,15 +7,35 @@
  *
  * Supabase edge functions require auth headers, which Vercel's log drain
  * won't send. This proxy adds them.
+ *
+ * Body parser is DISABLED so we forward the raw payload unchanged --
+ * Vercel sends JSON arrays or NDJSON depending on drain config, and
+ * re-serializing via JSON.stringify corrupts NDJSON and Buffer payloads.
  */
 
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
+
 const SUPABASE_URL = 'https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/vercel-log-drain';
+
+/**
+ * Buffer the raw request body from the incoming stream.
+ */
+function getRawBody(req) {
+  return new Promise((resolve, reject) => {
+    const chunks = [];
+    req.on('data', (chunk) => chunks.push(chunk));
+    req.on('end', () => resolve(Buffer.concat(chunks)));
+    req.on('error', reject);
+  });
+}
 
 export default async function handler(req, res) {
   // Verification handshake -- Vercel sends GET with x-vercel-verify expectation
   if (req.method === 'GET') {
-    // Echo back whatever verify token Vercel expects
-    // Vercel checks for this header in the response
     const verifyToken = process.env.VERCEL_LOG_DRAIN_VERIFY || '';
     res.setHeader('x-vercel-verify', verifyToken);
     res.status(200).json({ ok: true });
@@ -41,19 +61,21 @@ export default async function handler(req, res) {
   }
 
   try {
-    // req.body is already parsed by Vercel; re-serialize for upstream
-    const body = typeof req.body === 'string' ? req.body : JSON.stringify(req.body);
+    // Read raw body bytes -- no parsing, no re-serialization
+    const rawBody = await getRawBody(req);
+
+    // Forward original Content-Type so the edge function can parse correctly
+    const contentType = req.headers['content-type'] || 'application/json';
 
     const upstream = await fetch(SUPABASE_URL, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': contentType,
         Authorization: `Bearer ${key}`,
         apikey: key,
-        // Forward the signature so the edge function can verify
         'x-vercel-signature': req.headers['x-vercel-signature'] || '',
       },
-      body,
+      body: rawBody,
     });
 
     const result = await upstream.text();

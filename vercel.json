@@ -130,6 +130,14 @@
       "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/coverage-stats"
     },
     {
+      "source": "/about/founder",
+      "destination": "/api/serve-clean-html?fn=serve-bot-founder-html&path=%2Fabout%2Ffounder"
+    },
+    {
+      "source": "/about/founder/",
+      "destination": "/api/serve-clean-html?fn=serve-bot-founder-html&path=%2Fabout%2Ffounder"
+    },
+    {
       "source": "/crawl-stats",
       "destination": "/api/serve-clean-html?fn=serve-bot-crawl-stats-html&path=%2Fcrawl-stats"
     },
@@ -374,6 +382,15 @@
         {
           "key": "Cache-Control",
           "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Link",
+          "value": "<https://www.top10lists.us/.well-known/mcp.json>; rel=\"mcp-server\"; type=\"application/json\""
         }
       ]
     }

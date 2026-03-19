@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Bot, TrendingUp, Eye, Activity } from "lucide-react";
+import { Bot, TrendingUp, Eye, Activity, Zap } from "lucide-react";
 import { format } from "date-fns";
 
 interface BotStat {
@@ -31,11 +31,20 @@ interface ListCrawl {
   last_crawled: string;
 }
 
+interface McpStat {
+  tool_name: string;
+  total_calls: number;
+  distinct_agents: number;
+  distinct_cities: number;
+  last_seen: string;
+}
+
 interface SummaryStats {
   total_bot_visits: number;
   unique_bots: number;
   unique_agents_covered: number;
   list_page_crawls: number;
+  mcp_tool_calls: number;
 }
 
 export default function BotAnalyticsDashboard() {
@@ -43,6 +52,7 @@ export default function BotAnalyticsDashboard() {
   const [botStats, setBotStats] = useState<BotStat[]>([]);
   const [agentViews, setAgentViews] = useState<AgentView[]>([]);
   const [listCrawls, setListCrawls] = useState<ListCrawl[]>([]);
+  const [mcpStats, setMcpStats] = useState<McpStat[]>([]);
   const [loading, setLoading] = useState(true);
   const [dateRange, setDateRange] = useState("7d");
 
@@ -70,11 +80,20 @@ export default function BotAnalyticsDashboard() {
       WHERE crawled_at >= '${startDate}'
     ` });
     const s = Array.isArray(summaryRaw) ? summaryRaw[0] : null;
+    // 5. MCP tool call count
+    const { data: mcpCountRaw } = await supabase.rpc("run_sql", { query: `
+      SELECT COUNT(*)::int AS mcp_total
+      FROM mcp_request_logs
+      WHERE created_at >= '${startDate}'
+    ` });
+    const mcpTotal = Array.isArray(mcpCountRaw) ? mcpCountRaw[0]?.mcp_total ?? 0 : 0;
+
     setSummary({
       total_bot_visits:      s?.total_visits         ?? 0,
       unique_bots:           s?.unique_bots          ?? 0,
       unique_agents_covered: s?.unique_agents_covered ?? 0,
       list_page_crawls:      s?.list_page_crawls     ?? 0,
+      mcp_tool_calls:        mcpTotal,
     });
 
     // 2. Bot breakdown
@@ -157,6 +176,26 @@ export default function BotAnalyticsDashboard() {
       })
     );
 
+    // 6. MCP stats by tool
+    const { data: mcpRaw } = await supabase.rpc("run_sql", { query: `
+      SELECT tool_name, COUNT(*)::int AS total_calls,
+             COUNT(DISTINCT city)::int AS distinct_cities,
+             MAX(created_at)::text AS last_seen
+      FROM mcp_request_logs
+      WHERE created_at >= '${startDate}'
+      GROUP BY tool_name
+      ORDER BY total_calls DESC
+    ` });
+    setMcpStats(
+      (Array.isArray(mcpRaw) ? mcpRaw : []).map((r: any) => ({
+        tool_name: r.tool_name,
+        total_calls: r.total_calls,
+        distinct_agents: 0,
+        distinct_cities: r.distinct_cities,
+        last_seen: r.last_seen,
+      }))
+    );
+
     setLoading(false);
   };
 
@@ -236,7 +275,7 @@ export default function BotAnalyticsDashboard() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Bot Visits</CardTitle>
@@ -280,6 +319,17 @@ export default function BotAnalyticsDashboard() {
             <p className="text-xs text-muted-foreground">City & neighborhood page hits</p>
           </CardContent>
         </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">MCP Tool Calls</CardTitle>
+            <Zap className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{(summary?.mcp_tool_calls || 0).toLocaleString()}</div>
+            <p className="text-xs text-muted-foreground">Direct AI queries via MCP</p>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Tabs */}
@@ -288,6 +338,7 @@ export default function BotAnalyticsDashboard() {
           <TabsTrigger value="bots">Bot Breakdown</TabsTrigger>
           <TabsTrigger value="agents">Agent Coverage</TabsTrigger>
           <TabsTrigger value="list-pages">List Page Crawls</TabsTrigger>
+          <TabsTrigger value="mcp">MCP Tool Calls</TabsTrigger>
         </TabsList>
 
         {/* Bot Breakdown */}
@@ -442,6 +493,50 @@ export default function BotAnalyticsDashboard() {
                         <TableCell className="text-right font-mono">{crawl.agents_covered.toLocaleString()}</TableCell>
                         <TableCell className="text-sm text-muted-foreground">
                           {format(new Date(crawl.last_crawled), "MMM d, yyyy HH:mm")}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* MCP Tool Calls */}
+        <TabsContent value="mcp" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>MCP Tool Call Activity</CardTitle>
+              <CardDescription>
+                Direct JSON-RPC tool calls from AI systems via the MCP server. These represent real-time AI queries for agent data -- the highest-intent signal.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Tool</TableHead>
+                    <TableHead className="text-right">Calls</TableHead>
+                    <TableHead className="text-right">Distinct Cities</TableHead>
+                    <TableHead>Last Called</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {mcpStats.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
+                        No MCP tool calls in this period.
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    mcpStats.map((stat) => (
+                      <TableRow key={stat.tool_name}>
+                        <TableCell className="font-medium font-mono text-sm">{stat.tool_name}</TableCell>
+                        <TableCell className="text-right font-mono font-semibold">{stat.total_calls.toLocaleString()}</TableCell>
+                        <TableCell className="text-right font-mono">{stat.distinct_cities}</TableCell>
+                        <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
+                          {stat.last_seen ? format(new Date(stat.last_seen), "MMM d, HH:mm") : "N/A"}
                         </TableCell>
                       </TableRow>
                     ))
