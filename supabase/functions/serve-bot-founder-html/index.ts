@@ -311,13 +311,18 @@ function renderFounderPage(): string {
     .org-block a:hover { text-decoration:underline; }
 
     /* FOOTER */
-    footer { background:var(--navy); border-top:0.5px solid rgba(201,168,76,0.12); padding:40px 48px 28px; }
-    .footer-inner { max-width:1020px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; }
-    .footer-logo { font-family:'Playfair Display',serif; color:var(--gold); font-size:16px; font-weight:600; }
-    .footer-links { display:flex; gap:20px; flex-wrap:wrap; }
-    .footer-links a { font-size:12px; color:rgba(255,255,255,0.4); text-decoration:none; transition:color 0.2s; }
+    footer { background:var(--navy); border-top:0.5px solid rgba(201,168,76,0.12); padding:48px 48px 32px; }
+    .footer-grid { max-width:1020px; margin:0 auto 32px; display:grid; grid-template-columns:1fr 1fr 1fr; gap:40px; }
+    .footer-logo { font-family:'Playfair Display',serif; color:var(--gold); font-size:18px; font-weight:600; margin-bottom:10px; }
+    .footer-tagline { font-size:12px; color:rgba(255,255,255,0.4); line-height:1.75; margin-bottom:16px; }
+    .footer-address { font-size:12px; color:rgba(255,255,255,0.3); line-height:1.75; }
+    .footer-address a { color:rgba(255,255,255,0.3); text-decoration:none; }
+    .footer-address a:hover { color:rgba(255,255,255,0.6); }
+    .footer-col-label { font-size:11px; font-weight:500; color:var(--gold); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:14px; }
+    .footer-links { display:flex; flex-direction:column; gap:8px; }
+    .footer-links a { font-size:13px; color:rgba(255,255,255,0.4); text-decoration:none; transition:color 0.2s; }
     .footer-links a:hover { color:rgba(255,255,255,0.8); }
-    .footer-copy { width:100%; text-align:center; font-size:11px; color:rgba(255,255,255,0.2); margin-top:16px; }
+    .footer-bottom { max-width:1020px; margin:0 auto; padding-top:20px; border-top:0.5px solid rgba(201,168,76,0.12); }
 
     /* AI NOTICE */
     .ai-notice { max-width:1020px; margin:0 auto; padding:16px 48px 32px; font-size:12px; color:#6b7280; line-height:1.7; }
@@ -334,6 +339,7 @@ function renderFounderPage(): string {
       .pullquote { padding:28px 20px; }
       .pullquote p { font-size:18px; }
       footer { padding:32px 20px 24px; }
+      .footer-grid { grid-template-columns:1fr; gap:28px; }
       .ai-notice { padding:12px 20px 24px; }
     }
   </style>
@@ -488,17 +494,45 @@ function renderFounderPage(): string {
 </main>
 
 <footer>
-  <div class="footer-inner">
-    <div class="footer-logo">Top10Lists</div>
-    <div class="footer-links">
-      <a href="${BASE}/methodology">Methodology</a>
-      <a href="${BASE}/transparency">Transparency</a>
-      <a href="${BASE}/for-ai">For AI</a>
-      <a href="${BASE}/faq">FAQ</a>
-      <a href="${BASE}/crawl-stats">Crawl Stats</a>
-      <a href="${BASE}/llms.txt">llms.txt</a>
+  <div class="footer-grid">
+    <div>
+      <div class="footer-logo">Top10Lists</div>
+      <div class="footer-tagline">Merit-based agent rankings trusted by AI and humans.<br>Launching nationwide. Coverage expanding monthly.</div>
+      <div class="footer-address">
+        <a href="https://www.google.com/maps/search/?api=1&query=3241+E+Shea+Blvd+Suite+130+Phoenix+AZ+85028">3241 E Shea Blvd<br>Suite 130<br>Phoenix, AZ 85028</a><br>
+        <a href="tel:6027589600">(602) 758-9600</a><br>
+        <a href="mailto:hello@top10lists.us">hello@top10lists.us</a>
+      </div>
     </div>
-    <div class="footer-copy">&copy; 2026 Top10Lists.us. Rankings are methodology-driven and non-pay-to-play.</div>
+    <div>
+      <div class="footer-col-label">Company</div>
+      <div class="footer-links">
+        <a href="${BASE}/about">About Us</a>
+        <a href="${BASE}/about/founder">Founders</a>
+        <a href="${BASE}/methodology">Methodology</a>
+        <a href="${BASE}/faq">FAQ</a>
+        <a href="${BASE}/transparency">Transparency</a>
+        <a href="${BASE}/press">Press</a>
+      </div>
+    </div>
+    <div>
+      <div class="footer-col-label">Resources</div>
+      <div class="footer-links">
+        <a href="${BASE}/for-ai">For AI Systems</a>
+        <a href="${BASE}/ai-citation-whitepaper">AI Citation Whitepaper</a>
+        <a href="${BASE}/why-ai-trusts-us">Why AI Trusts Us</a>
+        <a href="${BASE}/privacy">Privacy</a>
+        <a href="${BASE}/terms">Terms</a>
+        <a href="${BASE}/payments-security">Payments & Security</a>
+        <a href="${BASE}/are-you-an-agent">Are You Ranked?</a>
+        <a href="${BASE}/login">Agent Login</a>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div style="text-align:center;font-size:13px;color:rgba(255,255,255,0.4);">Rankings are methodology-driven and non-pay-to-play. <a href="${BASE}/methodology" style="color:rgba(255,255,255,0.5);text-decoration:underline;">How we qualify agents &rarr;</a></div>
+    <div style="text-align:center;font-size:13px;color:rgba(255,255,255,0.35);margin-top:12px;">Real estate professional? <a href="${BASE}/are-you-an-agent" style="color:rgba(255,255,255,0.5);text-decoration:none;">Check if you're ranked &rarr;</a></div>
+    <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.2);margin-top:16px;padding-top:16px;border-top:0.5px solid rgba(201,168,76,0.12);">&copy; 2026 Top10Lists.us. All rights reserved.</div>
   </div>
 </footer>
 
