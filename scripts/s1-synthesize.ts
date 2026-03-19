@@ -1,18 +1,18 @@
 /**
- * s1 — Master Synthesis. Gathers all per-AI takeaways and updates COMPREHENSIVE_KNOWLEDGE_DOCUMENT.
+ * s1 -- Master Synthesis. Uses DeepSeek to intelligently synthesize all
+ * takeaways into a compact, deduplicated Section 21.
  *
  * Usage: npm run s1
  *
  * 1. Reads all *TAKEAWAYS*.md in docs/takeaways/
- * 2. Consolidates them by date and AI source
- * 3. Updates docs/COMPREHENSIVE_KNOWLEDGE_DOCUMENT.md:
- *    - Sets "Last consolidated" to today
- *    - Updates live agent counts from Supabase (Section 1 coverage line)
- *    - Adds/updates "## 21. Recent Updates (from t1)" with synthesized content
- *    - Preserves all other sections
- * 4. Commits locally (does NOT push — Robert batches pushes with pts)
+ * 2. Reads current Section 21 (if any) as context
+ * 3. Sends everything to DeepSeek for intelligent synthesis
+ * 4. Replaces Section 21 with the LLM output
+ * 5. Updates "Last consolidated" date and live agent counts
+ * 6. Copies to docs/prompts/claude-web-project-knowledge.md
+ * 7. Commits locally (does NOT push -- Robert batches pushes with pts)
  */
-import { readFileSync, writeFileSync, readdirSync, existsSync } from 'fs';
+import { readFileSync, writeFileSync, readdirSync, existsSync, copyFileSync } from 'fs';
 import { execSync } from 'child_process';
 import { resolve } from 'path';
 import { createClient } from '@supabase/supabase-js';
@@ -28,35 +28,132 @@ if (existsSync(envPath)) {
 
 const TAKEAWAYS_DIR = resolve(process.cwd(), 'docs/takeaways');
 const COMPREHENSIVE_PATH = resolve(process.cwd(), 'docs/COMPREHENSIVE_KNOWLEDGE_DOCUMENT.md');
+const CLAUDE_WEB_PATH = resolve(process.cwd(), 'docs/prompts/claude-web-project-knowledge.md');
 const TAKEAWAYS_GLOB = /^[A-Z_]+_TAKEAWAYS_\d{4}-\d{2}-\d{2}(_\d{4})?\.md$/;
 
-function getTakeawaysFiles(): string[] {
+function getTakeawaysFiles(sinceDate: string | null): string[] {
   if (!existsSync(TAKEAWAYS_DIR)) return [];
-  return readdirSync(TAKEAWAYS_DIR)
+  const all = readdirSync(TAKEAWAYS_DIR)
     .filter((f) => TAKEAWAYS_GLOB.test(f))
-    .sort()
-    .reverse();
+    .sort();
+  if (!sinceDate) return all;
+  return all.filter((f) => {
+    const m = f.match(/(\d{4}-\d{2}-\d{2})/);
+    return m ? m[1] > sinceDate : false;
+  });
 }
 
-function parseTakeawaysFile(filePath: string): { ai: string; date: string; content: string } {
-  const content = readFileSync(filePath, 'utf-8');
-  const match = filePath.match(/([A-Z_]+)_TAKEAWAYS_(\d{4}-\d{2}-\d{2})(_\d{4})?\.md$/);
-  const ai = match?.[1] ?? 'UNKNOWN';
-  const date = match?.[2] ?? '';
-  return { ai, date, content };
-}
-
-function synthesizeTakeaways(files: string[]): string {
-  const today = new Date().toISOString().slice(0, 10);
-  const sections: string[] = [`## 21. Recent Updates (from t1)\n\n*Last synthesized: ${today}*\n\n`];
-
+function readAllTakeaways(files: string[]): string {
+  const chunks: string[] = [];
   for (const f of files) {
-    const path = resolve(TAKEAWAYS_DIR, f);
-    const { ai, date, content } = parseTakeawaysFile(path);
-    sections.push(`### ${ai} — ${date}\n\n${content.trim()}\n\n`);
+    const content = readFileSync(resolve(TAKEAWAYS_DIR, f), 'utf-8');
+    chunks.push(`--- FILE: ${f} ---\n${content.trim()}`);
+  }
+  return chunks.join('\n\n');
+}
+
+function getLastSynthesizedDate(): string | null {
+  if (!existsSync(COMPREHENSIVE_PATH)) return null;
+  const doc = readFileSync(COMPREHENSIVE_PATH, 'utf-8');
+  const match = doc.match(/\*Last synthesized: (\d{4}-\d{2}-\d{2})/);
+  return match?.[1] ?? null;
+}
+
+function splitComprehensive(doc: string): { sections1to20: string; section21: string } {
+  const marker = /\n---\s*\n+## 21\. Recent Updates/;
+  const match = doc.search(marker);
+  if (match === -1) {
+    return { sections1to20: doc, section21: '' };
+  }
+  return {
+    sections1to20: doc.slice(0, match),
+    section21: doc.slice(match).replace(/^\n---\s*\n+/, ''),
+  };
+}
+
+async function synthesizeWithLLM(takeawaysText: string, currentSection21: string): Promise<string> {
+  const apiKey = process.env.DEEPSEEK_API_KEY;
+  if (!apiKey) throw new Error('DEEPSEEK_API_KEY not set in .env');
+
+  const today = new Date().toISOString().slice(0, 10);
+
+  const isIncremental = currentSection21.length > 0;
+
+  const systemPrompt = isIncremental
+    ? `You are a technical editor merging NEW session takeaways into an existing synthesized knowledge section.
+
+Rules:
+- You will receive the EXISTING Section 21 and NEW takeaways only
+- Merge new information into the existing topic groups where it fits
+- Add new topic groups (### headers) only if new info doesn't fit existing ones
+- If new info supersedes something in the existing section, REPLACE the old info
+- Remove redundancy -- don't add what's already covered
+- Drop ephemeral session details (file lists, "what we did today" narratives)
+- Keep ONLY: decisions made, things deployed/live, things deprecated/removed, current state, standing rules, config changes, new edge functions/scripts
+- Use -- instead of em dashes
+- Keep dates only where they matter
+- Output the complete updated Section 21
+- Start with exactly: ## 21. Recent Updates (from t1)\\n\\n*Last synthesized: ${today}*\\n\\n---`
+    : `You are a technical editor synthesizing software project session logs into a compact knowledge document section.
+
+Rules:
+- Group by TOPIC, not by session or date
+- Remove all redundancy -- if the same fact appears in multiple sessions, keep one instance
+- Drop anything superseded (e.g., "plan to do X" when a later session says X was done)
+- Drop ephemeral session details (file lists, "what we did today" narratives)
+- Keep ONLY: decisions made, things deployed/live, things deprecated/removed, current state, standing rules, config changes, new edge functions/scripts
+- Use ### headers for topic groups (e.g., "### AIFS", "### Bot Crawl Analytics", "### GEO Audit")
+- Use bullet points (- ) under each header
+- Keep dates only where they matter
+- Use -- instead of em dashes
+- Target 150-250 lines total
+- Start with exactly: ## 21. Recent Updates (from t1)\\n\\n*Last synthesized: ${today}*\\n\\n---`;
+
+  const userPrompt = isIncremental
+    ? `Here is the EXISTING Section 21:\n\n${currentSection21}\n\nHere are the NEW session takeaways to merge in:\n\n${takeawaysText}\n\nProduce the updated Section 21. Output ONLY the markdown content, starting with the ## 21 header.`
+    : `Here are all the raw session takeaways to synthesize:\n\n${takeawaysText}\n\nProduce the synthesized Section 21. Output ONLY the markdown content, starting with the ## 21 header.`;
+
+  const response = await fetch('https://api.deepseek.com/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: 'deepseek-chat',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt },
+      ],
+      temperature: 0.3,
+      max_tokens: 8192,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorBody = await response.text();
+    throw new Error(`DeepSeek API error ${response.status}: ${errorBody}`);
   }
 
-  return sections.join('---\n\n');
+  const data = await response.json() as {
+    choices: Array<{ message: { content: string } }>;
+    usage?: { prompt_tokens: number; completion_tokens: number; total_tokens: number };
+  };
+  const content = data.choices?.[0]?.message?.content;
+  if (!content) throw new Error('DeepSeek returned empty response');
+
+  const usage = data.usage;
+  if (usage) {
+    console.log(`s1: DeepSeek usage -- ${usage.prompt_tokens} prompt + ${usage.completion_tokens} completion = ${usage.total_tokens} total tokens`);
+  }
+
+  // Ensure it starts with the right header
+  let result = content.trim();
+  if (!result.startsWith('## 21.')) {
+    result = `## 21. Recent Updates (from t1)\n\n*Last synthesized: ${today}*\n\n---\n\n${result}`;
+  }
+
+  return result;
 }
 
 async function getLiveCounts(): Promise<{ total: number; az: number; ca: number } | null> {
@@ -85,60 +182,65 @@ function fmt(n: number): string {
   return n.toLocaleString('en-US');
 }
 
-async function updateComprehensive(synthesis: string): Promise<void> {
-  let doc = readFileSync(COMPREHENSIVE_PATH, 'utf-8');
+async function main() {
   const today = new Date().toISOString().slice(0, 10);
 
-  // Update Last consolidated date
+  // 1. Read current doc and split
+  let doc = readFileSync(COMPREHENSIVE_PATH, 'utf-8');
+  const { sections1to20, section21 } = splitComprehensive(doc);
+
+  // 2. Find only NEW takeaways since last synthesis
+  const lastSynth = getLastSynthesizedDate();
+  const files = getTakeawaysFiles(lastSynth);
+
+  let synthesized: string;
+  if (files.length === 0 && section21) {
+    console.log(`s1: No new takeaways since ${lastSynth}. Only updating date and counts.`);
+    synthesized = section21;
+  } else if (files.length === 0) {
+    console.log('No t1 takeaways files found in docs/takeaways/. Run "t1" on each AI first.');
+    process.exit(0);
+    return;
+  } else {
+    console.log(`s1: ${files.length} new takeaways since ${lastSynth ?? 'never'}. Synthesizing...`);
+    const takeawaysText = readAllTakeaways(files);
+    synthesized = await synthesizeWithLLM(takeawaysText, section21);
+  }
+  const lineCount = synthesized.split('\n').length;
+  console.log(`s1: Synthesized Section 21: ${lineCount} lines.`);
+
+  // 4. Reassemble document
+  doc = sections1to20.trimEnd() + '\n\n---\n\n' + synthesized.trim() + '\n';
+
+  // 5. Update metadata
   doc = doc.replace(
     /\*\*Last consolidated:\*\* .+/,
     `**Last consolidated:** ${today}`
   );
 
-  // Update live agent counts in Section 1 coverage line
   const counts = await getLiveCounts();
   if (counts) {
     doc = doc.replace(
       /[\d,]+ active \([\d,]+ AZ \+ [\d,]+ CA\)/,
       `${fmt(counts.total)} active (${fmt(counts.az)} AZ + ${fmt(counts.ca)} CA)`
     );
-    console.log(`s1: Updated coverage counts → ${fmt(counts.total)} active (${fmt(counts.az)} AZ + ${fmt(counts.ca)} CA)`);
+    console.log(`s1: Updated coverage counts -> ${fmt(counts.total)} active (${fmt(counts.az)} AZ + ${fmt(counts.ca)} CA)`);
   }
 
-  // Remove ALL existing "## 21. Recent Updates" sections (may be duplicated from prior bugs)
-  doc = doc.replace(/\n---\s*\n+## 21\. Recent Updates \(from t1\)[\s\S]*$/, '');
-
-  // Append new synthesis at end
-  doc = doc.trimEnd() + '\n\n---\n\n' + synthesis.trim() + '\n';
-
+  // 6. Write
   writeFileSync(COMPREHENSIVE_PATH, doc, 'utf-8');
-}
+  copyFileSync(COMPREHENSIVE_PATH, CLAUDE_WEB_PATH);
+  console.log('s1: Updated COMPREHENSIVE + claude-web-project-knowledge.md');
 
-async function main() {
-  const files = getTakeawaysFiles();
-  if (files.length === 0) {
-    console.log('No t1 takeaways files found in docs/takeaways/. Run "t1" on each AI first.');
-    process.exit(0);
-    return;
-  }
-
-  console.log(`Found ${files.length} takeaways: ${files.join(', ')}`);
-  const synthesis = synthesizeTakeaways(files);
-  await updateComprehensive(synthesis);
-  console.log(`Updated docs/COMPREHENSIVE_KNOWLEDGE_DOCUMENT.md with synthesis from ${files.length} AI(s).`);
-
-  // Commit locally only — do NOT push. Robert will batch pushes with pts.
-  execSync('git add docs/COMPREHENSIVE_KNOWLEDGE_DOCUMENT.md', { stdio: 'inherit' });
-  try {
-    execSync('git commit -m "s1: update COMPREHENSIVE Section 21 from takeaways"', { stdio: 'inherit' });
-    console.log('s1: committed locally. Run pts when ready to push.');
-  } catch (e: unknown) {
-    const msg = e instanceof Error ? e.message : String(e);
-    if (msg.includes('nothing to commit') || msg.includes('no changes added')) {
-      console.log('No changes to commit; COMPREHENSIVE already up to date.');
-    } else {
-      throw e;
-    }
+  // 7. Commit and push to staging
+  execSync('git add docs/COMPREHENSIVE_KNOWLEDGE_DOCUMENT.md docs/prompts/claude-web-project-knowledge.md', { stdio: 'inherit' });
+  const status = execSync('git diff --cached --name-only', { encoding: 'utf-8' }).trim();
+  if (status.length === 0) {
+    console.log('No changes to commit; COMPREHENSIVE already up to date.');
+  } else {
+    execSync('git commit -m "s1: synthesize Section 21 via DeepSeek"', { stdio: 'inherit' });
+    execSync('git push origin staging', { stdio: 'inherit' });
+    console.log('s1: committed and pushed to staging.');
   }
 }
 

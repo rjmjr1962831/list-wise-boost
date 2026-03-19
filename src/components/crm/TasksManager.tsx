@@ -76,6 +76,7 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
   const [sending, setSending] = useState(false);
   const [sendResult, setSendResult] = useState<{ ok: boolean; msg: string } | null>(null);
 
+  const [runningAnalysis, setRunningAnalysis] = useState<string | null>(null);
   const [researchOpenTaskId, setResearchOpenTaskId] = useState<string | null>(null);
   const [researchEmails, setResearchEmails] = useState<Record<string, string[]>>({});
   const [researchLoading, setResearchLoading] = useState<string | null>(null);
@@ -573,6 +574,58 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
                           </div>
                         </PopoverContent>
                       </Popover>
+                    )}
+                    {task.task_type === "aifs_analysis" && task.status !== "done" && task.status !== "completed" && (
+                      <Button
+                        size="sm"
+                        variant="default"
+                        disabled={runningAnalysis === task.id}
+                        onClick={async () => {
+                          setRunningAnalysis(task.id);
+                          try {
+                            const { data, error } = await supabase.functions.invoke("batch-aics-score", {
+                              body: { agent_ids: [task.professional_id], force_rescore: true },
+                            });
+                            if (error) throw error;
+                            // Mark the task done
+                            await supabase.from("crm_tasks").update({
+                              status: "done",
+                              resolved_at: new Date().toISOString(),
+                              notes: `Analysis complete. ${data?.processed ?? 0} agent(s) scored.`,
+                            }).eq("id", task.id);
+
+                            // Send notification email
+                            if (task.professional_email) {
+                              const firstName = (task.professional_name ?? "").split(" ")[0] || "there";
+                              const magicLink = task.magic_link || task.verification_token || task.professional_id;
+                              const dashboardUrl = `https://www.top10lists.us/agent/dashboard?t=${magicLink}`;
+                              await supabase.functions.invoke("gmail-send", {
+                                body: {
+                                  to: task.professional_email,
+                                  subject: "Your AI Footprint Analysis is Ready",
+                                  message_body: `Hi ${firstName} --\n\nWe have run your analysis as you requested. Please <a href="${dashboardUrl}">go to your dashboard</a> to review.\n\nPlease just reply here if we can help you further.\n\nRobert Maynard\nCofounder, Top10Lists.us`,
+                                  from_account: "hello@top10lists.us",
+                                  professional_id: task.professional_id,
+                                },
+                              });
+                            }
+
+                            toast.success("AIFS analysis complete & email sent");
+                            fetchAll();
+                          } catch (err: any) {
+                            toast.error("Analysis failed: " + (err?.message ?? "unknown error"));
+                          } finally {
+                            setRunningAnalysis(null);
+                          }
+                        }}
+                        className="inline-flex items-center gap-1.5 bg-purple-600 hover:bg-purple-700"
+                      >
+                        {runningAnalysis === task.id ? (
+                          <><Clock className="h-3.5 w-3.5 animate-spin" /> Running...</>
+                        ) : (
+                          <><Search className="h-3.5 w-3.5" /> Run Analysis</>
+                        )}
+                      </Button>
                     )}
                     {task.professional_email && (
                       <Button size="sm" variant="default" onClick={() => openEmailModal(task)}

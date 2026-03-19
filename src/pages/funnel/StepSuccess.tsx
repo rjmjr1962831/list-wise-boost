@@ -73,7 +73,7 @@ export default function StepSuccess() {
         <meta name="robots" content="noindex, nofollow" />
         <meta name="googlebot" content="noindex, nofollow" />
       </SafeHead>
-      <div className="min-h-screen bg-gradient-to-b from-background to-muted py-12 px-4">
+      <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 py-12 px-4">
         <div className="max-w-2xl mx-auto">
           <Card>
             <CardHeader className="text-center">

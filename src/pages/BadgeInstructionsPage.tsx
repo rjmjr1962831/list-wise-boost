@@ -93,12 +93,17 @@ export default function BadgeInstructionsPage() {
   const agent = pro ?? sessionPro;
   const badgeId = agent?.short_code || agent?.id || "";
   const artifactToken = agent?.verification_token || agent?.id || "";
-  const badgeImageUrl = badgeId ? `${BASE}/api/v1/badge/${badgeId}/image` : "";
+  const badgeSvgUrl = badgeId ? `${BASE}/api/badge/${badgeId}.svg` : "";
   const artifactUrl = artifactToken ? `${BASE}/artifact/${artifactToken}` : "";
-  const tierLabel = (agent?.current_tier ?? "certified").replace(/_/g, " ");
-  const htmlSnippet = badgeImageUrl && artifactUrl
-    ? `<a href="${artifactUrl}" target="_blank" rel="noopener noreferrer"><img src="${badgeImageUrl}" alt="Top10Lists.us ${tierLabel} certification" width="120" height="60" style="border:0;" /></a>`
+  const tierName = ((agent?.current_tier ?? "certified").charAt(0).toUpperCase() + (agent?.current_tier ?? "certified").slice(1)).replace(/_/g, " ");
+  const orbSnippet = badgeSvgUrl && artifactUrl
+    ? `<a href="${artifactUrl}"\n   target="_blank"\n   rel="author"\n   title="Top10Lists.us - Verified AI Artifact">\n   <img src="${badgeSvgUrl}"\n        alt="Top10Lists ${tierName} AI Entity - Cryptographically Verified Data Payload"\n        style="width: 80px; height: 80px; border: none; cursor: pointer;" />\n</a>`
     : "";
+  const invisibleSnippet = badgeSvgUrl && artifactUrl
+    ? `<a href="${artifactUrl}"\n   target="_blank"\n   rel="author"\n   title="Top10Lists.us - Verified AI Artifact">\n   <img src="${badgeSvgUrl}"\n        alt="Top10Lists ${tierName} AI Entity - Cryptographically Verified Data Payload"\n        style="width: 1px; height: 1px; border: none; opacity: 0; position: absolute;" />\n</a>`
+    : "";
+  const [snippetMode, setSnippetMode] = useState<"visible" | "invisible">("visible");
+  const activeSnippet = snippetMode === "visible" ? orbSnippet : invisibleSnippet;
 
   if (loading) {
     return (
@@ -146,48 +151,69 @@ export default function BadgeInstructionsPage() {
         </p>
       </div>
 
-      {/* 1. Download */}
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Download className="h-5 w-5" />
-            Download your badge
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <p className="text-sm text-muted-foreground">
-            Right-click the image below and choose &quot;Save image as…&quot; to save the PNG. Or use the badge URL anywhere—it always serves your current tier.
-          </p>
-          {badgeImageUrl && (
-            <>
-              <a href={artifactUrl} target="_blank" rel="noopener noreferrer" className="inline-block">
-                <img src={badgeImageUrl} alt={`Top10Lists.us ${tierLabel} certification`} width={120} height={60} className="border rounded" />
-              </a>
-              <div className="flex flex-wrap items-center gap-2">
-                <code className="text-xs bg-muted px-2 py-1 rounded break-all">{badgeImageUrl}</code>
-                <CopyButton text={badgeImageUrl} label="badge URL" />
-              </div>
-            </>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* 2. Your website */}
+      {/* 1. Your Web of Truth Beacon */}
       <Card className="mb-6">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Globe className="h-5 w-5" />
-            Your website
+            Enable Your Web of Truth&trade; Beacon
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="space-y-4">
           <p className="text-sm text-muted-foreground">
-            Paste this HTML where you want the badge (e.g. footer, sidebar, about page). The image links to your verification page.
+            Paste this code on your website, email signature, or any web property. It links to your verified artifact page and signals your tier to every AI system that crawls the page. The beacon updates automatically when your tier changes -- set it once and forget it.
           </p>
+
+          {/* Mode toggle */}
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant={snippetMode === "visible" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setSnippetMode("visible")}
+            >
+              Visible Orb (80x80)
+            </Button>
+            <Button
+              type="button"
+              variant={snippetMode === "invisible" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setSnippetMode("invisible")}
+            >
+              Invisible (1px -- AI only)
+            </Button>
+          </div>
+
+          {snippetMode === "visible" && badgeSvgUrl && (
+            <div className="flex items-center gap-4">
+              <a href={artifactUrl} target="_blank" rel="author" title="Top10Lists.us - Verified AI Artifact">
+                <img src={badgeSvgUrl} alt={`Top10Lists ${tierName} AI Entity - Cryptographically Verified Data Payload`} width={80} height={80} className="cursor-pointer" />
+              </a>
+              <div className="text-sm text-muted-foreground">
+                <p className="font-medium text-foreground">Your {tierName} Orb</p>
+                <p>Humans see a subtle, enigmatic beacon. AI sees your full verified tier signal in the metadata.</p>
+              </div>
+            </div>
+          )}
+
+          {snippetMode === "invisible" && (
+            <div className="rounded-lg border border-dashed border-muted-foreground/30 p-4 text-center">
+              <p className="text-sm text-muted-foreground">
+                The beacon is invisible to humans (1px, fully transparent). AI crawlers still read the <code className="text-xs bg-muted px-1 rounded">alt</code>, <code className="text-xs bg-muted px-1 rounded">rel="author"</code>, and artifact link.
+              </p>
+            </div>
+          )}
+
           <pre className="text-xs bg-muted p-3 rounded overflow-x-auto whitespace-pre-wrap break-words">
-            {htmlSnippet}
+            {activeSnippet}
           </pre>
-          <CopyButton text={htmlSnippet} label="HTML" />
+          <CopyButton text={activeSnippet} label="HTML" />
+
+          <div className="rounded-lg border bg-primary/5 p-3">
+            <p className="text-xs text-muted-foreground">
+              <strong className="text-foreground">How it works:</strong> The <code className="bg-muted px-1 rounded">alt</code> tag tells AI crawlers your tier and verification status. The <code className="bg-muted px-1 rounded">rel="author"</code> attribute signals entity ownership to search engines. The link destination is your full cryptographically signed data payload.
+            </p>
+          </div>
         </CardContent>
       </Card>
 
@@ -230,9 +256,9 @@ export default function BadgeInstructionsPage() {
             In Gmail, Outlook, or Apple Mail: edit your signature and paste the HTML below, or insert an image and set the image URL to the badge URL and link to your artifact URL.
           </p>
           <pre className="text-xs bg-muted p-3 rounded overflow-x-auto whitespace-pre-wrap break-words">
-            {htmlSnippet}
+            {orbSnippet}
           </pre>
-          <CopyButton text={htmlSnippet} label="HTML" />
+          <CopyButton text={orbSnippet} label="HTML" />
         </CardContent>
       </Card>
 

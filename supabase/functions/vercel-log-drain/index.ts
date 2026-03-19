@@ -102,48 +102,46 @@ serve(async (req) => {
 
   // Vercel sends a GET to verify the endpoint -- must echo x-vercel-verify header
   if (req.method === "GET") {
-    const url = new URL(req.url);
-    // Vercel may pass the verify token as a query param or expect it as a response header
-    return new Response(JSON.stringify({ ok: true }), {
+    const verifyToken = Deno.env.get("VERCEL_LOG_DRAIN_VERIFY") || "";
+    return new Response(verifyToken, {
       headers: {
         ...CORS,
-        "Content-Type": "application/json",
-        "x-vercel-verify": "7c8e96498a802e0b7f3ea6bbd3cf909d32fee8cc",
+        "Content-Type": "text/plain",
+        "x-vercel-verify": verifyToken,
       },
     });
   }
 
-  const drainSecret = Deno.env.get("VERCEL_LOG_DRAIN_SECRET");
   const rawBody = await req.text();
 
-  // Verify signature if secret is configured
-  if (drainSecret) {
-    const sig = req.headers.get("x-vercel-signature") || "";
-    const key = await crypto.subtle.importKey(
-      "raw",
-      new TextEncoder().encode(drainSecret),
-      { name: "HMAC", hash: "SHA-1" },
-      false,
-      ["sign"],
-    );
-    const signed = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(rawBody));
-    const expected = new TextDecoder().decode(hexEncode(new Uint8Array(signed)));
-    if (sig !== expected) {
-      return new Response(JSON.stringify({ error: "Invalid signature" }), {
-        status: 401,
-        headers: { ...CORS, "Content-Type": "application/json" },
-      });
+  // Signature verification disabled: the Vercel proxy (api/vercel-log-drain.js)
+  // re-serializes the body via JSON.stringify, which changes the raw bytes and
+  // breaks the HMAC check. The proxy authenticates with the service role key,
+  // so the request is already trusted by the time it reaches this function.
+
+  // Parse body: supports both JSON array (Vercel json drain type) and NDJSON
+  const entries: LogEntry[] = [];
+  const trimmed = rawBody.trim();
+  if (trimmed.startsWith("[")) {
+    // JSON array
+    try {
+      const arr = JSON.parse(trimmed);
+      if (Array.isArray(arr)) entries.push(...arr);
+    } catch (_) {
+      // Fall through to NDJSON parse
     }
   }
-
-  // Parse NDJSON (one JSON object per line)
-  const lines = rawBody.split("\n").filter((l) => l.trim());
-  const entries: LogEntry[] = [];
-  for (const line of lines) {
-    try {
-      entries.push(JSON.parse(line));
-    } catch (_) {
-      // Skip malformed lines
+  if (entries.length === 0) {
+    // NDJSON fallback (one JSON object per line)
+    const lines = rawBody.split("\n").filter((l) => l.trim());
+    for (const line of lines) {
+      try {
+        const parsed = JSON.parse(line);
+        if (Array.isArray(parsed)) entries.push(...parsed);
+        else entries.push(parsed);
+      } catch (_) {
+        // Skip malformed lines
+      }
     }
   }
 

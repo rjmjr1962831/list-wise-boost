@@ -17,16 +17,18 @@ import {
   X,
   Shield,
   Sparkles,
+  Search,
 } from "lucide-react";
 import { OverviewSection } from "@/components/agent/OverviewSection";
 import { ProfileSection } from "@/components/agent/ProfileSection";
 import { PayloadSection } from "@/components/agent/PayloadSection";
 import { BillingSection } from "@/components/agent/BillingSection";
 import { AIMaxPlan } from "@/components/agent/AIMaxPlan";
+import { LiveAudit } from "@/components/agent/LiveAudit";
 import { getValidImageUrl } from "@/utils/imageUrlValidator";
 import { cn } from "@/lib/utils";
 
-type NavSection = "overview" | "ai-max-plan" | "profile" | "payload" | "billing" | "badge";
+type NavSection = "overview" | "ai-max-plan" | "live-audit" | "profile" | "payload" | "billing" | "badge";
 
 interface NavItem {
   id: NavSection;
@@ -37,6 +39,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { id: "overview", label: "Overview", icon: LayoutDashboard },
   { id: "ai-max-plan", label: "AI Max Plan", icon: Sparkles },
+  { id: "live-audit", label: "Live Audit", icon: Search },
   { id: "profile", label: "Profile", icon: User },
   { id: "payload", label: "Payload", icon: Bot },
   { id: "badge", label: "Badge & sharing", icon: Shield },
@@ -85,9 +88,33 @@ export default function AgentDashboard() {
 
   useEffect(() => {
     window.scrollTo(0, 0);
+    const isDev = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
     if (magicToken) {
       // Magic link flow: create session from dashboard_token
       handleMagicToken(magicToken);
+    } else if (professionalIdParam && isDev) {
+      // Dev mode: load professional directly from DB, skip all auth
+      (async () => {
+        setAuthStatus("Loading (dev mode)...");
+        try {
+          const { data, error } = await supabase
+            .from("professionals")
+            .select("*")
+            .eq("id", professionalIdParam)
+            .maybeSingle();
+          if (error || !data) {
+            setAuthStatus("Agent not found.");
+            setLoading(false);
+            return;
+          }
+          setProfessional(data);
+          setSessionToken("dev-mode");
+          setLoading(false);
+        } catch (err) {
+          setAuthStatus("Dev load failed.");
+          setLoading(false);
+        }
+      })();
     } else if (professionalIdParam) {
       // Admin: open test agent dashboard by professional id
       handleAdminOpenDashboard(professionalIdParam);
@@ -129,7 +156,7 @@ export default function AgentDashboard() {
         .from("admin_users")
         .select("role")
         .eq("id", user.id);
-      if (!roles?.some((r: { role: string }) => r.role === "admin" || r.role === "superadmin")) {
+      if (!roles?.some((r: { role: string }) => ["admin", "superadmin", "owner"].includes(r.role))) {
         setAuthStatus("Admin access required to open a test agent dashboard.");
         setLoading(false);
         return;
@@ -465,6 +492,10 @@ export default function AgentDashboard() {
 
               {activeSection === "ai-max-plan" && (
                 <AIMaxPlan professional={professional} />
+              )}
+
+              {activeSection === "live-audit" && (
+                <LiveAudit professional={professional} />
               )}
 
               {activeSection === "profile" && (

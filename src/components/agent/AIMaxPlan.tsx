@@ -170,10 +170,35 @@ export function AIMaxPlan({ professional }: AIMaxPlanProps) {
   }
 
   if (!data) {
+    const handleRequestAnalysis = async () => {
+      const { error } = await supabase.from("crm_tasks").insert({
+        professional_id: professional.id,
+        task_type: "aifs_analysis",
+        title: `AIFS analysis requested: ${professional.name ?? "Agent"}`,
+        description: "Agent requested AI Footprint Score analysis from their dashboard.",
+        status: "pending",
+        priority: "high",
+      });
+      if (error) {
+        const { toast } = await import("sonner");
+        toast.error("Request failed. Please try again.");
+      } else {
+        const { toast } = await import("sonner");
+        toast.success("Analysis requested! We'll process your profile shortly.");
+      }
+    };
+
     return (
       <Card>
-        <CardContent className="py-12 text-center">
+        <CardContent className="py-12 text-center space-y-4">
           <p className="text-muted-foreground">AI Footprint analysis is pending for your profile.</p>
+          <button
+            onClick={handleRequestAnalysis}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:bg-primary/90 transition-colors"
+          >
+            <Search className="h-4 w-4" />
+            Request My Analysis
+          </button>
         </CardContent>
       </Card>
     );

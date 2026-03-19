@@ -14,9 +14,16 @@ serve(async (req) => {
 
     const sql = postgres(dbUrl, { ssl: false, max: 1 });
 
-    const statements = [
-      `SELECT 1`, -- placeholder; update with DDL statements as needed
-    ];
+    // Accept SQL from request body or fall back to placeholder
+    let statements: string[] = [`SELECT 1`];
+    try {
+      const body = await req.json();
+      if (body.sql) {
+        statements = Array.isArray(body.sql) ? body.sql : [body.sql];
+      }
+    } catch (_) {
+      // No body or invalid JSON -- use default
+    }
 
     const results = [];
     for (const stmt of statements) {

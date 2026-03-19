@@ -1,7 +1,7 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { TrendingUp, Layers, DollarSign, BarChart3 } from "lucide-react";
+import { TrendingUp, Layers, DollarSign, BarChart3, Info } from "lucide-react";
 
 interface TierProjection {
   projected_score: number;
@@ -12,6 +12,9 @@ interface TierProjection {
 interface CitationROICalculatorProps {
   tierProjections: Record<string, TierProjection>;
   currentScore: number;
+  avgDealSize?: number;
+  commissionRate?: number;
+  onInputChange?: (avgDealSize: number, commissionRate: number) => void;
 }
 
 // AIFS-to-leads model: estimated annual AI leads by AIFS band
@@ -73,7 +76,32 @@ function bandForScore(score: number) {
   return BANDS.find((b) => score >= b.min && score <= b.max) || BANDS[0];
 }
 
-export { BANDS, TIER_LIFTS, TIER_ORDER };
+export { BANDS, TIER_LIFTS, TIER_ORDER, TIER_COSTS, COMPOUND_MULTIPLIERS, leadsFromAIFS };
+
+function InfoTip({ text }: { text: string }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <span className="relative inline-flex">
+      <Info
+        className="h-3 w-3 text-muted-foreground/60 cursor-help"
+        onClick={(e) => { e.stopPropagation(); setOpen((v) => !v); }}
+        onMouseEnter={() => setOpen(true)}
+        onMouseLeave={() => setOpen(false)}
+      />
+      {open && (
+        <>
+          <span
+            className="fixed inset-0 z-40 md:hidden"
+            onClick={(e) => { e.stopPropagation(); setOpen(false); }}
+          />
+          <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 w-64 max-w-[90vw] rounded-md border bg-popover px-3 py-2 text-xs text-popover-foreground shadow-md z-50">
+            {text}
+          </span>
+        </>
+      )}
+    </span>
+  );
+}
 
 export function AIFSBandMeter({ baseline, tiers }: { baseline: number; tiers: Record<string, number> }) {
   const markerStyle = (score: number): React.CSSProperties => ({
@@ -154,11 +182,11 @@ export function AIFSBandMeter({ baseline, tiers }: { baseline: number; tiers: Re
   );
 }
 
-export function CitationROICalculator({ tierProjections, currentScore }: CitationROICalculatorProps) {
-  const [avgDealSize, setAvgDealSize] = useState(800000);
-  const [commissionRate, setCommissionRate] = useState(2.5);
+export function CitationROICalculator({ tierProjections, currentScore, avgDealSize: externalDealSize, commissionRate: externalCommRate, onInputChange }: CitationROICalculatorProps) {
+  const [avgDealSize, setAvgDealSize] = useState(externalDealSize ?? 500000);
+  const [commissionRate, setCommissionRate] = useState(externalCommRate ?? 3);
   const closeRate = 30;
-  const [baselineAIFS, setBaselineAIFS] = useState(currentScore || 42);
+  const baselineAIFS = currentScore || 42;
 
   // Compute tier AIFS scores from baseline + lift, capped at 95
   const tierScores = useMemo(() => {
@@ -219,7 +247,7 @@ export function CitationROICalculator({ tierProjections, currentScore }: Citatio
   return (
     <div id="roi-calculator" className="rounded-2xl border bg-card p-6 space-y-6 shadow-sm">
       {/* Inputs */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <Label htmlFor="calc-volume" className="text-xs font-bold">Average Deal Size</Label>
           <div className="relative mt-1">
@@ -230,7 +258,7 @@ export function CitationROICalculator({ tierProjections, currentScore }: Citatio
               inputMode="numeric"
               className="pl-8 h-9 text-sm"
               value={formatCurrencyInput(avgDealSize)}
-              onChange={(e) => setAvgDealSize(parseCurrencyInput(e.target.value))}
+              onChange={(e) => { const v = parseCurrencyInput(e.target.value); setAvgDealSize(v); onInputChange?.(v, commissionRate); }}
             />
           </div>
         </div>
@@ -244,20 +272,7 @@ export function CitationROICalculator({ tierProjections, currentScore }: Citatio
             step={0.1}
             className="h-9 text-sm mt-1"
             value={commissionRate}
-            onChange={(e) => setCommissionRate(Math.max(0, Math.min(10, Number(e.target.value))))}
-          />
-        </div>
-        <div>
-          <Label htmlFor="calc-aifs" className="text-xs font-bold">Your Current AIFS</Label>
-          <Input
-            id="calc-aifs"
-            type="number"
-            min={0}
-            max={95}
-            step={1}
-            className="h-9 text-sm mt-1"
-            value={baselineAIFS}
-            onChange={(e) => setBaselineAIFS(Math.max(0, Math.min(95, Number(e.target.value))))}
+            onChange={(e) => { const v = Math.max(0, Math.min(10, Number(e.target.value))); setCommissionRate(v); onInputChange?.(avgDealSize, v); }}
           />
         </div>
       </div>
@@ -277,16 +292,18 @@ export function CitationROICalculator({ tierProjections, currentScore }: Citatio
                 isUnderwritten ? "border-primary shadow-md" : "border-border"
               }`}
             >
-              {/* Value gap line (Audited + Underwritten only) -- placeholder for Certified to keep height equal */}
-              {valueGap != null && valueGap > 0 ? (
-                <div className="rounded-md bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 px-3 py-1.5 text-center">
-                  <p className="text-sm font-black text-green-600">
-                    +{formatCurrency(valueGap)} vs staying Certified
+              {/* ROI % at top */}
+              {r.roi != null && r.roi > 0 ? (
+                <div className="rounded-md bg-primary/10 border border-primary/20 px-3 py-2 text-center">
+                  <p className="text-lg font-black text-primary">
+                    {Math.round(r.roi).toLocaleString()}% ROI
                   </p>
+                  <p className="text-[10px] text-primary/70">Estimated annual return</p>
                 </div>
               ) : (
-                <div className="rounded-md border border-transparent px-3 py-1.5">
-                  <p className="text-sm font-black invisible">placeholder</p>
+                <div className="rounded-md bg-white/5 border border-white/10 px-3 py-2 text-center">
+                  <p className="text-lg font-black text-slate-400">Baseline</p>
+                  <p className="text-[10px] text-slate-500">Free tier</p>
                 </div>
               )}
 
@@ -308,8 +325,11 @@ export function CitationROICalculator({ tierProjections, currentScore }: Citatio
                   <span className="font-bold text-foreground">{Math.round(r.annualLeads)}</span>
                 </div>
                 <div className="flex justify-between text-xs">
-                  <span className="font-bold text-muted-foreground">Closed deals ({closeRate}%)</span>
-                  <span className="font-bold text-foreground">{r.closedDeals.toFixed(1)}</span>
+                  <span className="font-bold text-muted-foreground flex items-center gap-1">
+                    Closed deals ({closeRate}%)
+                    <InfoTip text='Source: NAR. AI recommendations convert like warm introductions (30%), completely eliminating the massive operational tax and 24/7 "speed-to-lead" grind required to chase and convert cold aggregator leads.' />
+                  </span>
+                  <span className="font-bold text-foreground">{Math.ceil(r.closedDeals)}</span>
                 </div>
                 <div className="flex justify-between text-xs">
                   <span className="font-bold text-muted-foreground">Commission revenue</span>
@@ -324,7 +344,10 @@ export function CitationROICalculator({ tierProjections, currentScore }: Citatio
                   <Layers className="h-3 w-3" /> 12-Month Trust Compound
                 </p>
                 <div className="flex justify-between text-xs">
-                  <span className="font-bold text-muted-foreground">Compound multiplier</span>
+                  <span className="font-bold text-muted-foreground flex items-center gap-1">
+                    Compound multiplier
+                    <InfoTip text="This multiplier accounts for two factors: 1) Your deepening machine-trust moat as your verified profile ages, and 2) The projected macro-shift of consumer search volume away from declining traditional aggregators to AI platforms." />
+                  </span>
                   <span className="font-bold text-foreground">{r.compoundMultiplier}x</span>
                 </div>
                 <p className="text-[10px] font-bold text-muted-foreground">
@@ -403,7 +426,7 @@ export function CitationROICalculator({ tierProjections, currentScore }: Citatio
       {underwrittenLeads > 0 && (
         <div className="rounded-lg border border-orange-200 bg-orange-50 dark:border-orange-800 dark:bg-orange-950/30 px-4 py-3 text-center space-y-1">
           <p className="text-sm font-bold text-orange-800 dark:text-orange-300">
-            Zillow equivalent: To generate {Math.round(underwrittenLeads)} leads at Zillow's ~$225/lead avg, you would spend {formatCurrency(zillowCost)} annually with a &lt;1% close rate. Your net return: likely negative.
+            Zillow equivalent: To generate {Math.round(underwrittenLeads)} leads at Zillow&rsquo;s ~$225/lead avg, you would spend {formatCurrency(zillowCost)} annually with a &lt;1% close rate--while fighting &ldquo;speed-to-lead&rdquo; penalties just to stay visible. AI routing delivers high-intent introductions, not a second full-time job.
           </p>
           <p className="text-[10px] text-orange-700 dark:text-orange-400">Source: NAR, Zillow Premier Agent data</p>
         </div>

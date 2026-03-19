@@ -206,13 +206,13 @@ export default function Step2Review1() {
         <meta name="robots" content="noindex, nofollow" />
         <meta name="googlebot" content="noindex, nofollow" />
       </SafeHead>
-      <div className="min-h-screen bg-gradient-to-b from-background to-muted py-12 px-4">
+      <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 py-12 px-4">
         <div className="max-w-2xl mx-auto">
-          <Card>
+          <FunnelBreadcrumbs currentStep={2} />
+          <Card className="!bg-white/5 border-white/10 mt-3">
             <CardHeader>
-              <FunnelBreadcrumbs currentStep={2} />
-              <CardTitle>Let's verify your contact information</CardTitle>
-              <p className="text-sm text-muted-foreground">
+              <CardTitle className="text-white">Let's verify your contact information</CardTitle>
+              <p className="text-sm text-slate-400">
                 Make sure everything is correct. This is how clients will reach you.
               </p>
             </CardHeader>
@@ -220,9 +220,9 @@ export default function Step2Review1() {
               <div className="space-y-4">
                 {/* Name: read-only, request review */}
                 <div className="flex flex-col gap-2">
-                  <Label>Full Name</Label>
+                  <Label className="text-slate-300">Full Name</Label>
                   <div className="flex items-center gap-2">
-                    <div className="flex-1 rounded-md border bg-muted/50 px-3 py-2 text-sm">
+                    <div className="flex-1 rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-white">
                       {professional?.name || 'Not provided'}
                     </div>
                     {submittedReviews.has('name') ? (
@@ -243,7 +243,7 @@ export default function Step2Review1() {
                       </Button>
                     ) : null}
                   </div>
-                  <p className="text-xs text-muted-foreground">To change your name, request a review.</p>
+                  <p className="text-xs text-slate-500">To change your name, request a review.</p>
                   {reviewField === 'name' && professional && (
                     <InlineReviewForm
                       fieldName="Full Name"
@@ -259,8 +259,8 @@ export default function Step2Review1() {
                 </div>
 
                 <div>
-                  <Label htmlFor="email">Email Address *</Label>
-                  <p className="text-xs text-muted-foreground mb-1">You can edit this field directly.</p>
+                  <Label htmlFor="email" className="text-slate-300">Email Address *</Label>
+                  <p className="text-xs text-slate-500 mb-1">You can edit this field directly.</p>
                   <Input
                     id="email"
                     type="email"
@@ -270,78 +270,49 @@ export default function Step2Review1() {
                   />
                 </div>
 
-                {/* Phone Numbers with publish toggles */}
+                {/* Phone Numbers with publish sliders */}
                 <div className="space-y-3">
-                  <Label>Phone Numbers</Label>
-                  <p className="text-xs text-muted-foreground">You can edit these fields directly. Use the eye icon to control whether each number is published on your profile.</p>
+                  <Label className="text-slate-300">Phone Numbers</Label>
+                  <p className="text-xs text-slate-500">You can edit these fields directly. Use the Public toggle to control whether each number is shown on your profile.</p>
 
-                  <div className="flex items-center gap-2">
-                    <div className="flex-1">
-                      <Label htmlFor="phone_mobile" className="text-xs text-muted-foreground">Mobile</Label>
-                      <Input
-                        id="phone_mobile"
-                        type="tel"
-                        value={formData.phone_mobile}
-                        onChange={(e) => setFormData({ ...formData, phone_mobile: e.target.value })}
-                        placeholder="(555) 123-4567"
-                      />
+                  {[
+                    { label: "Mobile", id: "phone_mobile", value: formData.phone_mobile, publish: formData.phone_mobile_publish, onChange: (v: string) => setFormData({ ...formData, phone_mobile: v }), onToggle: () => setFormData({ ...formData, phone_mobile_publish: !formData.phone_mobile_publish }) },
+                    { label: "Business", id: "phone_business", value: formData.phone_business, publish: formData.phone_business_publish, onChange: (v: string) => setFormData({ ...formData, phone_business: v }), onToggle: () => setFormData({ ...formData, phone_business_publish: !formData.phone_business_publish }) },
+                    { label: "Other", id: "phone_other", value: formData.phone_other, publish: formData.phone_other_publish, onChange: (v: string) => setFormData({ ...formData, phone_other: v }), onToggle: () => setFormData({ ...formData, phone_other_publish: !formData.phone_other_publish }) },
+                  ].map((ph) => (
+                    <div key={ph.id} className="flex items-center gap-3">
+                      <div className="flex-1">
+                        <Label htmlFor={ph.id} className="text-xs text-slate-400">{ph.label}</Label>
+                        <Input
+                          id={ph.id}
+                          type="tel"
+                          value={ph.value}
+                          onChange={(e) => ph.onChange(e.target.value)}
+                          placeholder="(555) 123-4567"
+                        />
+                      </div>
+                      <div className="mt-5 flex items-center gap-2">
+                        <span className="text-xs text-slate-400">Public</span>
+                        <button
+                          type="button"
+                          role="switch"
+                          aria-checked={ph.publish}
+                          onClick={ph.onToggle}
+                          className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${ph.publish ? 'bg-primary' : 'bg-muted-foreground/30'}`}
+                        >
+                          <span className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-lg ring-0 transition-transform ${ph.publish ? 'translate-x-5' : 'translate-x-0'}`} />
+                        </button>
+                        <span className={`text-xs font-medium w-6 ${ph.publish ? 'text-primary' : 'text-muted-foreground'}`}>
+                          {ph.publish ? "Yes" : "No"}
+                        </span>
+                      </div>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => setFormData({ ...formData, phone_mobile_publish: !formData.phone_mobile_publish })}
-                      className={"mt-5 p-2 rounded-md border " + (formData.phone_mobile_publish ? "text-primary border-primary/30 bg-primary/5" : "text-muted-foreground border-muted")}
-                      title={formData.phone_mobile_publish ? "Published on profile" : "Hidden from profile"}
-                    >
-                      {formData.phone_mobile_publish ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-                    </button>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <div className="flex-1">
-                      <Label htmlFor="phone_business" className="text-xs text-muted-foreground">Business</Label>
-                      <Input
-                        id="phone_business"
-                        type="tel"
-                        value={formData.phone_business}
-                        onChange={(e) => setFormData({ ...formData, phone_business: e.target.value })}
-                        placeholder="(555) 987-6543"
-                      />
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setFormData({ ...formData, phone_business_publish: !formData.phone_business_publish })}
-                      className={"mt-5 p-2 rounded-md border " + (formData.phone_business_publish ? "text-primary border-primary/30 bg-primary/5" : "text-muted-foreground border-muted")}
-                      title={formData.phone_business_publish ? "Published on profile" : "Hidden from profile"}
-                    >
-                      {formData.phone_business_publish ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-                    </button>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <div className="flex-1">
-                      <Label htmlFor="phone_other" className="text-xs text-muted-foreground">Other</Label>
-                      <Input
-                        id="phone_other"
-                        type="tel"
-                        value={formData.phone_other}
-                        onChange={(e) => setFormData({ ...formData, phone_other: e.target.value })}
-                        placeholder="(555) 000-0000"
-                      />
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setFormData({ ...formData, phone_other_publish: !formData.phone_other_publish })}
-                      className={"mt-5 p-2 rounded-md border " + (formData.phone_other_publish ? "text-primary border-primary/30 bg-primary/5" : "text-muted-foreground border-muted")}
-                      title={formData.phone_other_publish ? "Published on profile" : "Hidden from profile"}
-                    >
-                      {formData.phone_other_publish ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-                    </button>
-                  </div>
+                  ))}
                 </div>
 
                 <div>
-                  <Label htmlFor="company">Company/Brokerage *</Label>
-                  <p className="text-xs text-muted-foreground mb-1">You can edit this field directly.</p>
+                  <Label htmlFor="company" className="text-slate-300">Company/Brokerage *</Label>
+                  <p className="text-xs text-slate-500 mb-1">You can edit this field directly.</p>
                   <Input
                     id="company"
                     value={formData.company}
@@ -352,11 +323,11 @@ export default function Step2Review1() {
 
                 {/* Business Address */}
                 <div className="space-y-3">
-                  <Label>Business Address</Label>
-                  <p className="text-xs text-muted-foreground">You can edit these fields directly.</p>
+                  <Label className="text-slate-300">Business Address</Label>
+                  <p className="text-xs text-slate-500">You can edit these fields directly.</p>
 
                   <div>
-                    <Label htmlFor="street" className="text-xs text-muted-foreground">Street Address</Label>
+                    <Label htmlFor="street" className="text-xs text-slate-400">Street Address</Label>
                     <Input
                       id="street"
                       value={formData.street}
@@ -367,7 +338,7 @@ export default function Step2Review1() {
 
                   <div className="grid grid-cols-5 gap-2">
                     <div className="col-span-2">
-                      <Label htmlFor="city" className="text-xs text-muted-foreground">City</Label>
+                      <Label htmlFor="city" className="text-xs text-slate-400">City</Label>
                       <Input
                         id="city"
                         value={formData.city}
@@ -376,7 +347,7 @@ export default function Step2Review1() {
                       />
                     </div>
                     <div className="col-span-1">
-                      <Label htmlFor="state" className="text-xs text-muted-foreground">State</Label>
+                      <Label htmlFor="state" className="text-xs text-slate-400">State</Label>
                       <Input
                         id="state"
                         value={formData.state}
@@ -386,7 +357,7 @@ export default function Step2Review1() {
                       />
                     </div>
                     <div className="col-span-2">
-                      <Label htmlFor="zip" className="text-xs text-muted-foreground">ZIP Code</Label>
+                      <Label htmlFor="zip" className="text-xs text-slate-400">ZIP Code</Label>
                       <Input
                         id="zip"
                         value={formData.zip}
