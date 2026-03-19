@@ -88,7 +88,7 @@
 </nav>
 
 <section class="hero">
-  <h1>An enterprise AI Discovery Investment for your entire <em>roster</em></h1>
+  <h1>An enterprise AI Discovery Infrastructure <em>for your entire team</em></h1>
   <p class="hero-sub">If you lead a team or manage a brokerage, individual agent certification is only part of the story. We build custom proposals that cover your full roster.</p>
 </section>
 
@@ -98,8 +98,8 @@
     <div>
       <div class="ent-label">For brokerages and teams</div>
       <p class="ent-body">We offer custom proposals that cover your full agent roster -- structured around the same merit gate, with enterprise-level data architecture, team-wide citation monitoring, and a dedicated implementation contact. Pricing is built around your roster size and market footprint.</p>
-      <a class="ent-btn" href="tel:6027589600">Call (602) 758-9600</a>
-      <a class="ent-btn-outline" href="mailto:hello@top10lists.us">Email us</a>
+      <a class="ent-btn" href="tel:6029993745">Call (602) 999-3745</a>
+      <a class="ent-btn-outline" href="#" id="email-us-btn">Email us</a>
     </div>
     <div class="features">
       <div class="feature"><h4>Full roster coverage</h4><p>We qualify agents based on your track record and a promise that you will supervise them to the same standards that got you selected.</p></div>
@@ -126,9 +126,9 @@
   <div class="contact-bar">
     <div>
       <h3>Ready to talk?</h3>
-      <p>Mark Garland, Co-Founder &amp; CRO. Monday -- Friday, 8 AM -- 5 PM MST.</p>
+      <p>One of our cofounders. Monday -- Friday, 8 AM -- 5 PM MST.</p>
     </div>
-    <a class="phone" href="tel:6027589600">(602) 758-9600</a>
+    <a class="phone" href="tel:6029993745">(602) 999-3745</a>
   </div>
 
 </main>
@@ -138,7 +138,7 @@
     <div>
       <div class="footer-logo">Top10Lists</div>
       <div class="footer-muted" style="margin-bottom:16px;">Merit-based agent rankings trusted by AI and humans.<br>Launching nationwide.</div>
-      <div class="footer-muted">3241 E Shea Blvd, Suite 130<br>Phoenix, AZ 85028<br>(602) 758-9600<br>hello@top10lists.us</div>
+      <div class="footer-muted">3241 E Shea Blvd, Suite 130<br>Phoenix, AZ 85028<br>(602) 999-3745<br>hello@top10lists.us</div>
     </div>
     <div>
       <div class="footer-col-label">Company</div>
@@ -169,5 +169,70 @@
   </div>
 </footer>
 
+<div id="team-modal" style="display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.6);align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:16px;max-width:480px;width:90%;padding:36px 32px;position:relative;box-shadow:0 8px 48px rgba(0,0,0,0.3);">
+    <button id="team-modal-close" style="position:absolute;top:14px;right:16px;background:none;border:none;font-size:22px;color:#718096;cursor:pointer;">&times;</button>
+    <div id="team-modal-content">
+      <h3 style="font-family:'Playfair Display',serif;font-size:22px;color:#0B1628;margin-bottom:4px;">Tell us about your team</h3>
+      <p style="font-size:13px;color:#718096;margin-bottom:20px;">We'll get back to you within one business day.</p>
+      <form id="team-form">
+        <div style="margin-bottom:14px;"><label style="display:block;font-size:11px;font-weight:500;color:#718096;text-transform:uppercase;letter-spacing:0.09em;margin-bottom:5px;">Your name</label><input type="text" id="tf-name" required style="width:100%;padding:10px 14px;border:0.5px solid rgba(11,22,40,0.12);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;"></div>
+        <div style="margin-bottom:14px;"><label style="display:block;font-size:11px;font-weight:500;color:#718096;text-transform:uppercase;letter-spacing:0.09em;margin-bottom:5px;">Team / brokerage name</label><input type="text" id="tf-team" required style="width:100%;padding:10px 14px;border:0.5px solid rgba(11,22,40,0.12);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;"></div>
+        <div style="margin-bottom:14px;"><label style="display:block;font-size:11px;font-weight:500;color:#718096;text-transform:uppercase;letter-spacing:0.09em;margin-bottom:5px;">Email address</label><input type="email" id="tf-email" required style="width:100%;padding:10px 14px;border:0.5px solid rgba(11,22,40,0.12);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;"></div>
+        <div style="margin-bottom:14px;"><label style="display:block;font-size:11px;font-weight:500;color:#718096;text-transform:uppercase;letter-spacing:0.09em;margin-bottom:5px;">Phone (optional)</label><input type="tel" id="tf-phone" style="width:100%;padding:10px 14px;border:0.5px solid rgba(11,22,40,0.12);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;"></div>
+        <div style="margin-bottom:18px;"><label style="display:block;font-size:11px;font-weight:500;color:#718096;text-transform:uppercase;letter-spacing:0.09em;margin-bottom:5px;">How can we help?</label><textarea id="tf-message" rows="3" style="width:100%;padding:10px 14px;border:0.5px solid rgba(11,22,40,0.12);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;resize:vertical;"></textarea></div>
+        <button type="submit" id="tf-submit" style="width:100%;padding:14px;background:#C9A84C;color:#0B1628;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;cursor:pointer;">Send</button>
+      </form>
+      <p style="font-size:11px;color:#9CA3AF;text-align:center;margin-top:10px;">Your information is never sold.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  var modal = document.getElementById('team-modal');
+  var mc = document.getElementById('team-modal-content');
+  document.getElementById('team-modal-close').addEventListener('click', function() { modal.style.display = 'none'; });
+  modal.addEventListener('click', function(e) { if (e.target === modal) modal.style.display = 'none'; });
+  document.getElementById('email-us-btn').addEventListener('click', function(e) { e.preventDefault(); modal.style.display = 'flex'; });
+
+  var apiKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indpb3Rydm9pcmRnemZhY3V1aWVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk4MTcwNzcsImV4cCI6MjA4NTM5MzA3N30.BZAli-r81llqnq9xStghKNqK8MnrSNQMOIqkkE09mwI';
+  var base = 'https://wiotrvoirdgzfacuuiem.supabase.co/rest/v1';
+  var fnBase = 'https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1';
+
+  document.getElementById('team-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    var name = document.getElementById('tf-name').value.trim();
+    var team = document.getElementById('tf-team').value.trim();
+    var email = document.getElementById('tf-email').value.trim();
+    var phone = document.getElementById('tf-phone').value.trim();
+    var message = document.getElementById('tf-message').value.trim();
+    var btn = document.getElementById('tf-submit');
+
+    if (!name || !team || !email) return;
+    btn.disabled = true; btn.textContent = 'Sending...';
+
+    var desc = 'Name: ' + name + '\nTeam: ' + team + '\nEmail: ' + email + (phone ? '\nPhone: ' + phone : '') + (message ? '\nMessage: ' + message : '') + '\nSource: /teams page';
+
+    // Create CRM task
+    fetch(base + '/crm_tasks', {
+      method: 'POST',
+      headers: { 'apikey': apiKey, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ title: 'Enterprise Inquiry: ' + team, task_type: 'enterprise_inquiry', priority: 'urgent', status: 'pending', description: desc })
+    }).catch(function() {});
+
+    // Send email to Mark
+    fetch(fnBase + '/send-contact-email', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + apiKey, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ to: 'mark@aryah.ai', subject: 'Enterprise Team Inquiry: ' + team, body: desc, from_name: name, from_email: email })
+    }).catch(function() {});
+
+    btn.disabled = false; btn.textContent = 'Send';
+    document.getElementById('team-form').reset();
+    mc.innerHTML = '<h3 style="font-family:Playfair Display,serif;font-size:24px;color:#0B1628;margin-bottom:12px;">Thanks. We\'re on it.</h3><p style="font-size:15px;color:#4A5568;line-height:1.7;">One of our cofounders will be in touch within one business day.</p>';
+  });
+})();
+</script>
 </body>
 </html>

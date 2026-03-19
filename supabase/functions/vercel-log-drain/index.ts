@@ -155,6 +155,15 @@ serve(async (req) => {
   const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const sb = createClient(supabaseUrl, supabaseKey);
 
+  // Debug counters -- track where volume is lost
+  let dbg_total = entries.length;
+  let dbg_build_skipped = 0;
+  let dbg_no_ua = 0;
+  let dbg_not_bot = 0;
+  let dbg_no_path = 0;
+  let dbg_path_filtered = 0;
+  let dbg_bot_hits = 0;
+
   // Filter for bot requests and build insert rows
   const rows: {
     agent_id: string | null;
@@ -169,16 +178,16 @@ serve(async (req) => {
 
   for (const entry of entries) {
     // Skip non-production, build logs, etc.
-    if (entry.source === "build") continue;
+    if (entry.source === "build") { dbg_build_skipped++; continue; }
 
     const ua = entry.proxy?.userAgent || entry.userAgent || "";
-    if (!ua) continue;
+    if (!ua) { dbg_no_ua++; continue; }
 
     const botName = detectBot(ua);
-    if (!botName) continue;
+    if (!botName) { dbg_not_bot++; continue; }
 
     const path = entry.proxy?.path || entry.path || "";
-    if (!path) continue;
+    if (!path) { dbg_no_path++; continue; }
 
     // Only process paths that are agent/list pages
     const isAgentPage = AGENT_PATH_RE.test(path);
@@ -188,8 +197,10 @@ serve(async (req) => {
     const isStatePage = STATE_PATH_RE.test(path);
 
     if (!isAgentPage && !isCityPage && !isNeighborhoodPage && !isArtifact && !isStatePage) {
+      dbg_path_filtered++;
       continue;
     }
+    dbg_bot_hits++;
 
     const ts = entry.timestamp
       ? new Date(entry.timestamp).toISOString()
@@ -261,8 +272,23 @@ serve(async (req) => {
     }
   }
 
+  console.log(`[drain-debug] received=${dbg_total} build=${dbg_build_skipped} no_ua=${dbg_no_ua} not_bot=${dbg_not_bot} no_path=${dbg_no_path} path_filtered=${dbg_path_filtered} bot_hits=${dbg_bot_hits} inserted=${inserted}`);
+
   return new Response(
-    JSON.stringify({ ok: true, received: entries.length, bot_hits: rows.length, inserted }),
+    JSON.stringify({
+      ok: true,
+      received: dbg_total,
+      debug: {
+        build_skipped: dbg_build_skipped,
+        no_ua: dbg_no_ua,
+        not_bot: dbg_not_bot,
+        no_path: dbg_no_path,
+        path_filtered: dbg_path_filtered,
+        bot_hits: dbg_bot_hits,
+      },
+      bot_hits: rows.length,
+      inserted,
+    }),
     { headers: { ...CORS, "Content-Type": "application/json" } }
   );
 });
