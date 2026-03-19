@@ -159,16 +159,16 @@
           <input type="email" id="lookup-email" placeholder="Email address" style="padding:10px 12px;border:0.5px solid rgba(255,255,255,0.2);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;color:#fff;background:rgba(255,255,255,0.08);outline:none;" />
           <input type="text" id="lookup-city" placeholder="City" style="padding:10px 12px;border:0.5px solid rgba(255,255,255,0.2);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;color:#fff;background:rgba(255,255,255,0.08);outline:none;" />
           <input type="text" id="lookup-state" placeholder="State" style="padding:10px 12px;border:0.5px solid rgba(255,255,255,0.2);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;color:#fff;background:rgba(255,255,255,0.08);outline:none;" />
-          <input type="tel" id="lookup-phone" placeholder="Phone number" style="padding:10px 12px;border:0.5px solid rgba(255,255,255,0.2);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;color:#fff;background:rgba(255,255,255,0.08);outline:none;" />
+          <input type="text" id="lookup-license" placeholder="License number (optional)" autocomplete="off" style="padding:10px 12px;border:0.5px solid rgba(255,255,255,0.2);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;color:#fff;background:rgba(255,255,255,0.08);outline:none;" />
           <button id="lookup-btn" style="padding:10px 20px;background:var(--gold);color:var(--navy);border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;white-space:nowrap;">Look Up</button>
         </div>
         <p style="margin-top:10px;font-size:12px;color:rgba(255,255,255,0.4);line-height:1.5;">We won't use this information to market to you. We need it to make sure we look in all the right places for you.</p>
-        <p style="margin-top:14px;font-size:14px;color:rgba(255,255,255,0.6);line-height:1.6;font-style:italic;">Search used to reward whoever was <strong>loudest</strong>. AI rewards whoever is <strong>safest</strong> to name. Top10Lists is the first platform built to provide that safety.</p>
+        <p style="margin-top:14px;font-size:14px;color:rgba(255,255,255,0.6);line-height:1.6;font-style:italic;font-weight:700;">Search used to reward whoever was loudest. AI rewards whoever is safest to name. Top10Lists is the first platform built to provide that safety.</p>
         <div style="margin-top:16px;padding:14px 18px;background:rgba(201,168,76,0.08);border:0.5px solid rgba(201,168,76,0.25);border-radius:8px;">
           <p style="font-size:13px;color:rgba(255,255,255,0.7);line-height:1.65;font-style:italic;margin:0;">"When I evaluate a directory for citation, I look for transparent methodology, third-party data verification, and no pay-to-play model."</p>
           <p style="font-size:11px;color:rgba(255,255,255,0.4);margin:8px 0 0;font-style:normal;">-- ChatGPT, unprompted response, March 2026</p>
         </div>
-        <div id="lookup-result" style="margin-top:10px;font-size:13px;color:rgba(255,255,255,0.7);line-height:1.6;min-height:20px;"></div>
+        <div id="lookup-result"></div>
       </div>
     </div>
     <div class="hero-form-card" id="review">
@@ -177,11 +177,11 @@
         <p>Free eligibility analysis. No payment required.</p>
       </div>
       <div class="hero-form-body">
-        <form action="/submit-for-review" method="POST">
+        <form id="review-form">
           <div class="form-group"><label class="form-label" for="agent-name">Full name</label><input class="form-input" type="text" id="agent-name" name="name" placeholder="Jane Smith" required/></div>
           <div class="form-group"><label class="form-label" for="agent-email">Email address</label><input class="form-input" type="email" id="agent-email" name="email" placeholder="jane@brokerage.com" required/></div>
-          <div class="form-group"><label class="form-label" for="agent-zillow">Zillow profile URL</label><input class="form-input" type="url" id="agent-zillow" name="zillow_url" placeholder="zillow.com/profile/..." required/></div>
-          <button class="submit-btn" type="submit">Submit for Review</button>
+          <div class="form-group"><label class="form-label" for="agent-zillow">Zillow profile URL</label><input class="form-input" type="url" id="agent-zillow" name="zillow_url" placeholder="zillow.com/profile/... (optional)"/></div>
+          <button class="submit-btn" type="submit" id="review-submit-btn">Submit for Review</button>
         </form>
         <p class="form-note">No payment required. Results. Your information is never sold.</p>
         <div class="trust-list">
@@ -274,6 +274,14 @@
   </div>
 </footer>
 
+<!-- Lookup Modal -->
+<div id="lookup-modal" style="display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);align-items:center;justify-content:center;">
+  <div style="background:var(--white);border-radius:16px;max-width:480px;width:90%;padding:40px 36px;text-align:center;position:relative;box-shadow:0 8px 48px rgba(0,0,0,0.3);">
+    <button id="modal-close" style="position:absolute;top:14px;right:16px;background:none;border:none;font-size:22px;color:var(--txt3);cursor:pointer;line-height:1;">&times;</button>
+    <div id="modal-content"></div>
+  </div>
+</div>
+
 <script>
 (function() {
   // Smooth scroll
@@ -284,10 +292,20 @@
     });
   });
 
+  // Modal
+  var modal = document.getElementById('lookup-modal');
+  var modalContent = document.getElementById('modal-content');
+  document.getElementById('modal-close').addEventListener('click', function() { modal.style.display = 'none'; });
+  modal.addEventListener('click', function(e) { if (e.target === modal) modal.style.display = 'none'; });
+
+  function showModal(html) {
+    modalContent.innerHTML = html;
+    modal.style.display = 'flex';
+  }
+
   // Agent lookup
   var lookupBtn = document.getElementById('lookup-btn');
-  var lookupResult = document.getElementById('lookup-result');
-  var apiKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indpb3Rydm9pcmRnemZhY3V1aWVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk4MTcwNzcsImV4cCI6MjA4NTM5MzA3N30.bFHnSMNPnOqJceEAIBBpHG9r2mcSqJvheOJSav7mYso';
+  var apiKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indpb3Rydm9pcmRnemZhY3V1aWVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk4MTcwNzcsImV4cCI6MjA4NTM5MzA3N30.BZAli-r81llqnq9xStghKNqK8MnrSNQMOIqkkE09mwI';
   var baseUrl = 'https://wiotrvoirdgzfacuuiem.supabase.co/rest/v1/professionals';
 
   function doLookup() {
@@ -295,54 +313,132 @@
     var email = (document.getElementById('lookup-email').value || '').trim();
     var city = (document.getElementById('lookup-city').value || '').trim();
     var state = (document.getElementById('lookup-state').value || '').trim();
-    var phone = (document.getElementById('lookup-phone').value || '').trim().replace(/[^0-9]/g, '');
+    var license = (document.getElementById('lookup-license').value || '').trim();
 
-    if (!name && !email && !phone) {
-      lookupResult.innerHTML = '<span style="color:#F59E0B;">Please enter at least a name, email, or phone number.</span>';
+    if (!name && !email && !license) {
+      showModal('<p style="font-size:15px;color:#92400e;">Please enter at least a name, email, or license number.</p>');
       return;
     }
 
-    var filters = ['active=eq.true'];
-    if (name) filters.push('name=ilike.*' + encodeURIComponent(name) + '*');
-    if (email) filters.push('email=ilike.*' + encodeURIComponent(email) + '*');
-    if (city) filters.push('business_city=ilike.*' + encodeURIComponent(city) + '*');
-    if (state) filters.push('state_slug=ilike.*' + encodeURIComponent(state.toLowerCase().replace(/\s+/g, '-')) + '*');
-    if (phone) filters.push('phone=ilike.*' + encodeURIComponent(phone.slice(-7)) + '*');
-
-    lookupResult.innerHTML = 'Searching...';
     lookupBtn.disabled = true;
+    lookupBtn.textContent = 'Searching...';
 
-    var url = baseUrl + '?' + filters.join('&') + '&select=name,business_city,state_slug,canonical_slug,badge_tier,email,phone&limit=5';
+    // Build OR-based search: match on name OR email OR license (city/state narrow but don't exclude)
+    var orParts = [];
+    if (name) orParts.push('name.ilike.*' + name + '*');
+    if (email) orParts.push('email.ilike.*' + email + '*');
+    if (license) orParts.push('license_number.ilike.*' + license + '*');
+
+    var url = baseUrl + '?active=eq.true&or=(' + encodeURIComponent(orParts.join(',')) + ')&select=name,business_city,state_slug,canonical_slug,badge_tier,dashboard_token,funnel_status&limit=10';
+
     fetch(url, { headers: { 'apikey': apiKey } })
     .then(function(r) { return r.json(); })
     .then(function(agents) {
       lookupBtn.disabled = false;
-      if (!agents || agents.length === 0) {
-        lookupResult.innerHTML = '<span style="color:rgba(255,255,255,0.5);">No match found. You may not be listed yet -- submit for review using the form.</span>';
+      lookupBtn.textContent = 'Look Up';
+
+      if (!agents || !Array.isArray(agents) || agents.length === 0) {
+        showModal(
+          '<div style="margin-bottom:20px;"><svg width="48" height="48" viewBox="0 0 48 48" fill="none" style="margin:0 auto 16px;display:block;"><circle cx="24" cy="24" r="22" stroke="#D1D5DB" stroke-width="2"/><path d="M16 28c2-3 5-5 8-5s6 2 8 5" stroke="#D1D5DB" stroke-width="2" stroke-linecap="round"/><circle cx="18" cy="20" r="2" fill="#D1D5DB"/><circle cx="30" cy="20" r="2" fill="#D1D5DB"/></svg></div>' +
+          '<h3 style="font-family:Playfair Display,serif;font-size:22px;color:#0B1628;margin-bottom:12px;">We can\'t find you right now</h3>' +
+          '<p style="font-size:15px;color:#4A5568;line-height:1.7;margin-bottom:24px;">Please fill out the <strong>Submit for Review</strong> form and we\'ll do a deeper dive.</p>' +
+          '<button onclick="document.getElementById(\'lookup-modal\').style.display=\'none\';document.getElementById(\'review\').scrollIntoView({behavior:\'smooth\'});" style="background:#C9A84C;color:#0B1628;border:none;border-radius:8px;padding:12px 28px;font-family:DM Sans,sans-serif;font-size:15px;font-weight:500;cursor:pointer;">Go to Review Form</button>'
+        );
         return;
       }
-      var html = '';
-      agents.forEach(function(a) {
-        var st = (a.state_slug || '').replace(/-/g, ' ');
-        st = st.charAt(0).toUpperCase() + st.slice(1);
-        var c = a.business_city || '';
-        var tier = a.badge_tier || 'listed';
-        var profileUrl = 'https://www.top10lists.us/' + (a.state_slug || '') + '/agents/' + (a.canonical_slug || '');
-        html += '<div style="padding:8px 0;border-bottom:0.5px solid rgba(255,255,255,0.1);">';
-        html += '<a href="' + profileUrl + '" style="color:var(--gold);text-decoration:none;font-weight:500;">' + a.name + '</a>';
-        html += '<br><span style="color:rgba(255,255,255,0.4);font-size:12px;">' + c + ', ' + st + ' -- ' + tier + '</span>';
-        html += '</div>';
-      });
-      lookupResult.innerHTML = html;
+
+      // If city/state provided, prefer matches but don't exclude
+      var filtered = agents;
+      if (city || state) {
+        var narrowed = agents.filter(function(a) {
+          var cityMatch = !city || (a.business_city || '').toLowerCase().indexOf(city.toLowerCase()) >= 0;
+          var stateMatch = !state || (a.state_slug || '').toLowerCase().indexOf(state.toLowerCase().replace(/\s+/g, '-')) >= 0;
+          return cityMatch || stateMatch;
+        });
+        if (narrowed.length > 0) filtered = narrowed;
+      }
+
+      // Show first match as the primary result
+      var a = filtered[0];
+      var st = (a.state_slug || '').replace(/-/g, ' ');
+      st = st.charAt(0).toUpperCase() + st.slice(1);
+      var token = a.dashboard_token || '';
+      var isCompleted = a.funnel_status === 'completed';
+      var actionUrl = isCompleted
+        ? '/agent/dashboard?token=' + token
+        : '/agent/verify?token=' + token;
+      var btnLabel = isCompleted ? 'Go to Dashboard' : 'Click here to verify';
+      var tier = (a.badge_tier || 'listed').charAt(0).toUpperCase() + (a.badge_tier || 'listed').slice(1);
+
+      showModal(
+        '<div style="margin-bottom:20px;"><svg width="48" height="48" viewBox="0 0 48 48" fill="none" style="margin:0 auto 16px;display:block;"><circle cx="24" cy="24" r="22" stroke="#C9A84C" stroke-width="2"/><path d="M16 32c2-4 5-6 8-6s6 2 8 6" stroke="#C9A84C" stroke-width="2" stroke-linecap="round"/><circle cx="18" cy="20" r="2" fill="#C9A84C"/><circle cx="30" cy="20" r="2" fill="#C9A84C"/></svg></div>' +
+        '<h3 style="font-family:Playfair Display,serif;font-size:24px;color:#0B1628;margin-bottom:8px;">Congratulations</h3>' +
+        '<p style="font-size:16px;color:#4A5568;margin-bottom:6px;">You are on the list.</p>' +
+        '<p style="font-size:14px;color:#718096;margin-bottom:24px;">' + a.name + ' -- ' + (a.business_city || '') + ', ' + st + '<br><span style="color:#C9A84C;font-weight:500;">' + tier + ' tier</span></p>' +
+        '<a href="' + actionUrl + '" style="display:inline-block;background:#C9A84C;color:#0B1628;border-radius:8px;padding:12px 28px;font-family:DM Sans,sans-serif;font-size:15px;font-weight:500;text-decoration:none;">' + btnLabel + '</a>' +
+        (filtered.length > 1 ? '<p style="font-size:12px;color:#9CA3AF;margin-top:16px;">' + (filtered.length - 1) + ' other match' + (filtered.length > 2 ? 'es' : '') + ' found</p>' : '')
+      );
     })
     .catch(function() {
       lookupBtn.disabled = false;
-      lookupResult.innerHTML = '<span style="color:#EF4444;">Lookup failed. Please try again.</span>';
+      lookupBtn.textContent = 'Look Up';
+      showModal('<p style="font-size:15px;color:#EF4444;">Lookup failed. Please try again.</p>');
     });
   }
 
+  // Review form submission
+  document.getElementById('review-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    var name = document.getElementById('agent-name').value.trim();
+    var email = document.getElementById('agent-email').value.trim();
+    var zillow = document.getElementById('agent-zillow').value.trim();
+    var btn = document.getElementById('review-submit-btn');
+
+    if (!name || !email) {
+      showModal('<p style="font-size:15px;color:#92400e;">Please enter your name and email address.</p>');
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Submitting...';
+
+    // Create CRM task
+    var taskData = {
+      title: 'Review Request: ' + name,
+      task_type: 'review_request',
+      priority: 'high',
+      status: 'pending',
+      description: 'Name: ' + name + '\nEmail: ' + email + (zillow ? '\nZillow: ' + zillow : '') + '\nSource: /are-you-an-agent page'
+    };
+
+    fetch(baseUrl.replace('/professionals', '/crm_tasks'), {
+      method: 'POST',
+      headers: { 'apikey': apiKey, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      body: JSON.stringify(taskData)
+    })
+    .then(function(r) {
+      btn.disabled = false;
+      btn.textContent = 'Submit for Review';
+      if (r.ok || r.status === 201) {
+        document.getElementById('review-form').reset();
+        showModal(
+          '<div style="margin-bottom:20px;"><svg width="48" height="48" viewBox="0 0 48 48" fill="none" style="margin:0 auto 16px;display:block;"><circle cx="24" cy="24" r="22" stroke="#C9A84C" stroke-width="2"/><path d="M16 24l6 6 10-12" stroke="#C9A84C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>' +
+          '<h3 style="font-family:Playfair Display,serif;font-size:24px;color:#0B1628;margin-bottom:12px;">Thanks. We\'re on it.</h3>' +
+          '<p style="font-size:15px;color:#4A5568;line-height:1.7;">We\'ll contact you with our answer as soon as we can.</p>'
+        );
+      } else {
+        showModal('<p style="font-size:15px;color:#EF4444;">Something went wrong. Please try again or call (602) 758-9600.</p>');
+      }
+    })
+    .catch(function() {
+      btn.disabled = false;
+      btn.textContent = 'Submit for Review';
+      showModal('<p style="font-size:15px;color:#EF4444;">Submission failed. Please try again or call (602) 758-9600.</p>');
+    });
+  });
+
   lookupBtn.addEventListener('click', doLookup);
-  ['lookup-name','lookup-email','lookup-city','lookup-state','lookup-phone'].forEach(function(id) {
+  ['lookup-name','lookup-email','lookup-city','lookup-state','lookup-license'].forEach(function(id) {
     document.getElementById(id).addEventListener('keydown', function(e) {
       if (e.key === 'Enter') { e.preventDefault(); doLookup(); }
     });
