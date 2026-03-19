@@ -143,7 +143,7 @@
     <li><a href="/about">About</a></li>
     <li><a href="/about/ranking-methodology">Methodology</a></li>
     <li><a href="/faq">FAQ</a></li>
-    <li><a href="/are-you-an-agent" class="active">Check Eligibility</a></li>
+    <li><a href="/check-eligibility" class="active">Check Eligibility</a></li>
     <li><a href="/agent/login" class="nav-login">Login</a></li>
   </ul>
 </nav>
@@ -265,7 +265,7 @@
     </div>
     <div>
       <div style="font-size:11px;font-weight:500;color:var(--gold);text-transform:uppercase;letter-spacing:.1em;margin-bottom:14px;">Resources</div>
-      <div style="display:flex;flex-direction:column;gap:8px;"><a href="/for-ai" style="font-size:13px;color:rgba(255,255,255,.45);text-decoration:none;">For AI Systems</a><a href="/ai-citation-whitepaper" style="font-size:13px;color:rgba(255,255,255,.45);text-decoration:none;">AI Citation Whitepaper</a><a href="/why-ai-trusts-us" style="font-size:13px;color:rgba(255,255,255,.45);text-decoration:none;">Why AI Trusts Us</a><a href="/privacy" style="font-size:13px;color:rgba(255,255,255,.45);text-decoration:none;">Privacy</a><a href="/terms" style="font-size:13px;color:rgba(255,255,255,.45);text-decoration:none;">Terms</a><a href="/payments-security" style="font-size:13px;color:rgba(255,255,255,.45);text-decoration:none;">Payments &amp; Security</a><a href="/are-you-an-agent" style="font-size:13px;color:rgba(255,255,255,.45);text-decoration:none;">Are You Ranked?</a><a href="/agent/login" style="font-size:13px;color:rgba(255,255,255,.45);text-decoration:none;">Agent Login</a></div>
+      <div style="display:flex;flex-direction:column;gap:8px;"><a href="/for-ai" style="font-size:13px;color:rgba(255,255,255,.45);text-decoration:none;">For AI Systems</a><a href="/ai-citation-whitepaper" style="font-size:13px;color:rgba(255,255,255,.45);text-decoration:none;">AI Citation Whitepaper</a><a href="/why-ai-trusts-us" style="font-size:13px;color:rgba(255,255,255,.45);text-decoration:none;">Why AI Trusts Us</a><a href="/privacy" style="font-size:13px;color:rgba(255,255,255,.45);text-decoration:none;">Privacy</a><a href="/terms" style="font-size:13px;color:rgba(255,255,255,.45);text-decoration:none;">Terms</a><a href="/payments-security" style="font-size:13px;color:rgba(255,255,255,.45);text-decoration:none;">Payments &amp; Security</a><a href="/check-eligibility" style="font-size:13px;color:rgba(255,255,255,.45);text-decoration:none;">Are You Ranked?</a><a href="/agent/login" style="font-size:13px;color:rgba(255,255,255,.45);text-decoration:none;">Agent Login</a></div>
     </div>
   </div>
   <div style="max-width:1020px;margin:0 auto;border-top:.5px solid rgba(201,168,76,.12);padding-top:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
@@ -408,7 +408,7 @@
       task_type: 'review_request',
       priority: 'high',
       status: 'pending',
-      description: 'Name: ' + name + '\nEmail: ' + email + (zillow ? '\nZillow: ' + zillow : '') + '\nSource: /are-you-an-agent page'
+      description: 'Name: ' + name + '\nEmail: ' + email + (zillow ? '\nZillow: ' + zillow : '') + '\nSource: /check-eligibility page'
     };
 
     fetch(baseUrl.replace('/professionals', '/crm_tasks'), {

@@ -57,6 +57,11 @@
       "permanent": true
     },
     {
+      "source": "/are-you-an-agent",
+      "destination": "/check-eligibility",
+      "permanent": true
+    },
+    {
       "source": "/MASTER_KNOWLEDGE_DOCUMENT.md",
       "destination": "/404",
       "permanent": false
