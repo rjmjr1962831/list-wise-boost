@@ -112,7 +112,15 @@ serve(async (req) => {
     });
   }
 
-  const rawBody = await req.text();
+  let rawBody: string;
+  try {
+    rawBody = await req.text();
+  } catch (e) {
+    console.error("[drain] failed to read body:", e);
+    return new Response(JSON.stringify({ ok: true, processed: 0 }), {
+      headers: { ...CORS, "Content-Type": "application/json" },
+    });
+  }
 
   // Signature verification disabled: the Vercel proxy (api/vercel-log-drain.js)
   // re-serializes the body via JSON.stringify, which changes the raw bytes and
@@ -202,9 +210,14 @@ serve(async (req) => {
     }
     dbg_bot_hits++;
 
-    const ts = entry.timestamp
-      ? new Date(entry.timestamp).toISOString()
-      : new Date().toISOString();
+    let ts: string;
+    try {
+      ts = entry.timestamp
+        ? new Date(entry.timestamp).toISOString()
+        : new Date().toISOString();
+    } catch (_) {
+      ts = new Date().toISOString();
+    }
 
     let agentId: string | null = null;
 
@@ -262,14 +275,18 @@ serve(async (req) => {
 
   // Insert in batches of 500
   let inserted = 0;
-  for (let i = 0; i < rows.length; i += 500) {
-    const batch = rows.slice(i, i + 500);
-    const { error } = await sb.from("bot_crawl_logs").insert(batch);
-    if (error) {
-      console.error("bot_crawl_logs insert error:", error.message, "batch_start:", i);
-    } else {
-      inserted += batch.length;
+  try {
+    for (let i = 0; i < rows.length; i += 500) {
+      const batch = rows.slice(i, i + 500);
+      const { error } = await sb.from("bot_crawl_logs").insert(batch);
+      if (error) {
+        console.error("bot_crawl_logs insert error:", error.message, "batch_start:", i);
+      } else {
+        inserted += batch.length;
+      }
     }
+  } catch (e) {
+    console.error("[drain] insert loop failed:", e);
   }
 
   console.log(`[drain-debug] received=${dbg_total} build=${dbg_build_skipped} no_ua=${dbg_no_ua} not_bot=${dbg_not_bot} no_path=${dbg_no_path} path_filtered=${dbg_path_filtered} bot_hits=${dbg_bot_hits} inserted=${inserted}`);
