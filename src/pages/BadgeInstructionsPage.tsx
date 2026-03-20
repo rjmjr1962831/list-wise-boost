@@ -95,6 +95,8 @@ export default function BadgeInstructionsPage() {
   const artifactToken = agent?.verification_token || agent?.id || "";
   const badgeSvgUrl = badgeId ? `${BASE}/api/badge/${badgeId}.svg` : "";
   const artifactUrl = artifactToken ? `${BASE}/artifact/${artifactToken}` : "";
+  const rawTier = (agent?.current_tier ?? "certified").toLowerCase();
+  const isListed = rawTier === "listed";
   const tierName = ((agent?.current_tier ?? "certified").charAt(0).toUpperCase() + (agent?.current_tier ?? "certified").slice(1)).replace(/_/g, " ");
   const orbSnippet = badgeSvgUrl && artifactUrl
     ? `<a href="${artifactUrl}"\n   target="_blank"\n   rel="author"\n   title="Top10Lists.us - Verified AI Artifact">\n   <img src="${badgeSvgUrl}"\n        alt="Top10Lists ${tierName} AI Entity - Cryptographically Verified Data Payload"\n        style="width: 80px; height: 80px; border: none; cursor: pointer;" />\n</a>`
@@ -104,6 +106,7 @@ export default function BadgeInstructionsPage() {
     : "";
   const [snippetMode, setSnippetMode] = useState<"visible" | "invisible">("visible");
   const activeSnippet = snippetMode === "visible" ? orbSnippet : invisibleSnippet;
+  const htmlSnippet = orbSnippet;
 
   if (loading) {
     return (
@@ -150,6 +153,23 @@ export default function BadgeInstructionsPage() {
           Your badge always shows your current tier. Set it once—when your tier changes (e.g. Certified → Underwritten), the same link updates automatically.
         </p>
       </div>
+
+      {isListed && (
+        <Card className="mb-6 border-2 border-amber-500/30">
+          <CardContent className="p-6 text-center space-y-3">
+            <p className="text-lg font-semibold">Web of Truth is available on Certified and above</p>
+            <p className="text-sm text-muted-foreground">
+              Your Listed tier includes basic verification. Upgrade to Certified (free) or higher to enable your Web of Truth beacon and artifact page.
+            </p>
+            <Link to={`/funnel/${artifactToken}/pricing`}>
+              <Button>View Upgrade Options <ChevronRight className="h-4 w-4 ml-1" /></Button>
+            </Link>
+          </CardContent>
+        </Card>
+      )}
+
+      {!isListed && (<>
+      {/* === Tier-enabled content below === */}
 
       {/* 1. Your Web of Truth Beacon */}
       <Card className="mb-6">
@@ -262,6 +282,44 @@ export default function BadgeInstructionsPage() {
         </CardContent>
       </Card>
 
+      {/* Realtor.com */}
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Building2 className="h-5 w-5" />
+            Realtor.com profile
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <p className="text-sm text-muted-foreground">
+            In your Realtor.com agent profile, add your artifact link to your &quot;About Me&quot; or bio section. Realtor.com renders plain-text links as clickable.
+          </p>
+          <div className="flex flex-wrap items-center gap-2">
+            <code className="text-xs bg-muted px-2 py-1 rounded break-all">{artifactUrl}</code>
+            <CopyButton text={artifactUrl} label="Realtor.com link" />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* RealTrends */}
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Building2 className="h-5 w-5" />
+            RealTrends / Tom Ferry profile
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <p className="text-sm text-muted-foreground">
+            If you have a RealTrends or Tom Ferry profile, paste your artifact link in your bio or website field. This creates a cross-reference that AI systems use to strengthen your credibility signal.
+          </p>
+          <div className="flex flex-wrap items-center gap-2">
+            <code className="text-xs bg-muted px-2 py-1 rounded break-all">{artifactUrl}</code>
+            <CopyButton text={artifactUrl} label="RealTrends link" />
+          </div>
+        </CardContent>
+      </Card>
+
       {/* 5. Social: LinkedIn, Facebook, Instagram, TikTok */}
       <Card className="mb-6">
         <CardHeader>
@@ -324,8 +382,10 @@ export default function BadgeInstructionsPage() {
         </CardContent>
       </Card>
 
+      </>)}
+
       <p className="text-sm text-muted-foreground">
-        <Link to="/methodology" className="text-primary underline">Our methodology</Link> explains how we certify agents. Need help? Reply to the email we sent you or contact us from the dashboard.
+        <Link to="/about/ranking-methodology" className="text-primary underline">Our methodology</Link> explains how we certify agents. Need help? Reply to the email we sent you or contact us from the dashboard.
       </p>
     </div>
   );

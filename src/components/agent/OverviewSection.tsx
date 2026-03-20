@@ -200,9 +200,16 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
               </p>
               <button
                 className="mt-2 text-xs font-semibold text-primary flex items-center gap-1 hover:underline"
-                onClick={() => navigate(`/funnel/${professional.verification_token || professional.id}/pricing`)}
+                onClick={() => {
+                  if (currentTier === "certified") {
+                    // Listed tier — needs upgrade
+                    navigate(`/funnel/${professional.verification_token || professional.id}/pricing`);
+                  } else {
+                    navigate(`/badge-instructions?token=${professional.verification_token || professional.id}`);
+                  }
+                }}
               >
-                Enable Artifact <ChevronRight className="h-3 w-3" />
+                {currentTier === "certified" ? "Upgrade to Enable" : "Enable Artifact"} <ChevronRight className="h-3 w-3" />
               </button>
             </>
           )}
