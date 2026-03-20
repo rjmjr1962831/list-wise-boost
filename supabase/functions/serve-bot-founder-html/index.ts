@@ -19,7 +19,8 @@ const CORS = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-function esc(s: string): string {
+function esc(s: string | undefined | null): string {
+  if (!s) return "";
   return s
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")

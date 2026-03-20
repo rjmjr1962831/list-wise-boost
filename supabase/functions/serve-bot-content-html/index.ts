@@ -419,7 +419,7 @@ ${siteHeaderHTML()}
     <p>Each qualifying agent is scored using a weighted composite model (scale: 0.0 to 1.0).</p>
     <div class="factor"><span>License Status</span><span class="factor-weight">20%</span></div>
     <div class="factor"><span>Recent Activity</span><span class="factor-weight">20%</span></div>
-    <div class="factor"><span>Transaction History</span><span class="factor-weight">25%</span></div>
+    <div class="factor"><span>Transaction History</span><span class="factor-weight">20%</span></div>
     <div class="factor"><span>Reviews &amp; Reputation</span><span class="factor-weight">15%</span></div>
     <div class="factor"><span>Community</span><span class="factor-weight">25%</span></div>
     <p style="margin-top:1rem;"><strong>Formula:</strong> sum(component_value[k] × weight[k]) for all components. Missing data: redistribute weight proportionally.</p>

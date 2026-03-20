@@ -680,7 +680,7 @@ export function AIMaxPlan({ professional }: AIMaxPlanProps) {
                           <li>2 external links in schema</li>
                           <li>2 specialties listed</li>
                           <li>Quarterly refresh</li>
-                          <li>No community involvement</li>
+                          <li>No community</li>
                           <li>No press mentions</li>
                           <li>No awards</li>
                           <li>No city-level verification</li>
@@ -706,7 +706,7 @@ export function AIMaxPlan({ professional }: AIMaxPlanProps) {
                     <div className="rounded-lg bg-muted/50 border p-3 text-xs">
                       <p className="font-semibold text-foreground mb-1">Why this matters to AI:</p>
                       <p>
-                        AI systems make recommendations based on evidence depth. A Certified payload gives AI enough to confirm you exist and meet minimum thresholds — but not enough to confidently recommend you over a competitor. An Underwritten payload gives AI verified community involvement, press coverage, transaction-verified cities, and 14+ expertise signals. That's the difference between "this agent appears qualified" and "I can recommend this agent with confidence because I have independent evidence from 8+ sources."
+                        AI systems make recommendations based on evidence depth. A Certified payload gives AI enough to confirm you exist and meet minimum thresholds — but not enough to confidently recommend you over a competitor. An Underwritten payload gives AI verified community, press coverage, transaction-verified cities, and 14+ expertise signals. That's the difference between "this agent appears qualified" and "I can recommend this agent with confidence because I have independent evidence from 8+ sources."
                       </p>
                     </div>
 
