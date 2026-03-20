@@ -62,6 +62,17 @@ export default function BadgeInstructionsPage() {
             setLoading(false);
             return;
           }
+          // Try dashboard_token
+          const { data: byDash } = await supabase
+            .from("professionals")
+            .select("id, short_code, name, verification_token, current_tier, website, zillow_profile_url, email")
+            .eq("dashboard_token", tokenParam)
+            .maybeSingle();
+          if (byDash) {
+            setPro(byDash as Pro);
+            setLoading(false);
+            return;
+          }
           const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(tokenParam);
           if (isUuid) {
             const { data: byId } = await supabase
@@ -154,17 +165,7 @@ export default function BadgeInstructionsPage() {
         </p>
       </div>
 
-      {isListed && (
-        <Card className="mb-6">
-          <CardContent className="p-6 text-center">
-            <p className="text-sm text-muted-foreground">
-              The Web of Truth beacon is available on Certified tier and above. Contact us or check your dashboard for details.
-            </p>
-          </CardContent>
-        </Card>
-      )}
-
-      {!isListed && (<>
+      {(<>
 
       {/* 1. Your Web of Truth Beacon */}
       <Card className="mb-6">
