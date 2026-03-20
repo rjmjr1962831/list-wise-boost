@@ -656,18 +656,19 @@ async function loadExisting() {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/marketing_content?page=eq.founders&section=eq.profiles&select=key,content`, {
       headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
     });
-    if (!res.ok) return;
-    const rows = await res.json();
-    rows.forEach(row => {
-      if (row.content && (row.key === 'robert' || row.key === 'mark')) {
-        loadedData[row.key] = row.content;
-      }
-    });
+    if (res.ok) {
+      const rows = await res.json();
+      rows.forEach(row => {
+        if (row.content && (row.key === 'robert' || row.key === 'mark')) {
+          loadedData[row.key] = row.content;
+        }
+      });
+    }
   } catch (e) {
     console.warn('Could not load existing profiles:', e);
   }
 
-  // Merge defaults for fields not in loaded data
+  // Always apply defaults for any profile not loaded from DB
   ['robert', 'mark'].forEach(key => {
     if (!loadedData[key]) {
       loadedData[key] = JSON.parse(JSON.stringify(DEFAULTS[key]));
