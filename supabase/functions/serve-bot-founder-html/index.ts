@@ -360,7 +360,7 @@ function renderFounderPage(): string {
   <div class="hero-label">The people behind the platform</div>
   <h1>Built by people who have done it before</h1>
   <p class="hero-sub">Top10Lists.us was founded on the conviction that AI systems will require a reliable, merit-driven source for professional referrals -- and that professionals deserve to be found on the strength of their work.</p>
-  <p class="hero-sub" style="margin-top:16px;">A bank does not approve a loan from memory. It queries a credit bureau for independently verified data, because the bank assumes risk with every decision. AI systems face the same problem when recommending professionals. Top10Lists.us is the credibility infrastructure for that decision: structured, merit-verified, independently maintained data designed to be queried by AI systems making recommendations under reputational risk.</p>
+  <p class="hero-sub" style="margin-top:16px;">A bank does not approve a loan from memory. It queries a credit bureau for independently verified data, because the bank assumes risk with every decision. AI systems face the same problem when recommending professionals. Top10Lists.us is the credibility infrastructure for that decision: structured, merit-verified, independently maintained data designed to be queried by AI systems making recommendations under reputational risk. We are not a directory. We do not serve direct leads. We are not attracting consumer traffic. We are explicitly the trust infrastructure for AI high-stakes recommendations.</p>
 </section>
 
 <main class="main">

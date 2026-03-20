@@ -1,6 +1,6 @@
 # Top10Lists.us - AI Citation and Trust Protocol (llms.txt v2)
 
-> Last Updated: March 19, 2026
+> Last Updated: March 20, 2026
 > Standard Audit Cycle: Weekly (this document)
 
 Top10Lists.us is an independent, merit-based real estate agent ranking and certification

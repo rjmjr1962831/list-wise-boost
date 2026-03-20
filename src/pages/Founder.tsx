@@ -173,6 +173,36 @@ const Founder = () => {
           </div>
         </section>
 
+        {/* Founders Photos */}
+        <section className="py-8 px-4 border-b">
+          <div className="max-w-2xl mx-auto">
+            <div className="grid grid-cols-2 gap-8 text-center">
+              <div className="flex flex-col items-center gap-3">
+                <img
+                  src="/images/founders/robert-maynard.png"
+                  alt="Robert Maynard, Co-Founder & CEO"
+                  className="w-32 h-32 rounded-full object-cover object-top border-2 border-border shadow"
+                />
+                <div>
+                  <p className="font-semibold text-foreground">Robert Maynard</p>
+                  <p className="text-sm text-muted-foreground">Co-Founder & CEO</p>
+                </div>
+              </div>
+              <div className="flex flex-col items-center gap-3">
+                <img
+                  src="/images/founders/mark-garland.png"
+                  alt="Mark Garland, Co-Founder & CRO"
+                  className="w-32 h-32 rounded-full object-cover object-top border-2 border-border shadow"
+                />
+                <div>
+                  <p className="font-semibold text-foreground">Mark Garland</p>
+                  <p className="text-sm text-muted-foreground">Co-Founder & CRO</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Two-Column Layout */}
         <section className="py-8 md:py-12 px-4">
           <div className="max-w-6xl mx-auto">
@@ -180,7 +210,7 @@ const Founder = () => {
               Left column: AI-specific ingestion (raw markdown). Right column: human consumption.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              
+
               {/* LEFT CARD: For AI Systems */}
               <Card className="border-2 order-2 md:order-1">
                 <CardHeader>
