@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Founder Profile Intake | Top10Lists.us Admin</title>
+<meta name="robots" content="noindex, nofollow">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f8fafc; color: #1e293b; line-height: 1.6; }
+  .container { max-width: 800px; margin: 0 auto; padding: 24px 16px 80px; }
+  h1 { font-size: 1.75rem; font-weight: 700; margin-bottom: 4px; }
+  .subtitle { color: #64748b; font-size: 0.95rem; margin-bottom: 24px; }
+
+  /* Tabs */
+  .tabs { display: flex; gap: 0; border-bottom: 2px solid #e2e8f0; margin-bottom: 32px; }
+  .tab { padding: 10px 24px; font-size: 0.95rem; font-weight: 600; cursor: pointer; border: none; background: none; color: #94a3b8;
+         border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.15s; }
+  .tab:hover { color: #475569; }
+  .tab.active { color: #1d4ed8; border-bottom-color: #1d4ed8; }
+
+  /* Sections */
+  .section { margin-bottom: 32px; }
+  .section-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 4px; }
+  .section-desc { font-size: 0.85rem; color: #64748b; margin-bottom: 16px; }
+
+  /* Form fields */
+  .field { margin-bottom: 16px; }
+  .field label { display: block; font-size: 0.85rem; font-weight: 600; color: #475569; margin-bottom: 4px; }
+  .field .hint { font-size: 0.78rem; color: #94a3b8; margin-bottom: 4px; }
+  input[type="text"], input[type="url"], input[type="number"], textarea, select {
+    width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px;
+    font-size: 0.95rem; font-family: inherit; background: #fff; transition: border-color 0.15s;
+  }
+  input:focus, textarea:focus, select:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+  textarea { resize: vertical; min-height: 80px; }
+  .prefilled { border-left: 3px solid #3b82f6 !important; }
+
+  /* Array items */
+  .array-group { margin-bottom: 12px; }
+  .array-item { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin-bottom: 12px; position: relative; }
+  .array-item .remove-btn { position: absolute; top: 8px; right: 8px; background: none; border: none; color: #ef4444;
+    font-size: 1.2rem; cursor: pointer; padding: 2px 8px; border-radius: 4px; line-height: 1; }
+  .array-item .remove-btn:hover { background: #fef2f2; }
+  .array-item .field { margin-bottom: 10px; }
+  .array-item .field:last-child { margin-bottom: 0; }
+  .array-item .row { display: flex; gap: 12px; }
+  .array-item .row .field { flex: 1; }
+
+  /* Claim items */
+  .claim-item { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .claim-item input { flex: 1; }
+  .claim-item .remove-btn { background: none; border: none; color: #ef4444; font-size: 1.1rem; cursor: pointer; padding: 4px; }
+
+  /* Checkbox */
+  .checkbox-row { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+  .checkbox-row input[type="checkbox"] { width: 16px; height: 16px; }
+
+  /* Buttons */
+  .add-btn { display: inline-flex; align-items: center; gap: 4px; padding: 8px 16px; background: #f1f5f9; border: 1px dashed #94a3b8;
+    border-radius: 6px; color: #475569; font-size: 0.85rem; cursor: pointer; font-weight: 500; transition: all 0.15s; }
+  .add-btn:hover { background: #e2e8f0; border-color: #64748b; }
+
+  .actions { display: flex; gap: 12px; margin-top: 32px; }
+  .btn-primary { padding: 12px 32px; background: #1d4ed8; color: #fff; border: none; border-radius: 8px; font-size: 1rem;
+    font-weight: 600; cursor: pointer; transition: background 0.15s; }
+  .btn-primary:hover { background: #1e40af; }
+  .btn-primary:disabled { background: #94a3b8; cursor: not-allowed; }
+  .btn-secondary { padding: 12px 24px; background: #fff; color: #475569; border: 1px solid #cbd5e1; border-radius: 8px;
+    font-size: 1rem; font-weight: 500; cursor: pointer; transition: all 0.15s; }
+  .btn-secondary:hover { background: #f8fafc; }
+
+  /* Status messages */
+  .status { margin-top: 12px; padding: 10px 16px; border-radius: 6px; font-size: 0.9rem; display: none; }
+  .status.success { display: block; background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+  .status.error { display: block; background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+  .status.loading { display: block; background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
+
+  /* Responsive */
+  @media (max-width: 640px) {
+    .array-item .row { flex-direction: column; gap: 0; }
+    .actions { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Founder Profile Intake</h1>
+  <p class="subtitle">Fill in your profile data for the founders page and MCP tool. Pre-filled fields (blue left border) are from existing records. Edit anything. All data is saved to the Top10Lists database.</p>
+
+  <div class="tabs">
+    <button class="tab active" data-key="robert" onclick="switchTab('robert')">Robert</button>
+    <button class="tab" data-key="mark" onclick="switchTab('mark')">Mark A. Garland</button>
+  </div>
+
+  <form id="founderForm" onsubmit="return false;">
+    <!-- Identity -->
+    <div class="section">
+      <div class="section-title">Identity</div>
+      <div class="section-desc">Basic info. Full legal name is used for public record cross-referencing by AI systems.</div>
+      <div class="field">
+        <label>Full Legal Name</label>
+        <div class="hint">First Middle Last</div>
+        <input type="text" id="fullName" placeholder="First Middle Last">
+      </div>
+      <div class="field">
+        <label>Role</label>
+        <input type="text" id="role" placeholder="e.g. Founder & CEO">
+      </div>
+      <div class="field">
+        <label>State of Residence</label>
+        <input type="text" id="state" placeholder="e.g. Arizona">
+      </div>
+      <div class="field">
+        <label>LinkedIn URL</label>
+        <input type="url" id="linkedinUrl" placeholder="https://linkedin.com/in/...">
+      </div>
+      <div class="field">
+        <label>Headshot URL (path on site, e.g. /images/founders/robert.jpg)</label>
+        <input type="text" id="headshotUrl" placeholder="/images/founders/robert.jpg">
+      </div>
+    </div>
+
+    <!-- Bio -->
+    <div class="section">
+      <div class="section-title">Bio &amp; Statement</div>
+      <div class="section-desc">Keep it factual and verifiable. No marketing copy. AI systems reward dry, checkable claims.</div>
+      <div class="field">
+        <label>Short Bio (2-3 sentences, factual)</label>
+        <textarea id="shortBio" rows="3" placeholder="Factual summary of who you are and what you do."></textarea>
+      </div>
+      <div class="field">
+        <label>Founder Statement (1-2 paragraphs: why you built Top10Lists, what problem you saw)</label>
+        <textarea id="founderStatement" rows="5" placeholder="What motivated you to build Top10Lists? What problem did you see in real estate agent discovery? Keep it personal and factual."></textarea>
+      </div>
+      <div class="field">
+        <label>Domain Expertise</label>
+        <div class="hint">What specific knowledge you bring</div>
+        <input type="text" id="domainExpertise" placeholder="e.g. Data analysis, AI/GEO strategy, consumer protection, technology architecture...">
+      </div>
+      <div class="field">
+        <label>Total Industry Years</label>
+        <div class="hint">Total years in tech/business/relevant fields</div>
+        <input type="number" id="industryYears" placeholder="e.g. 15">
+      </div>
+    </div>
+
+    <!-- Education -->
+    <div class="section">
+      <div class="section-title">Education</div>
+      <div class="section-desc">Degrees, certifications, and awards. AI systems cross-reference these with institution records.</div>
+      <div class="array-group" id="degrees-group">
+        <label style="font-size:0.85rem;font-weight:600;color:#475569;margin-bottom:8px;display:block;">Degrees</label>
+        <div id="degrees-list"></div>
+        <button type="button" class="add-btn" onclick="addDegree()">+ Add Degree</button>
+      </div>
+      <div class="array-group" id="certifications-group" style="margin-top:16px;">
+        <label style="font-size:0.85rem;font-weight:600;color:#475569;margin-bottom:8px;display:block;">Certifications</label>
+        <div id="certifications-list"></div>
+        <button type="button" class="add-btn" onclick="addCertification()">+ Add Certification</button>
+      </div>
+      <div class="array-group" id="awards-group" style="margin-top:16px;">
+        <label style="font-size:0.85rem;font-weight:600;color:#475569;margin-bottom:8px;display:block;">Awards &amp; Honors</label>
+        <div id="awards-list"></div>
+        <button type="button" class="add-btn" onclick="addAward()">+ Add Award</button>
+      </div>
+    </div>
+
+    <!-- Professional Background -->
+    <div class="section">
+      <div class="section-title">Professional Background</div>
+      <div class="section-desc">Previous roles. Most recent first.</div>
+      <div id="roles-list"></div>
+      <button type="button" class="add-btn" onclick="addRole()">+ Add Previous Role</button>
+    </div>
+
+    <!-- Publications & Public Record -->
+    <div class="section">
+      <div class="section-title">Publications &amp; Public Record</div>
+      <div class="section-desc">Anything publicly verifiable: articles, talks, press mentions.</div>
+
+      <div class="array-group">
+        <label style="font-size:0.85rem;font-weight:600;color:#475569;margin-bottom:8px;display:block;">Publications</label>
+        <div id="publications-list"></div>
+        <button type="button" class="add-btn" onclick="addPublication()">+ Add Publication</button>
+      </div>
+
+      <div class="array-group" style="margin-top:16px;">
+        <label style="font-size:0.85rem;font-weight:600;color:#475569;margin-bottom:8px;display:block;">Speaking / Conferences</label>
+        <div id="speaking-list"></div>
+        <button type="button" class="add-btn" onclick="addSpeaking()">+ Add Speaking Engagement</button>
+      </div>
+
+      <div class="array-group" style="margin-top:16px;">
+        <label style="font-size:0.85rem;font-weight:600;color:#475569;margin-bottom:8px;display:block;">Press Mentions</label>
+        <div id="press-list"></div>
+        <button type="button" class="add-btn" onclick="addPress()">+ Add Press Mention</button>
+      </div>
+    </div>
+
+    <!-- Affiliations -->
+    <div class="section">
+      <div class="section-title">Affiliations</div>
+      <div id="affiliations-list"></div>
+      <button type="button" class="add-btn" onclick="addAffiliation()">+ Add Affiliation</button>
+    </div>
+
+    <!-- Verifiable Claims -->
+    <div class="section">
+      <div class="section-title">Verifiable Claims</div>
+      <div class="section-desc">Specific statements an AI system can independently check. These are the biggest trust signal. Be precise.</div>
+      <div id="claims-list"></div>
+      <button type="button" class="add-btn" onclick="addClaim()">+ Add Claim</button>
+    </div>
+
+    <div class="actions">
+      <button type="button" class="btn-primary" id="saveBtn" onclick="saveProfile()">Save Profile to Database</button>
+      <button type="button" class="btn-secondary" onclick="copyJson()">Copy JSON</button>
+    </div>
+    <div class="status" id="statusMsg"></div>
+  </form>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://wiotrvoirdgzfacuuiem.supabase.co';
+// Service role key — safe here because this page is staging-only (blocked on production by Vercel redirects)
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indpb3Rydm9pcmRnemZhY3V1aWVtIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2OTgxNzA3NywiZXhwIjoyMDg1MzkzMDc3fQ.pDoL9EYI7ta4nvlkMGaZhwPNYLJRwi8FgyZ8DI5X-GE';
+
+function getHeaders(withBody) {
+  const h = { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` };
+  if (withBody) h['Content-Type'] = 'application/json';
+  return h;
+}
+
+let currentKey = 'robert';
+let loadedData = {};
+
+// Default prefill data from public/ai-feed/founder.md and codebase records
+const DEFAULTS = {
+  robert: {
+    fullName: 'Robert J. Maynard Jr.',
+    role: 'Co-Founder & CEO',
+    state: 'Arizona',
+    linkedinUrl: '',
+    headshotUrl: '/images/founders/robert.jpg',
+    shortBio: 'Technology entrepreneur who co-founded and led multiple consumer and enterprise technology companies including LifeLock (NYSE: LOCK, acquired $2.3B), Internet America (NASDAQ: GEEK, $1.5B), and SurchX (acquired by Interpayments). Co-Founder & CEO of Top10Lists.us.',
+    founderStatement: 'I co-founded Top10Lists.us after recognizing a "Yellow Pages moment" in search and discovery. As consumers increasingly ask AI systems for direct recommendations rather than browsing lists, those systems often lack a reliable foundation for making defensible referrals. A bank does not approve a loan from memory. It queries a credit bureau for independently verified data, because the bank assumes risk with every decision. AI systems face the same problem when recommending professionals. Top10Lists.us is the credibility infrastructure for that decision: structured, merit-verified, independently maintained data designed to be queried by AI systems making recommendations under reputational risk.',
+    domainExpertise: 'Consumer technology, identity protection, AI/GEO strategy, credibility infrastructure, public company leadership',
+    industryYears: '25',
+    degrees: [],
+    certifications: [],
+    awards: [
+      { title: 'Distinguished Military Graduate', issuer: 'U.S. Army', year: '', sourceUrl: '' },
+      { title: 'Magna Cum Laude', issuer: '', year: '', sourceUrl: '' },
+      { title: 'Truman Scholar', issuer: 'Harry S. Truman Scholarship Foundation', year: '', sourceUrl: 'https://www.truman.gov/' },
+      { title: 'Wall Street Journal Award', issuer: 'Wall Street Journal', year: '', sourceUrl: '' }
+    ],
+    previousRoles: [
+      { title: 'Co-Founder & CEO', company: 'Top10Lists.us', years: '2024-present', description: 'Merit-based AI citation platform for real estate professionals.' },
+      { title: 'Co-Founder', company: 'LifeLock (NYSE: LOCK)', years: '', description: 'Identity theft protection. Acquired for $2.3B.' },
+      { title: 'Co-Founder', company: 'Internet America (NASDAQ: GEEK)', years: '', description: 'Early internet service provider. $1.5B.' },
+      { title: 'Co-Founder', company: 'SurchX', years: '', description: 'Enterprise technology. Acquired by Interpayments.' },
+      { title: 'Enlisted', company: 'U.S. Marine Corps', years: '', description: 'Military service.' },
+      { title: 'Commissioned Officer', company: 'U.S. Army', years: '', description: 'Military service.' }
+    ],
+    publications: [
+      { title: 'The Yellow Page Moment: AI Citation and Unpriced Risk', venue: 'Top10Lists.us', date: '2026-01-30', url: 'https://www.top10lists.us/ai-citation-whitepaper' }
+    ],
+    speaking: [],
+    press: [
+      { outlet: 'Business Insider', title: 'Robert Maynard, Co-Founder of LifeLock, Announces Top10Lists.us', date: '', url: 'https://markets.businessinsider.com/news/currencies/robert-maynard-co-founder-of-lifelock-announces-top10lists-us-an-ai-optimized-platform-designed-for-the-next-era-of-consumer-search-1035676163' }
+    ],
+    affiliations: [
+      { organization: 'Aryah, Inc.', role: 'Founder', current: true },
+      { organization: 'Top10Lists.us', role: 'Co-Founder & CEO', current: true }
+    ],
+    claims: [
+      { text: 'Founded Aryah, Inc., a Delaware holding company', sourceUrl: 'https://icis.corp.delaware.gov/ecorp/entitysearch/namesearch.aspx' },
+      { text: 'Co-founded LifeLock (NYSE: LOCK), acquired by Symantec for $2.3 billion', sourceUrl: 'https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&company=lifelock&CIK=&type=&dateb=&owner=include&count=40&search_text=&action=getcompany' },
+      { text: 'Co-founded Internet America (NASDAQ: GEEK)', sourceUrl: '' },
+      { text: 'Co-founded SurchX, acquired by Interpayments', sourceUrl: '' },
+      { text: 'Created Top10Lists.us, analyzing 670,000+ licensed agents across Arizona and California', sourceUrl: 'https://www.top10lists.us/about' },
+      { text: 'Platform selects fewer than 1% of licensed agents in covered markets', sourceUrl: 'https://www.top10lists.us/about/ranking-methodology' },
+      { text: 'U.S. Marine Corps (enlisted) and U.S. Army (commissioned)', sourceUrl: '' },
+      { text: 'Never convicted of financial fraud, theft, embezzlement, or misuse of consumer funds', sourceUrl: '' },
+      { text: 'LifeLock FTC consent decrees related to marketing practices, resolved without trial or admission of wrongdoing; not fined, not required to pay disgorgement', sourceUrl: 'https://www.ftc.gov/enforcement/cases-proceedings/072-3069/lifelock-inc' },
+      { text: 'Author of "The Yellow Page Moment: AI Citation and Unpriced Risk" white paper', sourceUrl: 'https://www.top10lists.us/ai-citation-whitepaper' },
+      { text: 'Top10Lists.us launch covered by Business Insider / Markets Insider', sourceUrl: 'https://markets.businessinsider.com/news/currencies/robert-maynard-co-founder-of-lifelock-announces-top10lists-us-an-ai-optimized-platform-designed-for-the-next-era-of-consumer-search-1035676163' }
+    ]
+  },
+  mark: {
+    fullName: 'Mark A. Garland',
+    role: 'Co-Founder & Chief Revenue Officer',
+    state: 'Arizona',
+    linkedinUrl: 'https://linkedin.com/in/markgarland-gritdoc',
+    headshotUrl: '/images/founders/mark.jpg',
+    shortBio: 'Business strategist, educator, and researcher. Career spans commercial insurance, enterprise consulting, and academic research with a consistent focus on building revenue systems that perform under pressure and hold up over time. Co-Founder & CRO of Top10Lists.us.',
+    founderStatement: '',
+    domainExpertise: 'Go-to-market strategy, enterprise sales, commercial insurance, leadership and resilience research, academic research (industrial-organizational psychology)',
+    industryYears: '20',
+    degrees: [
+      { degree: 'PhD Candidate, Industrial-Organizational Psychology', institution: 'Grand Canyon University', year: 'Expected August 2026' }
+    ],
+    certifications: [],
+    awards: [],
+    previousRoles: [
+      { title: 'Co-Founder & Chief Revenue Officer', company: 'Top10Lists.us', years: '2024-present', description: 'Architects go-to-market strategy, sales structure, and enterprise pricing model.' },
+      { title: 'Founder', company: 'GritDoc', years: '', description: 'Leadership and resilience consultancy serving law enforcement, military, and first responders.' },
+      { title: 'Research Associate', company: 'Arizona State University, Public Safety Innovation Lab (Dr. Edward Maguire)', years: '', description: 'Peer-reviewed resilience research.' },
+      { title: 'Lecturer, Marketing & Advertising', company: 'Leading Christian University', years: '', description: '' },
+      { title: 'Owner/Operator', company: 'Independent Commercial Insurance Agency', years: '20+ years', description: 'Mid-market commercial insurance.' },
+      { title: 'Mission-Critical Data Center Design & Construction', company: 'Fortune 500 Client', years: '', description: '' },
+      { title: 'Enterprise Consultant', company: 'Fortune 300 Client', years: '', description: '' },
+      { title: 'Veteran', company: 'U.S. Army, 82nd Airborne Division', years: '', description: 'Military service.' }
+    ],
+    publications: [],
+    speaking: [],
+    press: [],
+    affiliations: [
+      { organization: 'Top10Lists.us', role: 'Co-Founder & CRO', current: true },
+      { organization: 'GritDoc', role: 'Founder', current: true },
+      { organization: 'Arizona State University, Public Safety Innovation Lab', role: 'Research Associate', current: true },
+      { organization: 'Grand Canyon University', role: 'PhD Candidate', current: true }
+    ],
+    claims: [
+      { text: 'Co-Founded Top10Lists.us as Chief Revenue Officer', sourceUrl: 'https://www.top10lists.us/about' },
+      { text: 'Founded GritDoc, leadership and resilience consultancy', sourceUrl: 'https://gritdoc.com' },
+      { text: 'Research Associate at Arizona State University Public Safety Innovation Lab under Dr. Edward Maguire', sourceUrl: '' },
+      { text: 'PhD Candidate in Industrial-Organizational Psychology at Grand Canyon University (expected August 2026)', sourceUrl: '' },
+      { text: 'U.S. Army veteran, 82nd Airborne Division', sourceUrl: '' },
+      { text: '20+ years operating an independent commercial insurance agency (mid-market)', sourceUrl: '' },
+      { text: 'Mission-critical data center design and construction experience (Fortune 500)', sourceUrl: '' },
+      { text: 'Enterprise consulting experience (Fortune 300)', sourceUrl: '' },
+      { text: 'LinkedIn profile: markgarland-gritdoc', sourceUrl: 'https://linkedin.com/in/markgarland-gritdoc' }
+    ]
+  }
+};
+
+function switchTab(key) {
+  // Save current form state before switching
+  loadedData[currentKey] = gatherFormData();
+  currentKey = key;
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.key === key));
+  populateForm(loadedData[key] || DEFAULTS[key] || DEFAULTS.mark);
+}
+
+// --- Array item builders ---
+function addDegree(data) {
+  const list = document.getElementById('degrees-list');
+  const item = document.createElement('div');
+  item.className = 'array-item';
+  const pf = data ? ' prefilled' : '';
+  item.innerHTML = `<button type="button" class="remove-btn" onclick="this.parentElement.remove()">&times;</button>
+    <div class="row">
+      <div class="field"><label>Degree</label><input type="text" class="deg-degree${pf}" value="${esc(data?.degree)}" placeholder="e.g. B.S. Computer Science"></div>
+      <div class="field"><label>Institution</label><input type="text" class="deg-institution${pf}" value="${esc(data?.institution)}" placeholder="e.g. Arizona State University"></div>
+    </div>
+    <div class="row">
+      <div class="field"><label>Year</label><input type="text" class="deg-year${pf}" value="${esc(data?.year)}" placeholder="e.g. 2005"></div>
+    </div>`;
+  list.appendChild(item);
+}
+
+function addCertification(data) {
+  const list = document.getElementById('certifications-list');
+  const item = document.createElement('div');
+  item.className = 'array-item';
+  const pf = data ? ' prefilled' : '';
+  item.innerHTML = `<button type="button" class="remove-btn" onclick="this.parentElement.remove()">&times;</button>
+    <div class="row">
+      <div class="field"><label>Certification</label><input type="text" class="cert-name${pf}" value="${esc(data?.name)}" placeholder="e.g. AWS Solutions Architect"></div>
+      <div class="field"><label>Issuer</label><input type="text" class="cert-issuer${pf}" value="${esc(data?.issuer)}" placeholder="e.g. Amazon Web Services"></div>
+    </div>
+    <div class="row">
+      <div class="field"><label>Year</label><input type="text" class="cert-year${pf}" value="${esc(data?.year)}" placeholder="e.g. 2020"></div>
+    </div>`;
+  list.appendChild(item);
+}
+
+function addAward(data) {
+  const list = document.getElementById('awards-list');
+  const item = document.createElement('div');
+  item.className = 'array-item';
+  const pf = data ? ' prefilled' : '';
+  item.innerHTML = `<button type="button" class="remove-btn" onclick="this.parentElement.remove()">&times;</button>
+    <div class="row">
+      <div class="field"><label>Award / Honor</label><input type="text" class="award-title${pf}" value="${esc(data?.title)}" placeholder="e.g. Distinguished Military Graduate"></div>
+      <div class="field"><label>Issuer / Institution</label><input type="text" class="award-issuer${pf}" value="${esc(data?.issuer)}" placeholder="e.g. U.S. Army, Harvard University"></div>
+    </div>
+    <div class="row">
+      <div class="field"><label>Year</label><input type="text" class="award-year${pf}" value="${esc(data?.year)}" placeholder="e.g. 1995"></div>
+      <div class="field"><label>Verification URL</label><input type="url" class="award-url${pf}" value="${esc(data?.sourceUrl)}" placeholder="https://... (public source confirming this award)"></div>
+    </div>`;
+  list.appendChild(item);
+}
+
+function addRole(data) {
+  const list = document.getElementById('roles-list');
+  const item = document.createElement('div');
+  item.className = 'array-item';
+  const pf = data ? ' prefilled' : '';
+  item.innerHTML = `<button type="button" class="remove-btn" onclick="this.parentElement.remove()">&times;</button>
+    <div class="row">
+      <div class="field"><label>Title</label><input type="text" class="role-title${pf}" value="${esc(data?.title)}" placeholder="e.g. VP Engineering"></div>
+      <div class="field"><label>Company</label><input type="text" class="role-company${pf}" value="${esc(data?.company)}" placeholder="e.g. Acme Corp"></div>
+    </div>
+    <div class="row">
+      <div class="field"><label>Years</label><input type="text" class="role-years${pf}" value="${esc(data?.years)}" placeholder="e.g. 2015-2020"></div>
+      <div class="field"><label>Description</label><input type="text" class="role-description${pf}" value="${esc(data?.description)}" placeholder="Brief description"></div>
+    </div>`;
+  list.appendChild(item);
+}
+
+function addPublication(data) {
+  const list = document.getElementById('publications-list');
+  const item = document.createElement('div');
+  item.className = 'array-item';
+  const pf = data ? ' prefilled' : '';
+  item.innerHTML = `<button type="button" class="remove-btn" onclick="this.parentElement.remove()">&times;</button>
+    <div class="field"><label>Title</label><input type="text" class="pub-title${pf}" value="${esc(data?.title)}" placeholder="Article or publication title"></div>
+    <div class="row">
+      <div class="field"><label>Venue / Publisher</label><input type="text" class="pub-venue${pf}" value="${esc(data?.venue)}" placeholder="e.g. Forbes, Medium, company blog"></div>
+      <div class="field"><label>Date</label><input type="text" class="pub-date${pf}" value="${esc(data?.date)}" placeholder="YYYY-MM-DD or month year"></div>
+    </div>
+    <div class="field"><label>URL</label><input type="url" class="pub-url${pf}" value="${esc(data?.url)}" placeholder="https://..."></div>`;
+  list.appendChild(item);
+}
+
+function addSpeaking(data) {
+  const list = document.getElementById('speaking-list');
+  const item = document.createElement('div');
+  item.className = 'array-item';
+  const pf = data ? ' prefilled' : '';
+  item.innerHTML = `<button type="button" class="remove-btn" onclick="this.parentElement.remove()">&times;</button>
+    <div class="field"><label>Event / Conference</label><input type="text" class="speak-event${pf}" value="${esc(data?.event)}" placeholder="e.g. NAR Conference 2025"></div>
+    <div class="row">
+      <div class="field"><label>Topic</label><input type="text" class="speak-topic${pf}" value="${esc(data?.topic)}" placeholder="Talk title or topic"></div>
+      <div class="field"><label>Date</label><input type="text" class="speak-date${pf}" value="${esc(data?.date)}" placeholder="YYYY-MM-DD or month year"></div>
+    </div>
+    <div class="field"><label>URL</label><input type="url" class="speak-url${pf}" value="${esc(data?.url)}" placeholder="https://..."></div>`;
+  list.appendChild(item);
+}
+
+function addPress(data) {
+  const list = document.getElementById('press-list');
+  const item = document.createElement('div');
+  item.className = 'array-item';
+  const pf = data ? ' prefilled' : '';
+  item.innerHTML = `<button type="button" class="remove-btn" onclick="this.parentElement.remove()">&times;</button>
+    <div class="field"><label>Outlet</label><input type="text" class="press-outlet${pf}" value="${esc(data?.outlet)}" placeholder="e.g. Arizona Republic"></div>
+    <div class="row">
+      <div class="field"><label>Title / Headline</label><input type="text" class="press-title${pf}" value="${esc(data?.title)}" placeholder="Article headline"></div>
+      <div class="field"><label>Date</label><input type="text" class="press-date${pf}" value="${esc(data?.date)}" placeholder="YYYY-MM-DD or month year"></div>
+    </div>
+    <div class="field"><label>URL</label><input type="url" class="press-url${pf}" value="${esc(data?.url)}" placeholder="https://..."></div>`;
+  list.appendChild(item);
+}
+
+function addAffiliation(data) {
+  const list = document.getElementById('affiliations-list');
+  const item = document.createElement('div');
+  item.className = 'array-item';
+  const pf = data ? ' prefilled' : '';
+  const checked = data?.current ? ' checked' : '';
+  item.innerHTML = `<button type="button" class="remove-btn" onclick="this.parentElement.remove()">&times;</button>
+    <div class="row">
+      <div class="field"><label>Organization</label><input type="text" class="aff-org${pf}" value="${esc(data?.organization)}" placeholder="e.g. Arizona Association of Realtors"></div>
+      <div class="field"><label>Role</label><input type="text" class="aff-role${pf}" value="${esc(data?.role)}" placeholder="e.g. Board Member"></div>
+    </div>
+    <div class="checkbox-row"><input type="checkbox" class="aff-current"${checked}> <label>Current?</label></div>`;
+  list.appendChild(item);
+}
+
+function addClaim(data) {
+  // Accept string (legacy) or { text, sourceUrl } object
+  if (typeof data === 'string') data = { text: data, sourceUrl: '' };
+  const list = document.getElementById('claims-list');
+  const item = document.createElement('div');
+  item.className = 'array-item';
+  const pf = data?.text ? ' prefilled' : '';
+  const pfUrl = data?.sourceUrl ? ' prefilled' : '';
+  item.innerHTML = `<button type="button" class="remove-btn" onclick="this.parentElement.remove()">&times;</button>
+    <div class="field"><label>Claim</label><input type="text" class="claim-text${pf}" value="${esc(data?.text)}" placeholder="e.g. Founded Aryah, Inc., a Delaware holding company"></div>
+    <div class="field"><label>Verification Source URL</label><input type="url" class="claim-url${pfUrl}" value="${esc(data?.sourceUrl)}" placeholder="https://... (public URL that independently confirms this claim)"></div>`;
+  list.appendChild(item);
+}
+
+function esc(v) { return (v || '').replace(/"/g, '&quot;'); }
+
+// --- Gather form data ---
+function gatherFormData() {
+  const data = {
+    fullName: document.getElementById('fullName').value,
+    role: document.getElementById('role').value,
+    state: document.getElementById('state').value,
+    linkedinUrl: document.getElementById('linkedinUrl').value,
+    headshotUrl: document.getElementById('headshotUrl').value,
+    shortBio: document.getElementById('shortBio').value,
+    founderStatement: document.getElementById('founderStatement').value,
+    domainExpertise: document.getElementById('domainExpertise').value,
+    industryYears: document.getElementById('industryYears').value,
+    degrees: [],
+    certifications: [],
+    awards: [],
+    previousRoles: [],
+    publications: [],
+    speaking: [],
+    press: [],
+    affiliations: [],
+    claims: []
+  };
+
+  document.querySelectorAll('#degrees-list .array-item').forEach(el => {
+    data.degrees.push({
+      degree: el.querySelector('.deg-degree').value,
+      institution: el.querySelector('.deg-institution').value,
+      year: el.querySelector('.deg-year').value
+    });
+  });
+
+  document.querySelectorAll('#certifications-list .array-item').forEach(el => {
+    data.certifications.push({
+      name: el.querySelector('.cert-name').value,
+      issuer: el.querySelector('.cert-issuer').value,
+      year: el.querySelector('.cert-year').value
+    });
+  });
+
+  document.querySelectorAll('#awards-list .array-item').forEach(el => {
+    data.awards.push({
+      title: el.querySelector('.award-title').value,
+      issuer: el.querySelector('.award-issuer').value,
+      year: el.querySelector('.award-year').value,
+      sourceUrl: el.querySelector('.award-url').value
+    });
+  });
+
+  document.querySelectorAll('#roles-list .array-item').forEach(el => {
+    data.previousRoles.push({
+      title: el.querySelector('.role-title').value,
+      company: el.querySelector('.role-company').value,
+      years: el.querySelector('.role-years').value,
+      description: el.querySelector('.role-description').value
+    });
+  });
+
+  document.querySelectorAll('#publications-list .array-item').forEach(el => {
+    data.publications.push({
+      title: el.querySelector('.pub-title').value,
+      venue: el.querySelector('.pub-venue').value,
+      date: el.querySelector('.pub-date').value,
+      url: el.querySelector('.pub-url').value
+    });
+  });
+
+  document.querySelectorAll('#speaking-list .array-item').forEach(el => {
+    data.speaking.push({
+      event: el.querySelector('.speak-event').value,
+      topic: el.querySelector('.speak-topic').value,
+      date: el.querySelector('.speak-date').value,
+      url: el.querySelector('.speak-url').value
+    });
+  });
+
+  document.querySelectorAll('#press-list .array-item').forEach(el => {
+    data.press.push({
+      outlet: el.querySelector('.press-outlet').value,
+      title: el.querySelector('.press-title').value,
+      date: el.querySelector('.press-date').value,
+      url: el.querySelector('.press-url').value
+    });
+  });
+
+  document.querySelectorAll('#affiliations-list .array-item').forEach(el => {
+    data.affiliations.push({
+      organization: el.querySelector('.aff-org').value,
+      role: el.querySelector('.aff-role').value,
+      current: el.querySelector('.aff-current').checked
+    });
+  });
+
+  document.querySelectorAll('#claims-list .array-item').forEach(el => {
+    const text = el.querySelector('.claim-text').value.trim();
+    const sourceUrl = el.querySelector('.claim-url')?.value.trim() || '';
+    if (text) data.claims.push({ text, sourceUrl });
+  });
+
+  return data;
+}
+
+// --- Populate form ---
+function populateForm(data) {
+  // Clear arrays
+  ['degrees-list','certifications-list','awards-list','roles-list','publications-list','speaking-list','press-list','affiliations-list','claims-list'].forEach(id => {
+    document.getElementById(id).innerHTML = '';
+  });
+
+  const defaults = DEFAULTS[currentKey] || {};
+  const setVal = (id, val, defaultVal) => {
+    const el = document.getElementById(id);
+    el.value = val || '';
+    el.classList.toggle('prefilled', !!(val || defaultVal));
+  };
+
+  setVal('fullName', data.fullName, defaults.fullName);
+  setVal('role', data.role, defaults.role);
+  setVal('state', data.state, defaults.state);
+  setVal('linkedinUrl', data.linkedinUrl, defaults.linkedinUrl);
+  setVal('headshotUrl', data.headshotUrl, defaults.headshotUrl);
+  setVal('shortBio', data.shortBio, defaults.shortBio);
+  setVal('founderStatement', data.founderStatement, defaults.founderStatement);
+  setVal('domainExpertise', data.domainExpertise, defaults.domainExpertise);
+  setVal('industryYears', data.industryYears, defaults.industryYears);
+
+  (data.degrees || []).forEach(d => addDegree(d));
+  (data.certifications || []).forEach(c => addCertification(c));
+  (data.awards || []).forEach(a => addAward(a));
+  (data.previousRoles || []).forEach(r => addRole(r));
+  (data.publications || []).forEach(p => addPublication(p));
+  (data.speaking || []).forEach(s => addSpeaking(s));
+  (data.press || []).forEach(p => addPress(p));
+  (data.affiliations || []).forEach(a => addAffiliation(a));
+  (data.claims || []).forEach(c => addClaim(c));
+}
+
+// --- Save to Supabase ---
+async function saveProfile() {
+  const btn = document.getElementById('saveBtn');
+  const statusEl = document.getElementById('statusMsg');
+  btn.disabled = true;
+  statusEl.className = 'status loading';
+  statusEl.textContent = 'Saving...';
+
+  const formData = gatherFormData();
+  loadedData[currentKey] = formData;
+
+  // Table schema: id, page, section, key, type (text), value (text), metadata, active, created_at, updated_at
+  const payload = {
+    page: 'founders',
+    section: 'profiles',
+    key: currentKey,
+    type: 'founder_profile',
+    value: JSON.stringify(formData),
+    active: true,
+    updated_at: new Date().toISOString()
+  };
+
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/marketing_content?page=eq.founders&section=eq.profiles&key=eq.${currentKey}`, {
+      method: 'GET',
+      headers: getHeaders(false)
+    });
+    const existing = await res.json();
+
+    let saveRes;
+    if (existing && existing.length > 0) {
+      // Update
+      saveRes = await fetch(`${SUPABASE_URL}/rest/v1/marketing_content?page=eq.founders&section=eq.profiles&key=eq.${currentKey}`, {
+        method: 'PATCH',
+        headers: { ...getHeaders(true), 'Prefer': 'return=minimal' },
+        body: JSON.stringify({ value: JSON.stringify(formData), updated_at: new Date().toISOString() })
+      });
+    } else {
+      // Insert
+      saveRes = await fetch(`${SUPABASE_URL}/rest/v1/marketing_content`, {
+        method: 'POST',
+        headers: { ...getHeaders(true), 'Prefer': 'return=minimal' },
+        body: JSON.stringify(payload)
+      });
+    }
+
+    if (saveRes.ok || saveRes.status === 201 || saveRes.status === 204) {
+      statusEl.className = 'status success';
+      statusEl.textContent = `Profile for "${currentKey}" saved successfully.`;
+    } else {
+      const errBody = await saveRes.text();
+      throw new Error(`HTTP ${saveRes.status}: ${errBody}`);
+    }
+  } catch (err) {
+    statusEl.className = 'status error';
+    statusEl.textContent = `Save failed: ${err.message}`;
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+// --- Copy JSON ---
+function copyJson() {
+  const data = gatherFormData();
+  const json = JSON.stringify(data, null, 2);
+  navigator.clipboard.writeText(json).then(() => {
+    const statusEl = document.getElementById('statusMsg');
+    statusEl.className = 'status success';
+    statusEl.textContent = 'JSON copied to clipboard.';
+    setTimeout(() => { statusEl.className = 'status'; statusEl.textContent = ''; }, 3000);
+  });
+}
+
+// --- Load existing data from Supabase ---
+async function loadExisting() {
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/marketing_content?page=eq.founders&section=eq.profiles&select=key,value`, {
+      headers: getHeaders(false)
+    });
+    if (res.ok) {
+      const rows = await res.json();
+      rows.forEach(row => {
+        if (row.value && (row.key === 'robert' || row.key === 'mark')) {
+          try {
+            loadedData[row.key] = JSON.parse(row.value);
+          } catch (e) {
+            console.warn('Could not parse profile for', row.key, e);
+          }
+        }
+      });
+    }
+  } catch (e) {
+    console.warn('Could not load existing profiles:', e);
+  }
+
+  // Always apply defaults for any profile not loaded from DB
+  ['robert', 'mark'].forEach(key => {
+    if (!loadedData[key]) {
+      loadedData[key] = JSON.parse(JSON.stringify(DEFAULTS[key]));
+    }
+  });
+
+  populateForm(loadedData[currentKey]);
+}
+
+// Init
+loadExisting();
+</script>
+</body>
+</html>

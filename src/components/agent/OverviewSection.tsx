@@ -1,8 +1,46 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Activity, Shield, Zap, BadgeCheck, CheckCircle, XCircle, TrendingUp, ChevronRight, Bot } from "lucide-react";
+import { Activity, Shield, BadgeCheck, CheckCircle, XCircle, TrendingUp, ChevronRight, Bot, Info, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+
+function AIFSModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={onClose}>
+      <div className="bg-background rounded-xl border shadow-lg max-w-lg w-full mx-4 p-6" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-bold">How Your AIFS Score Is Calculated</h3>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+        <div className="space-y-3 text-sm text-muted-foreground">
+          <p>
+            Your <strong className="text-foreground">AI Findability Score (AIFS)</strong> measures how likely an AI system is to confidently recommend you by name when asked for an agent in your market.
+          </p>
+          <p>
+            It is derived from your <strong className="text-foreground">entire internet footprint</strong>, not just your Top10Lists profile. We analyze:
+          </p>
+          <ul className="list-disc list-inside space-y-1 ml-2">
+            <li>License status and history from state authorities</li>
+            <li>Review volume and ratings across Zillow, Google, and other platforms</li>
+            <li>Transaction history and recent market activity</li>
+            <li>Community involvement verified through public records and IRS 990 filings</li>
+            <li>Press mentions, awards, and third-party recognition</li>
+            <li>How much verified data is published and how frequently it is refreshed</li>
+          </ul>
+          <p>
+            The more verified, consistent data AI systems can find about you across the internet, the higher your score — and the more confidently they will name you.
+          </p>
+          <p className="text-xs text-muted-foreground/70">
+            Score range: 0–100. Updated daily at 04:00 UTC.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 interface OverviewSectionProps {
   professional: any;
@@ -16,7 +54,6 @@ const BOT_DISPLAY: Record<string, string> = {
   "ByteSpider": "TikTok/ByteDance", "ClaudeBot": "Claude (Anthropic)",
   "PerplexityBot": "Perplexity", "Gemini-AI": "Google Gemini", "GPTBot": "OpenAI",
 };
-const SEO_BOTS = new Set(["AhrefsBot", "semrushbot", "SEMrushBot", "DotBot", "AdsBot-Google", "MJ12bot"]);
 
 function normalizeTier(t: string | null): string {
   const t0 = (t || "").toLowerCase();
@@ -29,6 +66,12 @@ const TIER_LABELS: Record<string, string> = {
   certified: "Certified (Free)",
   audited: "Audited ($300/mo)",
   underwritten: "Underwritten ($500/mo)",
+};
+
+const TIER_DESCRIPTIONS: Record<string, string> = {
+  certified: "AI can confirm you exist and meet basic thresholds, but limited data means it may hedge or omit you when recommending agents.",
+  audited: "AI sees expanded verified data refreshed monthly. Stronger signal — more likely to name you confidently with supporting detail.",
+  underwritten: "AI sees your complete verified profile refreshed daily. Maximum signal — highest probability of being named first with full conviction.",
 };
 
 interface CrawlStats {
@@ -46,12 +89,15 @@ interface AuditScores {
   score_underwritten: number | null;
 }
 
-interface AISurfaces {
-  city_surfaces: number;
-  neighborhood_surfaces: number;
-  profile_surfaces: number;
-  total_surfaces: number;
-  computed_at: string;
+interface BotBreakdown {
+  bot_name: string;
+  crawls: number;
+}
+
+interface SurfacesData {
+  total: number;
+  bots: BotBreakdown[];
+  computed_at: string | null;
 }
 
 export function OverviewSection({ professional }: OverviewSectionProps) {
@@ -61,7 +107,8 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
 
   const [crawlStats, setCrawlStats] = useState<CrawlStats | null>(null);
   const [scores, setScores] = useState<AuditScores | null>(null);
-  const [aiSurfaces, setAiSurfaces] = useState<AISurfaces | null>(null);
+  const [surfacesData, setSurfacesData] = useState<SurfacesData | null>(null);
+  const [aifsModalOpen, setAifsModalOpen] = useState(false);
 
   useEffect(() => {
     if (!professional?.id) return;
@@ -86,13 +133,19 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
         if (rows && rows.length > 0) setScores(rows[0]);
       });
 
+    // Fetch pre-computed AI surfaces by bot
     supabase
       .rpc("run_sql" as any, {
-        query: `SELECT city_surfaces, neighborhood_surfaces, profile_surfaces, total_surfaces, computed_at FROM agent_ai_surfaces WHERE agent_id = '${pid}' AND period = 'rolling_8d'`,
+        query: `SELECT bot_name, crawls, computed_at::text FROM agent_ai_surfaces_by_bot WHERE agent_id = '${pid}' ORDER BY crawls DESC`,
       })
       .then(({ data }: any) => {
-        const rows = data as AISurfaces[] | null;
-        if (rows && rows.length > 0) setAiSurfaces(rows[0]);
+        const rows = (data as (BotBreakdown & { computed_at: string })[]) || [];
+        const total = rows.reduce((s, r) => s + r.crawls, 0);
+        setSurfacesData({
+          total,
+          bots: rows.map((r) => ({ bot_name: r.bot_name, crawls: r.crawls })),
+          computed_at: rows.length > 0 ? rows[0].computed_at : null,
+        });
       });
   }, [professional?.id]);
 
@@ -103,9 +156,6 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
     : professional.signal_score ?? 25;
 
   const maxScore = scores?.score_underwritten ?? 95;
-
-  const aiBots = (crawlStats?.bot_names_30d || []).filter((b) => !SEO_BOTS.has(b));
-  const displayBots = [...new Set(aiBots.map((b) => BOT_DISPLAY[b] || b))].sort();
 
   const handleUpgrade = () => {
     const token = professional.verification_token || professional.id;
@@ -121,39 +171,44 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
       {/* ── ROW 1: Command Center Metrics ── */}
       <div className="grid gap-4 sm:grid-cols-3">
 
-        {/* Card 1: AI Engine Crawls (Hero) */}
+        {/* Card 1: AI Surfaces (Hero) */}
         <div className="rounded-xl border bg-gradient-to-br from-slate-900 to-slate-800 p-5 text-white sm:col-span-1">
           <div className="flex items-center gap-2 mb-3">
             <Activity className="h-4 w-4 text-emerald-400" />
-            <p className="text-xs uppercase tracking-wide text-slate-400">AI Surfaces / Month</p>
+            <p className="text-xs uppercase tracking-wide text-slate-400">AI Surfaces</p>
           </div>
           <p className="text-4xl font-black tabular-nums">
-            {professional.ai_surfaces_monthly_est
-              ? professional.ai_surfaces_monthly_est.toLocaleString()
-              : crawlStats ? crawlStats.total_crawls_30d.toLocaleString() : "--"}
+            {surfacesData ? surfacesData.total.toLocaleString() : "--"}
           </p>
           <p className="text-xs text-slate-400 mt-1">
-            Times your profile appeared to AI systems (est. 30 days)
+            times surfaced to AI systems in the past 7 days
           </p>
 
-          {/* Bot pills */}
-          {displayBots.length > 0 && (
+          {/* Top bot pills from pre-computed data */}
+          {surfacesData && surfacesData.bots.length > 0 && (
             <div className="mt-3 flex flex-wrap gap-1">
-              {displayBots.map((bot) => (
-                <span key={bot} className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                  {bot}
+              {surfacesData.bots.slice(0, 5).map((b) => (
+                <span key={b.bot_name} className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                  {BOT_DISPLAY[b.bot_name] || b.bot_name}
                 </span>
               ))}
             </div>
           )}
-
         </div>
 
         {/* Card 2: AIFS Score */}
         <div className="rounded-xl border p-5">
-          <div className="flex items-center gap-2 mb-3">
-            <BadgeCheck className="h-4 w-4 text-primary" />
-            <p className="text-xs uppercase tracking-wide text-muted-foreground">Your AIFS Score</p>
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <BadgeCheck className="h-4 w-4 text-primary" />
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">Your AIFS Score</p>
+            </div>
+            <button
+              onClick={() => setAifsModalOpen(true)}
+              className="flex items-center gap-1 text-xs text-primary hover:underline"
+            >
+              <Info className="h-3 w-3" /> What is this?
+            </button>
           </div>
           <div className="flex items-baseline gap-1">
             <span className="text-4xl font-black">{currentScore}</span>
@@ -162,25 +217,17 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
           <p className="text-xs text-muted-foreground mt-1">
             Current tier: {TIER_LABELS[currentTier]}
           </p>
-
-          {/* Mini score bar */}
-          <div className="mt-3 h-2 bg-muted rounded-full overflow-hidden">
-            <div
-              className="h-full bg-primary rounded-full transition-all duration-500"
-              style={{ width: `${pctCurrent}%` }}
-            />
-          </div>
-          <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
-            <span>0</span>
-            <span>{maxScore}</span>
-          </div>
+          <p className="text-xs text-muted-foreground mt-2">
+            {TIER_DESCRIPTIONS[currentTier]}
+          </p>
         </div>
+        <AIFSModal open={aifsModalOpen} onClose={() => setAifsModalOpen(false)} />
 
         {/* Card 3: Web of Truth */}
         <div className="rounded-xl border p-5">
           <div className="flex items-center gap-2 mb-3">
             <Shield className="h-4 w-4 text-primary" />
-            <p className="text-xs uppercase tracking-wide text-muted-foreground">Web of Truth&trade; Artifact</p>
+            <p className="text-xs uppercase tracking-wide text-muted-foreground">Web of Truth&trade;</p>
           </div>
           {professional.profile_link ? (
             <>
@@ -188,7 +235,7 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
                 <CheckCircle className="h-5 w-5 text-green-500" />
                 <span className="text-lg font-bold text-green-600">Enabled</span>
               </div>
-              <p className="text-xs text-muted-foreground mt-2">Your trust artifact is live and citable by AI systems.</p>
+              <p className="text-xs text-muted-foreground mt-2">Your Web of Truth is live and citable by AI systems.</p>
             </>
           ) : (
             <>
@@ -197,11 +244,15 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
                 <span className="text-lg font-bold text-red-500">Disabled</span>
               </div>
               <p className="text-xs text-muted-foreground mt-2">
-                Enable your artifact so AI systems can cite your verified credentials.
+                Place your beacon across your web presence so AI systems can verify your credentials.
               </p>
-              <button className="mt-2 text-xs font-semibold text-primary flex items-center gap-1 hover:underline">
-                Enable Artifact <ChevronRight className="h-3 w-3" />
-              </button>
+              <Button
+                size="sm"
+                className="mt-3 w-full"
+                onClick={() => navigate(`/badge-instructions?token=${professional.verification_token || professional.id}`)}
+              >
+                Enable
+              </Button>
             </>
           )}
         </div>
@@ -248,46 +299,7 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
         </div>
       )}
 
-      {/* ── ROW 3: AI Surfaces Breakdown ── */}
-      {aiSurfaces && aiSurfaces.total_surfaces > 0 && (
-        <div className="rounded-xl border p-5">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <Activity className="h-4 w-4 text-primary" />
-              <p className="text-sm font-semibold">AI Surface Breakdown (Last 8 Days)</p>
-            </div>
-            <span className="text-xs text-muted-foreground">
-              Updated {new Date(aiSurfaces.computed_at).toLocaleDateString()}
-            </span>
-          </div>
-          <div className="grid grid-cols-3 gap-4 text-center">
-            <div className="rounded-lg bg-muted/50 p-3">
-              <p className="text-2xl font-black tabular-nums">{aiSurfaces.city_surfaces.toLocaleString()}</p>
-              <p className="text-xs text-muted-foreground mt-1">City Searches</p>
-            </div>
-            <div className="rounded-lg bg-muted/50 p-3">
-              <p className="text-2xl font-black tabular-nums">{aiSurfaces.neighborhood_surfaces.toLocaleString()}</p>
-              <p className="text-xs text-muted-foreground mt-1">Neighborhood Searches</p>
-            </div>
-            <div className="rounded-lg bg-muted/50 p-3">
-              <p className="text-2xl font-black tabular-nums">{aiSurfaces.profile_surfaces.toLocaleString()}</p>
-              <p className="text-xs text-muted-foreground mt-1">Direct Profile Views</p>
-            </div>
-          </div>
-          <div className="mt-3 flex items-center justify-between">
-            <p className="text-xs text-muted-foreground">
-              Total: <strong className="text-foreground">{aiSurfaces.total_surfaces.toLocaleString()}</strong> times surfaced to AI systems
-            </p>
-            {aiSurfaces.profile_surfaces > 0 && (
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-600 border border-emerald-500/30 font-medium">
-                Direct interest signal
-              </span>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* ── ROW 4: Quick AI Activity Context ── */}
+      {/* ── ROW 3: Quick AI Activity Context ── */}
       {crawlStats && crawlStats.total_crawls_30d > 0 && (
         <div className="rounded-xl border p-5">
           <div className="flex items-center gap-2 mb-3">

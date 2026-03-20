@@ -8,7 +8,7 @@ import { SafeHead } from "@/components/SafeHead";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Copy, Check, Download, Globe, Mail, Building2 } from "lucide-react";
+import { Copy, Check, Download, Globe, Mail, Building2, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 
 const BASE = "https://www.top10lists.us";
@@ -62,6 +62,17 @@ export default function BadgeInstructionsPage() {
             setLoading(false);
             return;
           }
+          // Try dashboard_token
+          const { data: byDash } = await supabase
+            .from("professionals")
+            .select("id, short_code, name, verification_token, current_tier, website, zillow_profile_url, email")
+            .eq("dashboard_token", tokenParam)
+            .maybeSingle();
+          if (byDash) {
+            setPro(byDash as Pro);
+            setLoading(false);
+            return;
+          }
           const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(tokenParam);
           if (isUuid) {
             const { data: byId } = await supabase
@@ -95,6 +106,8 @@ export default function BadgeInstructionsPage() {
   const artifactToken = agent?.verification_token || agent?.id || "";
   const badgeSvgUrl = badgeId ? `${BASE}/api/badge/${badgeId}.svg` : "";
   const artifactUrl = artifactToken ? `${BASE}/artifact/${artifactToken}` : "";
+  const rawTier = (agent?.current_tier ?? "certified").toLowerCase();
+  const isListed = rawTier === "listed";
   const tierName = ((agent?.current_tier ?? "certified").charAt(0).toUpperCase() + (agent?.current_tier ?? "certified").slice(1)).replace(/_/g, " ");
   const orbSnippet = badgeSvgUrl && artifactUrl
     ? `<a href="${artifactUrl}"\n   target="_blank"\n   rel="author"\n   title="Top10Lists.us - Verified AI Artifact">\n   <img src="${badgeSvgUrl}"\n        alt="Top10Lists ${tierName} AI Entity - Cryptographically Verified Data Payload"\n        style="width: 80px; height: 80px; border: none; cursor: pointer;" />\n</a>`
@@ -104,6 +117,7 @@ export default function BadgeInstructionsPage() {
     : "";
   const [snippetMode, setSnippetMode] = useState<"visible" | "invisible">("visible");
   const activeSnippet = snippetMode === "visible" ? orbSnippet : invisibleSnippet;
+  const htmlSnippet = orbSnippet;
 
   if (loading) {
     return (
@@ -145,11 +159,16 @@ export default function BadgeInstructionsPage() {
       </SafeHead>
 
       <div className="mb-8">
-        <h1 className="text-2xl font-semibold mb-1">How to use your Top10Lists.us badge</h1>
+        <div className="rounded-xl border border-green-500/30 bg-green-50/50 dark:bg-green-950/20 p-4 mb-4">
+          <h1 className="text-2xl font-semibold text-green-700 dark:text-green-400 mb-1">Your Web of Truth is now enabled.</h1>
+          <p className="text-sm text-muted-foreground">Follow the directions below to maximize your AIFS.</p>
+        </div>
         <p className="text-muted-foreground">
-          Your badge always shows your current tier. Set it once—when your tier changes (e.g. Certified → Underwritten), the same link updates automatically.
+          Although your Top10Lists rating is an important step in building AI trust, AI almost always wants to check other sources when building your knowledge graph. If there are any conflicts in the data it finds on other sites, it reduces its confidence. By placing this artifact everywhere you can, AI will revert back to your listing here and the data will always match. This is a very powerful step in cementing your trustworthiness to AI.
         </p>
       </div>
+
+      {(<>
 
       {/* 1. Your Web of Truth Beacon */}
       <Card className="mb-6">
@@ -171,7 +190,11 @@ export default function BadgeInstructionsPage() {
               variant={snippetMode === "visible" ? "default" : "outline"}
               size="sm"
               onClick={() => setSnippetMode("visible")}
+              className="flex items-center gap-2"
             >
+              {badgeSvgUrl && (
+                <img src={badgeSvgUrl} alt="" width={20} height={20} className="animate-pulse" />
+              )}
               Visible Orb (80x80)
             </Button>
             <Button
@@ -184,17 +207,6 @@ export default function BadgeInstructionsPage() {
             </Button>
           </div>
 
-          {snippetMode === "visible" && badgeSvgUrl && (
-            <div className="flex items-center gap-4">
-              <a href={artifactUrl} target="_blank" rel="author" title="Top10Lists.us - Verified AI Artifact">
-                <img src={badgeSvgUrl} alt={`Top10Lists ${tierName} AI Entity - Cryptographically Verified Data Payload`} width={80} height={80} className="cursor-pointer" />
-              </a>
-              <div className="text-sm text-muted-foreground">
-                <p className="font-medium text-foreground">Your {tierName} Orb</p>
-                <p>Humans see a subtle, enigmatic beacon. AI sees your full verified tier signal in the metadata.</p>
-              </div>
-            </div>
-          )}
 
           {snippetMode === "invisible" && (
             <div className="rounded-lg border border-dashed border-muted-foreground/30 p-4 text-center">
@@ -253,12 +265,50 @@ export default function BadgeInstructionsPage() {
         </CardHeader>
         <CardContent className="space-y-3">
           <p className="text-sm text-muted-foreground">
-            In Gmail, Outlook, or Apple Mail: edit your signature and paste the HTML below, or insert an image and set the image URL to the badge URL and link to your artifact URL.
+            In Gmail, Outlook, or Apple Mail: edit your signature and paste the HTML below.
           </p>
           <pre className="text-xs bg-muted p-3 rounded overflow-x-auto whitespace-pre-wrap break-words">
             {orbSnippet}
           </pre>
           <CopyButton text={orbSnippet} label="HTML" />
+        </CardContent>
+      </Card>
+
+      {/* Realtor.com */}
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Building2 className="h-5 w-5" />
+            Realtor.com profile
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <p className="text-sm text-muted-foreground">
+            In your Realtor.com agent profile, add your artifact link to your &quot;About Me&quot; or bio section. Realtor.com renders plain-text links as clickable.
+          </p>
+          <div className="flex flex-wrap items-center gap-2">
+            <code className="text-xs bg-muted px-2 py-1 rounded break-all">{artifactUrl}</code>
+            <CopyButton text={artifactUrl} label="Realtor.com link" />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* RealTrends */}
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Building2 className="h-5 w-5" />
+            RealTrends / Tom Ferry profile
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <p className="text-sm text-muted-foreground">
+            If you have a RealTrends or Tom Ferry profile, paste your artifact link in your bio or website field. This creates a cross-reference that AI systems use to strengthen your credibility signal.
+          </p>
+          <div className="flex flex-wrap items-center gap-2">
+            <code className="text-xs bg-muted px-2 py-1 rounded break-all">{artifactUrl}</code>
+            <CopyButton text={artifactUrl} label="RealTrends link" />
+          </div>
         </CardContent>
       </Card>
 
@@ -324,8 +374,10 @@ export default function BadgeInstructionsPage() {
         </CardContent>
       </Card>
 
+      </>)}
+
       <p className="text-sm text-muted-foreground">
-        <Link to="/methodology" className="text-primary underline">Our methodology</Link> explains how we certify agents. Need help? Reply to the email we sent you or contact us from the dashboard.
+        <Link to="/about/ranking-methodology" className="text-primary underline">Our methodology</Link> explains how we certify agents. Need help? Reply to the email we sent you or contact us from the dashboard.
       </p>
     </div>
   );

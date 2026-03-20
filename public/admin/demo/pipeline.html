@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agent Selection Pipeline | Top10Lists Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface-hover: #22262f;
+    --border: #2a2e3a;
+    --text: #e4e4e7;
+    --text-muted: #8b8d98;
+    --accent: #3b82f6;
+    --radius: 10px;
+
+    --blue-50: #1e3a5f; --blue-100: #2a4d7a; --blue-stroke: #4a8fe0; --blue-text: #a8d4ff; --blue-sub: #6ab0f5;
+    --purple-50: #2d2154; --purple-100: #3c2d6e; --purple-stroke: #7f77dd; --purple-text: #c8c4f7; --purple-sub: #9d96e8;
+    --teal-50: #0c3d33; --teal-100: #105247; --teal-stroke: #1d9e75; --teal-text: #9fe1cb; --teal-sub: #5dcaa5;
+    --amber-50: #3d2a08; --amber-100: #533a0d; --amber-stroke: #ba7517; --amber-text: #fac775; --amber-sub: #ef9f27;
+    --green-50: #1a3508; --green-100: #24490c; --green-stroke: #639922; --green-text: #c0dd97; --green-sub: #97c459;
+    --red-50: #3d1414; --red-100: #521c1c; --red-stroke: #e24b4a; --red-text: #f7c1c1; --red-sub: #f09595;
+    --gray-50: #22221f; --gray-100: #2e2e2b; --gray-stroke: #5f5e5a; --gray-text: #d3d1c7; --gray-sub: #b4b2a9;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'DM Sans', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  .page-header {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 40px 24px 0;
+  }
+  .breadcrumb {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+  }
+  .breadcrumb a { color: var(--text-muted); text-decoration: none; }
+  .breadcrumb a:hover { color: var(--accent); }
+  .page-header h1 { font-size: 24px; font-weight: 700; margin-bottom: 6px; }
+  .page-header p { color: var(--text-muted); font-size: 14px; margin-bottom: 32px; line-height: 1.5; }
+
+  .diagram-wrap {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 0 24px 60px;
+  }
+  .diagram-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 32px 24px;
+    overflow-x: auto;
+  }
+
+  /* SVG node styles */
+  svg text { font-family: 'DM Sans', system-ui, sans-serif; }
+  .label { fill: var(--text-muted); font-size: 12px; font-weight: 600; letter-spacing: 0.5px; }
+  .count { fill: var(--text-muted); font-size: 12px; opacity: 0.7; }
+
+  .node-rect { rx: 8; stroke-width: 0.5; }
+  .node-title { font-size: 14px; font-weight: 600; }
+  .node-sub { font-size: 12px; }
+
+  .n-gray .node-rect { fill: var(--gray-50); stroke: var(--gray-stroke); }
+  .n-gray .node-title { fill: var(--gray-text); }
+  .n-gray .node-sub { fill: var(--gray-sub); }
+
+  .n-blue .node-rect { fill: var(--blue-50); stroke: var(--blue-stroke); }
+  .n-blue .node-title { fill: var(--blue-text); }
+  .n-blue .node-sub { fill: var(--blue-sub); }
+
+  .n-purple .node-rect { fill: var(--purple-50); stroke: var(--purple-stroke); }
+  .n-purple .node-title { fill: var(--purple-text); }
+  .n-purple .node-sub { fill: var(--purple-sub); }
+
+  .n-teal .node-rect { fill: var(--teal-50); stroke: var(--teal-stroke); }
+  .n-teal .node-title { fill: var(--teal-text); }
+  .n-teal .node-sub { fill: var(--teal-sub); }
+
+  .n-amber .node-rect { fill: var(--amber-50); stroke: var(--amber-stroke); }
+  .n-amber .node-title { fill: var(--amber-text); }
+  .n-amber .node-sub { fill: var(--amber-sub); }
+
+  .n-green .node-rect { fill: var(--green-50); stroke: var(--green-stroke); }
+  .n-green .node-title { fill: var(--green-text); }
+  .n-green .node-sub { fill: var(--green-sub); }
+
+  .n-red .node-rect { fill: var(--red-50); stroke: var(--red-stroke); }
+  .n-red .node-title { fill: var(--red-text); }
+  .n-red .node-sub { fill: var(--red-sub); }
+
+  .arr { stroke: var(--text-muted); stroke-width: 1.2; }
+  .arr-dash { stroke: var(--text-muted); stroke-width: 1; stroke-dasharray: 4 3; }
+
+  /* Hover on clickable nodes */
+  g[data-tip] { cursor: pointer; }
+  g[data-tip]:hover .node-rect { stroke-width: 1.2; filter: brightness(1.15); }
+
+  /* Tooltip */
+  .tooltip {
+    position: fixed;
+    background: #1e2130;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 13px;
+    color: var(--text);
+    max-width: 320px;
+    line-height: 1.5;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s;
+    z-index: 100;
+  }
+  .tooltip.show { opacity: 1; }
+  .tooltip strong { color: var(--accent); font-weight: 600; }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+  }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="breadcrumb"><a href="/admin/demo">Demo</a> / Pipeline</div>
+  <h1>Agent selection pipeline</h1>
+  <p>Cradle to grave: how Top10Lists takes 908,906 state licenses and produces ~3,487 qualified, continuously verified agent listings. Hover any box for details.</p>
+</div>
+
+<div class="diagram-wrap">
+  <div class="diagram-card">
+    <svg width="100%" viewBox="0 0 680 960" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </marker>
+      </defs>
+
+      <!-- Phase labels -->
+      <text class="label" x="46" y="58" text-anchor="middle">SOURCE</text>
+      <text class="label" x="46" y="178" text-anchor="middle">FILTER</text>
+      <text class="label" x="46" y="350" text-anchor="middle">VERIFY</text>
+      <text class="label" x="46" y="510" text-anchor="middle">ENRICH</text>
+      <text class="label" x="46" y="600" text-anchor="middle">ENTRY</text>
+      <text class="label" x="46" y="720" text-anchor="middle">LIFECYCLE</text>
+
+      <!-- Row 1: State license databases -->
+      <g class="n-gray" data-tip="Primary data source. We ingest the full license roster from AZ DRE, CA DRE, TX TREC, FL DBPR, NY DOS, and CO DORA. Currently 908,906 licenses across six states.">
+        <rect class="node-rect" x="130" y="30" width="260" height="56"/>
+        <text class="node-title" x="260" y="50" text-anchor="middle" dominant-baseline="central">State license databases</text>
+        <text class="node-sub" x="260" y="70" text-anchor="middle" dominant-baseline="central">AZ, CA, TX, FL, NY, CO</text>
+      </g>
+
+      <line class="arr" x1="260" y1="86" x2="260" y2="130" marker-end="url(#arrow)"/>
+      <text class="count" x="274" y="112">908,906 licenses</text>
+
+      <!-- Row 2: Active license filter -->
+      <g class="n-blue" data-tip="First cut: we drop any license that is expired, inactive, suspended, or revoked. Only currently active licenses proceed. This eliminates roughly 25% of the total roster.">
+        <rect class="node-rect" x="130" y="130" width="260" height="56"/>
+        <text class="node-title" x="260" y="150" text-anchor="middle" dominant-baseline="central">Active license filter</text>
+        <text class="node-sub" x="260" y="170" text-anchor="middle" dominant-baseline="central">Current, not expired</text>
+      </g>
+
+      <line class="arr" x1="390" y1="158" x2="470" y2="158" marker-end="url(#arrow)"/>
+      <g class="n-red">
+        <rect class="node-rect" x="472" y="140" width="140" height="36"/>
+        <text class="node-sub" x="542" y="158" text-anchor="middle" dominant-baseline="central">Inactive / expired</text>
+      </g>
+
+      <line class="arr" x1="260" y1="186" x2="260" y2="230" marker-end="url(#arrow)"/>
+      <text class="count" x="274" y="212">670,000+ active</text>
+
+      <!-- Row 3: Merit Gate -->
+      <g class="n-blue" data-tip="The merit gate is the core quality filter. Three criteria, zero exceptions: 4.5+ star rating, 10+ verified reviews in the last 24 months, and 5+ years in business. Source of truth is businessConfig.json.">
+        <rect class="node-rect" x="110" y="230" width="300" height="70"/>
+        <text class="node-title" x="260" y="252" text-anchor="middle" dominant-baseline="central">Merit gate</text>
+        <text class="node-sub" x="260" y="270" text-anchor="middle" dominant-baseline="central">4.5+ stars, 10+ reviews / 24 mo</text>
+        <text class="node-sub" x="260" y="288" text-anchor="middle" dominant-baseline="central">5+ years in business</text>
+      </g>
+
+      <line class="arr" x1="410" y1="265" x2="470" y2="265" marker-end="url(#arrow)"/>
+      <g class="n-red">
+        <rect class="node-rect" x="472" y="247" width="140" height="36"/>
+        <text class="node-sub" x="542" y="265" text-anchor="middle" dominant-baseline="central">Does not qualify</text>
+      </g>
+
+      <line class="arr" x1="260" y1="300" x2="260" y2="340" marker-end="url(#arrow)"/>
+      <text class="count" x="274" y="324">~3,487 pass</text>
+
+      <!-- Row 4: Red flag screening -->
+      <g class="n-purple" data-tip="Agents who pass the merit gate are screened for red flags: license suspensions/revocations, active complaints, disciplinary actions, fraud indicators, and unverified self-reported data. Any hit is an automatic rejection.">
+        <rect class="node-rect" x="110" y="340" width="300" height="56"/>
+        <text class="node-title" x="260" y="360" text-anchor="middle" dominant-baseline="central">Red flag screening</text>
+        <text class="node-sub" x="260" y="378" text-anchor="middle" dominant-baseline="central">Suspensions, complaints, fraud</text>
+      </g>
+
+      <line class="arr" x1="410" y1="368" x2="470" y2="368" marker-end="url(#arrow)"/>
+      <g class="n-red">
+        <rect class="node-rect" x="472" y="350" width="140" height="36"/>
+        <text class="node-sub" x="542" y="368" text-anchor="middle" dominant-baseline="central">Auto-rejected</text>
+      </g>
+
+      <line class="arr" x1="260" y1="396" x2="260" y2="450" marker-end="url(#arrow)"/>
+      <text class="count" x="274" y="428">fewer than 1%</text>
+
+      <!-- Row 5: Data enrichment -->
+      <g class="n-purple" data-tip="Qualified agents enter the enrichment pipeline: Zillow (via Apify), Google Business (via DataForSEO), SERP data, ProPublica civic records, Exa.ai press mentions, and DeepSeek profile synthesis. See the Enrichment Pipeline diagram for full detail.">
+        <rect class="node-rect" x="110" y="450" width="300" height="70"/>
+        <text class="node-title" x="260" y="472" text-anchor="middle" dominant-baseline="central">Data enrichment pipeline</text>
+        <text class="node-sub" x="260" y="490" text-anchor="middle" dominant-baseline="central">Zillow, Google, DataForSEO</text>
+        <text class="node-sub" x="260" y="508" text-anchor="middle" dominant-baseline="central">ProPublica, Exa, DeepSeek</text>
+      </g>
+
+      <line class="arr" x1="260" y1="520" x2="260" y2="565" marker-end="url(#arrow)"/>
+
+      <!-- Row 6: Listed -->
+      <g class="n-teal" data-tip="Every qualified agent enters as Listed (free tier). Annual verification cycle. Basic badge, standard listing. No payment required, no payment accepted. Inclusion is merit-only.">
+        <rect class="node-rect" x="110" y="565" width="300" height="56"/>
+        <text class="node-title" x="260" y="585" text-anchor="middle" dominant-baseline="central">Listed (free tier)</text>
+        <text class="node-sub" x="260" y="603" text-anchor="middle" dominant-baseline="central">Annual verification, basic badge</text>
+      </g>
+
+      <line class="arr" x1="260" y1="621" x2="260" y2="665" marker-end="url(#arrow)"/>
+
+      <!-- Row 7: Tier upgrades -->
+      <g class="n-amber" data-tip="Agents can optionally upgrade for deeper verification and more frequent data refresh. Audited ($300/mo) gets bimonthly verification and expanded API access. Underwritten ($500/mo) gets daily verification and full evidence payload. Payment affects verification depth only, never inclusion or ranking.">
+        <rect class="node-rect" x="110" y="665" width="300" height="70"/>
+        <text class="node-title" x="260" y="687" text-anchor="middle" dominant-baseline="central">Tier upgrades (optional)</text>
+        <text class="node-sub" x="260" y="705" text-anchor="middle" dominant-baseline="central">Audited $300/mo, bimonthly</text>
+        <text class="node-sub" x="260" y="723" text-anchor="middle" dominant-baseline="central">Underwritten $500/mo, daily</text>
+      </g>
+
+      <line class="arr" x1="410" y1="700" x2="470" y2="700" marker-end="url(#arrow)"/>
+      <g class="n-teal" data-tip="AI Footprint Score: proprietary 0-100 metric measuring agent citability across five pillars (Authority, Social, Identity, Citability, Technical). Higher tiers unlock greater AIFS uplift.">
+        <rect class="node-rect" x="472" y="678" width="140" height="44"/>
+        <text class="node-title" x="542" y="694" text-anchor="middle" dominant-baseline="central">AIFS scoring</text>
+        <text class="node-sub" x="542" y="712" text-anchor="middle" dominant-baseline="central">0-100 citability</text>
+      </g>
+
+      <line class="arr" x1="260" y1="735" x2="260" y2="790" marker-end="url(#arrow)"/>
+
+      <!-- Row 8: Ongoing verification -->
+      <g class="n-green" data-tip="Every agent is re-verified on a schedule set by their tier. Listed: annual. Audited: bimonthly. Underwritten: daily. If an agent no longer meets the merit gate at any verification cycle, they are delisted.">
+        <rect class="node-rect" x="110" y="790" width="300" height="56"/>
+        <text class="node-title" x="260" y="810" text-anchor="middle" dominant-baseline="central">Ongoing verification</text>
+        <text class="node-sub" x="260" y="828" text-anchor="middle" dominant-baseline="central">Frequency set by tier level</text>
+      </g>
+
+      <!-- Loop back arrow -->
+      <text class="count" x="96" y="818" text-anchor="end">pass</text>
+      <path class="arr-dash" d="M110 805 L82 805 L82 680 L108 680" fill="none" marker-end="url(#arrow)"/>
+
+      <line class="arr" x1="260" y1="846" x2="260" y2="895" marker-end="url(#arrow)"/>
+      <text class="count" x="274" y="876">fail</text>
+
+      <!-- Row 9: Delisted -->
+      <g class="n-red" data-tip="Agent no longer meets merit gate criteria: rating dropped below 4.5, review count fell below 10 in 24 months, license expired or suspended, or red flag detected. Removed from all listings, sitemap, and MCP payloads.">
+        <rect class="node-rect" x="130" y="895" width="260" height="44"/>
+        <text class="node-title" x="260" y="917" text-anchor="middle" dominant-baseline="central">Delisted</text>
+      </g>
+    </svg>
+
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--gray-stroke)"></div> Source</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--blue-stroke)"></div> Filter / gate</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--purple-stroke)"></div> Verification</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--teal-stroke)"></div> Entry / scoring</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--amber-stroke)"></div> Paid tiers</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--green-stroke)"></div> Active lifecycle</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--red-stroke)"></div> Rejection / exit</div>
+    </div>
+  </div>
+</div>
+
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+const tooltip = document.getElementById('tooltip');
+document.querySelectorAll('[data-tip]').forEach(el => {
+  el.addEventListener('mouseenter', e => {
+    tooltip.innerHTML = e.currentTarget.dataset.tip;
+    tooltip.classList.add('show');
+  });
+  el.addEventListener('mousemove', e => {
+    const x = Math.min(e.clientX + 16, window.innerWidth - 340);
+    const y = Math.min(e.clientY + 16, window.innerHeight - 100);
+    tooltip.style.left = x + 'px';
+    tooltip.style.top = y + 'px';
+  });
+  el.addEventListener('mouseleave', () => {
+    tooltip.classList.remove('show');
+  });
+});
+</script>
+</body>
+</html>

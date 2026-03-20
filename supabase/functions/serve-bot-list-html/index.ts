@@ -5,6 +5,7 @@
  */
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { siteHeaderCSS, siteHeaderHTML, siteFooterHTML } from "../_shared/site-chrome.ts";
 
 const SUPABASE_URL = "https://wiotrvoirdgzfacuuiem.supabase.co";
 const SUPABASE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
@@ -321,9 +322,11 @@ serve(async (req) => {
   <meta name="description" content="${descMeta}">
   <link rel="canonical" href="${canon}">${noindexMeta}
   <style>${CSS}
+  ${siteHeaderCSS()}
   </style>
 </head>
 <body>
+${siteHeaderHTML()}
 <header>
   <h1>Top Real Estate Agents in ${esc(loc)}, ${si.display}</h1>
   <p>${headerP}</p>
@@ -555,6 +558,7 @@ serve(async (req) => {
     });
     o += AI_DISCLAIMER;
     o += `<script type="application/ld+json">\n${JSON.stringify({ "@context": "https://schema.org", "@type": "ItemList", name: `Top Real Estate Agents in ${loc}, ${si.display}`, url: canon, numberOfItems: na, itemListElement: items })}\n</script>\n`;
+    o += siteFooterHTML();
     o += `</body>\n</html>`;
 
     // Bot crawl logging removed -- now handled by Vercel log drain (vercel-log-drain edge function)
@@ -586,9 +590,11 @@ serve(async (req) => {
   <title>Top Real Estate Agents in ${esc(errLoc)}, ${si.display} | Top10Lists.us</title>
   <link rel="canonical" href="${errCanon}">
   <style>${CSS}
+  ${siteHeaderCSS()}
   </style>
 </head>
 <body>
+${siteHeaderHTML()}
 <h1>Service Temporarily Unavailable</h1>
 <p>The agent directory for this area is temporarily unavailable. Please try again shortly.</p>
 <div class="merit-box">
@@ -597,6 +603,7 @@ serve(async (req) => {
 ${AI_DISCLAIMER}<script type="application/ld+json">
 ${errJsonLd}
 </script>
+${siteFooterHTML()}
 </body>
 </html>`;
     return new Response(html, {

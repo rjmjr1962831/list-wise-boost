@@ -25,6 +25,7 @@ import { PayloadSection } from "@/components/agent/PayloadSection";
 import { BillingSection } from "@/components/agent/BillingSection";
 import { AIMaxPlan } from "@/components/agent/AIMaxPlan";
 import { LiveAudit } from "@/components/agent/LiveAudit";
+import { WebOfTruthSection } from "@/components/agent/WebOfTruthSection";
 import { getValidImageUrl } from "@/utils/imageUrlValidator";
 import { cn } from "@/lib/utils";
 
@@ -38,11 +39,11 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { id: "overview", label: "Overview", icon: LayoutDashboard },
-  { id: "ai-max-plan", label: "AI Max Plan", icon: Sparkles },
+  { id: "ai-max-plan", label: "Optimize", icon: Sparkles },
   { id: "live-audit", label: "Live Audit", icon: Search },
   { id: "profile", label: "Profile", icon: User },
   { id: "payload", label: "Payload", icon: Bot },
-  { id: "badge", label: "Badge & sharing", icon: Shield },
+  { id: "badge", label: "Web of Truth", icon: Shield },
   { id: "billing", label: "Billing", icon: CreditCard },
 ];
 
@@ -322,12 +323,6 @@ export default function AgentDashboard() {
   };
 
   const handleNavClick = (section: NavSection) => {
-    if (section === "badge") {
-      const token = professional?.verification_token || professional?.id;
-      navigate(`/badge-instructions${token ? `?token=${encodeURIComponent(token)}` : ""}`);
-      setMobileNavOpen(false);
-      return;
-    }
     setActiveSection(section);
     setMobileNavOpen(false);
     window.scrollTo(0, 0);
@@ -509,6 +504,10 @@ export default function AgentDashboard() {
 
               {activeSection === "payload" && (
                 <PayloadSection professional={professional} />
+              )}
+
+              {activeSection === "badge" && (
+                <WebOfTruthSection professional={professional} />
               )}
 
               {activeSection === "billing" && (

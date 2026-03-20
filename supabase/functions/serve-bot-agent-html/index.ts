@@ -13,6 +13,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { bioToPlainText } from "../_shared/formatParagraphs.ts";
+import { siteHeaderCSS, siteHeaderHTML, siteFooterHTML } from "../_shared/site-chrome.ts";
 
 const SUPABASE_URL = "https://wiotrvoirdgzfacuuiem.supabase.co";
 const SUPABASE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
@@ -435,9 +436,11 @@ serve(async (req) => {
   <meta property="og:type" content="profile">
   <meta property="og:url" content="${canon}">
   ${buildJsonLd()}
-  <style>${CSS}</style>
+  <style>${CSS}
+  ${siteHeaderCSS()}</style>
 </head>
 <body>
+${siteHeaderHTML()}
 
 <nav class="breadcrumb">
   <a href="https://www.top10lists.us/">Home</a> /
@@ -729,6 +732,7 @@ serve(async (req) => {
 `;
 
     o += AI_DISCLAIMER;
+    o += siteFooterHTML();
     o += `</body>\n</html>`;
 
     return new Response(o, {
@@ -744,7 +748,7 @@ serve(async (req) => {
       },
     });
   } catch (_e: unknown) {
-    const html = "<!DOCTYPE html><html><head><title>Service Unavailable</title></head><body><h1>Service Unavailable</h1><p>Please try again later.</p></body></html>";
+    const html = `<!DOCTYPE html><html><head><title>Service Unavailable</title><style>${siteHeaderCSS()}</style></head><body>${siteHeaderHTML()}<h1>Service Unavailable</h1><p>Please try again later.</p>${siteFooterHTML()}</body></html>`;
     return new Response(html, {
       status: 503,
       headers: {

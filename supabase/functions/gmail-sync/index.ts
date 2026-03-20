@@ -402,6 +402,7 @@ async function syncAccount(account: any) {
     // Reply detection -- if inbound from known sender, check if in active sequence
     if (direction === "inbound") {
       await handleReply(fromEmail);
+      await createInboundTask(fromEmail, subject || "(no subject)", bodyText || "");
     }
 
     synced++;

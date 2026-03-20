@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pipeline Demos | Top10Lists Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --border: #2a2e3a;
+    --text: #e4e4e7;
+    --text-muted: #8b8d98;
+    --accent: #3b82f6;
+    --accent-hover: #2563eb;
+    --radius: 10px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'DM Sans', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .container {
+    max-width: 580px;
+    width: 100%;
+    padding: 40px 24px;
+  }
+  .badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+  h1 {
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 8px;
+  }
+  .subtitle {
+    color: var(--text-muted);
+    font-size: 15px;
+    margin-bottom: 40px;
+    line-height: 1.5;
+  }
+  .card-list { display: flex; flex-direction: column; gap: 12px; }
+  .card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    text-decoration: none;
+    color: var(--text);
+    transition: border-color 0.15s, transform 0.15s;
+  }
+  .card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+  }
+  .card-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 20px;
+  }
+  .card-icon.blue { background: rgba(59,130,246,0.15); }
+  .card-icon.purple { background: rgba(139,92,246,0.15); }
+  .card-icon.teal { background: rgba(20,184,166,0.15); }
+  .card-body { flex: 1; }
+  .card-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 2px;
+  }
+  .card-desc {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.4;
+  }
+  .card-arrow {
+    color: var(--text-muted);
+    font-size: 18px;
+    transition: transform 0.15s;
+  }
+  .card:hover .card-arrow { transform: translateX(3px); color: var(--accent); }
+  .back-link {
+    display: inline-block;
+    margin-top: 32px;
+    font-size: 13px;
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color 0.15s;
+  }
+  .back-link:hover { color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="badge">Admin / Demo</div>
+  <h1>Pipeline demos</h1>
+  <p class="subtitle">Interactive diagrams showing how Top10Lists selects, enriches, and maintains agent listings.</p>
+
+  <div class="card-list">
+    <a class="card" href="/admin/demo/pipeline">
+      <div class="card-icon blue">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round"><path d="M12 3v18M3 12l4-4 4 4M13 8l4-4 4 4"/></svg>
+      </div>
+      <div class="card-body">
+        <div class="card-title">Agent selection pipeline</div>
+        <div class="card-desc">Cradle to grave: 908,906 licenses in, ~3,487 qualified agents out, ongoing verification, and delisting.</div>
+      </div>
+      <span class="card-arrow">&rsaquo;</span>
+    </a>
+
+    <a class="card" href="/admin/demo/enrichment">
+      <div class="card-icon purple">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+      </div>
+      <div class="card-body">
+        <div class="card-title">Enrichment pipeline</div>
+        <div class="card-desc">Six data sources, five phases: identity, reviews, SERP, civic, and press discovery.</div>
+      </div>
+      <span class="card-arrow">&rsaquo;</span>
+    </a>
+
+    <a class="card" href="/admin/founder-intake">
+      <div class="card-icon teal">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#14b8a6" stroke-width="2" stroke-linecap="round"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4-4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+      </div>
+      <div class="card-body">
+        <div class="card-title">Founder profile intake</div>
+        <div class="card-desc">Fill in founder profile data for the GEO-optimized founders page and MCP tool.</div>
+      </div>
+      <span class="card-arrow">&rsaquo;</span>
+    </a>
+  </div>
+
+  <a class="back-link" href="/admin">&larr; Back to admin</a>
+</div>
+</body>
+</html>
