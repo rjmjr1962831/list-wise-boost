@@ -58,9 +58,10 @@ function bandFromScore(score: number): { label: string; color: string; bg: strin
   return { label: "High Fidelity", color: "text-green-500", bg: "bg-green-500" };
 }
 
-function PillarBar({ label, score, maxScore, icon: Icon, description }: {
-  label: string; score: number; maxScore: number; icon: any; description: string
+function PillarBar({ label, score, maxScore, icon: Icon, description, fixes }: {
+  label: string; score: number; maxScore: number; icon: any; description: string; fixes?: string[];
 }) {
+  const [showFixes, setShowFixes] = useState(false);
   const pct = Math.max(0, Math.min(100, (score / maxScore) * 100));
   const barColor = score < 0 ? "bg-red-400" : pct < 30 ? "bg-red-400" : pct < 60 ? "bg-orange-400" : pct < 80 ? "bg-blue-400" : "bg-green-400";
   const textColor = score < 0 ? "text-red-500" : pct < 30 ? "text-red-500" : pct < 60 ? "text-orange-500" : pct < 80 ? "text-blue-500" : "text-green-500";
@@ -72,14 +73,26 @@ function PillarBar({ label, score, maxScore, icon: Icon, description }: {
           <Icon className={`h-4 w-4 ${textColor}`} />
           <span className="text-sm font-medium">{label}</span>
         </div>
-        <span className={`text-sm font-bold tabular-nums ${textColor}`}>
-          {score}/{maxScore}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className={`text-sm font-bold tabular-nums ${textColor}`}>
+            {score}/{maxScore}
+          </span>
+          {fixes && fixes.length > 0 && pct < 80 && (
+            <button onClick={() => setShowFixes(!showFixes)} className="text-[10px] text-primary hover:underline font-medium">
+              {showFixes ? "Hide" : "How to fix"}
+            </button>
+          )}
+        </div>
       </div>
       <div className="h-2 rounded-full bg-muted overflow-hidden">
         <div className={`h-full rounded-full transition-all ${barColor}`} style={{ width: `${Math.max(0, pct)}%` }} />
       </div>
       <p className="text-xs text-muted-foreground">{description}</p>
+      {showFixes && fixes && (
+        <ul className="text-xs text-muted-foreground space-y-1 ml-6 list-disc">
+          {fixes.map((f, i) => <li key={i}>{f}</li>)}
+        </ul>
+      )}
     </div>
   );
 }
@@ -310,39 +323,65 @@ export function AIMaxPlan({ professional }: AIMaxPlanProps) {
         </CardHeader>
         <CardContent className="space-y-5">
           <PillarBar
-            label="Authority"
-            score={data.pillar_authority}
-            maxScore={25}
-            icon={Users}
-            description="Third-party endorsements, brokerage affiliation, industry recognition, press mentions"
-          />
-          <PillarBar
-            label="Social Proof"
-            score={data.pillar_social}
-            maxScore={25}
-            icon={Users}
-            description="Review volume, review quality, review recency, platform diversity"
-          />
-          <PillarBar
             label="Identity"
             score={data.pillar_identity}
             maxScore={25}
             icon={Globe}
-            description="Name consistency across the web, license verification, entity disambiguation"
+            description="AI must know exactly who you are before it will recommend you. Name consistency, license verification, entity disambiguation."
+            fixes={[
+              "Use your exact legal name consistently across Zillow, Google, Realtor.com, and your website",
+              "Verify your license number is visible and matches state records",
+              "Claim your Google Business Profile if you haven't already",
+              "Upgrade to Underwritten for continuous identity monitoring across all platforms",
+            ]}
           />
           <PillarBar
             label="Citability"
             score={data.pillar_citability}
             maxScore={25}
             icon={Quote}
-            description="Whether AI systems can extract and cite your credentials in a recommendation"
+            description="Can AI extract and cite your credentials when recommending you? Machine-readable data, structured profiles, artifact presence."
+            fixes={[
+              "Enable your Web of Truth beacon on your website, Zillow bio, and email signature",
+              "Add schema markup to your personal website (or ask your web developer to)",
+              "Upgrade to Underwritten — your complete verified profile becomes a machine-readable artifact that AI can cite directly",
+            ]}
+          />
+          <PillarBar
+            label="Social Proof"
+            score={data.pillar_social}
+            maxScore={20}
+            icon={Users}
+            description="Reviews and ratings across platforms. AI weights recent, diverse reviews heavily when deciding who to recommend."
+            fixes={[
+              "Ask recent clients for reviews on Google and Zillow — AI weights reviews from the last 6 months most heavily",
+              "Respond to existing reviews — AI reads responses as engagement signals",
+              "Diversify review platforms — presence on 3+ platforms is stronger than 50 reviews on one",
+            ]}
+          />
+          <PillarBar
+            label="Authority"
+            score={data.pillar_authority}
+            maxScore={15}
+            icon={Users}
+            description="Third-party endorsements, press mentions, industry recognition. These are signals AI uses to distinguish you from similar agents."
+            fixes={[
+              "Get mentioned in local publications or industry press — even a quote in a local article counts",
+              "Join a board or committee and make sure it's listed publicly",
+              "Upgrade to Audited or Underwritten — we verify and publish your community involvement from IRS 990 filings and public records",
+            ]}
           />
           <PillarBar
             label="Technical"
             score={data.pillar_technical}
-            maxScore={25}
+            maxScore={15}
             icon={FileCode}
-            description="Schema markup, website crawlability, machine-readable structured data"
+            description="Schema markup, website crawlability, structured data. This is the plumbing that lets AI read your information."
+            fixes={[
+              "Add LocalBusiness or RealEstateAgent schema markup to your website",
+              "Make sure your website isn't blocking crawlers (check robots.txt)",
+              "Upgrade to Underwritten — we handle all technical optimization and publish your data in every machine-readable format AI systems consume",
+            ]}
           />
         </CardContent>
       </Card>
@@ -352,7 +391,7 @@ export function AIMaxPlan({ professional }: AIMaxPlanProps) {
         <CardHeader className="pb-3">
           <CardTitle className="text-lg flex items-center gap-2">
             <Search className="h-5 w-5 text-primary" />
-            Where AI Systems Find You
+            Where AI Systems Look for You
           </CardTitle>
           <p className="text-xs text-muted-foreground">
             {platformCount > 0
