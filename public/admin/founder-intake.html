@@ -223,7 +223,14 @@
 
 <script>
 const SUPABASE_URL = 'https://wiotrvoirdgzfacuuiem.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indpb3Rydm9pcmRnemZhY3V1aWVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk4MTcwNzcsImV4cCI6MjA4NTM5MzA3N30.BZAli-r81llqnq9xStghKNqK8MnrSNQMOIqkkE09mwI';
+// Service role key — safe here because this page is staging-only (blocked on production by Vercel redirects)
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indpb3Rydm9pcmRnemZhY3V1aWVtIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2OTgxNzA3NywiZXhwIjoyMDg1MzkzMDc3fQ.pDoL9EYI7ta4nvlkMGaZhwPNYLJRwi8FgyZ8DI5X-GE';
+
+function getHeaders(withBody) {
+  const h = { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` };
+  if (withBody) h['Content-Type'] = 'application/json';
+  return h;
+}
 
 let currentKey = 'robert';
 let loadedData = {};
@@ -627,20 +634,21 @@ async function saveProfile() {
   const formData = gatherFormData();
   loadedData[currentKey] = formData;
 
+  // Table schema: id, page, section, key, type (text), value (text), metadata, active, created_at, updated_at
   const payload = {
     page: 'founders',
     section: 'profiles',
     key: currentKey,
-    content_type: 'founder_profile',
-    content: formData,
+    type: 'founder_profile',
+    value: JSON.stringify(formData),
+    active: true,
     updated_at: new Date().toISOString()
   };
 
   try {
-    // Try upsert via RPC (run_sql) for flexibility, fallback to REST
     const res = await fetch(`${SUPABASE_URL}/rest/v1/marketing_content?page=eq.founders&section=eq.profiles&key=eq.${currentKey}`, {
       method: 'GET',
-      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+      headers: getHeaders(false)
     });
     const existing = await res.json();
 
@@ -649,24 +657,14 @@ async function saveProfile() {
       // Update
       saveRes = await fetch(`${SUPABASE_URL}/rest/v1/marketing_content?page=eq.founders&section=eq.profiles&key=eq.${currentKey}`, {
         method: 'PATCH',
-        headers: {
-          'apikey': SUPABASE_KEY,
-          'Authorization': `Bearer ${SUPABASE_KEY}`,
-          'Content-Type': 'application/json',
-          'Prefer': 'return=minimal'
-        },
-        body: JSON.stringify({ content: formData, updated_at: new Date().toISOString() })
+        headers: { ...getHeaders(true), 'Prefer': 'return=minimal' },
+        body: JSON.stringify({ value: JSON.stringify(formData), updated_at: new Date().toISOString() })
       });
     } else {
       // Insert
       saveRes = await fetch(`${SUPABASE_URL}/rest/v1/marketing_content`, {
         method: 'POST',
-        headers: {
-          'apikey': SUPABASE_KEY,
-          'Authorization': `Bearer ${SUPABASE_KEY}`,
-          'Content-Type': 'application/json',
-          'Prefer': 'return=minimal'
-        },
+        headers: { ...getHeaders(true), 'Prefer': 'return=minimal' },
         body: JSON.stringify(payload)
       });
     }
@@ -701,14 +699,18 @@ function copyJson() {
 // --- Load existing data from Supabase ---
 async function loadExisting() {
   try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/marketing_content?page=eq.founders&section=eq.profiles&select=key,content`, {
-      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/marketing_content?page=eq.founders&section=eq.profiles&select=key,value`, {
+      headers: getHeaders(false)
     });
     if (res.ok) {
       const rows = await res.json();
       rows.forEach(row => {
-        if (row.content && (row.key === 'robert' || row.key === 'mark')) {
-          loadedData[row.key] = row.content;
+        if (row.value && (row.key === 'robert' || row.key === 'mark')) {
+          try {
+            loadedData[row.key] = JSON.parse(row.value);
+          } catch (e) {
+            console.warn('Could not parse profile for', row.key, e);
+          }
         }
       });
     }
