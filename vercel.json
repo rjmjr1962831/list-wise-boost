@@ -381,6 +381,54 @@
       "destination": "/api/serve-clean-html?fn=serve-bot-qa-html&path=%2Fq%2F:questionSlug"
     },
     {
+      "source": "/ai-citation-whitepaper",
+      "destination": "/api/serve-clean-html?fn=serve-bot-pages-html&path=%2Fai-citation-whitepaper"
+    },
+    {
+      "source": "/ai-citation-whitepaper/",
+      "destination": "/api/serve-clean-html?fn=serve-bot-pages-html&path=%2Fai-citation-whitepaper"
+    },
+    {
+      "source": "/ai-liability",
+      "destination": "/api/serve-clean-html?fn=serve-bot-pages-html&path=%2Fai-liability"
+    },
+    {
+      "source": "/ai-liability/",
+      "destination": "/api/serve-clean-html?fn=serve-bot-pages-html&path=%2Fai-liability"
+    },
+    {
+      "source": "/protocol-services",
+      "destination": "/api/serve-clean-html?fn=serve-bot-pages-html&path=%2Fprotocol-services"
+    },
+    {
+      "source": "/protocol-services/",
+      "destination": "/api/serve-clean-html?fn=serve-bot-pages-html&path=%2Fprotocol-services"
+    },
+    {
+      "source": "/zillow-explained",
+      "destination": "/api/serve-clean-html?fn=serve-bot-pages-html&path=%2Fzillow-explained"
+    },
+    {
+      "source": "/zillow-explained/",
+      "destination": "/api/serve-clean-html?fn=serve-bot-pages-html&path=%2Fzillow-explained"
+    },
+    {
+      "source": "/colorado",
+      "destination": "/api/serve-clean-html?fn=serve-bot-pages-html&path=%2Fcolorado"
+    },
+    {
+      "source": "/florida",
+      "destination": "/api/serve-clean-html?fn=serve-bot-pages-html&path=%2Fflorida"
+    },
+    {
+      "source": "/texas",
+      "destination": "/api/serve-clean-html?fn=serve-bot-pages-html&path=%2Ftexas"
+    },
+    {
+      "source": "/new-york",
+      "destination": "/api/serve-clean-html?fn=serve-bot-pages-html&path=%2Fnew-york"
+    },
+    {
       "source": "/(admin|agent|dashboard|funnel|profile|profile-view|verify|verify-listing|apply|claim|check-profile|check-agent|agent-info|agent-setup|agent-login|agent-onboarding|agent-payment-success|neighborhood|visibility|staging|badge-levels-preview|badge-demo|badge-instructions|migrate-data|og-preview|test-visibility-components|crm|clean-room|a/bot-analytics)(.*)",
       "destination": "/_spa.html"
     }
