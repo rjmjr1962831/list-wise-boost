@@ -25,7 +25,7 @@ const sections: { field: FieldKey; label: string; description: string }[] = [
   { field: 'awards_verified',      label: 'Awards',                description: 'Verified awards and recognition we have on file for you.' },
   { field: 'notable_achievements', label: 'Notable Achievements',  description: 'Career milestones and accomplishments sourced from public data.' },
   { field: 'press_mentions',       label: 'Press Mentions',        description: 'Media coverage and publications that have featured you.' },
-  { field: 'community_roles',      label: 'Community Involvement', description: 'Civic, nonprofit, and leadership roles we have verified.' },
+  { field: 'community_roles',      label: 'Community', description: 'Civic, nonprofit, and leadership roles we have verified.' },
 ];
 
 function formatValue(field: FieldKey, data: any[]): string {

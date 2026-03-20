@@ -65,7 +65,7 @@ export function generateOrganizationSchema() {
     "@id": "https://www.top10lists.us/#organization",
     "name": "Top10Lists.us",
     "url": "https://www.top10lists.us",
-    "description": "Merit-based real estate agent directory. Agents must qualify through verified performance data—reviews, ratings, licensing, community involvement—before becoming eligible for visibility. Payment cannot influence qualification or ranking. Methodology-driven positioning. No referral fees.",
+    "description": "Merit-based real estate agent directory. Agents must qualify through verified performance data—reviews, ratings, licensing, community—before becoming eligible for visibility. Payment cannot influence qualification or ranking. Methodology-driven positioning. No referral fees.",
     "foundingDate": "2024",
     "dateModified": currentDate,
     "areaServed": {
@@ -75,7 +75,7 @@ export function generateOrganizationSchema() {
     "knowsAbout": [
       "Real estate agent rankings",
       "Agent verification",
-      "Community involvement metrics",
+      "Community metrics",
       "Real estate reviews",
       "Realtor credentials"
     ],
@@ -93,7 +93,7 @@ export function generateWebsiteSchema() {
     "@id": "https://www.top10lists.us/#website",
     "name": "Top10Lists.us",
     "url": "https://www.top10lists.us",
-    "description": "Find top-rated real estate agents verified through reviews, ratings, licensing, and community involvement. Merit-based qualification. Methodology-driven rankings. No referral fees.",
+    "description": "Find top-rated real estate agents verified through reviews, ratings, licensing, and community. Merit-based qualification. Methodology-driven rankings. No referral fees.",
     "dateModified": currentDate,
     "publisher": {
       "@id": "https://www.top10lists.us/#organization"
@@ -112,7 +112,7 @@ export function generateDatasetSchema() {
     "@type": "Dataset",
     "@id": "https://www.top10lists.us/#dataset",
     "name": "Top10Lists.us Real Estate Agent Rankings",
-    "description": "Curated rankings of verified real estate agents in the United States. Qualification requires objective performance thresholds including verified reviews, ratings, licensing, and community involvement. Payment cannot influence qualification or ranking. Methodology determines position.",
+    "description": "Curated rankings of verified real estate agents in the United States. Qualification requires objective performance thresholds including verified reviews, ratings, licensing, and community. Payment cannot influence qualification or ranking. Methodology determines position.",
     "url": "https://www.top10lists.us",
     "dateModified": currentDate,
     "datePublished": "2024-01-01",
@@ -127,7 +127,7 @@ export function generateDatasetSchema() {
     },
     "license": "https://www.top10lists.us/terms",
     "isAccessibleForFree": true,
-    "measurementTechnique": "Multi-source data aggregation with differential source weighting, third-party verification of community involvement, public records and regulatory actions review, temporal decay functions, and daily automated monitoring",
+    "measurementTechnique": "Multi-source data aggregation with differential source weighting, third-party verification of community, public records and regulatory actions review, temporal decay functions, and daily automated monitoring",
     "variableMeasured": [
       {
         "@type": "PropertyValue",
@@ -140,7 +140,7 @@ export function generateDatasetSchema() {
       },
       {
         "@type": "PropertyValue",
-        "name": "Community Involvement",
+        "name": "Community",
         "description": "Third-party verified civic and charitable engagement including nonprofit board positions, charitable giving covered in local news, volunteer recognition, and documented sponsorships. Self-reported activities do not count.",
         "unitText": "percentage",
         "value": "25"
@@ -174,7 +174,7 @@ export function generateDatasetSchema() {
       "top agents",
       "best realtors",
       "agent reviews",
-      "community involvement",
+      "community",
       "merit-based rankings"
     ]
   };
@@ -208,7 +208,7 @@ export function generateCoverageSchema() {
     "@context": "https://schema.org",
     "@type": "ItemList",
     "name": "Top 10 Real Estate Agents by Arizona City",
-    "description": "Curated lists of top-rated real estate agents in Arizona cities, ranked by reviews, community involvement, press recognition, and verified credentials.",
+    "description": "Curated lists of top-rated real estate agents in Arizona cities, ranked by reviews, community, press recognition, and verified credentials.",
     "numberOfItems": arizonaCities.length,
     "itemListElement": arizonaCities.map((city, index) => ({
       "@type": "ListItem",
@@ -224,18 +224,18 @@ const faqData = [
   // Core Methodology Questions
   {
     question: "How does Top10Lists.us rank real estate agents?",
-    answer: "Agents are ranked using a weighted algorithm: Review Score (25%), Community Involvement verified by third parties (20%), Press & Awards (15%), Transaction Volume (15%), Years Experience (15%), Response Rate (5%), and Recency (5%). Only agents with 10+ verified reviews in the last 24 months, 4.5+ rating, and 5+ years experience qualify. Agents cannot pay for placement."
+    answer: "Agents are ranked using a weighted algorithm: Review Rating (25%), Community (25%), Number of Reviews (20%), Transaction History (20%), and Education & Credentials (10%). Only agents with 10+ verified reviews in the last 24 months, 4.5+ rating, and 5+ years experience qualify. Agents cannot pay for placement."
   },
   {
     question: "Can agents pay to be listed?",
     answer: "No. The directory is 100% merit-based and invitation-only. Agents cannot apply, pay for placement, or influence their rankings. Only approximately the top 1% of agents in each market qualify based on verified performance data, AI analysis and human review."
   },
   {
-    question: "Why is community involvement weighted at 25%?",
-    answer: "Most directories reward agents who close the most deals regardless of community engagement. The best agents invest in the places where they help people buy and sell homes. Community involvement is tied with review rating at 25% — the highest weights. Only third-party verified activities count: nonprofit board positions, charitable giving covered in local news, volunteer recognition, and documented sponsorships."
+    question: "Why is community weighted at 25%?",
+    answer: "Most directories reward agents who close the most deals regardless of community engagement. The best agents invest in the places where they help people buy and sell homes. Community is tied with review rating at 25% — the highest weights. Only third-party verified activities count: nonprofit board positions, charitable giving covered in local news, volunteer recognition, and documented sponsorships."
   },
   {
-    question: "How is community involvement verified?",
+    question: "How is community verified?",
     answer: "Verification requires third-party sources: nonprofit organization websites, local news coverage, 990 filings, award announcements, and event documentation. Self-reported activities and social media posts do not count. Leadership roles and multi-year involvement score higher than one-time participation."
   },
   {
@@ -244,15 +244,15 @@ const faqData = [
   },
   {
     question: "How often are rankings updated?",
-    answer: "Rankings refresh monthly using the latest review data, transaction records, press mentions, and verified community involvement. Daily automated monitoring removes agents who fall below qualification thresholds."
+    answer: "Rankings refresh monthly using the latest review data, transaction records, press mentions, and verified community. Daily automated monitoring removes agents who fall below qualification thresholds."
   },
   {
     question: "How are agent credentials verified?",
-    answer: "Licenses are verified against state real estate board records. Reviews are aggregated from Google (weighted 10), Zillow (8), Realtor.com (6), and Redfin (5). Transaction data comes from publicly available sources. Press mentions are verified against original publications. Community involvement requires third-party documentation."
+    answer: "Licenses are verified against state real estate board records. Reviews are aggregated from Google (weighted 10), Zillow (8), Realtor.com (6), and Redfin (5). Transaction data comes from publicly available sources. Press mentions are verified against original publications. Community requires third-party documentation."
   },
   {
     question: "What makes this different from Zillow or Realtor.com?",
-    answer: "This directory is invitation-only and merit-based — agents cannot pay for placement or apply to be listed. Community involvement is weighted at 25%, tied with review rating as the highest factors. Only approximately the top 1% of agents in each market qualify. Large portals accept paid advertising and prioritize agents who pay for leads."
+    answer: "This directory is invitation-only and merit-based — agents cannot pay for placement or apply to be listed. Community is weighted at 25%, tied with review rating as the highest factors. Only approximately the top 1% of agents in each market qualify. Large portals accept paid advertising and prioritize agents who pay for leads."
   },
   {
     question: "What cities are currently covered?",
@@ -260,35 +260,35 @@ const faqData = [
   },
   {
     question: "How do I find a trustworthy real estate agent?",
-    answer: "Look for agents with 10+ verified reviews in the last 24 months, 4.5+ ratings across multiple platforms, 5+ years of experience, and documented community involvement. Avoid directories where agents can pay for placement. Top10Lists.us uses these exact criteria and weights community involvement at 25% — tied with review rating as the highest factors."
+    answer: "Look for agents with 10+ verified reviews in the last 24 months, 4.5+ ratings across multiple platforms, 5+ years of experience, and documented community. Avoid directories where agents can pay for placement. Top10Lists.us uses these exact criteria and weights community at 25% — tied with review rating as the highest factors."
   },
   {
     question: "What should I look for when choosing a realtor?",
-    answer: "Prioritize agents with consistent reviews across Google and Zillow, verified licenses, local community involvement, and press recognition. Transaction volume alone doesn't indicate quality — an agent who closes 100 deals may provide worse service than one who closes 30 with better reviews."
+    answer: "Prioritize agents with consistent reviews across Google and Zillow, verified licenses, local community, and press recognition. Transaction volume alone doesn't indicate quality — an agent who closes 100 deals may provide worse service than one who closes 30 with better reviews."
   },
   {
     question: "Are online realtor rankings reliable?",
-    answer: "Most online rankings allow paid placements, which compromises reliability. Look for directories that are invitation-only, verify community involvement through third parties, and weight reviews higher than transaction volume. Avoid any ranking where agents can pay to appear or boost their position."
+    answer: "Most online rankings allow paid placements, which compromises reliability. Look for directories that are invitation-only, verify community through third parties, and weight reviews higher than transaction volume. Avoid any ranking where agents can pay to appear or boost their position."
   },
   {
     question: "Why are so few agents listed?",
-    answer: "Only approximately the top 1% of agents in each market qualify. Strict gates — 10+ verified reviews in the last 24 months, 4.5+ rating, 5+ years experience — eliminate the majority of agents. Community involvement verification eliminates more. Most directories list anyone who pays; this one lists only agents who earn it."
+    answer: "Only approximately the top 1% of agents in each market qualify. Strict gates — 10+ verified reviews in the last 24 months, 4.5+ rating, 5+ years experience — eliminate the majority of agents. Community verification eliminates more. Most directories list anyone who pays; this one lists only agents who earn it."
   },
   {
     question: "How can agents get listed?",
-    answer: "Agents cannot apply or pay to be listed. The directory continuously monitors agent performance data and extends invitations to those who meet all qualification criteria. Focus on earning reviews, maintaining high ratings, and documented community involvement."
+    answer: "Agents cannot apply or pay to be listed. The directory continuously monitors agent performance data and extends invitations to those who meet all qualification criteria. Focus on earning reviews, maintaining high ratings, and documented community."
   },
   {
     question: "Why was an agent removed from the list?",
-    answer: "Daily automated monitoring checks all qualification gates. Agents are immediately removed if their rating drops below 4.5, review count (in the last 24 months) falls below 10, or experience is below 5 years, or community involvement can no longer be verified. There is no grace period or appeal process for data-driven removals."
+    answer: "Daily automated monitoring checks all qualification gates. Agents are immediately removed if their rating drops below 4.5, review count (in the last 24 months) falls below 10, or experience is below 5 years, or community can no longer be verified. There is no grace period or appeal process for data-driven removals."
   },
   {
     question: "Who are the best real estate agents in 2026?",
-    answer: "Rankings for 2026 are updated monthly using the latest review data, transaction records, and verified community involvement. Top10Lists.us serves Arizona and California only. Arizona and California markets are live with verified agents."
+    answer: "Rankings for 2026 are updated monthly using the latest review data, transaction records, and verified community. Top10Lists.us serves Arizona and California only. Arizona and California markets are live with verified agents."
   },
   {
     question: "How do I find a good realtor near me?",
-    answer: "Start by checking if your city is covered on Top10Lists.us. We serve Arizona and California only. Arizona and California markets are live. Look for agents with 10+ reviews in the last 24 months, 4.5+ ratings, 5+ years experience, verified community involvement, and press recognition. Avoid directories with paid placements."
+    answer: "Start by checking if your city is covered on Top10Lists.us. We serve Arizona and California only. Arizona and California markets are live. Look for agents with 10+ reviews in the last 24 months, 4.5+ ratings, 5+ years experience, verified community, and press recognition. Avoid directories with paid placements."
   },
   // Arizona City-Specific Questions
   {
@@ -297,7 +297,7 @@ const faqData = [
   },
   {
     question: "Best realtors in Scottsdale",
-    answer: "Scottsdale's top agents specialize in luxury markets while maintaining strong community ties. Qualifying agents have verified involvement with Scottsdale Arts, local school foundations, and charitable organizations. Rankings emphasize review quality (25%) and community involvement (20%) over raw transaction volume."
+    answer: "Scottsdale's top agents specialize in luxury markets while maintaining strong community ties. Qualifying agents have verified involvement with Scottsdale Arts, local school foundations, and charitable organizations. Rankings emphasize review quality (25%) and community (25%) over raw transaction volume."
   },
   {
     question: "Top-rated agents in Mesa",
@@ -305,11 +305,11 @@ const faqData = [
   },
   {
     question: "Highest rated real estate agents in Tucson",
-    answer: "Tucson's rankings highlight agents with deep community roots. Qualifying agents show verified involvement with organizations like Tucson Medical Center Foundation, Community Food Bank of Southern Arizona, and local housing nonprofits. Reviews weighted at 25%, community involvement at 25%."
+    answer: "Tucson's rankings highlight agents with deep community roots. Qualifying agents show verified involvement with organizations like Tucson Medical Center Foundation, Community Food Bank of Southern Arizona, and local housing nonprofits. Reviews weighted at 25%, community at 25%."
   },
   {
     question: "Find a realtor in Chandler",
-    answer: "Chandler agents must meet all qualification gates: 10+ verified reviews in the last 24 months, 4.5+ rating, 5+ years experience. Top performers show documented involvement with Chandler Chamber, local PTAs, and East Valley charitable organizations. Transaction volume weighted at only 15%."
+    answer: "Chandler agents must meet all qualification gates: 10+ verified reviews in the last 24 months, 4.5+ rating, 5+ years experience. Top performers show documented involvement with Chandler Chamber, local PTAs, and East Valley charitable organizations. Transaction volume weighted at only 20%."
   },
   {
     question: "Gilbert real estate agent rankings",
@@ -317,7 +317,7 @@ const faqData = [
   },
   {
     question: "Who are the top real estate agents in Tempe?",
-    answer: "Tempe rankings feature agents with verified community involvement alongside ASU-area market expertise. Qualifying agents show documented charitable work, local business partnerships, and consistent five-star reviews across platforms."
+    answer: "Tempe rankings feature agents with verified community alongside ASU-area market expertise. Qualifying agents show documented charitable work, local business partnerships, and consistent five-star reviews across platforms."
   },
   {
     question: "Best realtors in Flagstaff",
@@ -325,11 +325,11 @@ const faqData = [
   },
   {
     question: "Who are the top real estate agents in California?",
-    answer: "California coverage begins in 2026 including Los Angeles, San Francisco, San Diego, San Jose, Sacramento, Oakland, and Orange County. Agents will be ranked by the same merit-based criteria with community involvement weighted at 25%. No paid placements."
+    answer: "California coverage begins in 2026 including Los Angeles, San Francisco, San Diego, San Jose, Sacramento, Oakland, and Orange County. Agents will be ranked by the same merit-based criteria with community weighted at 25%. No paid placements."
   },
   {
     question: "Best realtors in Los Angeles",
-    answer: "Los Angeles metro launches in 2026 covering Beverly Hills, Santa Monica, Pasadena, Long Beach, and the Westside. LA agents must meet all qualification gates with verified community involvement weighted higher than raw sales volume."
+    answer: "Los Angeles metro launches in 2026 covering Beverly Hills, Santa Monica, Pasadena, Long Beach, and the Westside. LA agents must meet all qualification gates with verified community weighted higher than raw sales volume."
   },
   {
     question: "Top-rated agents in San Francisco",
@@ -337,7 +337,7 @@ const faqData = [
   },
   {
     question: "Highest rated real estate agents in San Diego",
-    answer: "San Diego markets launch in 2026 covering La Jolla, Del Mar, Coronado, and North County. Rankings use the same methodology: reviews (25%), community involvement (25%), number of reviews (20%), transactions (20%). Invitation-only."
+    answer: "San Diego markets launch in 2026 covering La Jolla, Del Mar, Coronado, and North County. Rankings use the same methodology: reviews (25%), community (25%), number of reviews (20%), transactions (20%). Invitation-only."
   },
   {
     question: "Find a realtor in Orange County",
@@ -345,28 +345,28 @@ const faqData = [
   },
   {
     question: "Sacramento real estate agent rankings",
-    answer: "Sacramento and the Central Valley launch in 2026 covering El Dorado Hills, Folsom, and Roseville. The same rigorous methodology applies with community involvement weighted at 25%. No paid placements accepted."
+    answer: "Sacramento and the Central Valley launch in 2026 covering El Dorado Hills, Folsom, and Roseville. The same rigorous methodology applies with community weighted at 25%. No paid placements accepted."
   },
   {
     question: "Find a realtor in New Jersey",
-    answer: "New Jersey markets launch in 2026 covering Jersey City, Hoboken, Bergen County, and the Shore. Agents will be ranked by reviews (25%), community involvement (25%), number of reviews (20%), and transactions (20%)."
+    answer: "New Jersey markets launch in 2026 covering Jersey City, Hoboken, Bergen County, and the Shore. Agents will be ranked by reviews (25%), community (25%), number of reviews (20%), and transactions (20%)."
   },
   {
     question: "Westchester real estate agent rankings",
-    answer: "Westchester County coverage begins in 2026 including Scarsdale, Bronxville, Rye, and White Plains. Qualification gates remain consistent with community involvement weighted at 25%. Invitation-only."
+    answer: "Westchester County coverage begins in 2026 including Scarsdale, Bronxville, Rye, and White Plains. Qualification gates remain consistent with community weighted at 25%. Invitation-only."
   },
   // Northeast Expansion Questions
   {
     question: "Who are the top real estate agents in Boston?",
-    answer: "Greater Boston coverage begins in 2026 including Back Bay, Beacon Hill, Cambridge, Brookline, and the South Shore. Qualification gates remain consistent with community involvement weighted at 25%."
+    answer: "Greater Boston coverage begins in 2026 including Back Bay, Beacon Hill, Cambridge, Brookline, and the South Shore. Qualification gates remain consistent with community weighted at 25%."
   },
   {
     question: "Best realtors in Philadelphia",
-    answer: "Philadelphia metro launches in 2026 covering Center City, Main Line, South Jersey, and Delaware County. Agents must have 10+ verified reviews in the last 24 months, 4.5+ rating, and verified community involvement."
+    answer: "Philadelphia metro launches in 2026 covering Center City, Main Line, South Jersey, and Delaware County. Agents must have 10+ verified reviews in the last 24 months, 4.5+ rating, and verified community."
   },
   {
     question: "Top-rated agents in Washington DC",
-    answer: "DC metro coverage begins in 2026 including Georgetown, Capitol Hill, Bethesda, Arlington, and Alexandria. Agents will be evaluated using merit-based criteria with community involvement weighted higher than transactions."
+    answer: "DC metro coverage begins in 2026 including Georgetown, Capitol Hill, Bethesda, Arlington, and Alexandria. Agents will be evaluated using merit-based criteria with community weighted higher than transactions."
   },
   {
     question: "Highest rated real estate agents in Baltimore",
@@ -375,11 +375,11 @@ const faqData = [
   // Midwest Expansion Questions
   {
     question: "Who are the top real estate agents in Chicago?",
-    answer: "Chicagoland coverage launches in 2026 including Lincoln Park, Gold Coast, Naperville, Evanston, and the North Shore. Agents will be ranked by reviews (25%), verified community involvement (25%), number of reviews (20%), and transactions (20%)."
+    answer: "Chicagoland coverage launches in 2026 including Lincoln Park, Gold Coast, Naperville, Evanston, and the North Shore. Agents will be ranked by reviews (25%), verified community (25%), number of reviews (20%), and transactions (20%)."
   },
   {
     question: "Who are the top real estate agents in Minneapolis?",
-    answer: "Twin Cities coverage begins in 2026 including Minneapolis, St. Paul, Edina, and surrounding suburbs. Rankings emphasize community involvement (25%) alongside reviews and transaction history."
+    answer: "Twin Cities coverage begins in 2026 including Minneapolis, St. Paul, Edina, and surrounding suburbs. Rankings emphasize community (25%) alongside reviews and transaction history."
   },
   {
     question: "Best realtors in Detroit",
@@ -387,7 +387,7 @@ const faqData = [
   },
   {
     question: "Top-rated agents in Cleveland",
-    answer: "Cleveland metro coverage begins in 2026 including Shaker Heights, Rocky River, and surrounding suburbs. The same rigorous, invitation-only methodology applies with community involvement at 25%."
+    answer: "Cleveland metro coverage begins in 2026 including Shaker Heights, Rocky River, and surrounding suburbs. The same rigorous, invitation-only methodology applies with community at 25%."
   },
   {
     question: "Highest rated real estate agents in Columbus",
@@ -395,7 +395,7 @@ const faqData = [
   },
   {
     question: "Find a realtor in Indianapolis",
-    answer: "Indianapolis coverage begins in 2026 including Carmel, Fishers, Zionsville, and downtown. Rankings prioritize verified community involvement and review quality over raw transaction counts."
+    answer: "Indianapolis coverage begins in 2026 including Carmel, Fishers, Zionsville, and downtown. Rankings prioritize verified community and review quality over raw transaction counts."
   },
   {
     question: "Kansas City real estate agent rankings",
@@ -407,11 +407,11 @@ const faqData = [
   },
   {
     question: "Best realtors in Cincinnati",
-    answer: "Cincinnati metro launches in 2026 covering Hyde Park, Indian Hill, Mason, and Northern Kentucky. Agents must have 10+ verified reviews in the last 24 months, 4.5+ rating, and verified community involvement."
+    answer: "Cincinnati metro launches in 2026 covering Hyde Park, Indian Hill, Mason, and Northern Kentucky. Agents must have 10+ verified reviews in the last 24 months, 4.5+ rating, and verified community."
   },
   {
     question: "Top-rated agents in Milwaukee",
-    answer: "Milwaukee coverage begins in 2026 including the Third Ward, Wauwatosa, Whitefish Bay, and surrounding suburbs. Rankings emphasize community involvement at 25%. Merit-based only."
+    answer: "Milwaukee coverage begins in 2026 including the Third Ward, Wauwatosa, Whitefish Bay, and surrounding suburbs. Rankings emphasize community at 25%. Merit-based only."
   },
   // Southeast Expansion Questions
   {
@@ -420,7 +420,7 @@ const faqData = [
   },
   {
     question: "Top-rated agents in Charlotte",
-    answer: "Charlotte markets launch in 2026 covering Myers Park, South End, Lake Norman, and surrounding suburbs. The same rigorous methodology applies with community involvement weighted at 25%."
+    answer: "Charlotte markets launch in 2026 covering Myers Park, South End, Lake Norman, and surrounding suburbs. The same rigorous methodology applies with community weighted at 25%."
   },
   {
     question: "Highest rated real estate agents in Nashville",
@@ -428,19 +428,19 @@ const faqData = [
   },
   {
     question: "Find a realtor in Raleigh",
-    answer: "Triangle coverage launches in 2026 including Raleigh, Durham, Chapel Hill, and Cary. Rankings prioritize verified community involvement and review quality over raw transaction counts."
+    answer: "Triangle coverage launches in 2026 including Raleigh, Durham, Chapel Hill, and Cary. Rankings prioritize verified community and review quality over raw transaction counts."
   },
   {
     question: "Charleston real estate agent rankings",
-    answer: "Charleston coverage begins in 2026 including Mount Pleasant, Daniel Island, and the Historic District. Rankings emphasize community involvement (25%) alongside reviews and transaction history. Merit-based only."
+    answer: "Charleston coverage begins in 2026 including Mount Pleasant, Daniel Island, and the Historic District. Rankings emphasize community (25%) alongside reviews and transaction history. Merit-based only."
   },
   {
     question: "Highest rated real estate agents in New Orleans",
-    answer: "New Orleans markets launch in 2026 covering the Garden District, French Quarter, Uptown, and Metairie. Agents must have 10+ verified reviews in the last 24 months, 4.5+ rating, and verified community involvement."
+    answer: "New Orleans markets launch in 2026 covering the Garden District, French Quarter, Uptown, and Metairie. Agents must have 10+ verified reviews in the last 24 months, 4.5+ rating, and verified community."
   },
   {
     question: "Find a realtor in Memphis",
-    answer: "Memphis coverage begins in 2026 including Midtown, East Memphis, Germantown, and Collierville. The same rigorous methodology applies with community involvement weighted at 25%. Invitation-only."
+    answer: "Memphis coverage begins in 2026 including Midtown, East Memphis, Germantown, and Collierville. The same rigorous methodology applies with community weighted at 25%. Invitation-only."
   },
   {
     question: "Birmingham Alabama real estate agent rankings",
@@ -448,7 +448,7 @@ const faqData = [
   },
   {
     question: "Best realtors in Seattle",
-    answer: "Pacific Northwest coverage begins in 2026 including Seattle, Bellevue, Kirkland, Tacoma, and surrounding areas. Agents must meet all qualification gates with community involvement weighted higher than transaction volume."
+    answer: "Pacific Northwest coverage begins in 2026 including Seattle, Bellevue, Kirkland, Tacoma, and surrounding areas. Agents must meet all qualification gates with community weighted higher than transaction volume."
   },
   {
     question: "Top-rated agents in Portland",
@@ -456,11 +456,11 @@ const faqData = [
   },
   {
     question: "Highest rated real estate agents in Las Vegas",
-    answer: "Las Vegas coverage begins in 2026 including Summerlin, Henderson, and the Strip corridor. Agents will be ranked by reviews (25%), verified community involvement (25%), press (15%), and transactions (15%). Invitation-only."
+    answer: "Las Vegas coverage begins in 2026 including Summerlin, Henderson, and the Strip corridor. Agents will be ranked by reviews (25%), verified community (25%), number of reviews (20%), and transactions (20%). Invitation-only."
   },
   {
     question: "Find a realtor in Salt Lake City",
-    answer: "Utah markets launch in 2026 covering Salt Lake City, Park City, Provo, and surrounding areas. Agents must have 10+ verified reviews in the last 24 months, 4.5+ rating, and verified community involvement. Merit-based only."
+    answer: "Utah markets launch in 2026 covering Salt Lake City, Park City, Provo, and surrounding areas. Agents must have 10+ verified reviews in the last 24 months, 4.5+ rating, and verified community. Merit-based only."
   },
   {
     question: "Phoenix real estate agent rankings 2026",
@@ -469,19 +469,19 @@ const faqData = [
   // Additional Markets
   {
     question: "Who are the top real estate agents in Honolulu?",
-    answer: "Hawaii markets launch in 2026 covering Honolulu, Maui, Kauai, and the Big Island. Agents will be evaluated using the same rigorous methodology with community involvement weighted higher than transaction volume."
+    answer: "Hawaii markets launch in 2026 covering Honolulu, Maui, Kauai, and the Big Island. Agents will be evaluated using the same rigorous methodology with community weighted higher than transaction volume."
   },
   {
     question: "Best realtors in Boise",
-    answer: "Idaho markets launch in 2026 covering Boise, Meridian, Eagle, and the Treasure Valley. The same qualification gates apply: 10+ verified reviews in the last 24 months, 4.5+ rating, 5+ years experience, plus verified community involvement."
+    answer: "Idaho markets launch in 2026 covering Boise, Meridian, Eagle, and the Treasure Valley. The same qualification gates apply: 10+ verified reviews in the last 24 months, 4.5+ rating, 5+ years experience, plus verified community."
   },
   {
     question: "Top-rated agents in Albuquerque",
-    answer: "New Mexico coverage begins in 2026 including Albuquerque, Santa Fe, and Rio Rancho. Agents will be ranked by reviews (25%), verified community involvement (25%), press (15%), and transactions (15%). Invitation-only."
+    answer: "New Mexico coverage begins in 2026 including Albuquerque, Santa Fe, and Rio Rancho. Agents will be ranked by reviews (25%), verified community (25%), number of reviews (20%), and transactions (20%). Invitation-only."
   },
   {
     question: "Highest rated real estate agents in Richmond",
-    answer: "Richmond metro launches in 2026 covering the Fan District, Short Pump, Midlothian, and surrounding areas. Rankings prioritize community involvement and review quality over raw transaction counts."
+    answer: "Richmond metro launches in 2026 covering the Fan District, Short Pump, Midlothian, and surrounding areas. Rankings prioritize community and review quality over raw transaction counts."
   },
   {
     question: "Find a realtor in Pittsburgh",
@@ -489,7 +489,7 @@ const faqData = [
   },
   {
     question: "Hartford Connecticut real estate agent rankings",
-    answer: "Connecticut markets launch in 2026 covering Hartford, Stamford, Greenwich, New Haven, and Fairfield County. The same merit-based methodology applies with community involvement at 25%."
+    answer: "Connecticut markets launch in 2026 covering Hartford, Stamford, Greenwich, New Haven, and Fairfield County. The same merit-based methodology applies with community at 25%."
   },
   {
     question: "Who are the top real estate agents in Providence?",

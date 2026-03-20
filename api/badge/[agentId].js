@@ -187,7 +187,7 @@ export default async function handler(req, res) {
     active: pro.active !== false,
   };
 
-  // Audited & Underwritten: add specialties, community involvement
+  // Audited & Underwritten: add specialties, community
   const isAuditedOrHigher = tier === 'audited' || tier === 'underwritten';
   if (isAuditedOrHigher) {
     const specs = Array.isArray(pro.specialty) ? pro.specialty : (typeof pro.specialty === 'string' ? (() => { try { return JSON.parse(pro.specialty) || []; } catch { return []; } })() : []);

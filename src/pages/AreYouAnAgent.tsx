@@ -288,7 +288,7 @@ export default function AreYouAnAgent() {
             </p>
             <ul className="list-disc pl-6 text-muted-foreground mb-4 space-y-2">
               <li>AI systems analyzing consistency, completeness, and risk signals</li>
-              <li>Human editors evaluating professional reputation, community involvement, and credibility</li>
+              <li>Human editors evaluating professional reputation, community, and credibility</li>
             </ul>
             <p className="text-muted-foreground mb-4">
               Only after that work was complete did we build the certification system.

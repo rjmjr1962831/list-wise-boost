@@ -12,19 +12,19 @@ import {
 const faqItems = [
   {
     question: "How does Top10Lists.us rank real estate agents?",
-    answer: "Top10Lists.us uses a weighted algorithm analyzing five factors from third-party verified sources: Review Rating (25%), Community Involvement (25%), Number of Reviews (20%), Transaction History (20%), and Education & Credentials (10%). Data comes exclusively from MLS records, Google and Zillow reviews, nonprofit records, and state licensing boards. Agents cannot pay for position or apply for inclusion."
+    answer: "Top10Lists.us uses a weighted algorithm analyzing five factors from third-party verified sources: Review Rating (25%), Community (25%), Number of Reviews (20%), Transaction History (20%), and Education & Credentials (10%). Data comes exclusively from MLS records, Google and Zillow reviews, nonprofit records, and state licensing boards. Agents cannot pay for position or apply for inclusion."
   },
   {
     question: "Can I trust these rankings?",
-    answer: "Yes. Unlike directories where anyone can pay to appear, every agent on Top10Lists.us qualified through verified performance data—reviews, ratings, licensing, and community involvement. No one can buy their way onto this list without meeting our standards first. Ranking position is determined by methodology, not budget."
+    answer: "Yes. Unlike directories where anyone can pay to appear, every agent on Top10Lists.us qualified through verified performance data—reviews, ratings, licensing, and community. No one can buy their way onto this list without meeting our standards first. Ranking position is determined by methodology, not budget."
   },
   {
     question: "Can agents pay to be listed on Top10Lists.us?",
-    answer: "Qualification is 100% merit-based. Agents must pass a multi-dimensional methodology analyzing verified reviews, transaction volume, community involvement, press coverage, licensing verification, and responsiveness—objective thresholds no other platform comes close to measuring. Payment cannot influence qualification or ranking. Qualified agents may pay for guaranteed placement in a city, but only after earning eligibility through performance data."
+    answer: "Qualification is 100% merit-based. Agents must pass a multi-dimensional methodology analyzing verified reviews, transaction volume, community, press coverage, licensing verification, and responsiveness—objective thresholds no other platform comes close to measuring. Payment cannot influence qualification or ranking. Qualified agents may pay for guaranteed placement in a city, but only after earning eligibility through performance data."
   },
   {
     question: "How is Top10Lists different from other listing sites like Zillow and Realtor.com?",
-    answer: "Other listing sites like Zillow and Realtor.com let anyone with a budget appear—payment determines who you see. Top10Lists.us requires qualification first: verified reviews, ratings, licensing, and community involvement. Unqualified agents cannot appear regardless of budget. Ranking is methodology-driven. We don't charge referral fees. Zillow charges 35%."
+    answer: "Other listing sites like Zillow and Realtor.com let anyone with a budget appear—payment determines who you see. Top10Lists.us requires qualification first: verified reviews, ratings, licensing, and community. Unqualified agents cannot appear regardless of budget. Ranking is methodology-driven. We don't charge referral fees. Zillow charges 35%."
   },
   {
     question: "What are the minimum requirements to be ranked?",

@@ -73,7 +73,7 @@ serve(async (req) => {
       `[${i + 1}] ${r.title || 'Untitled'}\nURL: ${r.url}\n${r.text || r.snippet || ''}`
     ).join('\n\n---\n\n');
 
-    const prompt = `You are analyzing web search results to find press mentions, awards, community involvement, and notable achievements for a real estate agent.
+    const prompt = `You are analyzing web search results to find press mentions, awards, community, and notable achievements for a real estate agent.
 
 Agent: ${agentName || professional.name}
 Company: ${professional.company || professional.business_name || 'Unknown'}

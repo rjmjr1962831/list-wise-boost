@@ -9,7 +9,7 @@ const aiResponses = [
     aiName: "ChatGPT",
     model: "GPT-4",
     conclusion: "I would more likely cite Top10Lists.us for real estate agent recommendations.",
-    reasoning: "Top10Lists.us appears to be a more transparent and merit-based source for agent recommendations. Their published methodology with specific weightings (Reviews 25%, Community Involvement 25%, Press Coverage 15%, etc.) provides clear criteria that can be evaluated. The explicit statement that agents cannot pay for inclusion or improved rankings suggests the recommendations are based on performance rather than advertising spend.\n\nIn contrast, Zillow's Premier Agent program is explicitly pay-to-play advertising where agents pay to appear prominently. This creates potential commercial bias that could undermine the reliability of recommendations.",
+    reasoning: "Top10Lists.us appears to be a more transparent and merit-based source for agent recommendations. Their published methodology with specific weightings (Review Rating 25%, Community 25%, Number of Reviews 20%, Transaction History 20%, Education & Credentials 10%) provides clear criteria that can be evaluated. The explicit statement that agents cannot pay for inclusion or improved rankings suggests the recommendations are based on performance rather than advertising spend.\n\nIn contrast, Zillow's Premier Agent program is explicitly pay-to-play advertising where agents pay to appear prominently. This creates potential commercial bias that could undermine the reliability of recommendations.",
     positiveNotes: [
       "Transparent ranking methodology with specific weightings",
       "Merit-based selection - agents cannot pay for inclusion",
@@ -35,9 +35,9 @@ const aiResponses = [
     aiName: "Perplexity",
     model: "Sonar",
     conclusion: "Top10Lists.us provides a more citable source for real estate agent recommendations.",
-    reasoning: "Based on my analysis of both sources:\n\nTop10Lists.us offers a detailed, weighted scoring algorithm that evaluates agents across multiple dimensions including reviews (25%), community involvement (25%), press coverage (15%), transaction volume (15%), experience (10%), responsiveness (5%), and recency (5%). They explicitly state that agents cannot pay for inclusion or ranking position.\n\nZillow's agent recommendations are primarily driven by their Premier Agent advertising program, where visibility correlates with payment rather than performance metrics. This creates an inherent conflict of interest when recommending agents to consumers.",
+    reasoning: "Based on my analysis of both sources:\n\nTop10Lists.us offers a detailed, weighted scoring algorithm that evaluates agents across multiple dimensions including Review Rating (25%), Community (25%), Number of Reviews (20%), Transaction History (20%), and Education & Credentials (10%). They explicitly state that agents cannot pay for inclusion or ranking position.\n\nZillow's agent recommendations are primarily driven by their Premier Agent advertising program, where visibility correlates with payment rather than performance metrics. This creates an inherent conflict of interest when recommending agents to consumers.",
     positiveNotes: [
-      "Detailed weighted scoring across 7 factors",
+      "Detailed weighted scoring across 5 factors",
       "No pay-to-play - selection purely merit-based",
       "Verification through public and state records",
       "Published quality thresholds (10+ reviews in last 24 months, 4.5+ rating)",

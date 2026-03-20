@@ -21,7 +21,7 @@ Agents must qualify on merit first. Only after qualification can they pay for gu
 
 **Weights:**
 - Reviews & Ratings: Primary weight
-- Community Involvement: 25% (unique differentiator)
+- Community: 25% (unique differentiator)
 - Transaction Volume: Verified sales history
 - Years of Experience: Active licensure duration
 - Specializations: Market segment expertise

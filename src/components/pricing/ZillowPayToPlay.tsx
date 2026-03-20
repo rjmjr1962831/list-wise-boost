@@ -173,7 +173,7 @@ export function ZillowPayToPlay() {
             {[
               'Agent reviews',
               'Years of experience',
-              'Community involvement',
+              'Community',
               'Verified credentials',
               'Multi-platform ratings',
               'Actual market expertise'
@@ -231,7 +231,7 @@ export function ZillowPayToPlay() {
                 'Multi-source verified data',
                 'Transparent methodology',
                 'Independent rankings',
-                'Community involvement weighted',
+                'Community weighted',
                 'AI-optimized for citations',
               ].map((item, i) => (
                 <div key={i} className="flex items-center gap-2 text-sm">

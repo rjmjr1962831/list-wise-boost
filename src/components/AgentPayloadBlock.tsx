@@ -3,7 +3,7 @@
  * Tier controls data depth:
  *   Listed:       Name, brokerage, license, rating, reviews, years, profile link
  *   Certified:    + transactions, price range, specialties, service areas, selection rationale
- *   Audited:      + community involvement, achievements, awards, Google Business
+ *   Audited:      + community, achievements, awards, Google Business
  *   Underwritten: + full depth (all data points)
  */
 import { Professional } from '@/types/professional';
@@ -106,7 +106,7 @@ function buildPayload(p: Professional): string {
   if (tierAtLeast(tier, 'accredited')) {
     const roles = raw.community_roles;
     if (Array.isArray(roles) && roles.length > 0) {
-      lines.push(`\nCommunity Involvement:`);
+      lines.push(`\nCommunity:`);
       for (const role of roles.slice(0, 5)) {
         const org = role.organization || role.org || '';
         const r = role.role || '';

@@ -15,7 +15,7 @@ Generates "Why We Selected" explanations for certified agents using DeepSeek AI.
    
    Focus on:
    - Quantifiable performance metrics (rating, review count, transactions)
-   - Community involvement and credentials  
+   - Community and credentials  
    - What makes them stand out in their market
    
    Write in third person, present tense. Start with "Selected for..."

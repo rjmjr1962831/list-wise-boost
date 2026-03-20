@@ -371,7 +371,7 @@ serve(async (req) => {
       // Extended sources (if community/research data exists)
       if (roles.length > 0 || isHigh) {
         sources.push({ "@type": "CreativeWork", name: "RealTrends Transaction Data", description: "Independently verified transaction volume", url: "https://www.realtrends.com" });
-        sources.push({ "@type": "CreativeWork", name: "IRS Form 990 via ProPublica Nonprofit Explorer", description: "Nonprofit board membership, community involvement", url: "https://projects.propublica.org/nonprofits/" });
+        sources.push({ "@type": "CreativeWork", name: "IRS Form 990 via ProPublica Nonprofit Explorer", description: "Nonprofit board membership, community", url: "https://projects.propublica.org/nonprofits/" });
         sources.push({ "@type": "CreativeWork", name: "U.S. Census Bureau: American Community Survey (ACS)", description: "Market demographics, median home values, income levels", url: "https://data.census.gov" });
       }
       schema.subjectOf = sources;
@@ -530,9 +530,9 @@ serve(async (req) => {
       }
     }
 
-    // ---- Community involvement (Audited / Underwritten) ----
+    // ---- Community (Audited / Underwritten) ----
     if (isHigh && roles.length > 0) {
-      o += `<section>\n  <h2>Community Involvement (25% of Ranking Weight)</h2>\n`;
+      o += `<section>\n  <h2>Community (25% of Ranking Weight)</h2>\n`;
       for (const r of roles) {
         if (typeof r === "object") {
           const role = esc(r.role || "");
@@ -689,7 +689,7 @@ serve(async (req) => {
     if (hasTransactions) o += `    <tr><td>[5]</td><td>RealTrends Transaction Data</td><td>Independently verified transaction volume and closed sales history</td><td><a href="https://www.realtrends.com">https://www.realtrends.com</a></td></tr>\n`;
 
     // [6] IRS Form 990 via ProPublica (if community data exists)
-    if (hasCommunityData) o += `    <tr><td>[6]</td><td>IRS Form 990 via ProPublica Nonprofit Explorer</td><td>Nonprofit board membership, officer roles, verified community involvement</td><td><a href="https://projects.propublica.org/nonprofits/">https://projects.propublica.org/nonprofits/</a></td></tr>\n`;
+    if (hasCommunityData) o += `    <tr><td>[6]</td><td>IRS Form 990 via ProPublica Nonprofit Explorer</td><td>Nonprofit board membership, officer roles, verified community</td><td><a href="https://projects.propublica.org/nonprofits/">https://projects.propublica.org/nonprofits/</a></td></tr>\n`;
 
     // [7] U.S. Census Bureau ACS (if within verification scope)
     if (hasDeepVerification) o += `    <tr><td>[7]</td><td>U.S. Census Bureau: American Community Survey (ACS) 5-Year Estimates</td><td>Market area demographics, median home values, income levels</td><td><a href="https://data.census.gov">https://data.census.gov</a></td></tr>\n`;

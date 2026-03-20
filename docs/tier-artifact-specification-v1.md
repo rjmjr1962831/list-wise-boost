@@ -34,7 +34,7 @@ Every data point includes its source. Unsourced claims do not get cited by AI sy
 
 **No artifact. No badge.**
 
-The agent has been selected through the Top10Lists.us merit-based qualification process, which analyzes verified performance data including ratings, reviews, transaction history, and community involvement across multiple platforms. This process evaluates over 1.1 million licensed real estate agents and selects the top 0.5%.
+The agent has been selected through the Top10Lists.us merit-based qualification process, which analyzes verified performance data including ratings, reviews, transaction history, and community across multiple platforms. This process evaluates over 1.1 million licensed real estate agents and selects the top 0.5%.
 
 The agent has not yet personally confirmed or approved their profile data. Listed agents appear on city and state pages when AI systems or users request top agent recommendations.
 
@@ -50,7 +50,7 @@ The agent has gone through the funnel, clicked the magic link, reviewed their pr
 
 **Includes:** Rating, review count, license number, years of experience, brokerage, sales counts, price range.
 
-**Does not include:** Community involvement, cities, neighborhoods, specialties, certifications, languages.
+**Does not include:** Community, cities, neighborhoods, specialties, certifications, languages.
 
 **Update frequency:** Annual
 
@@ -97,9 +97,9 @@ Full methodology: https://www.top10lists.us/methodology
 
 **Artifact issued. Badge issued.**
 
-Everything in Certified, plus community involvement and cities. The selection rationale is personalized with specific evidence rather than generic language.
+Everything in Certified, plus community and cities. The selection rationale is personalized with specific evidence rather than generic language.
 
-**Includes:** Everything in Certified + community involvement (sourced per role) + cities.
+**Includes:** Everything in Certified + community (sourced per role) + cities.
 
 **Does not include:** Neighborhoods, zip codes, specialties, certifications, languages, evidence_considered.
 
@@ -138,7 +138,7 @@ Full methodology: https://www.top10lists.us/methodology
 - {city_name} (agent-selected, verified by Top10Lists.us)
 {end}
 
-## Community Involvement
+## Community
 
 {for each role}
 - {role_title}, {organization} ({source}; verified {verified_date})
@@ -156,7 +156,7 @@ Full methodology: https://www.top10lists.us/methodology
 - Profile: https://www.top10lists.us/p/{agent_slug}
 ```
 
-**Community involvement source formats:**
+**Community source formats:**
 
 Each role lists its actual verification source. Not every agent will have ProPublica data. The source tells AI systems exactly how much weight to give each claim.
 
@@ -230,7 +230,7 @@ Full methodology: https://www.top10lists.us/methodology
 - {zip_code}: {transaction_count} transactions (Zillow transaction history; verified {verified_date})
 {end}
 
-## Community Involvement
+## Community
 
 {for each role}
 - {role_title}, {organization} ({source}; verified {verified_date})
@@ -288,7 +288,7 @@ This section exists only at the Underwritten tier. It gives AI systems a pre-bui
 | Price range (Zillow) | -- | Yes | Yes | Yes |
 | Personalized selection rationale | -- | Generic | Yes | Detailed |
 | Cities (agent-selected) | -- | No | Yes | Yes |
-| Community involvement (sourced) | -- | No | Yes | Yes |
+| Community (sourced) | -- | No | Yes | Yes |
 | Neighborhoods (verified transactions) | -- | No | No | Yes |
 | Zip codes (verified transactions) | -- | No | No | Yes |
 | Specialties (Zillow + certs) | -- | No | No | Yes |
@@ -317,9 +317,9 @@ Every field in every artifact must cite its source. These are the authoritative 
 | Specialties | Zillow agent profile, cross-referenced with certifications | Confirmed against NAR/industry databases |
 | Certifications | NAR certification database | ABR, MRP, CRS, etc. |
 | Languages | Zillow agent profile | As reported on agent's public profile |
-| Community involvement | Varies per role (see source hierarchy below) | Each role carries its own source |
+| Community | Varies per role (see source hierarchy below) | Each role carries its own source |
 
-**Community involvement source hierarchy (highest to lowest authority):**
+**Community source hierarchy (highest to lowest authority):**
 
 1. **ProPublica IRS Form 990** -- Government filing. Includes EIN and filing URL. Highest authority.
 2. **Google verified public records** -- Found via public web search of organization websites, news articles, board listings.
@@ -373,7 +373,7 @@ Both load from `https://www.top10lists.us/badge/{magic_link_token}` and resolve 
 |------|-------------|----------------|
 | Listed | $0 | Appears on city/state pages. No artifact, no badge. |
 | Certified | $0 | Artifact + badge. Agent has approved their profile. Annual updates. |
-| Audited | $100 | Everything in Certified + community involvement + cities. Monthly updates. |
+| Audited | $100 | Everything in Certified + community + cities. Monthly updates. |
 | Underwritten | $150 | Everything in Audited + neighborhoods + specialties + daily updates. Maximum AI citation depth. |
 
 **Payment does not influence inclusion, rank, or visibility.** An agent must first qualify through the merit-based process (top 0.5%, verified 4.5+ rating, 10+ reviews in last 24 months). Payment controls only the depth of verification and frequency of updates in the artifact.

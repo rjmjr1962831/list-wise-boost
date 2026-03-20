@@ -217,7 +217,7 @@ function shapeAgentPayload(
     nextVerification: nextVerification(lastVerified, tier),
 
     // -- C: Extended verification (tier-dependent population) --
-    community_involvement_score: isAudited ? (audit?.pillar_authority ?? null) : null,
+    community_score: isAudited ? (audit?.pillar_authority ?? null) : null,
     sales_count_all_time: isAudited ? (agent.sales_count_all_time ?? null) : null,
     sales_count_last_year: isAudited ? (agent.sales_count_last_year ?? null) : null,
     website: isAudited ? (agent.website ?? null) : null,
@@ -787,9 +787,9 @@ function handleGetMethodology() {
     scoring_factors: {
       license_status: { weight: "20%", description: "Active license verification" },
       recent_activity: { weight: "20%", description: "Recent transaction and market activity" },
-      transaction_history: { weight: "25%", description: "Verified transaction track record" },
+      transaction_history: { weight: "20%", description: "Verified transaction track record" },
       reviews_reputation: { weight: "15%", description: "Review rating and volume across platforms" },
-      community_involvement: { weight: "20%", description: "Community involvement score (IRS Form 990 / ProPublica verified)" },
+      community: { weight: "25%", description: "Community score (IRS Form 990 / ProPublica verified)" },
     },
     aifs: {
       name: "AI Footprint Score",
@@ -887,7 +887,7 @@ function handleGetMethodology() {
       "3 hard prequalification gates (merit gate)",
       "PREQUALIFIED",
       "1,000+ source deep research",
-      "Proprietary Community Involvement Score (IRS Form 990 / ProPublica verified)",
+      "Proprietary Community Score (IRS Form 990 / ProPublica verified)",
       "Human editorial review",
       "LISTED",
     ],

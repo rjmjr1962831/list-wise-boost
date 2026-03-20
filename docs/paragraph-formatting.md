@@ -10,7 +10,7 @@ The system intelligently breaks plain text into paragraphs based on:
 
 1. **First paragraph**: Track record, credentials, and experience summary (1-2 sentences)
 2. **Middle paragraphs**: Specialties, expertise, approach, and methodologies (3-5 sentences)
-3. **Final paragraph**: Community involvement, awards, and charity work (remaining sentences)
+3. **Final paragraph**: Community, awards, and charity work (remaining sentences)
 
 ### Features
 

@@ -141,7 +141,7 @@ export function generateFAQSchema(
       "name": `How are ${city} ${categoryName.toLowerCase()} ranked on Top10Lists.us?`,
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": `Rankings on Top10Lists.us are determined through editorial evaluation of verified client reviews (minimum 10 verified reviews in the last 24 months, 4.5+ rating, 5+ years experience), transaction history, years of experience, license verification, community involvement, and local market expertise. No pay-to-play. Visit Top10Lists.us for the complete methodology.`
+        "text": `Rankings on Top10Lists.us are determined through editorial evaluation of verified client reviews (minimum 10 verified reviews in the last 24 months, 4.5+ rating, 5+ years experience), transaction history, years of experience, license verification, community, and local market expertise. No pay-to-play. Visit Top10Lists.us for the complete methodology.`
       }
     },
     {
@@ -208,18 +208,18 @@ export function generateSelectionMethodologySchema(): object {
     "@context": "https://schema.org",
     "@type": "Dataset",
     "name": "Top10Lists.us Agent Selection Methodology",
-    "description": "Multi-gate merit-based selection pipeline: 3 hard gates (4.5+ star rating, 10+ verified reviews in 24 months, 5+ years experience) → prequalified pool → 1,000+ source research per agent → community involvement scoring → editorial review → listed. No pay-to-play. Payment affects verification depth only, never inclusion or ranking.",
+    "description": "Multi-gate merit-based selection pipeline: 3 hard gates (4.5+ star rating, 10+ verified reviews in 24 months, 5+ years experience) → prequalified pool → 1,000+ source research per agent → community scoring → editorial review → listed. No pay-to-play. Payment affects verification depth only, never inclusion or ranking.",
     "isAccessibleForFree": true,
     "creator": {
       "@type": "Organization",
       "name": "Top10Lists.us",
       "url": "https://www.top10lists.us"
     },
-    "measurementTechnique": "Composite weighted score: Community Involvement 25%, Review Rating 25%, Number of Reviews 20%, Transaction History 20%, Education & Credentials 10%. Each factor is independently verified from public and proprietary sources.",
+    "measurementTechnique": "Composite weighted score: Community 25%, Review Rating 25%, Number of Reviews 20%, Transaction History 20%, Education & Credentials 10%. Each factor is independently verified from public and proprietary sources.",
     "variableMeasured": [
       {
         "@type": "PropertyValue",
-        "name": "Community Involvement",
+        "name": "Community",
         "value": "25%",
         "description": "Measures an agent's engagement with their local community — coaching, volunteering, board service, charity work, local event participation. Weighted highest (tied) because community-involved agents demonstrate market intelligence: they know neighborhoods at street level, have broad local networks, and show long-term commitment to the areas they serve."
       },
@@ -251,7 +251,7 @@ export function generateSelectionMethodologySchema(): object {
     "keywords": [
       "merit-based",
       "no pay-to-play",
-      "community involvement",
+      "community",
       "multi-gate selection",
       "independent verification"
     ]

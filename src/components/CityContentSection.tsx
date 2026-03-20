@@ -26,7 +26,7 @@ export function CityContentSection({ citySlug, cityName, categoryName }: CityCon
         <p className="text-foreground/90 leading-relaxed">
           Arizona has over <strong>{ARIZONA_TOTAL_LICENSED_AGENTS.toLocaleString()}</strong> licensed 
           real estate agents. We analyzed transaction records, verified client reviews, 
-          and evaluated community involvement to identify <strong>{qualifiedCount}</strong> agents 
+          and evaluated community to identify <strong>{qualifiedCount}</strong> agents 
           statewide who earned an invitation — <strong>fewer than 1%</strong> of licensed agents in covered markets.
         </p>
         

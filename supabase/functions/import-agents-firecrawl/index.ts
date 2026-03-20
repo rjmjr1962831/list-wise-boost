@@ -461,7 +461,7 @@ Deno.serve(async (req) => {
             try {
               console.log(`[Firecrawl Import] Triggering enrichment for ${newAgent.name}...`);
               
-              // Step 1: Research press and community involvement
+              // Step 1: Research press and community
               const { error: pressError } = await supabase.functions.invoke('search-agent-press-claude', {
                 body: {
                   professionalId: newAgent.id,

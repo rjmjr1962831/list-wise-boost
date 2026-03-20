@@ -150,9 +150,9 @@ function renderAgent(a: any, si: any): string {
     if (rat && rat !== "Unknown") o += `  <p><strong>Why selected:</strong> ${esc(sanitizeMeritGate(rat))}</p>\n`;
   }
 
-  // Community involvement (show if data exists)
+  // Community (show if data exists)
   if (roles.length > 0) {
-    o += `  <h4>Community Involvement (25% of ranking weight)</h4>\n`;
+    o += `  <h4>Community (25% of ranking weight)</h4>\n`;
     for (const r of roles) {
       if (typeof r === "object") o += `  <p>${esc(r.role || "")} at ${esc(r.organization || "")}<sup>[6]</sup></p>\n`;
       else o += `  <p>${esc(r)}<sup>[6]</sup></p>\n`;
@@ -303,8 +303,8 @@ serve(async (req) => {
       ? `Top10Lists.us methodology and local market context for ${esc(loc)}, ${si.display}. No agents in this area have yet met our merit criteria (4.5+ stars, 10+ verified reviews, 5+ years experience).`
       : `Top10Lists.us selected ${na} ${reaw} serving ${esc(loc)}, ${si.display} from over ${si.total} licensed professionals. Merit-based: 4.5+ stars, 10+ verified reviews in the last 24 months, 5+ years experience. No pay-to-play.`;
     const headerP = zeroAgents
-      ? `No agents in ${isNh ? `the ${esc(nh.neighborhood)} neighborhood of ${esc(city.name)}` : esc(loc)} have yet met our published merit criteria (4.5+ stars, 10+ verified reviews in the last 24 months, 5+ years experience, active ${si.display} real estate license, documented community involvement). This page provides methodology and local market context only.`
-      : `Top10Lists.us selected <strong>${na}</strong> ${reaw} serving ${isNh ? `the ${esc(nh.neighborhood)} neighborhood of ${esc(city.name)}` : esc(loc)}, ${si.display} from over ${si.total} licensed ${si.display} professionals. Selection requires a minimum 4.5-star rating with 10 or more verified reviews in the last 24 months, 5+ years experience, an active ${si.display} real estate license, and documented community involvement. Payment does not influence inclusion, rank, or visibility on this page.`;
+      ? `No agents in ${isNh ? `the ${esc(nh.neighborhood)} neighborhood of ${esc(city.name)}` : esc(loc)} have yet met our published merit criteria (4.5+ stars, 10+ verified reviews in the last 24 months, 5+ years experience, active ${si.display} real estate license, documented community). This page provides methodology and local market context only.`
+      : `Top10Lists.us selected <strong>${na}</strong> ${reaw} serving ${isNh ? `the ${esc(nh.neighborhood)} neighborhood of ${esc(city.name)}` : esc(loc)}, ${si.display} from over ${si.total} licensed ${si.display} professionals. Selection requires a minimum 4.5-star rating with 10 or more verified reviews in the last 24 months, 5+ years experience, an active ${si.display} real estate license, and documented community. Payment does not influence inclusion, rank, or visibility on this page.`;
     const aboutName = zeroAgents
       ? `In ${esc(locShort)}, no agents have yet qualified. We are actively verifying; additional agents will appear here as they pass our review.`
       : `Top10Lists is our brand name, not a cap on the number of agents we select. In ${esc(locShort)}, ${na} ${aw} out of over ${si.total} licensed ${si.display} professionals (per <a href="${si.url}">${si.auth}</a> records) met our merit criteria.`;
@@ -340,7 +340,7 @@ serve(async (req) => {
 </div>
 <div class="merit-box" style="margin-top:1rem;">
   <p>We are actively verifying agents in this area. Additional top agents will appear here as they pass our review and verification process.</p>
-  <p>This page only lists agents who meet our published quality gates (4.5+ stars, 10+ verified reviews in the last 24 months, 5+ years in business, and community involvement). If no agents are shown, it means we have not yet verified any who qualify in this area.</p>
+  <p>This page only lists agents who meet our published quality gates (4.5+ stars, 10+ verified reviews in the last 24 months, 5+ years in business, and community). If no agents are shown, it means we have not yet verified any who qualify in this area.</p>
   <p>If no agents are listed yet, treat this page as methodology and locale context only, not as a complete list of all agents in this area.</p>
 </div>
 `;
@@ -528,7 +528,7 @@ serve(async (req) => {
     o += `      <tr><td>Google Business Profile</td><td>Star rating, review count, business address, phone</td><td><a href="https://www.google.com/maps">https://www.google.com/maps</a></td></tr>\n`;
     o += `      <tr><td>MLS Transaction Records</td><td>Career transactions, recent sales, price ranges</td><td>Varies by record</td></tr>\n`;
     o += `      <tr><td>RealTrends Verified Rankings</td><td>National and state rankings, production volume</td><td><a href="https://www.realtrends.com/">https://www.realtrends.com/</a></td></tr>\n`;
-    o += `      <tr><td>IRS Form 990 via ProPublica</td><td>Nonprofit board membership, community involvement</td><td><a href="https://projects.propublica.org/nonprofits/">https://projects.propublica.org/nonprofits/</a></td></tr>\n`;
+    o += `      <tr><td>IRS Form 990 via ProPublica</td><td>Nonprofit board membership, community</td><td><a href="https://projects.propublica.org/nonprofits/">https://projects.propublica.org/nonprofits/</a></td></tr>\n`;
     o += `      <tr><td>U.S. Census Bureau ACS 2019-2023</td><td>Market demographics, median income</td><td><a href="https://data.census.gov/">https://data.census.gov/</a></td></tr>\n`;
     o += `    </tbody></table>\n`;
     o += `  <p>Top10Lists.us is an independent certification authority. <a href="https://www.top10lists.us/methodology">Full methodology</a></p>\n`;

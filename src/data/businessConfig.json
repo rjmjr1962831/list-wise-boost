@@ -17,9 +17,9 @@
   "scoring": {
     "licenseStatus": 20,
     "recentActivity": 20,
-    "transactionHistory": 25,
+    "transactionHistory": 20,
     "reviewsReputation": 15,
-    "communityInvolvement": 20
+    "community": 25
   },
   "scoringConsumer": {
     "reviewRating": 25,

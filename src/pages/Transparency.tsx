@@ -31,7 +31,7 @@ const SELECTION_PERCENTAGE = '0.5';
 // Ranking factors with weights
 const RANKING_FACTORS = [
   { name: 'Review Rating', weight: 25, icon: Star, description: 'Weighted average star rating across Google, Zillow, Realtor.com, and Redfin' },
-  { name: 'Community Involvement', weight: 25, icon: Users, description: 'Third-party verified civic and charitable engagement' },
+  { name: 'Community', weight: 25, icon: Users, description: 'Third-party verified civic and charitable engagement' },
   { name: 'Number of Reviews', weight: 20, icon: MessageSquare, description: 'Total verified review count across platforms' },
   { name: 'Transaction History', weight: 20, icon: BarChart3, description: 'Verified closed transactions from public records' },
   { name: 'Education & Credentials', weight: 10, icon: Clock, description: 'Professional designations (GRI, CRS, ABR, SRES, CNE, Luxury Home Certified, etc.)' },

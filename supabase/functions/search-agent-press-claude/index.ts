@@ -94,7 +94,7 @@ State which attributes you confirmed (name, company, city/state).
 - Verifying organization
 - Source URL
 
-**Verified Community Involvement**
+**Verified Community**
 - Role, organization, dates
 - Source URL
 
@@ -129,7 +129,7 @@ SEARCH EXTENSIVELY FOR:
 - Industry publications (Inman, HousingWire, RISMedia, Realtor Magazine)
 - Conference speaking and panel participation
 - Professional designations and certifications (ABR, CRS, GRI, SRES, etc.)
-- Community involvement (charity boards, volunteer work, civic organizations)
+- Community (charity boards, volunteer work, civic organizations)
 - Podcast appearances and expert quotes
 
 IDENTITY MATCHING RULES:

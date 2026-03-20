@@ -21,7 +21,7 @@ function splitIntoSentences(text: string): string[] {
  * Logic:
  * 1. First 1-2 sentences: Track record and credentials (intro paragraph)
  * 2. Next 3-5 sentences: Experience, specialties, approach (main paragraph)
- * 3. Remaining sentences: Community involvement, awards, charity (final paragraph)
+ * 3. Remaining sentences: Community, awards, charity (final paragraph)
  */
 export function formatWithParagraphs(text: string | null | undefined): string | null {
   if (!text) return null;
@@ -78,7 +78,7 @@ export function formatWithParagraphs(text: string | null | undefined): string | 
       const nextHasCommunity = i + 1 < sentences.length && 
         communityKeywords.some(kw => sentences[i + 1].toLowerCase().includes(kw));
       
-      // Break before community involvement section starts
+      // Break before community section starts
       if (nextHasCommunity && !hasCommunityKeywords) {
         shouldBreak = true;
       }

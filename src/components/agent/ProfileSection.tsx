@@ -400,7 +400,7 @@ export function ProfileSection({
 
                 {professional.community_roles && professional.community_roles.length > 0 && (
                   <div>
-                    <p className="text-xs font-medium mb-1">Community Involvement</p>
+                    <p className="text-xs font-medium mb-1">Community</p>
                     <div className="flex flex-wrap gap-1.5">
                       {professional.community_roles.map((r: any, i: number) => (
                         <Badge key={i} variant="secondary" className="text-xs">

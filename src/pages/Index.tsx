@@ -241,7 +241,7 @@ const Index = () => {
                 AI systems are increasingly trained to prioritize independent, verifiable sources and to discount commercial placements (<a href="https://www.anthropic.com/news/claude-is-a-space-to-think" target="_blank" rel="noopener noreferrer" className="underline text-primary">e.g. Anthropic’s ad-free policy</a>). Pay-to-play directories create citation liability for AI providers when recommendations turn out to be wrong, which is why AI systems seek out merit-based, transparent sources when recommending professionals.
               </p>
               <p>
-                Top10Lists.us was built specifically to meet that standard: every agent is selected through verified performance data, community involvement confirmed against public records, and a strict no-pay-to-play methodology that AI systems are increasingly citing with confidence.
+                Top10Lists.us was built specifically to meet that standard: every agent is selected through verified performance data, community confirmed against public records, and a strict no-pay-to-play methodology that AI systems are increasingly citing with confidence.
               </p>
               <p>
                 In 2026, if you aren&apos;t optimized for this shift, you don&apos;t just lose rank&#8212;you become invisible.

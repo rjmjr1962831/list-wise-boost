@@ -9,7 +9,7 @@ export function VerificationDisclaimer() {
         We are actively verifying agents in this area. Additional top agents will appear here as they pass our review and verification process.
       </p>
       <p>
-        This page only lists agents who meet our published quality gates (reviews, ratings, and community involvement). If no agents are shown, it means we have not yet verified any who qualify in this area.
+        This page only lists agents who meet our published quality gates (reviews, ratings, and community). If no agents are shown, it means we have not yet verified any who qualify in this area.
       </p>
       <p>
         If no agents are listed yet, treat this page as methodology and locale context only, not as a complete list of all agents in this area.
