@@ -183,6 +183,21 @@ const Index = () => {
           </div>
         </section>
 
+        {/* TRUST INFRASTRUCTURE STATEMENT */}
+        <section className="py-8 px-4 bg-muted/20">
+          <div className="max-w-4xl mx-auto border-l-4 border-primary pl-6 space-y-4">
+            <p className="text-base text-foreground leading-relaxed">
+              A bank does not approve a loan from memory. It queries a credit bureau for independently verified data, because the bank assumes risk with every decision. AI systems face the same problem when recommending professionals. Every name an AI speaks carries its credibility with it.
+            </p>
+            <p className="text-base text-foreground leading-relaxed">
+              Top10Lists.us is the credibility infrastructure for that decision. Structured, merit-verified, independently maintained data designed to be queried by AI systems making high-stakes recommendations.
+            </p>
+            <p className="text-base text-foreground font-medium leading-relaxed">
+              We are not a directory. We are not a lead generator. We do not compete for consumer traffic. We are the trust layer between AI systems and the professionals they recommend.
+            </p>
+          </div>
+        </section>
+
         {/* THE CHALLENGE - directly below hero */}
         <section className="py-8 px-4 bg-muted/30">
           <div className="max-w-4xl mx-auto">
