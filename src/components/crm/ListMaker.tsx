@@ -94,6 +94,7 @@ const BOT_CRAWL_FIELDS: { key: string; label: string }[] = [
   { key: "ai_surfaces_bing", label: "Surfaces: Bing" },
   { key: "ai_surfaces_gptbot", label: "Surfaces: GPTBot" },
   { key: "ai_surfaces_other", label: "Surfaces: Other" },
+  { key: "ai_surfaces_human", label: "Surfaces: Human-Initiated" },
   { key: "ai_surfaces_top5_bots", label: "Top 5 Bots (names)" },
 ];
 
@@ -395,6 +396,7 @@ export function ListMaker() {
             surfacesMap.get(r.agent_id)![r.bot_name] = r.crawls;
           }
 
+          const HUMAN_BOTS = new Set(["ChatGPT-User", "chatgpt-user", "OAI-SearchBot", "PerplexityBot", "YouBot"]);
           const BOT_KEY_MAP: Record<string, string> = {
             "Meta-ExternalAgent": "ai_surfaces_meta",
             "Googlebot": "ai_surfaces_google",
@@ -420,10 +422,12 @@ export function ListMaker() {
             };
             let totalSurfaces = 0;
             let otherSurfaces = 0;
+            let humanSurfaces = 0;
             const top5: { name: string; count: number }[] = [];
 
             for (const [botName, count] of Object.entries(agentSurfaces)) {
               totalSurfaces += count;
+              if (HUMAN_BOTS.has(botName)) humanSurfaces += count;
               const fieldKey = BOT_KEY_MAP[botName];
               if (fieldKey) {
                 surfaceFields[fieldKey] = String((parseInt(surfaceFields[fieldKey]) || 0) + count);
@@ -443,6 +447,7 @@ export function ListMaker() {
               bot_crawl_bots: displayBots.join(", ") || "AI systems",
               bot_crawl_bots_count: String(displayBots.length || 0),
               ai_surfaces_total: String(totalSurfaces),
+              ai_surfaces_human: String(humanSurfaces),
               ...surfaceFields,
               ai_surfaces_top5_bots: top5Names.join(", "),
               city: cityMap.get(r.agent_id) || "",
@@ -460,10 +465,12 @@ export function ListMaker() {
               };
               let totalSurfaces = 0;
               let otherSurfaces = 0;
+              let humanSurfaces = 0;
               const top5: { name: string; count: number }[] = [];
 
               for (const [botName, count] of Object.entries(agentSurfaces)) {
                 totalSurfaces += count;
+                if (HUMAN_BOTS.has(botName)) humanSurfaces += count;
                 const fieldKey = BOT_KEY_MAP[botName];
                 if (fieldKey) {
                   surfaceFields[fieldKey] = String((parseInt(surfaceFields[fieldKey]) || 0) + count);
@@ -479,6 +486,7 @@ export function ListMaker() {
                 bot_crawl_total: "0", bot_crawl_profile: "0", bot_crawl_list: "0",
                 bot_crawl_bots: "", bot_crawl_bots_count: "0",
                 ai_surfaces_total: String(totalSurfaces),
+                ai_surfaces_human: String(humanSurfaces),
                 ...surfaceFields,
                 ai_surfaces_top5_bots: top5.slice(0, 5).map((b) => b.name).join(", "),
                 city: cityMap.get(agentId) || "",
