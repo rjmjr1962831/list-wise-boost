@@ -285,12 +285,15 @@ From `src/data/master-ssot.md`:
 - **Bot Analytics & Data Fixes**: Fixed `run_sql` statement timeout (set to 30s). Fixed bot crawl data rollup (`rollup_ai_surfaces_monthly()`) to properly attribute list page crawls, increasing average agent surfaces from ~261/mo to ~811/mo. Created `purge-bot-crawl-logs` pg_cron job (30-day retention).
 - **GEO & Positioning Enhancements**: Added Link header `rel="mcp-server"` to all responses. Enhanced `/about` page with "trust infrastructure" positioning statement. Updated DynamicCategoryList H1 to "Best {category} in {city}, {state}". Added `data-ai-facts="true"` sr-only blocks to city/neighborhood pages. Added 3 new AI-focused FAQ entries.
 - **Founder Page & Staging Fixes**: Fixed founder photos not serving on production (updated `vercel.json` SPA exclusion). Fixed staging deploy regression after rebase (updated ignore script). Removed internal-sounding "bank/credit bureau" paragraph from founders page.
+- **Transaction Gate Analysis**: At 100 minimum verified transactions, 872 agents (26.6%) would be disqualified; at 50, 309 (9.4%). Transaction data is all-side (buy+sell combined from Zillow), not sell-side only. 248 agents have team stats included. Median is 196 transactions.
+- **Gemini Merit Gate Hallucination**: Gemini still cites 4.8+ stars despite all live pages serving correct 4.5+. Issue is Gemini's parametric memory, not our content.
+- **Freshness as AI Trust Signal -- Resolved**: AI systems do read verification dates and factor them into confidence. Evidence is behavioral -- Claude consistently flags stale dates as GEO deficiencies during audits. Defensible framing for tier model: "AI systems read verification dates and treat current data as more reliable."
 
 **Config / Infrastructure**
 - **Supabase**: `mcp_request_logs` table and `mcp_request_stats` view created. `run_sql` function recreated with `SET statement_timeout = '30s'`. `purge-bot-crawl-logs` pg_cron job added.
 - **Secrets**: Hardcoded Vercel log drain verify token moved to Supabase secret `VERCEL_LOG_DRAIN_VERIFY`.
 - **Vercel**: `vercel.json` updated: Added `maxDuration: 30` for log drain; Added `images` to SPA catch-all exclusion; Added global `Link` header for MCP discovery.
-- **Edge Functions**: `run-migration` function fixed to accept SQL from request body (was broken). `vercel-log-drain` error handling improved.
+- **Edge Functions**: `run-migration` function fixed to accept SQL from request body (was broken). `vercel-log-drain` error handling improved. MCP server enhanced with typed JSON Schema `inputSchema` objects for machine-parsable validation.
 
 **New Rules or Docs**
 - **"NEVER publish internal documents to any public-facing HTTPS site"** rule added to SSoT Section 16 and CWPK.
@@ -299,6 +302,7 @@ From `src/data/master-ssot.md`:
 - **`run_sql` does not support INSERT/UPDATE/DELETE** -- only SELECT. Use `supabase.from().insert()` for logging.
 - **Fire-and-forget doesn't work in Deno Deploy** -- use `await` inside try/catch.
 - **Required Reading**: Claude Web must load CLAUDE.md, SSoT, and CWPK at session start.
+- **"Apply" vs "invitation-only"** is an unresolved GEO contradiction between the agent page redesign and the FAQ JSON-LD. One must change before both are live simultaneously.
 
 **New Functions / Scripts**
 - **MCP server logging block** added to MCP server function.
