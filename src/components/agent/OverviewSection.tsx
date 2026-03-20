@@ -46,12 +46,15 @@ interface AuditScores {
   score_underwritten: number | null;
 }
 
-interface AISurfaces {
-  city_surfaces: number;
-  neighborhood_surfaces: number;
-  profile_surfaces: number;
-  total_surfaces: number;
-  computed_at: string;
+interface BotBreakdown {
+  bot_name: string;
+  crawls: number;
+}
+
+interface SurfacesData {
+  total: number;
+  bots: BotBreakdown[];
+  computed_at: string | null;
 }
 
 export function OverviewSection({ professional }: OverviewSectionProps) {
@@ -61,7 +64,7 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
 
   const [crawlStats, setCrawlStats] = useState<CrawlStats | null>(null);
   const [scores, setScores] = useState<AuditScores | null>(null);
-  const [aiSurfaces, setAiSurfaces] = useState<AISurfaces | null>(null);
+  const [surfacesData, setSurfacesData] = useState<SurfacesData | null>(null);
 
   useEffect(() => {
     if (!professional?.id) return;
@@ -86,13 +89,19 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
         if (rows && rows.length > 0) setScores(rows[0]);
       });
 
+    // Fetch pre-computed AI surfaces by bot
     supabase
       .rpc("run_sql" as any, {
-        query: `SELECT city_surfaces, neighborhood_surfaces, profile_surfaces, total_surfaces, computed_at FROM agent_ai_surfaces WHERE agent_id = '${pid}' AND period = 'rolling_8d'`,
+        query: `SELECT bot_name, crawls, computed_at::text FROM agent_ai_surfaces_by_bot WHERE agent_id = '${pid}' ORDER BY crawls DESC`,
       })
       .then(({ data }: any) => {
-        const rows = data as AISurfaces[] | null;
-        if (rows && rows.length > 0) setAiSurfaces(rows[0]);
+        const rows = (data as (BotBreakdown & { computed_at: string })[]) || [];
+        const total = rows.reduce((s, r) => s + r.crawls, 0);
+        setSurfacesData({
+          total,
+          bots: rows.map((r) => ({ bot_name: r.bot_name, crawls: r.crawls })),
+          computed_at: rows.length > 0 ? rows[0].computed_at : null,
+        });
       });
   }, [professional?.id]);
 
@@ -121,32 +130,29 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
       {/* ── ROW 1: Command Center Metrics ── */}
       <div className="grid gap-4 sm:grid-cols-3">
 
-        {/* Card 1: AI Engine Crawls (Hero) */}
+        {/* Card 1: AI Surfaces (Hero) */}
         <div className="rounded-xl border bg-gradient-to-br from-slate-900 to-slate-800 p-5 text-white sm:col-span-1">
           <div className="flex items-center gap-2 mb-3">
             <Activity className="h-4 w-4 text-emerald-400" />
-            <p className="text-xs uppercase tracking-wide text-slate-400">AI Surfaces / Month</p>
+            <p className="text-xs uppercase tracking-wide text-slate-400">AI Surfaces</p>
           </div>
           <p className="text-4xl font-black tabular-nums">
-            {professional.ai_surfaces_monthly_est
-              ? professional.ai_surfaces_monthly_est.toLocaleString()
-              : crawlStats ? crawlStats.total_crawls_30d.toLocaleString() : "--"}
+            {surfacesData ? surfacesData.total.toLocaleString() : "--"}
           </p>
           <p className="text-xs text-slate-400 mt-1">
-            Times your profile appeared to AI systems (est. 30 days)
+            Times surfaced to AI systems
           </p>
 
-          {/* Bot pills */}
-          {displayBots.length > 0 && (
+          {/* Top bot pills from pre-computed data */}
+          {surfacesData && surfacesData.bots.length > 0 && (
             <div className="mt-3 flex flex-wrap gap-1">
-              {displayBots.map((bot) => (
-                <span key={bot} className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                  {bot}
+              {surfacesData.bots.slice(0, 5).map((b) => (
+                <span key={b.bot_name} className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                  {BOT_DISPLAY[b.bot_name] || b.bot_name}
                 </span>
               ))}
             </div>
           )}
-
         </div>
 
         {/* Card 2: AIFS Score */}
@@ -248,41 +254,54 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
         </div>
       )}
 
-      {/* ── ROW 3: AI Surfaces Breakdown ── */}
-      {aiSurfaces && aiSurfaces.total_surfaces > 0 && (
+      {/* ── ROW 3: AI Surfaces ── */}
+      {surfacesData && surfacesData.total > 0 && (
         <div className="rounded-xl border p-5">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Activity className="h-4 w-4 text-primary" />
-              <p className="text-sm font-semibold">AI Surface Breakdown (Last 8 Days)</p>
+              <p className="text-sm font-semibold">AI Surfaces</p>
             </div>
-            <span className="text-xs text-muted-foreground">
-              Updated {new Date(aiSurfaces.computed_at).toLocaleDateString()}
-            </span>
-          </div>
-          <div className="grid grid-cols-3 gap-4 text-center">
-            <div className="rounded-lg bg-muted/50 p-3">
-              <p className="text-2xl font-black tabular-nums">{aiSurfaces.city_surfaces.toLocaleString()}</p>
-              <p className="text-xs text-muted-foreground mt-1">City Searches</p>
-            </div>
-            <div className="rounded-lg bg-muted/50 p-3">
-              <p className="text-2xl font-black tabular-nums">{aiSurfaces.neighborhood_surfaces.toLocaleString()}</p>
-              <p className="text-xs text-muted-foreground mt-1">Neighborhood Searches</p>
-            </div>
-            <div className="rounded-lg bg-muted/50 p-3">
-              <p className="text-2xl font-black tabular-nums">{aiSurfaces.profile_surfaces.toLocaleString()}</p>
-              <p className="text-xs text-muted-foreground mt-1">Direct Profile Views</p>
-            </div>
-          </div>
-          <div className="mt-3 flex items-center justify-between">
-            <p className="text-xs text-muted-foreground">
-              Total: <strong className="text-foreground">{aiSurfaces.total_surfaces.toLocaleString()}</strong> times surfaced to AI systems
-            </p>
-            {aiSurfaces.profile_surfaces > 0 && (
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-600 border border-emerald-500/30 font-medium">
-                Direct interest signal
+            {surfacesData.computed_at && (
+              <span className="text-xs text-muted-foreground">
+                Updated {new Date(surfacesData.computed_at).toLocaleDateString()}
               </span>
             )}
+          </div>
+
+          <p className="text-4xl font-black tabular-nums mb-1">
+            {surfacesData.total.toLocaleString()}
+          </p>
+          <p className="text-xs text-muted-foreground mb-4">
+            times surfaced to AI systems
+          </p>
+
+          {/* Top 5 bots + Other */}
+          <div className="space-y-2">
+            {(() => {
+              const top5 = surfacesData.bots.slice(0, 5);
+              const otherCount = surfacesData.bots.slice(5).reduce((s, b) => s + b.crawls, 0);
+              const maxCrawls = top5.length > 0 ? top5[0].crawls : 1;
+              const rows = [
+                ...top5.map((b) => ({
+                  label: BOT_DISPLAY[b.bot_name] || b.bot_name,
+                  count: b.crawls,
+                })),
+                ...(otherCount > 0 ? [{ label: "Other", count: otherCount }] : []),
+              ];
+              return rows.map((r) => (
+                <div key={r.label} className="flex items-center gap-3">
+                  <span className="text-xs text-foreground w-32 shrink-0 truncate text-right">{r.label}</span>
+                  <div className="flex-1 bg-muted rounded-full h-4 overflow-hidden">
+                    <div
+                      className="bg-primary/80 h-full rounded-full"
+                      style={{ width: `${Math.max(2, (r.count / maxCrawls) * 100)}%` }}
+                    />
+                  </div>
+                  <span className="text-xs text-muted-foreground tabular-nums w-16 text-right">{r.count.toLocaleString()}</span>
+                </div>
+              ));
+            })()}
           </div>
         </div>
       )}
