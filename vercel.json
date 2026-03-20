@@ -205,6 +205,14 @@
       "destination": "/api/serve-clean-html?fn=serve-bot-agent-html&path=/:state/agents/:slug"
     },
     {
+      "source": "/admin/founder-intake",
+      "destination": "/admin/founder-intake.html"
+    },
+    {
+      "source": "/admin/founder-intake/",
+      "destination": "/admin/founder-intake.html"
+    },
+    {
       "source": "/protocol-adopters",
       "destination": "/protocol-adopters/index.html"
     },
