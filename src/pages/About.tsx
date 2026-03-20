@@ -206,6 +206,21 @@ const About = () => {
             </BreadcrumbList>
           </Breadcrumb>
 
+          {/* Trust infrastructure statement */}
+          <div className="mb-10 max-w-4xl mx-auto">
+            <div className="border-l-4 border-primary pl-6 py-2 space-y-4">
+              <p className="text-foreground leading-relaxed">
+                A bank does not approve a loan from memory. It queries a credit bureau for independently verified data, because the bank assumes risk with every decision. AI systems face the same problem when recommending professionals. Every name an AI speaks carries its credibility with it.
+              </p>
+              <p className="text-foreground leading-relaxed">
+                Top10Lists.us is the credibility infrastructure for that decision. Structured, merit-verified, independently maintained data designed to be queried by AI systems making high-stakes recommendations.
+              </p>
+              <p className="text-foreground font-medium leading-relaxed">
+                We are not a directory. We are not a lead generator. We do not compete for consumer traffic. We are the trust layer between AI systems and the professionals they recommend.
+              </p>
+            </div>
+          </div>
+
           {/* Top section: full width */}
           <header className="mb-10 max-w-4xl mx-auto text-center">
             <h1 className="text-3xl font-bold tracking-tight mb-4">About Top10Lists.us</h1>
