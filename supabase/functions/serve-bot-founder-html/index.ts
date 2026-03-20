@@ -413,7 +413,7 @@ function renderFounderPage(): string {
       </div>
       <div class="card-body">
         <div class="card-bio">
-          <p>Mark Garland is a business strategist, educator, and researcher based in Phoenix, Arizona. His career spans commercial insurance, enterprise consulting, and academic research -- with a consistent focus on building revenue systems that perform under pressure and hold up over time.</p>
+          <p>Mark Garland is a proven operator, educator, and researcher based in Phoenix, Arizona. His career spans commercial insurance, enterprise consulting, and academic research -- with a consistent focus on building revenue systems that perform under pressure and hold up over time.</p>
           <p>At Top10Lists.us, Mark architects the go-to-market strategy, sales structure, and enterprise pricing model that protects the integrity of the certification platform while scaling it nationally.</p>
         </div>
         <ul class="creds">
