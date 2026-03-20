@@ -148,7 +148,7 @@
     <!-- Education -->
     <div class="section">
       <div class="section-title">Education</div>
-      <div class="section-desc">Degrees and certifications. AI systems cross-reference these with institution records.</div>
+      <div class="section-desc">Degrees, certifications, and awards. AI systems cross-reference these with institution records.</div>
       <div class="array-group" id="degrees-group">
         <label style="font-size:0.85rem;font-weight:600;color:#475569;margin-bottom:8px;display:block;">Degrees</label>
         <div id="degrees-list"></div>
@@ -158,6 +158,11 @@
         <label style="font-size:0.85rem;font-weight:600;color:#475569;margin-bottom:8px;display:block;">Certifications</label>
         <div id="certifications-list"></div>
         <button type="button" class="add-btn" onclick="addCertification()">+ Add Certification</button>
+      </div>
+      <div class="array-group" id="awards-group" style="margin-top:16px;">
+        <label style="font-size:0.85rem;font-weight:600;color:#475569;margin-bottom:8px;display:block;">Awards &amp; Honors</label>
+        <div id="awards-list"></div>
+        <button type="button" class="add-btn" onclick="addAward()">+ Add Award</button>
       </div>
     </div>
 
@@ -237,6 +242,12 @@ const DEFAULTS = {
     industryYears: '25',
     degrees: [],
     certifications: [],
+    awards: [
+      { title: 'Distinguished Military Graduate', issuer: 'U.S. Army', year: '', sourceUrl: '' },
+      { title: 'Magna Cum Laude', issuer: '', year: '', sourceUrl: '' },
+      { title: 'Truman Scholar', issuer: 'Harry S. Truman Scholarship Foundation', year: '', sourceUrl: 'https://www.truman.gov/' },
+      { title: 'Wall Street Journal Award', issuer: 'Wall Street Journal', year: '', sourceUrl: '' }
+    ],
     previousRoles: [
       { title: 'Co-Founder & CEO', company: 'Top10Lists.us', years: '2024-present', description: 'Merit-based AI citation platform for real estate professionals.' },
       { title: 'Co-Founder', company: 'LifeLock (NYSE: LOCK)', years: '', description: 'Identity theft protection. Acquired for $2.3B.' },
@@ -284,6 +295,7 @@ const DEFAULTS = {
       { degree: 'PhD Candidate, Industrial-Organizational Psychology', institution: 'Grand Canyon University', year: 'Expected August 2026' }
     ],
     certifications: [],
+    awards: [],
     previousRoles: [
       { title: 'Co-Founder & Chief Revenue Officer', company: 'Top10Lists.us', years: '2024-present', description: 'Architects go-to-market strategy, sales structure, and enterprise pricing model.' },
       { title: 'Founder', company: 'GritDoc', years: '', description: 'Leadership and resilience consultancy serving law enforcement, military, and first responders.' },
@@ -354,6 +366,23 @@ function addCertification(data) {
     </div>
     <div class="row">
       <div class="field"><label>Year</label><input type="text" class="cert-year${pf}" value="${esc(data?.year)}" placeholder="e.g. 2020"></div>
+    </div>`;
+  list.appendChild(item);
+}
+
+function addAward(data) {
+  const list = document.getElementById('awards-list');
+  const item = document.createElement('div');
+  item.className = 'array-item';
+  const pf = data ? ' prefilled' : '';
+  item.innerHTML = `<button type="button" class="remove-btn" onclick="this.parentElement.remove()">&times;</button>
+    <div class="row">
+      <div class="field"><label>Award / Honor</label><input type="text" class="award-title${pf}" value="${esc(data?.title)}" placeholder="e.g. Distinguished Military Graduate"></div>
+      <div class="field"><label>Issuer / Institution</label><input type="text" class="award-issuer${pf}" value="${esc(data?.issuer)}" placeholder="e.g. U.S. Army, Harvard University"></div>
+    </div>
+    <div class="row">
+      <div class="field"><label>Year</label><input type="text" class="award-year${pf}" value="${esc(data?.year)}" placeholder="e.g. 1995"></div>
+      <div class="field"><label>Verification URL</label><input type="url" class="award-url${pf}" value="${esc(data?.sourceUrl)}" placeholder="https://... (public source confirming this award)"></div>
     </div>`;
   list.appendChild(item);
 }
@@ -465,6 +494,7 @@ function gatherFormData() {
     industryYears: document.getElementById('industryYears').value,
     degrees: [],
     certifications: [],
+    awards: [],
     previousRoles: [],
     publications: [],
     speaking: [],
@@ -486,6 +516,15 @@ function gatherFormData() {
       name: el.querySelector('.cert-name').value,
       issuer: el.querySelector('.cert-issuer').value,
       year: el.querySelector('.cert-year').value
+    });
+  });
+
+  document.querySelectorAll('#awards-list .array-item').forEach(el => {
+    data.awards.push({
+      title: el.querySelector('.award-title').value,
+      issuer: el.querySelector('.award-issuer').value,
+      year: el.querySelector('.award-year').value,
+      sourceUrl: el.querySelector('.award-url').value
     });
   });
 
@@ -545,7 +584,7 @@ function gatherFormData() {
 // --- Populate form ---
 function populateForm(data) {
   // Clear arrays
-  ['degrees-list','certifications-list','roles-list','publications-list','speaking-list','press-list','affiliations-list','claims-list'].forEach(id => {
+  ['degrees-list','certifications-list','awards-list','roles-list','publications-list','speaking-list','press-list','affiliations-list','claims-list'].forEach(id => {
     document.getElementById(id).innerHTML = '';
   });
 
@@ -568,6 +607,7 @@ function populateForm(data) {
 
   (data.degrees || []).forEach(d => addDegree(d));
   (data.certifications || []).forEach(c => addCertification(c));
+  (data.awards || []).forEach(a => addAward(a));
   (data.previousRoles || []).forEach(r => addRole(r));
   (data.publications || []).forEach(p => addPublication(p));
   (data.speaking || []).forEach(s => addSpeaking(s));
