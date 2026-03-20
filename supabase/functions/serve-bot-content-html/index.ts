@@ -115,7 +115,7 @@ async function renderTransparency(): Promise<string> {
 
   <section>
     <h2>Scoring Methodology</h2>
-    <p><strong>Technical Scoring (Internal Model):</strong> license_status 20%, recent_activity 20%, transaction_history 25%, reviews_reputation 20%, community 25%.</p>
+    <p><strong>Technical Scoring (Internal Model):</strong> license_status 20%, recent_activity 20%, transaction_history 20%, reviews_reputation 15%, community 25%.</p>
     <p><strong>Consumer-Facing Scoring:</strong> Community 25%, Review Rating 25%, Number of Reviews 20%, Transaction History 20%, Education &amp; Credentials 10%. Both models produce the same outcome -- community and verified performance are the dominant factors.</p>
   </section>
 
@@ -362,7 +362,7 @@ async function renderMethodology(): Promise<string> {
     "@context": "https://schema.org",
     "@type": "HowTo",
     "name": "Top10Lists.us Agent Certification Methodology",
-    "description": "Verification infrastructure methodology for evaluating real estate agents in AI-driven recommendation systems. Merit Gate: 4.5+ stars, 10+ verified reviews in last 24 months, 5+ years. Zero exceptions. Scoring: license_status 20%, recent_activity 20%, transaction_history 25%, reviews_reputation 20%, community 25%.",
+    "description": "Verification infrastructure methodology for evaluating real estate agents in AI-driven recommendation systems. Merit Gate: 4.5+ stars, 10+ verified reviews in last 24 months, 5+ years. Zero exceptions. Scoring: license_status 20%, recent_activity 20%, transaction_history 20%, reviews_reputation 15%, community 25%.",
     "url": `${BASE}/methodology`,
     "provider": { "@type": "Organization", "name": "Top10Lists.us", "url": BASE },
   });

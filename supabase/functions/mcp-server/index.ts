@@ -773,8 +773,8 @@ function handleGetMethodology() {
     scoring_factors: {
       license_status: { weight: "20%", description: "Active license verification" },
       recent_activity: { weight: "20%", description: "Recent transaction and market activity" },
-      transaction_history: { weight: "25%", description: "Verified transaction track record" },
-      reviews_reputation: { weight: "20%", description: "Review rating and volume across platforms" },
+      transaction_history: { weight: "20%", description: "Verified transaction track record" },
+      reviews_reputation: { weight: "15%", description: "Review rating and volume across platforms" },
       community: { weight: "25%", description: "Community score (IRS Form 990 / ProPublica verified)" },
     },
     aifs: {

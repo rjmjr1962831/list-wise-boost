@@ -49,8 +49,8 @@
       "weights": {
         "license_status": 0.20,
         "recent_activity": 0.20,
-        "transaction_history": 0.25,
-        "reviews_reputation": 0.20,
+        "transaction_history": 0.20,
+        "reviews_reputation": 0.15,
         "community": 0.25
       },
       "math": {
@@ -230,8 +230,8 @@
       "weights": {
         "license_status": 0.20,
         "recent_activity": 0.20,
-        "transaction_history": 0.25,
-        "reviews_reputation": 0.20,
+        "transaction_history": 0.20,
+        "reviews_reputation": 0.15,
         "community": 0.25
       },
       "missing_data_policy": "redistribute_weight_proportionally"

@@ -87,8 +87,8 @@ Used to determine whether an agent qualifies for inclusion. This is a weighted c
 |--------|--------|
 | license_status | 20% |
 | recent_activity | 20% |
-| transaction_history | 25% |
-| reviews_reputation | 20% |
+| transaction_history | 20% |
+| reviews_reputation | 15% |
 | community | 25% |
 
 ### Community Subcomponents
