@@ -253,7 +253,8 @@ function renderFounderPage(): string {
     .card { background:var(--white); border:0.5px solid var(--border); border-radius:14px; overflow:hidden; }
     .card-head { background:var(--navy); padding:28px 28px 24px; }
     .card-chip { display:inline-block; background:rgba(201,168,76,0.12); border:0.5px solid var(--border-gold); border-radius:6px; padding:4px 12px; font-size:11px; color:var(--gold-light); letter-spacing:0.07em; text-transform:uppercase; margin-bottom:16px; font-weight:500; }
-    .card-avatar { width:56px; height:56px; border-radius:50%; background:rgba(201,168,76,0.1); border:1.5px solid var(--border-gold); display:flex; align-items:center; justify-content:center; font-family:'Playfair Display',serif; font-size:22px; color:var(--gold); font-weight:600; margin-bottom:14px; }
+    .card-avatar { width:96px; height:96px; border-radius:50%; background:rgba(201,168,76,0.1); border:2px solid var(--border-gold); display:flex; align-items:center; justify-content:center; font-family:'Playfair Display',serif; font-size:22px; color:var(--gold); font-weight:600; margin-bottom:14px; overflow:hidden; }
+    .card-avatar img { width:100%; height:100%; object-fit:cover; object-position:top; display:block; }
     .card-name { font-family:'Playfair Display',serif; font-size:26px; color:#fff; font-weight:700; margin-bottom:4px; }
     .card-title { font-size:13px; color:rgba(255,255,255,0.5); font-weight:300; }
     .card-body { padding:24px 28px 28px; }
@@ -371,7 +372,7 @@ function renderFounderPage(): string {
     <article class="card">
       <div class="card-head">
         <div class="card-chip">Co-Founder & CEO</div>
-        <div class="card-avatar">RM</div>
+        <div class="card-avatar"><img src="https://www.top10lists.us/images/founders/robert-maynard.png" alt="Robert Maynard" /></div>
         <div class="card-name">Robert Maynard</div>
         <div class="card-title">Co-Founder, Chief Executive Officer & CEO</div>
       </div>
@@ -406,7 +407,7 @@ function renderFounderPage(): string {
     <article class="card">
       <div class="card-head">
         <div class="card-chip">Co-Founder & CRO</div>
-        <div class="card-avatar">MG</div>
+        <div class="card-avatar"><img src="https://www.top10lists.us/images/founders/mark-garland.png" alt="Mark Garland" /></div>
         <div class="card-name">Mark Garland</div>
         <div class="card-title">Co-Founder & Chief Revenue Officer</div>
       </div>
