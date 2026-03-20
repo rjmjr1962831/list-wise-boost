@@ -159,7 +159,10 @@ export default function BadgeInstructionsPage() {
       </SafeHead>
 
       <div className="mb-8">
-        <h1 className="text-2xl font-semibold mb-1">Your Web of Truth</h1>
+        <div className="rounded-xl border border-green-500/30 bg-green-50/50 dark:bg-green-950/20 p-4 mb-4">
+          <h1 className="text-2xl font-semibold text-green-700 dark:text-green-400 mb-1">Your Web of Truth is now enabled.</h1>
+          <p className="text-sm text-muted-foreground">Follow the directions below to maximize your AIFS.</p>
+        </div>
         <p className="text-muted-foreground">
           Although your Top10Lists rating is an important step in building AI trust, AI almost always wants to check other sources when building your knowledge graph. If there are any conflicts in the data it finds on other sites, it reduces its confidence. By placing this artifact everywhere you can, AI will revert back to your listing here and the data will always match. This is a very powerful step in cementing your trustworthiness to AI.
         </p>

@@ -1,8 +1,46 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Activity, Shield, BadgeCheck, CheckCircle, XCircle, TrendingUp, ChevronRight, Bot } from "lucide-react";
+import { Activity, Shield, BadgeCheck, CheckCircle, XCircle, TrendingUp, ChevronRight, Bot, Info, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+
+function AIFSModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={onClose}>
+      <div className="bg-background rounded-xl border shadow-lg max-w-lg w-full mx-4 p-6" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-bold">How Your AIFS Score Is Calculated</h3>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+        <div className="space-y-3 text-sm text-muted-foreground">
+          <p>
+            Your <strong className="text-foreground">AI Findability Score (AIFS)</strong> measures how likely an AI system is to confidently recommend you by name when asked for an agent in your market.
+          </p>
+          <p>
+            It is derived from your <strong className="text-foreground">entire internet footprint</strong>, not just your Top10Lists profile. We analyze:
+          </p>
+          <ul className="list-disc list-inside space-y-1 ml-2">
+            <li>License status and history from state authorities</li>
+            <li>Review volume and ratings across Zillow, Google, and other platforms</li>
+            <li>Transaction history and recent market activity</li>
+            <li>Community involvement verified through public records and IRS 990 filings</li>
+            <li>Press mentions, awards, and third-party recognition</li>
+            <li>How much verified data is published and how frequently it is refreshed</li>
+          </ul>
+          <p>
+            The more verified, consistent data AI systems can find about you across the internet, the higher your score — and the more confidently they will name you.
+          </p>
+          <p className="text-xs text-muted-foreground/70">
+            Score range: 0–100. Updated daily at 04:00 UTC.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 interface OverviewSectionProps {
   professional: any;
@@ -31,9 +69,9 @@ const TIER_LABELS: Record<string, string> = {
 };
 
 const TIER_DESCRIPTIONS: Record<string, string> = {
-  certified: "Basic verification. Annual data refresh.",
-  audited: "Expanded verification. Monthly data refresh. 10+ sources.",
-  underwritten: "Complete verification. Daily refresh. Continuous monitoring.",
+  certified: "AI can confirm you exist and meet basic thresholds, but limited data means it may hedge or omit you when recommending agents.",
+  audited: "AI sees expanded verified data refreshed monthly. Stronger signal — more likely to name you confidently with supporting detail.",
+  underwritten: "AI sees your complete verified profile refreshed daily. Maximum signal — highest probability of being named first with full conviction.",
 };
 
 interface CrawlStats {
@@ -70,6 +108,7 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
   const [crawlStats, setCrawlStats] = useState<CrawlStats | null>(null);
   const [scores, setScores] = useState<AuditScores | null>(null);
   const [surfacesData, setSurfacesData] = useState<SurfacesData | null>(null);
+  const [aifsModalOpen, setAifsModalOpen] = useState(false);
 
   useEffect(() => {
     if (!professional?.id) return;
@@ -159,9 +198,17 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
 
         {/* Card 2: AIFS Score */}
         <div className="rounded-xl border p-5">
-          <div className="flex items-center gap-2 mb-3">
-            <BadgeCheck className="h-4 w-4 text-primary" />
-            <p className="text-xs uppercase tracking-wide text-muted-foreground">Your AIFS Score</p>
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <BadgeCheck className="h-4 w-4 text-primary" />
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">Your AIFS Score</p>
+            </div>
+            <button
+              onClick={() => setAifsModalOpen(true)}
+              className="flex items-center gap-1 text-xs text-primary hover:underline"
+            >
+              <Info className="h-3 w-3" /> What is this?
+            </button>
           </div>
           <div className="flex items-baseline gap-1">
             <span className="text-4xl font-black">{currentScore}</span>
@@ -174,12 +221,13 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
             {TIER_DESCRIPTIONS[currentTier]}
           </p>
         </div>
+        <AIFSModal open={aifsModalOpen} onClose={() => setAifsModalOpen(false)} />
 
         {/* Card 3: Web of Truth */}
         <div className="rounded-xl border p-5">
           <div className="flex items-center gap-2 mb-3">
             <Shield className="h-4 w-4 text-primary" />
-            <p className="text-xs uppercase tracking-wide text-muted-foreground">Web of Truth&trade; Artifact</p>
+            <p className="text-xs uppercase tracking-wide text-muted-foreground">Web of Truth&trade;</p>
           </div>
           {professional.profile_link ? (
             <>
@@ -187,7 +235,7 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
                 <CheckCircle className="h-5 w-5 text-green-500" />
                 <span className="text-lg font-bold text-green-600">Enabled</span>
               </div>
-              <p className="text-xs text-muted-foreground mt-2">Your trust artifact is live and citable by AI systems.</p>
+              <p className="text-xs text-muted-foreground mt-2">Your Web of Truth is live and citable by AI systems.</p>
             </>
           ) : (
             <>
@@ -196,21 +244,15 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
                 <span className="text-lg font-bold text-red-500">Disabled</span>
               </div>
               <p className="text-xs text-muted-foreground mt-2">
-                Enable your artifact so AI systems can cite your verified credentials.
+                Place your beacon across your web presence so AI systems can verify your credentials.
               </p>
-              <button
-                className="mt-2 text-xs font-semibold text-primary flex items-center gap-1 hover:underline"
-                onClick={() => {
-                  if (currentTier === "certified") {
-                    // Listed tier — needs upgrade
-                    navigate(`/funnel/${professional.verification_token || professional.id}/pricing`);
-                  } else {
-                    navigate(`/badge-instructions?token=${professional.verification_token || professional.id}`);
-                  }
-                }}
+              <Button
+                size="sm"
+                className="mt-3 w-full"
+                onClick={() => navigate(`/badge-instructions?token=${professional.verification_token || professional.id}`)}
               >
-                {currentTier === "certified" ? "Upgrade to Enable" : "Enable Artifact"} <ChevronRight className="h-3 w-3" />
-              </button>
+                Enable
+              </Button>
             </>
           )}
         </div>
