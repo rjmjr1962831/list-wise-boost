@@ -83,6 +83,20 @@ const LEGACY_AIFS_FIELDS: { key: string; label: string }[] = [
   { key: "footprint_context", label: "Footprint Context" },
 ];
 
+const BOT_CRAWL_FIELDS: { key: string; label: string }[] = [
+  { key: "ai_surfaces_total", label: "AI Surfaces (7d total)" },
+  { key: "ai_surfaces_meta", label: "Surfaces: Meta AI" },
+  { key: "ai_surfaces_google", label: "Surfaces: Google" },
+  { key: "ai_surfaces_apple", label: "Surfaces: Apple" },
+  { key: "ai_surfaces_perplexity", label: "Surfaces: Perplexity" },
+  { key: "ai_surfaces_chatgpt", label: "Surfaces: ChatGPT" },
+  { key: "ai_surfaces_claude", label: "Surfaces: Claude" },
+  { key: "ai_surfaces_bing", label: "Surfaces: Bing" },
+  { key: "ai_surfaces_gptbot", label: "Surfaces: GPTBot" },
+  { key: "ai_surfaces_other", label: "Surfaces: Other" },
+  { key: "ai_surfaces_top5_bots", label: "Top 5 Bots (names)" },
+];
+
 const AIFS_FIELDS: { key: string; label: string }[] = [
   { key: "aifs_score", label: "AIFS Score" },
   { key: "aifs_band", label: "AIFS Band" },
@@ -357,35 +371,117 @@ export function ListMaker() {
         for (let i = 0; i < agentIds.length; i += 500) {
           const batchIds = agentIds.slice(i, i + 500);
           const idList = batchIds.map((id) => `'${id}'`).join(",");
+
+          // Fetch old crawl stats + city names
           const { data: rows } = await supabase.rpc("run_sql" as any, {
             query: `SELECT s.agent_id, s.total_crawls_30d, s.profile_crawls_30d, s.list_crawls_30d, s.unique_bot_count_30d, s.bot_names_30d, c.name as city_name FROM agent_bot_crawl_stats s JOIN professionals p ON p.id = s.agent_id LEFT JOIN cities c ON c.id = p.city_id WHERE s.agent_id IN (${idList})`,
           });
-          // Also fetch city names for agents not in the view (zero crawls)
+
+          // Fetch new AI surfaces by bot (7d pre-computed)
+          const { data: surfaceRows } = await supabase.rpc("run_sql" as any, {
+            query: `SELECT agent_id, bot_name, crawls FROM agent_ai_surfaces_by_bot WHERE agent_id IN (${idList})`,
+          });
+
+          // Fetch city names for agents not in crawl stats
           const { data: cityRows } = await supabase.rpc("run_sql" as any, {
             query: `SELECT p.id as agent_id, c.name as city_name FROM professionals p LEFT JOIN cities c ON c.id = p.city_id WHERE p.id IN (${idList})`,
           });
           const cityMap = new Map((cityRows || []).map((r: any) => [r.agent_id, r.city_name || ""]));
 
+          // Build per-agent surfaces map
+          const surfacesMap = new Map<string, Record<string, number>>();
+          for (const r of (surfaceRows || []) as any[]) {
+            if (!surfacesMap.has(r.agent_id)) surfacesMap.set(r.agent_id, {});
+            surfacesMap.get(r.agent_id)![r.bot_name] = r.crawls;
+          }
+
+          const BOT_KEY_MAP: Record<string, string> = {
+            "Meta-ExternalAgent": "ai_surfaces_meta",
+            "Googlebot": "ai_surfaces_google",
+            "Applebot": "ai_surfaces_apple", "Applebot-Extended": "ai_surfaces_apple",
+            "PerplexityBot": "ai_surfaces_perplexity",
+            "ChatGPT-User": "ai_surfaces_chatgpt", "OAI-SearchBot": "ai_surfaces_chatgpt",
+            "ClaudeBot": "ai_surfaces_claude",
+            "Bingbot": "ai_surfaces_bing", "bingbot": "ai_surfaces_bing",
+            "GPTBot": "ai_surfaces_gptbot",
+          };
+
           for (const r of (rows || []) as any[]) {
             const botNames = (r.bot_names_30d || []) as string[];
             const aiBots = botNames.filter((b: string) => !SEO_BOTS.has(b));
             const displayBots = [...new Set(aiBots.map((b: string) => BOT_DISPLAY[b] || b))].sort();
+
+            // Compute AI surfaces fields from pre-computed table
+            const agentSurfaces = surfacesMap.get(r.agent_id) || {};
+            const surfaceFields: Record<string, string> = {
+              ai_surfaces_meta: "0", ai_surfaces_google: "0", ai_surfaces_apple: "0",
+              ai_surfaces_perplexity: "0", ai_surfaces_chatgpt: "0", ai_surfaces_claude: "0",
+              ai_surfaces_bing: "0", ai_surfaces_gptbot: "0", ai_surfaces_other: "0",
+            };
+            let totalSurfaces = 0;
+            let otherSurfaces = 0;
+            const top5: { name: string; count: number }[] = [];
+
+            for (const [botName, count] of Object.entries(agentSurfaces)) {
+              totalSurfaces += count;
+              const fieldKey = BOT_KEY_MAP[botName];
+              if (fieldKey) {
+                surfaceFields[fieldKey] = String((parseInt(surfaceFields[fieldKey]) || 0) + count);
+              } else {
+                otherSurfaces += count;
+              }
+              top5.push({ name: BOT_DISPLAY[botName] || botName, count });
+            }
+            surfaceFields.ai_surfaces_other = String(otherSurfaces);
+            top5.sort((a, b) => b.count - a.count);
+            const top5Names = top5.slice(0, 5).map((b) => b.name);
+
             mergeData.set(r.agent_id, {
               bot_crawl_total: String(r.total_crawls_30d || 0),
               bot_crawl_profile: String(r.profile_crawls_30d || 0),
               bot_crawl_list: String(r.list_crawls_30d || 0),
               bot_crawl_bots: displayBots.join(", ") || "AI systems",
               bot_crawl_bots_count: String(displayBots.length || 0),
+              ai_surfaces_total: String(totalSurfaces),
+              ...surfaceFields,
+              ai_surfaces_top5_bots: top5Names.join(", "),
               city: cityMap.get(r.agent_id) || "",
             });
           }
-          // Fill city for agents with no crawl data
-          for (const [id, cityName] of cityMap) {
-            if (!mergeData.has(id)) {
-              mergeData.set(id, {
+
+          // Fill for agents with surfaces data but no old crawl stats
+          for (const agentId of batchIds) {
+            if (!mergeData.has(agentId)) {
+              const agentSurfaces = surfacesMap.get(agentId) || {};
+              const surfaceFields: Record<string, string> = {
+                ai_surfaces_meta: "0", ai_surfaces_google: "0", ai_surfaces_apple: "0",
+                ai_surfaces_perplexity: "0", ai_surfaces_chatgpt: "0", ai_surfaces_claude: "0",
+                ai_surfaces_bing: "0", ai_surfaces_gptbot: "0", ai_surfaces_other: "0",
+              };
+              let totalSurfaces = 0;
+              let otherSurfaces = 0;
+              const top5: { name: string; count: number }[] = [];
+
+              for (const [botName, count] of Object.entries(agentSurfaces)) {
+                totalSurfaces += count;
+                const fieldKey = BOT_KEY_MAP[botName];
+                if (fieldKey) {
+                  surfaceFields[fieldKey] = String((parseInt(surfaceFields[fieldKey]) || 0) + count);
+                } else {
+                  otherSurfaces += count;
+                }
+                top5.push({ name: BOT_DISPLAY[botName] || botName, count });
+              }
+              surfaceFields.ai_surfaces_other = String(otherSurfaces);
+              top5.sort((a, b) => b.count - a.count);
+
+              mergeData.set(agentId, {
                 bot_crawl_total: "0", bot_crawl_profile: "0", bot_crawl_list: "0",
                 bot_crawl_bots: "", bot_crawl_bots_count: "0",
-                city: cityName || "",
+                ai_surfaces_total: String(totalSurfaces),
+                ...surfaceFields,
+                ai_surfaces_top5_bots: top5.slice(0, 5).map((b) => b.name).join(", "),
+                city: cityMap.get(agentId) || "",
               });
             }
           }
@@ -718,6 +814,38 @@ export function ListMaker() {
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
               {AIFS_FIELDS.map((f) => (
+                <label
+                  key={f.key}
+                  className="flex items-center gap-2 cursor-pointer text-sm"
+                >
+                  <Checkbox
+                    checked={outputFields.includes(f.key)}
+                    onCheckedChange={(c) => toggleOutputField(f.key, !!c)}
+                  />
+                  <span>{f.label}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* Bot Crawl / AI Surfaces fields */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <Label className="text-sm font-semibold">AI Surfaces (Bot Crawl Data)</Label>
+              <button
+                type="button"
+                className="text-xs text-primary hover:underline"
+                onClick={() => {
+                  const allSelected = BOT_CRAWL_FIELDS.every((f) => outputFields.includes(f.key));
+                  if (allSelected) setOutputFields(outputFields.filter((k) => !BOT_CRAWL_FIELDS.some((f) => f.key === k)));
+                  else setOutputFields([...outputFields, ...BOT_CRAWL_FIELDS.filter((f) => !outputFields.includes(f.key)).map((f) => f.key)]);
+                }}
+              >
+                {BOT_CRAWL_FIELDS.every((f) => outputFields.includes(f.key)) ? "Deselect all" : "Select all"}
+              </button>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+              {BOT_CRAWL_FIELDS.map((f) => (
                 <label
                   key={f.key}
                   className="flex items-center gap-2 cursor-pointer text-sm"
