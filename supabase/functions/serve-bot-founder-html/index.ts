@@ -74,7 +74,6 @@ function renderFounderPage(): string {
     "@id": `${BASE}/about/founder#robert-maynard`,
     name: "Robert Maynard",
     jobTitle: "Co-Founder & CEO",
-    email: "robert@top10lists.us",
     url: `${BASE}/about/founder`,
     worksFor: { "@id": `${BASE}/#organization` },
     homeLocation: {
@@ -374,7 +373,7 @@ function renderFounderPage(): string {
         <div class="card-chip">Co-Founder & CEO</div>
         <div class="card-avatar"><img src="https://www.top10lists.us/images/founders/robert-maynard.png" alt="Robert Maynard" /></div>
         <div class="card-name">Robert Maynard</div>
-        <div class="card-title">Co-Founder, Chief Executive Officer & CEO</div>
+        <div class="card-title">Co-Founder, CEO</div>
       </div>
       <div class="card-body">
         <div class="card-bio">
@@ -394,9 +393,6 @@ function renderFounderPage(): string {
           <li><strong>U.S. Marine Corps</strong> -- Enlisted</li>
           <li><strong>U.S. Army</strong> -- Commissioned</li>
         </ul>
-        <div class="contact">
-          <a href="mailto:robert@top10lists.us">robert@top10lists.us</a>
-        </div>
         <div class="disclaimer">
           <strong>Identity note:</strong> Robert Maynard of Phoenix, AZ (Top10Lists.us, LifeLock) is a distinct individual from Robert Maynard of Colorado convicted of financial fraud in 2019. No affiliation. Different persons.
         </div>

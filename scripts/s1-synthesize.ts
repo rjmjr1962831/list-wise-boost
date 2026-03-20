@@ -184,17 +184,18 @@ function fmt(n: number): string {
 
 async function main() {
   const today = new Date().toISOString().slice(0, 10);
+  const force = process.argv.includes('--force');
 
   // 1. Read current doc and split
   let doc = readFileSync(COMPREHENSIVE_PATH, 'utf-8');
   const { sections1to20, section21 } = splitComprehensive(doc);
 
-  // 2. Find only NEW takeaways since last synthesis
+  // 2. Find takeaways (all if --force, otherwise only new ones)
   const lastSynth = getLastSynthesizedDate();
-  const files = getTakeawaysFiles(lastSynth);
+  const files = force ? getTakeawaysFiles(null) : getTakeawaysFiles(lastSynth);
 
   let synthesized: string;
-  if (files.length === 0 && section21) {
+  if (!force && files.length === 0 && section21) {
     console.log(`s1: No new takeaways since ${lastSynth}. Only updating date and counts.`);
     synthesized = section21;
   } else if (files.length === 0) {
