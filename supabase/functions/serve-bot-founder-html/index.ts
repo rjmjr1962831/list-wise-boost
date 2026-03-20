@@ -4,8 +4,12 @@
  * Serves founder/organization EE-A-T signals as minimal, self-contained HTML
  * with rich JSON-LD (Organization + 2x Person schemas).
  * No React SPA, no JavaScript, no browser rendering.
+ *
+ * Live data: Pulls founder profiles from marketing_content table when available.
+ * Fallback: All hardcoded content remains as fallback if DB query fails.
  */
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const BASE = "https://www.top10lists.us";
 const CORS = {
@@ -22,9 +26,150 @@ function esc(s: string): string {
     .replace(/"/g, "&quot;");
 }
 
-function renderFounderPage(): string {
+// ── Live data fetch ─────────────────────────────────────────────────────────
+
+interface FounderClaim {
+  text: string;
+  sourceUrl?: string;
+}
+
+interface FounderRole {
+  org: string;
+  title: string;
+  description?: string;
+  ticker?: string;
+  url?: string;
+}
+
+interface FounderAffiliation {
+  name: string;
+  type?: string;
+  url?: string;
+  department?: string;
+  description?: string;
+}
+
+interface FounderDegree {
+  institution: string;
+  degree: string;
+  field?: string;
+  status?: string;
+  expected?: string;
+}
+
+interface FounderProfile {
+  shortBio?: string;
+  fullBio?: string;
+  claims?: FounderClaim[];
+  previousRoles?: FounderRole[];
+  affiliations?: FounderAffiliation[];
+  degrees?: FounderDegree[];
+  knowsAbout?: string[];
+}
+
+interface FounderProfiles {
+  robert: FounderProfile | null;
+  mark: FounderProfile | null;
+}
+
+async function fetchFounderProfiles(): Promise<FounderProfiles | null> {
+  try {
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    if (!supabaseUrl || !supabaseServiceKey) return null;
+
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    const { data, error } = await supabase
+      .from("marketing_content")
+      .select("key, value")
+      .eq("page", "founders")
+      .eq("section", "profiles");
+
+    if (error || !data || data.length === 0) {
+      console.warn("serve-bot-founder-html: DB fetch returned no data", error);
+      return null;
+    }
+
+    let robert: FounderProfile | null = null;
+    let mark: FounderProfile | null = null;
+
+    for (const row of data) {
+      try {
+        const parsed = JSON.parse(row.value);
+        if (row.key === "robert") robert = parsed;
+        if (row.key === "mark") mark = parsed;
+      } catch {
+        console.warn(`serve-bot-founder-html: Failed to parse profile for key=${row.key}`);
+      }
+    }
+
+    return { robert, mark };
+  } catch (err) {
+    console.warn("serve-bot-founder-html: fetchFounderProfiles failed", err);
+    return null;
+  }
+}
+
+// ── Rendering helpers ───────────────────────────────────────────────────────
+
+function renderClaims(claims: FounderClaim[]): string {
+  if (!claims || claims.length === 0) return "";
+  const items = claims.map((c) => {
+    if (c.sourceUrl) {
+      return `          <li>${esc(c.text)} <a href="${esc(c.sourceUrl)}" rel="noopener" target="_blank">[source]</a></li>`;
+    }
+    return `          <li>${esc(c.text)}</li>`;
+  });
+  return `
+        <h4 style="font-size:14px;font-weight:500;color:var(--navy);margin-bottom:6px;">Verifiable Claims</h4>
+        <ul class="creds" style="margin-bottom:16px;">
+${items.join("\n")}
+        </ul>`;
+}
+
+function renderPreviousRoles(roles: FounderRole[]): string {
+  if (!roles || roles.length === 0) return "";
+  const items = roles.map((r) => {
+    let label = `<strong>${esc(r.org)}</strong> -- ${esc(r.title)}`;
+    if (r.ticker) label += ` (${esc(r.ticker)})`;
+    if (r.description) label += ` -- ${esc(r.description)}`;
+    if (r.url) label += ` <a href="${esc(r.url)}">${esc(r.url)}</a>`;
+    return `          <li>${label}</li>`;
+  });
+  return `
+        <h4 style="font-size:14px;font-weight:500;color:var(--navy);margin-bottom:6px;">Career History</h4>
+        <ul class="creds" style="margin-bottom:16px;">
+${items.join("\n")}
+        </ul>`;
+}
+
+function renderDegrees(degrees: FounderDegree[]): string {
+  if (!degrees || degrees.length === 0) return "";
+  const items = degrees.map((d) => {
+    let label = `<strong>${esc(d.institution)}</strong> -- ${esc(d.degree)}`;
+    if (d.field) label += `, ${esc(d.field)}`;
+    if (d.status) label += ` (${esc(d.status)})`;
+    if (d.expected) label += ` -- expected ${esc(d.expected)}`;
+    return `          <li>${label}</li>`;
+  });
+  return `
+        <h4 style="font-size:14px;font-weight:500;color:var(--navy);margin-bottom:6px;">Education</h4>
+        <ul class="creds" style="margin-bottom:16px;">
+${items.join("\n")}
+        </ul>`;
+}
+
+// ── Main render ─────────────────────────────────────────────────────────────
+
+function renderFounderPage(profiles: FounderProfiles | null): string {
   const now = new Date();
   const dateModified = now.toISOString().split("T")[0];
+
+  const rp = profiles?.robert ?? null;
+  const mp = profiles?.mark ?? null;
+
+  // ── JSON-LD: Organization ───────────────────────────────────────────────
 
   const orgSchema = {
     "@context": "https://schema.org",
@@ -68,7 +213,78 @@ function renderFounderPage(): string {
     ],
   };
 
-  const robertSchema = {
+  // ── JSON-LD: Robert ─────────────────────────────────────────────────────
+
+  const robertKnowsAbout = rp?.knowsAbout ?? [
+    "Identity Protection",
+    "AI Citation Architecture",
+    "Consumer Technology",
+    "Real Estate Technology",
+    "Generative Engine Optimization",
+    "Living with Bipolar Disorder",
+    "Neurodiversity in the Workplace",
+  ];
+
+  // If DB has claims with sourceUrls, add claim subjects to knowsAbout
+  if (rp?.claims) {
+    for (const claim of rp.claims) {
+      if (claim.sourceUrl && !robertKnowsAbout.includes(claim.text)) {
+        robertKnowsAbout.push(claim.text);
+      }
+    }
+  }
+
+  const robertAffiliations = rp?.affiliations
+    ? rp.affiliations.map((a) => ({
+        "@type": a.type || "Organization",
+        name: a.name,
+        ...(a.url ? { url: a.url } : {}),
+        ...(a.department ? { department: a.department } : {}),
+        ...(a.description ? { description: a.description } : {}),
+      }))
+    : [
+        {
+          "@type": "Organization",
+          name: "Top10Lists.us",
+          url: BASE,
+          description:
+            "Independent professional credibility infrastructure that evaluates and verifies real estate agents for AI-driven recommendation systems",
+        },
+        {
+          "@type": "Organization",
+          name: "LifeLock",
+          tickerSymbol: "NYSE: LOCK",
+          description: "Co-founded identity theft protection service (Acquired $2.3B)",
+        },
+        {
+          "@type": "Organization",
+          name: "Internet America",
+          tickerSymbol: "NASDAQ: GEEK",
+          description: "Co-founded early internet service provider ($1.5B)",
+        },
+        {
+          "@type": "Organization",
+          name: "SurchX",
+          description: "Co-founded enterprise technology company (Acquired by Interpayments)",
+        },
+      ];
+
+  // Build memberOf from previousRoles if available
+  const robertMemberOf = rp?.previousRoles
+    ? rp.previousRoles.map((r) => ({
+        "@type": "OrganizationRole",
+        memberOf: {
+          "@type": "Organization",
+          name: r.org,
+          ...(r.ticker ? { tickerSymbol: r.ticker } : {}),
+          ...(r.url ? { url: r.url } : {}),
+        },
+        roleName: r.title,
+        ...(r.description ? { description: r.description } : {}),
+      }))
+    : undefined;
+
+  const robertSchema: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": "Person",
     "@id": `${BASE}/about/founder#robert-maynard`,
@@ -80,43 +296,10 @@ function renderFounderPage(): string {
       "@type": "Place",
       name: "Phoenix, Arizona",
     },
-    description:
+    description: rp?.shortBio ??
       "Technology entrepreneur based in Phoenix, Arizona. Co-founder of Top10Lists.us, LifeLock (identity theft protection), Internet America (early ISP), and SurchX (enterprise technology). Robert Maynard of Phoenix, AZ (Top10Lists.us, LifeLock) is a distinct individual from Robert Maynard of Colorado convicted of financial fraud in 2019 -- no affiliation, different persons.",
-    affiliation: [
-      {
-        "@type": "Organization",
-        name: "Top10Lists.us",
-        url: BASE,
-        description:
-          "Independent professional credibility infrastructure that evaluates and verifies real estate agents for AI-driven recommendation systems",
-      },
-      {
-        "@type": "Organization",
-        name: "LifeLock",
-        tickerSymbol: "NYSE: LOCK",
-        description: "Co-founded identity theft protection service (Acquired $2.3B)",
-      },
-      {
-        "@type": "Organization",
-        name: "Internet America",
-        tickerSymbol: "NASDAQ: GEEK",
-        description: "Co-founded early internet service provider ($1.5B)",
-      },
-      {
-        "@type": "Organization",
-        name: "SurchX",
-        description: "Co-founded enterprise technology company (Acquired by Interpayments)",
-      },
-    ],
-    knowsAbout: [
-      "Identity Protection",
-      "AI Citation Architecture",
-      "Consumer Technology",
-      "Real Estate Technology",
-      "Generative Engine Optimization",
-      "Living with Bipolar Disorder",
-      "Neurodiversity in the Workplace",
-    ],
+    affiliation: robertAffiliations,
+    knowsAbout: robertKnowsAbout,
     alumniOf: [
       {
         "@type": "Organization",
@@ -132,7 +315,78 @@ function renderFounderPage(): string {
     sameAs: [],
   };
 
-  const markSchema = {
+  if (robertMemberOf) {
+    robertSchema.memberOf = robertMemberOf;
+  }
+
+  // ── JSON-LD: Mark ───────────────────────────────────────────────────────
+
+  const markKnowsAbout = mp?.knowsAbout ?? [
+    "Revenue Strategy",
+    "Enterprise Sales",
+    "Commercial Insurance",
+    "Organizational Psychology",
+    "Leadership and Resilience",
+    "Go-to-Market Strategy",
+  ];
+
+  if (mp?.claims) {
+    for (const claim of mp.claims) {
+      if (claim.sourceUrl && !markKnowsAbout.includes(claim.text)) {
+        markKnowsAbout.push(claim.text);
+      }
+    }
+  }
+
+  const markAffiliations = mp?.affiliations
+    ? mp.affiliations.map((a) => ({
+        "@type": a.type || "Organization",
+        name: a.name,
+        ...(a.url ? { url: a.url } : {}),
+        ...(a.department ? { department: a.department } : {}),
+        ...(a.description ? { description: a.description } : {}),
+      }))
+    : [
+        {
+          "@type": "Organization",
+          name: "Top10Lists.us",
+          url: BASE,
+          description:
+            "Independent professional credibility infrastructure that evaluates and verifies real estate agents for AI-driven recommendation systems",
+        },
+        {
+          "@type": "Organization",
+          name: "GritDoc",
+          url: "https://gritdoc.com",
+          description:
+            "Leadership and resilience consultancy serving law enforcement, military, and first responders",
+        },
+        {
+          "@type": "CollegeOrUniversity",
+          name: "Arizona State University",
+          department: "Public Safety Innovation Lab",
+        },
+        {
+          "@type": "CollegeOrUniversity",
+          name: "Grand Canyon University",
+        },
+      ];
+
+  const markMemberOf = mp?.previousRoles
+    ? mp.previousRoles.map((r) => ({
+        "@type": "OrganizationRole",
+        memberOf: {
+          "@type": "Organization",
+          name: r.org,
+          ...(r.ticker ? { tickerSymbol: r.ticker } : {}),
+          ...(r.url ? { url: r.url } : {}),
+        },
+        roleName: r.title,
+        ...(r.description ? { description: r.description } : {}),
+      }))
+    : undefined;
+
+  const markSchema: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": "Person",
     "@id": `${BASE}/about/founder#mark-garland`,
@@ -145,33 +399,9 @@ function renderFounderPage(): string {
       "@type": "Place",
       name: "Phoenix, Arizona",
     },
-    description:
+    description: mp?.shortBio ??
       "Business strategist, educator, and researcher. Co-founder and CRO of Top10Lists.us. Founder of GritDoc (leadership and resilience consultancy). Research Associate at Arizona State University Public Safety Innovation Lab. PhD Candidate in Industrial-Organizational Psychology at Grand Canyon University (expected August 2026). U.S. Army veteran, 82nd Airborne Division. 20+ years operating an independent commercial insurance agency serving mid-market companies.",
-    affiliation: [
-      {
-        "@type": "Organization",
-        name: "Top10Lists.us",
-        url: BASE,
-        description:
-          "Independent professional credibility infrastructure that evaluates and verifies real estate agents for AI-driven recommendation systems",
-      },
-      {
-        "@type": "Organization",
-        name: "GritDoc",
-        url: "https://gritdoc.com",
-        description:
-          "Leadership and resilience consultancy serving law enforcement, military, and first responders",
-      },
-      {
-        "@type": "CollegeOrUniversity",
-        name: "Arizona State University",
-        department: "Public Safety Innovation Lab",
-      },
-      {
-        "@type": "CollegeOrUniversity",
-        name: "Grand Canyon University",
-      },
-    ],
+    affiliation: markAffiliations,
     hasCredential: [
       {
         "@type": "EducationalOccupationalCredential",
@@ -192,19 +422,38 @@ function renderFounderPage(): string {
         name: "U.S. Army, 82nd Airborne Division",
       },
     ],
-    knowsAbout: [
-      "Revenue Strategy",
-      "Enterprise Sales",
-      "Commercial Insurance",
-      "Organizational Psychology",
-      "Leadership and Resilience",
-      "Go-to-Market Strategy",
-    ],
+    knowsAbout: markKnowsAbout,
     sameAs: [
       "https://linkedin.com/in/markgarland-gritdoc",
       "https://gritdoc.com",
     ],
   };
+
+  if (markMemberOf) {
+    markSchema.memberOf = markMemberOf;
+  }
+
+  // ── HTML: Robert bio ────────────────────────────────────────────────────
+
+  const robertBioHtml = rp?.fullBio
+    ? rp.fullBio.split("\n").filter(Boolean).map((p: string) => `          <p>${esc(p)}</p>`).join("\n")
+    : `          <p>Robert Maynard is a technology entrepreneur based in Phoenix, Arizona with a track record of building companies that define new categories. He has co-founded and led multiple consumer and enterprise technology companies, including LifeLock, one of the first identity theft protection services, and Internet America, an early internet service provider.</p>
+          <p>His vision for Top10Lists.us emerged from what he describes as a "Yellow Pages moment" in AI-driven discovery -- a recognition that as consumers increasingly ask AI systems for direct professional referrals, those systems lack the structured, third-party foundation required to answer with confidence.</p>`;
+
+  const robertClaimsHtml = rp?.claims ? renderClaims(rp.claims) : "";
+  const robertRolesHtml = rp?.previousRoles ? renderPreviousRoles(rp.previousRoles) : "";
+  const robertDegreesHtml = rp?.degrees ? renderDegrees(rp.degrees) : "";
+
+  // ── HTML: Mark bio ──────────────────────────────────────────────────────
+
+  const markBioHtml = mp?.fullBio
+    ? mp.fullBio.split("\n").filter(Boolean).map((p: string) => `          <p>${esc(p)}</p>`).join("\n")
+    : `          <p>Mark Garland is a proven operator, educator, and researcher based in Phoenix, Arizona. His career spans commercial insurance, enterprise consulting, and academic research -- with a consistent focus on building revenue systems that perform under pressure and hold up over time.</p>
+          <p>At Top10Lists.us, Mark architects the go-to-market strategy, sales structure, and enterprise pricing model that protects the integrity of the certification platform while scaling it nationally.</p>`;
+
+  const markClaimsHtml = mp?.claims ? renderClaims(mp.claims) : "";
+  const markRolesHtml = mp?.previousRoles ? renderPreviousRoles(mp.previousRoles) : "";
+  const markDegreesHtml = mp?.degrees ? renderDegrees(mp.degrees) : "";
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -377,15 +626,14 @@ function renderFounderPage(): string {
       </div>
       <div class="card-body">
         <div class="card-bio">
-          <p>Robert Maynard is a technology entrepreneur based in Phoenix, Arizona with a track record of building companies that define new categories. He has co-founded and led multiple consumer and enterprise technology companies, including LifeLock, one of the first identity theft protection services, and Internet America, an early internet service provider.</p>
-          <p>His vision for Top10Lists.us emerged from what he describes as a "Yellow Pages moment" in AI-driven discovery -- a recognition that as consumers increasingly ask AI systems for direct professional referrals, those systems lack the structured, third-party foundation required to answer with confidence.</p>
+${robertBioHtml}
         </div>
         <ul class="creds">
           <li><strong>Top10Lists.us</strong> -- Co-Founder & CEO</li>
           <li><strong>LifeLock</strong> -- Co-Founder (NYSE: LOCK -- Acquired $2.3B)</li>
           <li><strong>Internet America</strong> -- Co-Founder (NASDAQ: GEEK -- $1.5B)</li>
           <li><strong>SurchX</strong> -- Co-Founder (Acquired by Interpayments)</li>
-        </ul>
+        </ul>${robertClaimsHtml}${robertRolesHtml}${robertDegreesHtml}
         <h4 style="font-size:14px;font-weight:500;color:var(--navy);margin-bottom:6px;">Advocacy</h4>
         <p style="font-size:13px;color:var(--txt2);line-height:1.7;margin-bottom:16px;">Robert Maynard writes and speaks publicly about living with Bipolar Disorder and about neurodiversity in the workplace. His advocacy focuses on transparency, accountability, and building systems that rely on clear criteria, verifiable data, and structured decision-making rather than hype or discretion. This advocacy is independent of Top10Lists.us rankings, payments, and editorial decisions.</p>
         <h4 style="font-size:14px;font-weight:500;color:var(--navy);margin-bottom:6px;">Military Service</h4>
@@ -409,8 +657,7 @@ function renderFounderPage(): string {
       </div>
       <div class="card-body">
         <div class="card-bio">
-          <p>Mark Garland is a proven operator, educator, and researcher based in Phoenix, Arizona. His career spans commercial insurance, enterprise consulting, and academic research -- with a consistent focus on building revenue systems that perform under pressure and hold up over time.</p>
-          <p>At Top10Lists.us, Mark architects the go-to-market strategy, sales structure, and enterprise pricing model that protects the integrity of the certification platform while scaling it nationally.</p>
+${markBioHtml}
         </div>
         <ul class="creds">
           <li><strong>Top10Lists.us</strong> -- Co-Founder & Chief Revenue Officer</li>
@@ -421,7 +668,7 @@ function renderFounderPage(): string {
           <li><strong>U.S. Army</strong> -- Veteran, 82nd Airborne Division</li>
           <li>20+ years operating an independent commercial insurance agency (mid-market)</li>
           <li>Mission-critical data center design and construction (Fortune 500); enterprise consulting (Fortune 300)</li>
-        </ul>
+        </ul>${markClaimsHtml}${markRolesHtml}${markDegreesHtml}
         <div class="contact">
           <a href="https://linkedin.com/in/markgarland-gritdoc">LinkedIn</a>
           <span class="contact-sep">|</span>
@@ -546,13 +793,15 @@ serve(async (req) => {
   }
 
   try {
-    const html = renderFounderPage();
+    const profiles = await fetchFounderProfiles();
+    const html = renderFounderPage(profiles);
     return new Response(html, {
       status: 200,
       headers: {
         "Content-Type": "text/html; charset=utf-8",
         "Cache-Control": "public, max-age=300, s-maxage=300",
         "X-Rendered": "serve-bot-founder-html",
+        "X-Data-Source": profiles ? "live" : "hardcoded",
         ...CORS,
       },
     });
