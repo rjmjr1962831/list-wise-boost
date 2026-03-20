@@ -220,7 +220,26 @@ export function AIMaxPlan({ professional }: AIMaxPlanProps) {
     data.gap_no_linkedin, data.gap_no_realtor, data.gap_no_press,
   ].filter(Boolean).length;
 
-  const platformCount = data.platforms_found?.length || 0;
+  // Derive presence from both AIFS analysis flags AND actual professional fields
+  const hasZillow = data.has_zillow || !!professional.zillow_profile_url;
+  const hasLinkedin = data.has_linkedin || !!professional.social_linkedin;
+  const hasRealtor = data.has_realtor || !!professional.social_realtor_com;
+  const hasGoogle = data.has_google_business || !!professional.google_place_id || !!professional.google_business_name;
+  const hasPersonalSite = data.has_personal_site || !!professional.website || !!professional.google_website;
+  const hasHomelight = data.has_homelight || !!professional.social_homelight;
+  const hasHomesCom = data.has_homes_com || !!professional.social_homes_com;
+  const hasFacebook = data.has_facebook || !!professional.social_facebook;
+  const hasInstagram = !!professional.social_instagram;
+  const hasTiktok = !!professional.social_tiktok;
+  const hasPress = !data.gap_no_press || (Array.isArray(professional.press_mentions) && professional.press_mentions.length > 0);
+  const hasSchema = data.has_schema_markup;
+
+  const derivedPlatformCount = [
+    true, // Top10Lists always
+    hasZillow, hasLinkedin, hasRealtor, hasGoogle, hasPersonalSite,
+    hasHomelight, hasHomesCom, hasFacebook, hasInstagram, hasTiktok, hasPress, hasSchema,
+  ].filter(Boolean).length;
+  const platformCount = derivedPlatformCount;
   const agentName = data.full_name || professional.name || "Agent";
   const firstName = agentName.split(" ")[0];
 
@@ -344,16 +363,18 @@ export function AIMaxPlan({ professional }: AIMaxPlanProps) {
         <CardContent>
           <div className="grid gap-0 divide-y">
             <PresenceItem exists={true} label="Top10Lists.us" url={`https://www.top10lists.us/${professional.state_slug}/agents/${professional.canonical_slug}`} />
-            <PresenceItem exists={data.has_zillow} label="Zillow" url={professional.zillow_profile_url || undefined} />
-            <PresenceItem exists={data.has_linkedin} label="LinkedIn" url={professional.social_linkedin || undefined} />
-            <PresenceItem exists={data.has_realtor} label="Realtor.com" />
-            <PresenceItem exists={data.has_google_business} label="Google Business Profile" />
-            <PresenceItem exists={data.has_personal_site} label="Personal Website" url={data.website || professional.website || undefined} />
-            <PresenceItem exists={data.has_homelight} label="HomeLight" />
-            <PresenceItem exists={data.has_homes_com} label="Homes.com" />
-            <PresenceItem exists={data.has_facebook} label="Facebook" url={professional.social_facebook || undefined} />
-            <PresenceItem exists={!data.gap_no_press} label="Press Mentions" />
-            <PresenceItem exists={data.has_schema_markup} label="Schema Markup (any site)" />
+            <PresenceItem exists={hasZillow} label="Zillow" url={professional.zillow_profile_url || undefined} />
+            <PresenceItem exists={hasLinkedin} label="LinkedIn" url={professional.social_linkedin || undefined} />
+            <PresenceItem exists={hasRealtor} label="Realtor.com" url={professional.social_realtor_com || undefined} />
+            <PresenceItem exists={hasGoogle} label="Google Business Profile" url={professional.google_maps_url || undefined} />
+            <PresenceItem exists={hasPersonalSite} label="Personal Website" url={professional.website || professional.google_website || data.website || undefined} />
+            <PresenceItem exists={hasHomelight} label="HomeLight" url={professional.social_homelight || undefined} />
+            <PresenceItem exists={hasHomesCom} label="Homes.com" url={professional.social_homes_com || undefined} />
+            <PresenceItem exists={hasFacebook} label="Facebook" url={professional.social_facebook || undefined} />
+            <PresenceItem exists={hasInstagram} label="Instagram" url={professional.social_instagram || undefined} />
+            <PresenceItem exists={hasTiktok} label="TikTok" url={professional.social_tiktok || undefined} />
+            <PresenceItem exists={hasPress} label="Press Mentions" url={Array.isArray(professional.press_mentions) && professional.press_mentions.length > 0 ? professional.press_mentions[0]?.url : undefined} />
+            <PresenceItem exists={hasSchema} label="Schema Markup (any site)" />
           </div>
 
           {data.most_recent_signal && (
@@ -451,32 +472,67 @@ export function AIMaxPlan({ professional }: AIMaxPlanProps) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {[
-              { label: "Today (Listed)", score: data.score_listed, price: "Free", sublabel: "Annual refresh" },
-              { label: "Certified", score: data.score_certified, price: "Free", sublabel: "Quarterly refresh" },
-              { label: "Audited", score: data.score_audited, price: "$300/mo", sublabel: "Monthly refresh" },
-              { label: "Underwritten", score: data.score_underwritten, price: "$500/mo", sublabel: "Daily refresh" },
-            ].map((tier) => {
-              const tb = bandFromScore(tier.score);
-              return (
-                <div key={tier.label} className="rounded-lg border p-4 text-center">
-                  <p className="text-xs text-muted-foreground mb-1">{tier.label}</p>
-                  <p className={`text-3xl font-black tabular-nums ${tb.color}`}>{tier.score}</p>
-                  <p className={`text-xs font-semibold ${tb.color}`}>{tb.label}</p>
-                  <p className="text-xs text-muted-foreground mt-2 font-medium">{tier.price}</p>
-                  <p className="text-[10px] text-muted-foreground">{tier.sublabel}</p>
-                  {tier.score > data.score_listed && (
-                    <p className="text-xs text-green-600 font-semibold mt-1">+{tier.score - data.score_listed} pts</p>
-                  )}
+          {(() => {
+            const rawTier = (professional.current_tier || professional.badge_tier || "certified").toLowerCase();
+            const agentTier = rawTier === "accredited" ? "audited" : rawTier;
+            const tierOrder = ["certified", "audited", "underwritten"];
+            const agentTierIndex = tierOrder.indexOf(agentTier);
+            const tiers = [
+              {
+                key: "certified",
+                label: "Certified",
+                score: data.score_certified,
+                sublabel: "Quarterly refresh",
+                aiMeaning: "AI can verify your credentials but has limited data. It may mention you but without strong conviction.",
+              },
+              {
+                key: "audited",
+                label: "Audited",
+                score: data.score_audited,
+                sublabel: "Monthly refresh",
+                aiMeaning: "AI sees expanded evidence from 10+ sources refreshed monthly. More likely to recommend you with detail and confidence.",
+              },
+              {
+                key: "underwritten",
+                label: "Underwritten",
+                score: data.score_underwritten,
+                sublabel: "Daily refresh",
+                aiMeaning: "AI sees your complete verified profile refreshed daily. Highest probability of being named first with full conviction.",
+              },
+            ];
+            const token = professional.verification_token || professional.id;
+            return (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  {tiers.map((tier) => {
+                    const tb = bandFromScore(tier.score);
+                    const tierIndex = tierOrder.indexOf(tier.key);
+                    const isActive = tierIndex <= agentTierIndex;
+                    const isCurrent = tier.key === agentTier;
+                    return (
+                      <div key={tier.key} className={`rounded-lg border p-4 text-center ${isCurrent ? "border-primary/40 bg-primary/5" : ""}`}>
+                        <p className="text-xs text-muted-foreground mb-1">{tier.label}{isCurrent ? " (Current)" : ""}</p>
+                        <p className={`text-3xl font-black tabular-nums ${tb.color}`}>{tier.score}</p>
+                        <p className={`text-xs font-semibold ${tb.color}`}>{tb.label}</p>
+                        <p className="text-xs text-muted-foreground mt-2 leading-relaxed">{tier.aiMeaning}</p>
+                        {isActive ? (
+                          <span className="inline-block mt-3 text-xs font-semibold text-green-600 bg-green-50 px-3 py-1 rounded-full">Active</span>
+                        ) : (
+                          <a href={`/funnel/${token}/pricing`} className="inline-block mt-3 text-xs font-semibold text-primary bg-primary/10 hover:bg-primary/20 px-3 py-1 rounded-full transition-colors">
+                            Upgrade
+                          </a>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
-              );
-            })}
-          </div>
-          <p className="text-xs text-muted-foreground mt-4 text-center leading-relaxed">
-            The actions above are things you can do yourself, at no cost. The tier upgrades add data verification depth,
-            refresh frequency, expanded evidence sourcing, and cryptographic verification -- but the foundation is your own web presence.
-          </p>
+                <p className="text-xs text-muted-foreground mt-4 text-center leading-relaxed">
+                  The actions above are things you can do yourself, at no cost. Tier upgrades add verification depth,
+                  refresh frequency, and expanded evidence sourcing — but the foundation is your own web presence.
+                </p>
+              </>
+            );
+          })()}
         </CardContent>
       </Card>
 
