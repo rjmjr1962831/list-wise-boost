@@ -8,7 +8,7 @@ import { SafeHead } from "@/components/SafeHead";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Copy, Check, Download, Globe, Mail, Building2 } from "lucide-react";
+import { Copy, Check, Download, Globe, Mail, Building2, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 
 const BASE = "https://www.top10lists.us";
