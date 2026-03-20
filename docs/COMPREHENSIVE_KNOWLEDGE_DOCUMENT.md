@@ -318,12 +318,29 @@ From `src/data/master-ssot.md`:
 
 - **Site-Wide Header/Footer on Clean-Room Pages**: Shared `_shared/site-chrome.ts` matching React components. Integrated into 6 edge functions (13 HTML documents). All 7 edge functions redeployed.
 
+- **Clean-Room Migration Complete**: All public pages migrated from React SPA to Supabase edge functions serving complete HTML. Created `serve-bot-home-html`, `serve-bot-pages-html` (15 pages), `serve-bot-qa-html` (20 Q&A pages). React SPA now only for authenticated routes (admin, dashboard). 760-page smoke test passed.
+
+- **Agent Dashboard Overhaul**:
+  - AIFS Score modal explains scoring inputs.
+  - Tier descriptions rewritten to explain citation impact.
+  - Web of Truth available to all tiers; nav renamed "Optimize" and "Web of Truth".
+  - AIFS Pillar reweighted: Identity 25, Citability 25, Social Proof 20, Authority 15, Technical 15 (total 100).
+  - Pillar "How to Fix" lists lead with upgrade actions.
+  - Score projections show Certified/Audited/Underwritten with citation meaning.
+  - New `WebOfTruthSection.tsx` dashboard tab.
+
+- **CRM List Maker — AI Surfaces Merge Fields**: Added 12 new merge tags (`{{ai_surfaces_total}}`, `{{ai_surfaces_human}}`, per-bot fields) pulling from pre-computed `agent_ai_surfaces_by_bot` table.
+
+- **Founder Page Verifiable Claims**: Added "Verifiable Claims" section for Robert Maynard (localhost only, not pushed).
+
+- **Email Sending Confirmed**: `gmail-send` edge function works for sending from robert@top10lists.us.
+
 **Config / Infrastructure**
 
 - **Supabase tables created**: `agent_ai_surfaces`, `agent_ai_surfaces_by_bot`, `mcp_request_logs`.
 - **Supabase views**: `mcp_request_stats` (30-day rolling window).
 - **pg_cron**: `rollup-agent-ai-surfaces` daily at 04:00 UTC (7-day window). `purge-bot-crawl-logs` daily at 03:00 UTC (30-day retention).
-- **Edge functions deployed**: serve-bot-agent-html, serve-bot-content-html, serve-bot-crawl-stats-html, serve-bot-founder-html, serve-bot-list-html, serve-bot-state-html, mcp-server.
+- **Edge functions deployed**: serve-bot-agent-html, serve-bot-content-html, serve-bot-crawl-stats-html, serve-bot-founder-html, serve-bot-list-html, serve-bot-state-html, mcp-server, serve-bot-home-html, serve-bot-pages-html, serve-bot-qa-html.
 - **Files pushed to staging**: `public/admin/demo/index.html`, `public/admin/demo/pipeline.html`, `public/admin/demo/enrichment.html`, `public/admin/founder-intake.html`.
 - **Database counts**: `state_licenses`: 1,119,430 (AZ: 210,524; CA: 352,476+). `professionals`: 51,063 (CA: 49,836; AZ: 1,087).
 - **MCP JSON Schema**: `mcp.json` and `mcp-server/index.ts` upgraded with full `inputSchema` objects (enums, patterns, defaults, additionalProperties: false).
@@ -331,6 +348,8 @@ From `src/data/master-ssot.md`:
 - **`run_sql` statement timeout**: Set to 30s in function definition (was hitting 3s anon role limit).
 - **Secrets**: Vercel log drain verify token moved from hardcode to Supabase secret `VERCEL_LOG_DRAIN_VERIFY`.
 - **Link header**: `Link: </.well-known/mcp.json>; rel="mcp-server"` on all responses via `vercel.json`.
+- **Vercel rewrites**: 27 new rewrites for clean-room edge functions; SPA catch-all scoped to authenticated routes only.
+- **Sitemap cleanup**: Removed 14 phantom URLs from sitemap-pages.xml.
 
 **New Rules or Docs**
 
@@ -341,6 +360,10 @@ From `src/data/master-ssot.md`:
 - **`run_sql` is SELECT-only**: Cannot INSERT/UPDATE/DELETE. Use `supabase.from().insert()` for writes.
 - **Fire-and-forget doesn't work in Deno Deploy**: Use `await` inside try/catch.
 - **SSoT Section 1 still says "top 0.5%"**: Needs surgical fix to "fewer than 1% of licensed agents in covered markets."
+- **⚠️ NO PUSHES TO STAGING OR PROD WITHOUT ROBERT'S EXPRESS PERMISSION**: All dev goes on localhost. Build minutes are expensive.
+- **Clean-room architecture**: ALL public pages must serve clean-room HTML from edge functions. React SPA only for authenticated pages.
+- **Web of Truth available to all tiers** -- no tier gating.
+- **Badge instructions page is instructional only** -- no sales CTAs.
 
 **New Functions / Scripts**
 
@@ -348,6 +371,8 @@ From `src/data/master-ssot.md`:
 - MCP server logging block (inserts to `mcp_request_logs` after each tool call).
 - Bot Analytics Dashboard MCP tab (5th card + dedicated tab).
 - `crawl-stats` Section F: "Direct AI Tool Calls (MCP)".
+- `serve-bot-home-html`, `serve-bot-pages-html`, `serve-bot-qa-html` edge functions.
+- `WebOfTruthSection.tsx` dashboard component.
 - Proposed (not yet built): `enrichment_jobs` table, `enrichment_progress` view, `enrichment-worker` edge function, `scripts/run-enrichment-parallel.ts`, stale claim recovery cron.
 
 **Deprecated or Removed**
@@ -359,6 +384,8 @@ From `src/data/master-ssot.md`:
 - Hardcoded "Last verified" dates -- now dynamic.
 - All "ten agents per city" language.
 - Cloudflare email obfuscation from agent page.
+- Pre-rendered SPA shell HTML files from public/ (about, ranking-methodology, etc.) -- replaced by edge functions.
+- Phantom sitemap URLs (how-it-works, compare, developers, etc.).
 
 ---
 
