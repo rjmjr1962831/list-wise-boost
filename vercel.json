@@ -277,7 +277,7 @@
       "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/mcp-server"
     },
     {
-      "source": "/((?!api|for-ai|methodology|ai-feed|llms|coverage\\.json|sitemap|mcp\\.json|mcp$|ai-content-index\\.json|robots\\.txt|\\.well-known|widget|crawl-stats|images).*)",
+      "source": "/((?!api|admin|for-ai|methodology|ai-feed|llms|coverage\\.json|sitemap|mcp\\.json|mcp$|ai-content-index\\.json|robots\\.txt|\\.well-known|widget|crawl-stats|images).*)",
       "destination": "/_spa.html"
     },
     {
