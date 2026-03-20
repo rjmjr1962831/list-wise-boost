@@ -144,7 +144,7 @@ function generateFoundationQueries(agentName: string, brokerage?: string, city?:
     queries.push(`"${agentName}" real estate broker ${location} career history`);
   }
   
-  // Query 4: Community involvement discovery (generic - no hardcoded orgs)
+  // Query 4: Community discovery (generic - no hardcoded orgs)
   queries.push(`"${agentName}" volunteer OR nonprofit OR charity OR "giving back" ${location}`);
   
   return queries;
@@ -237,7 +237,7 @@ Return ONLY a JSON array of 3 query strings. Be SPECIFIC about organization name
     console.log('Could not parse phase 3 queries');
   }
 
-  // Fallback queries - generic community involvement discovery
+  // Fallback queries - generic community discovery
   return [
     `"${agentName}" volunteer OR "board member" OR nonprofit OR charity`,
     `"${agentName}" ${location} coach OR sponsor OR fundraiser OR foundation`,
@@ -257,7 +257,7 @@ async function extractCommunityRoles(
 Search results:
 ${resultsJson}
 
-Extract SPECIFIC community involvement, volunteer work, and leadership positions.
+Extract SPECIFIC community, volunteer work, and leadership positions.
 Look for:
 - Nonprofit board seats (e.g., "Board Member, Boys and Girls Club of Phoenix")
 - Volunteer roles (e.g., "Volunteer, Habitat for Humanity")
@@ -277,11 +277,11 @@ CRITICAL RULES:
 - ONLY include roles where you found the SPECIFIC organization name
 - Do NOT make up generic descriptions like "local charitable organizations"
 - If you can't find the specific org name, don't include it
-- Be thorough - check every search result for hints of community involvement
+- Be thorough - check every search result for hints of community
 
 Return as JSON array. Return empty array [] if no specific organizations found.`;
 
-  const result = await callGeminiFlash(prompt, 'You are a community involvement researcher. Return only a JSON array of verified community roles with SPECIFIC organization names.');
+  const result = await callGeminiFlash(prompt, 'You are a community researcher. Return only a JSON array of verified community roles with SPECIFIC organization names.');
   
   try {
     const jsonMatch = result.match(/\[[\s\S]*\]/);
@@ -451,7 +451,7 @@ serve(async (req) => {
       analysis: `Found ${phase2Results.length} additional results. Remaining gaps: ${combinedGaps.join(', ') || 'none'}`
     });
 
-    // ===== PHASE 3: Deep Dive (3 queries) - Focus on community involvement =====
+    // ===== PHASE 3: Deep Dive (3 queries) - Focus on community =====
     console.log('[Gemini Search] Phase 3: Deep dive queries (community focus)');
     const phase3Queries = await generatePhase3Queries(agentName, allResults, combinedGaps, city, state);
     const phase3Results: SearchResult[] = [];

@@ -269,7 +269,7 @@ export function getCityDescription(slug: string, cityName: string, stateName: st
   }
   
   // Fallback for cities not yet added - still unique based on city name
-  return `Top10Lists.us presents verified rankings of elite real estate professionals serving ${cityName}, ${stateName}. Our editorial selection process evaluates reviews, community involvement, transaction history, and credentials to identify the market's top performers.`;
+  return `Top10Lists.us presents verified rankings of elite real estate professionals serving ${cityName}, ${stateName}. Our editorial selection process evaluates reviews, community, transaction history, and credentials to identify the market's top performers.`;
 }
 
 /**

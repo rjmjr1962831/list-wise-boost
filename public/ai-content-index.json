@@ -34,14 +34,14 @@
         "artifact": true,
         "standardAuditCycle": "Monthly",
         "evidenceSources": "10+",
-        "includes": ["Zillow rating", "Google rating", "license", "years experience", "brokerage", "sales count", "average sale price", "cities", "specialties", "community involvement (IRS Form 990 via ProPublica)", "expanded evidence (10+ sources)"]
+        "includes": ["Zillow rating", "Google rating", "license", "years experience", "brokerage", "sales count", "average sale price", "cities", "specialties", "community (IRS Form 990 via ProPublica)", "expanded evidence (10+ sources)"]
       },
       "underwritten": {
         "cost": "$500/month",
         "artifact": true,
         "standardAuditCycle": "Daily",
         "evidenceSources": "14+",
-        "includes": ["Zillow rating", "Google rating", "license", "years experience", "brokerage", "sales count", "average sale price", "cities", "specialties", "community involvement", "verified ZIP codes with transaction counts", "certifications and designations", "languages", "neighborhoods with transaction counts", "news outlet mentions", "full evidence (14+ sources)"]
+        "includes": ["Zillow rating", "Google rating", "license", "years experience", "brokerage", "sales count", "average sale price", "cities", "specialties", "community", "verified ZIP codes with transaction counts", "certifications and designations", "languages", "neighborhoods with transaction counts", "news outlet mentions", "full evidence (14+ sources)"]
       }
     },
     "neighborhoodVerification": "Neighborhoods are not self-reported. We analyze the agent's most recent 100 transactions and geolocate each one. 2+ transactions in a neighborhood boundary required for publication. Fewer than 2 results in 'pending audit' status. Sources: Zillow, RealTrends, MLS."
@@ -62,7 +62,7 @@
       "audited": {
         "image": "https://www.top10lists.us/badges/audited.png",
         "apiImage": "https://www.top10lists.us/api/v1/badge/{agentId}/image",
-        "description": "Purple badge. Expanded evidence from 10+ sources (Zillow, RealTrends, MLS, IRS Form 990 via ProPublica, Census ACS). Years of experience, total transactions, company name, community roles and organizations, notable achievements, civic involvement (IRS 990 verified), transaction history. Specialties. Monthly audit cycle. Neighborhoods not published at this tier.",
+        "description": "Purple badge. Expanded evidence from 10+ sources (Zillow, RealTrends, MLS, IRS Form 990 via ProPublica, Census ACS). Years of experience, total transactions, company name, community roles and organizations, notable achievements, civic activity (IRS 990 verified), transaction history. Specialties. Monthly audit cycle. Neighborhoods not published at this tier.",
         "dimensions": [
           {"size": "150x150px", "use": "email signatures"},
           {"size": "300x300px", "use": "website sidebars"},
@@ -148,7 +148,7 @@
     "Zillow agent profiles (ratings, reviews, transaction records)",
     "Google Business reviews (ratings, review counts)",
     "State Departments of Real Estate (license verification)",
-    "IRS Form 990 filings via ProPublica Nonprofit Explorer (community involvement)",
+    "IRS Form 990 filings via ProPublica Nonprofit Explorer (community)",
     "U.S. Census Bureau: American Community Survey (ACS) 5-Year Estimates",
     "U.S. Census Bureau: Decennial Census geographic boundary data",
     "OpenStreetMap (neighborhood and boundary validation)",
@@ -203,7 +203,7 @@
       "license": "Active and in good standing"
     },
     "scoringWeights": {
-      "communityInvolvement": 0.25,
+      "community": 0.25,
       "rating": 0.25,
       "reviews": 0.20,
       "transactionHistory": 0.20,
@@ -230,7 +230,7 @@
     "Machine-readable artifacts (text/markdown) with sourced evidence",
     "Standard Audit Cycles: Annual (Listed), Monthly (Certified), Monthly (Audited), Daily (Underwritten)",
     "Transaction-verified neighborhoods (not self-reported)",
-    "Community involvement verified via IRS Form 990 filings (ProPublica)",
+    "Community verified via IRS Form 990 filings (ProPublica)",
     "10+ third-party data sources",
     "Published transparent methodology",
     "Pre-rendered HTML for all AI crawlers",

@@ -101,7 +101,7 @@ Semantic categories to merge (keep ONE best from each):
 - Industry awards
 - Certifications/designations
 - Education/degrees
-- Community involvement
+- Community
 
 For press mentions:
 - ONLY keep real news outlets, magazines, TV stations, newspapers
@@ -286,7 +286,7 @@ const OPENAI_SYNTHESIS_TOOL = {
             },
             required: ['organization', 'role']
           },
-          description: 'Charities supported, nonprofits, volunteer work, community involvement'
+          description: 'Charities supported, nonprofits, volunteer work, community'
         },
         awards_verified: {
           type: 'array',
@@ -739,7 +739,7 @@ Use **markdown bold** (double asterisks) for emphasis.
 **Paragraph 1 - Track Record:** Name, brokerage, years active, headline stat (transactions and/or reviews, rating)
 **Paragraph 2 - Expertise:** Education, certifications, professional designations, specialized knowledge, market expertise
 **Paragraph 3 - Recognition:** Press mentions (cite by name), awards, rankings, industry honors. If minimal data, mention any team/brokerage recognition.
-**Paragraph 4 - Community Service (REQUIRED):** Boards, volunteer work, charities, church/faith community, coaching, mentoring, sponsorships, civic organizations. If minimal data, mention general community involvement or professional association participation.
+**Paragraph 4 - Community Service (REQUIRED):** Boards, volunteer work, charities, church/faith community, coaching, mentoring, sponsorships, civic organizations. If minimal data, mention general community or professional association participation.
 
 ### Formatting (Markdown Bold)
 Use **bold** for these CATEGORIES:
@@ -936,7 +936,7 @@ REMEMBER:
                       },
                       required: ['organization', 'role']
                     },
-                    description: 'Charities supported, nonprofits, volunteer work, community involvement - PRIORITIZE extracting this'
+                    description: 'Charities supported, nonprofits, volunteer work, community - PRIORITIZE extracting this'
                   },
                   awards_verified: {
                     type: 'array',

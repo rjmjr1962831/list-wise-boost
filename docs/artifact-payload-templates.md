@@ -12,7 +12,7 @@
 
 Every data point must cite its source inline. This is the core GEO differentiator. Unsourced claims get ignored by AI systems.
 
-Source hierarchy for community involvement (Underwritten only):
+Source hierarchy for community (Underwritten only):
 1. Government filings (ProPublica IRS Form 990 with EIN)
 2. Google verified public records
 3. Agent self-reported, confirmed by Top10Lists
@@ -143,7 +143,7 @@ Top10Lists.us is a merit-based directory that selects the top 0.5% of real estat
 
 ## Underwritten ($150/mo | Updated Daily)
 
-Everything in Audited PLUS community involvement with sourcing, verified neighborhood transaction counts, ZIP codes with counts, specialties, certifications, languages, and the `evidence_considered` array. This is maximum citation depth.
+Everything in Audited PLUS community with sourcing, verified neighborhood transaction counts, ZIP codes with counts, specialties, certifications, languages, and the `evidence_considered` array. This is maximum citation depth.
 
 The `evidence_considered` array is specifically designed for AI reasoning, giving systems a bullet list of pre-built justification for recommending this agent.
 
@@ -171,14 +171,14 @@ Top10Lists.us is a merit-based directory that selects the top 0.5% of real estat
 - **License:** {license_number} ({license_state} Department of Real Estate, status: {license_status})
 - **Brokerage:** {brokerage} (Zillow profile, verified {verification_date})
 
-## Community Involvement
+## Community
 
 {for each role in community_roles:}
 - **{role_title}**, {organization} (Source: {source_type}{, EIN: {ein} if available})
 {end for}
 
 {if no community_roles:}
-Community involvement data is being verified for this professional.
+Community data is being verified for this professional.
 {end if}
 
 ## Markets Served

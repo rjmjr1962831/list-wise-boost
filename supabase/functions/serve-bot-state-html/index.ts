@@ -190,7 +190,7 @@ serve(async (req) => {
 <body>
 <header>
   <h1>Top Real Estate Agents in ${esc(si.display)}</h1>
-  <p>Top10Lists.us selected <strong>${totalAgents}</strong> real estate agents across <strong>${totalCities}</strong> ${esc(si.display)} cities from over ${si.total} licensed ${esc(si.display)} professionals. Selection requires a minimum 4.5-star rating with 10 or more verified recent reviews (last 24 months), 5 years in business, an active ${esc(si.display)} real estate license, and documented community involvement. Payment does not influence inclusion, rank, or visibility.</p>
+  <p>Top10Lists.us selected <strong>${totalAgents}</strong> real estate agents across <strong>${totalCities}</strong> ${esc(si.display)} cities from over ${si.total} licensed ${esc(si.display)} professionals. Selection requires a minimum 4.5-star rating with 10 or more verified recent reviews (last 24 months), 5 years in business, an active ${esc(si.display)} real estate license, and documented community. Payment does not influence inclusion, rank, or visibility.</p>
   <p><strong>Last verified:</strong> ${TODAY}</p>
 </header>
 `;
@@ -209,7 +209,7 @@ serve(async (req) => {
 
     // Merit criteria box
     o += `<div class="merit-box">
-  <strong>Merit Criteria:</strong> 4.5+ star rating, 10+ recent reviews (Zillow + Google), 5 years in business, active ${esc(si.display)} real estate license, transaction history (MLS, Zillow), community involvement (25% of ranking weight). No agent can pay for inclusion or ranking position.
+  <strong>Merit Criteria:</strong> 4.5+ star rating, 10+ recent reviews (Zillow + Google), 5 years in business, active ${esc(si.display)} real estate license, transaction history (MLS, Zillow), community (25% of ranking weight). No agent can pay for inclusion or ranking position.
 </div>
 `;
 
@@ -237,7 +237,7 @@ serve(async (req) => {
       <tr><td>Google Business Profile</td><td>Star rating, review count, business address, phone</td><td><a href="https://www.google.com/maps">https://www.google.com/maps</a></td></tr>
       <tr><td>MLS Transaction Records</td><td>Career transactions, recent sales, price ranges</td><td>Varies by record</td></tr>
       <tr><td>RealTrends Verified Rankings</td><td>National and state rankings, production volume</td><td><a href="https://www.realtrends.com/">https://www.realtrends.com/</a></td></tr>
-      <tr><td>IRS Form 990 via ProPublica</td><td>Nonprofit board membership, community involvement</td><td><a href="https://projects.propublica.org/nonprofits/">https://projects.propublica.org/nonprofits/</a></td></tr>
+      <tr><td>IRS Form 990 via ProPublica</td><td>Nonprofit board membership, community</td><td><a href="https://projects.propublica.org/nonprofits/">https://projects.propublica.org/nonprofits/</a></td></tr>
       <tr><td>U.S. Census Bureau ACS 2019-2023</td><td>Market demographics, median income</td><td><a href="https://data.census.gov/">https://data.census.gov/</a></td></tr>
     </tbody></table>
   <p>Top10Lists.us is an independent certification authority. <a href="https://www.top10lists.us/about/ranking-methodology">Full methodology</a></p>

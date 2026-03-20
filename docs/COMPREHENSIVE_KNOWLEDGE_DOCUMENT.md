@@ -53,8 +53,8 @@ Legacy: 58 Certified agents grandfathered; full payload on listing pages; no new
 | license_status | 20% |
 | recent_activity | 20% |
 | transaction_history | 25% |
-| reviews_reputation | 15% |
-| community_involvement | 20% |
+| reviews_reputation | 20% |
+| community | 25% |
 
 **Consumer-facing (llms-full, transparency):** Review Rating 25%, Community 25%, Number of Reviews 20%, Transaction History 20%, Education 10%. Use for public-facing copy; technical spec uses the table above.
 

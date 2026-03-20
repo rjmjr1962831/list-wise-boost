@@ -45,7 +45,7 @@ interface ExaResult {
 interface EnrichmentData {
   pressRemarks: string[];
   awardsRecognition: string[];
-  communityInvolvement: string[];
+  community: string[];
   publications: string[];
   tvAppearances: string[];
   speakingEngagements: string[];
@@ -188,7 +188,7 @@ async function searchWithExa(
   // Query 1: Professional recognition and press (broader)
   const professionalQuery = `"${agentName}" ${city} OR ${state} (award OR recognition OR "top agent" OR featured OR press OR news OR magazine OR influential OR "100 most")`;
   
-  // Query 2: Community involvement and nonprofit work
+  // Query 2: Community and nonprofit work
   const communityQuery = `"${agentName}" (nonprofit OR charity OR "board member" OR volunteer OR foundation OR "gives back" OR philanthropy OR mentoring OR program OR speaker)`;
 
   // Query 3: Books and author mentions (critical for cases like Dina)
@@ -278,7 +278,7 @@ async function synthesizeWithDeepSeek(
     return {
       pressRemarks: [],
       awardsRecognition: [],
-      communityInvolvement: [],
+      community: [],
       publications: [],
       tvAppearances: [],
       speakingEngagements: [],
@@ -331,7 +331,7 @@ TASK:
    - Include: Self-help books, motivational content, industry articles
    - Example: "Dream to Destiny: Become Who You're Meant to Be - CreateSpace (2010)"
    
-   COMMUNITY INVOLVEMENT: Nonprofit work, board seats, charity, volunteer, foundations, church work
+   COMMUNITY: Nonprofit work, board seats, charity, volunteer, foundations, church work
    - Format: "Role at Organization - Description"
    - Include: "Founder of Dream Program nonprofit - mentoring individuals globally"
    
@@ -354,7 +354,7 @@ RESPOND IN THIS EXACT JSON FORMAT:
   "awardsRecognition": ["Award - Organization (Year)"],
   "tvAppearances": ["Network/Show - Description (Year)"],
   "publications": ["Title - Publisher (Year)"],
-  "communityInvolvement": ["Role at Organization - Description"],
+  "community": ["Role at Organization - Description"],
   "speakingEngagements": ["Venue Type - Topic"],
   "verifiedSources": [{"url": "https://...", "description": "What this source verifies"}],
   "confidence": "high|medium|low",
@@ -411,7 +411,7 @@ Only output valid JSON, no other text.`;
     return {
       pressRemarks: parsed.pressRemarks || [],
       awardsRecognition: parsed.awardsRecognition || [],
-      communityInvolvement: parsed.communityInvolvement || [],
+      community: parsed.community || [],
       publications: parsed.publications || [],
       tvAppearances: parsed.tvAppearances || [],
       speakingEngagements: parsed.speakingEngagements || [],
@@ -425,7 +425,7 @@ Only output valid JSON, no other text.`;
     return {
       pressRemarks: [],
       awardsRecognition: [],
-      communityInvolvement: [],
+      community: [],
       publications: [],
       tvAppearances: [],
       speakingEngagements: [],
@@ -453,7 +453,7 @@ async function synthesizeWithSonnet(
     return {
       pressRemarks: [],
       awardsRecognition: [],
-      communityInvolvement: [],
+      community: [],
       publications: [],
       tvAppearances: [],
       speakingEngagements: [],
@@ -467,7 +467,7 @@ async function synthesizeWithSonnet(
     return {
       pressRemarks: [],
       awardsRecognition: [],
-      communityInvolvement: [],
+      community: [],
       publications: [],
       tvAppearances: [],
       speakingEngagements: [],
@@ -519,7 +519,7 @@ RESPOND IN THIS JSON FORMAT:
   "awardsRecognition": ["Award - Organization (Year)"],
   "tvAppearances": ["Network/Show - Description (Year)"],
   "publications": ["Book Title - Publisher (Year)"],
-  "communityInvolvement": ["Role at Organization - Description"],
+  "community": ["Role at Organization - Description"],
   "speakingEngagements": ["Venue Type - Topic"],
   "verifiedSources": [{"url": "https://...", "description": "What this verifies"}],
   "confidence": "high|medium|low",
@@ -572,7 +572,7 @@ Only output valid JSON.`;
     return {
       pressRemarks: parsed.pressRemarks || [],
       awardsRecognition: parsed.awardsRecognition || [],
-      communityInvolvement: parsed.communityInvolvement || [],
+      community: parsed.community || [],
       publications: parsed.publications || [],
       tvAppearances: parsed.tvAppearances || [],
       speakingEngagements: parsed.speakingEngagements || [],
@@ -586,7 +586,7 @@ Only output valid JSON.`;
     return {
       pressRemarks: [],
       awardsRecognition: [],
-      communityInvolvement: [],
+      community: [],
       publications: [],
       tvAppearances: [],
       speakingEngagements: [],
@@ -775,8 +775,8 @@ ${enrichmentData.tvAppearances?.length > 0 ? enrichmentData.tvAppearances.map(t 
 ## Publications
 ${enrichmentData.publications.length > 0 ? enrichmentData.publications.map(p => `- ${p}`).join('\n') : 'No publications found.'}
 
-## Community Involvement
-${enrichmentData.communityInvolvement.length > 0 ? enrichmentData.communityInvolvement.map(c => `- ${c}`).join('\n') : 'No community involvement found.'}
+## Community
+${enrichmentData.community.length > 0 ? enrichmentData.community.map(c => `- ${c}`).join('\n') : 'No community data found.'}
 
 ## Speaking Engagements
 ${enrichmentData.speakingEngagements?.length > 0 ? enrichmentData.speakingEngagements.map(s => `- ${s}`).join('\n') : 'No speaking engagements found.'}

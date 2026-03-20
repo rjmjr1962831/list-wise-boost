@@ -10,7 +10,7 @@ Adds proper paragraph formatting to all agent `synthesized_bio` fields in the da
 - Intelligently splits text into paragraphs based on:
   1. **First paragraph**: Track record, credentials, experience summary
   2. **Middle paragraphs**: Specialties, expertise, approach, methodologies
-  3. **Final paragraph**: Community involvement, awards, charity work
+  3. **Final paragraph**: Community, awards, charity work
 - Wraps text in proper HTML `<p>` tags
 - Updates the database with formatted content
 - Skips bios that already have paragraph tags

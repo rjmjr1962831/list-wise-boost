@@ -128,9 +128,9 @@ export interface CommunityActivity {
 }
 
 /**
- * Community involvement score and activities
+ * Community score and activities
  */
-export interface CommunityInvolvement {
+export interface Community {
   score: number;                   // 1-10
   activities: CommunityActivity[];
   lastVerified: string;            // ISO date
@@ -140,7 +140,7 @@ export interface CommunityInvolvement {
  * Ranking score breakdown
  * Weights (v4 - Dec 2024):
  * - Review Rating: 25%
- * - Community Involvement: 25%
+ * - Community: 25%
  * - Number of Reviews: 20%
  * - Transaction History: 20%
  * - Education & Credentials: 10%
@@ -192,8 +192,8 @@ export interface VerifiedAgent {
   // Press & Media
   pressMentions: PressMention[];
   
-  // Community Involvement (third-party verified)
-  communityInvolvement?: CommunityInvolvement;
+  // Community (third-party verified)
+  community?: Community;
   
   // Ranking Score
   rankingScore?: RankingScore;

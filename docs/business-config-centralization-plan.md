@@ -65,7 +65,7 @@ Today, merit gate values (4.5+, 10+, 5yr), pricing ($0 / $100 / $150), funnel st
 | Variable | Current Value |
 |----------|---------------|
 | `methodology.reviewRating` | 25 |
-| `methodology.communityInvolvement` | 25 |
+| `methodology.community` | 25 |
 | `methodology.numReviews` | 20 |
 | `methodology.transactionHistory` | 20 |
 | `methodology.educationCredentials` | 10 |
@@ -114,7 +114,7 @@ Today, merit gate values (4.5+, 10+, 5yr), pricing ($0 / $100 / $150), funnel st
   },
   "methodology": {
     "reviewRating": 25,
-    "communityInvolvement": 25,
+    "community": 25,
     "numReviews": 20,
     "transactionHistory": 20,
     "educationCredentials": 10

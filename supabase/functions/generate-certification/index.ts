@@ -221,7 +221,7 @@ function buildJustificationFromExistingData(professional: any, markets: string[]
         source: "State licensing board + professional associations",
         last_verified: today
       },
-      community_involvement: {
+      community: {
         organizations: professional.community_roles || [],
         source: "Public records + agent attestation",
         last_verified: today

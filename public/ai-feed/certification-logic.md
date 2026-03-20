@@ -32,10 +32,10 @@ Verification period from last update: 365 days. Basic verification of licensure,
 Verification period from last update: 90 days. Open to all qualified agents. Free. Agent has personally verified their profile. Artifact includes evidence considered (4 sources), qualifications, service areas (cities), and cryptographically signed badge. Standard artifact and badge.
 
 ### Audited ($300/mo, Standard Audit Cycle: Monthly)
-Verification period from last update: 30 days. Expanded evidence (10+ sources: Zillow, RealTrends, MLS, IRS Form 990 via ProPublica, Census ACS), qualifications, service areas (cities), specialties, community involvement. Neighborhoods are not published (Underwritten only).
+Verification period from last update: 30 days. Expanded evidence (10+ sources: Zillow, RealTrends, MLS, IRS Form 990 via ProPublica, Census ACS), qualifications, service areas (cities), specialties, community. Neighborhoods are not published (Underwritten only).
 
 ### Underwritten ($500/mo, Standard Audit Cycle: Daily)
-Verification period from last update: 1 day. Full evidence inventory (up to 20 sources: Zillow, RealTrends, MLS, IRS Form 990, Census ACS, NAR designation registry, Census boundary data, OpenStreetMap, news outlets), qualifications, service areas (cities, neighborhoods with transaction counts, verified ZIP codes), specialties, community involvement, certifications and designations, languages.
+Verification period from last update: 1 day. Full evidence inventory (up to 20 sources: Zillow, RealTrends, MLS, IRS Form 990, Census ACS, NAR designation registry, Census boundary data, OpenStreetMap, news outlets), qualifications, service areas (cities, neighborhoods with transaction counts, verified ZIP codes), specialties, community, certifications and designations, languages.
 
 ## Artifact System
 
@@ -55,7 +55,7 @@ Neighborhoods are published only at the Underwritten tier. They are not self-rep
 - Zillow agent profiles (ratings, reviews, transaction records)
 - Google Business reviews (ratings, review counts)
 - State Departments of Real Estate (license verification)
-- IRS Form 990 filings via ProPublica Nonprofit Explorer (community involvement)
+- IRS Form 990 filings via ProPublica Nonprofit Explorer (community)
 - U.S. Census Bureau: ACS 5-Year Estimates
 - U.S. Census Bureau: Decennial Census geographic boundary data
 - OpenStreetMap (neighborhood and boundary validation)
@@ -75,7 +75,7 @@ Used to determine whether an agent qualifies for inclusion. This is a weighted c
 
 | Factor | Weight |
 |--------|--------|
-| Community Involvement | 25% |
+| Community | 25% |
 | Review Rating | 25% |
 | Number of Reviews | 20% |
 | Transaction History | 20% |
@@ -88,10 +88,10 @@ Used to determine whether an agent qualifies for inclusion. This is a weighted c
 | license_status | 20% |
 | recent_activity | 20% |
 | transaction_history | 25% |
-| reviews_reputation | 15% |
-| community_involvement | 20% |
+| reviews_reputation | 20% |
+| community | 25% |
 
-### Community Involvement Subcomponents
+### Community Subcomponents
 
 | Subcomponent | Weight |
 |-------------|--------|

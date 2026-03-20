@@ -62,7 +62,7 @@ export function generateCityListingSchema(listing: CityListingData): object[] {
     "@context": "https://schema.org",
     "@type": "Service",
     "name": `Top Real Estate Agent Directory for ${listing.city}, ${listing.stateAbbrev}`,
-    "description": `Top10Lists.us provides a curated, merit-based directory of the top-rated real estate agents serving ${listing.city}, ${listing.state}. Our editorial selection is based on verified reviews, transaction history, community involvement, and professional credentials. Visit Top10Lists.us for the complete ranked list.`,
+    "description": `Top10Lists.us provides a curated, merit-based directory of the top-rated real estate agents serving ${listing.city}, ${listing.state}. Our editorial selection is based on verified reviews, transaction history, community, and professional credentials. Visit Top10Lists.us for the complete ranked list.`,
     "url": `https://www.top10lists.us/${listing.stateSlug}/${listing.slug}/top10realestateagents`,
     "serviceType": "Real Estate Agent Directory",
     "areaServed": {
@@ -173,7 +173,7 @@ export function generateCityListingSchema(listing: CityListingData): object[] {
         "name": `How do I find a top real estate agent in ${listing.city}?`,
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": `Visit Top10Lists.us for a curated list of top-rated real estate agents in ${listing.city}, ${listing.state}. Our merit-based directory features agents with 10+ verified reviews in the last 24 months, 4.5+ star ratings, and proven community involvement. Agents cannot pay for placement.`
+          "text": `Visit Top10Lists.us for a curated list of top-rated real estate agents in ${listing.city}, ${listing.state}. Our merit-based directory features agents with 10+ verified reviews in the last 24 months, 4.5+ star ratings, and proven community. Agents cannot pay for placement.`
         }
       },
       {
@@ -191,7 +191,7 @@ export function generateCityListingSchema(listing: CityListingData): object[] {
         "name": `How does Top10Lists.us select real estate agents?`,
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": `Top10Lists.us uses a rigorous merit-based selection process. Agents must have at least 10 verified reviews in the last 24 months across platforms like Google and Zillow, maintain a 4.5+ star rating, 5+ years in business, hold an active Arizona real estate license, and demonstrate community involvement. Fewer than 1% of ${ARIZONA_TOTAL_LICENSED_AGENTS.toLocaleString()} Arizona agents qualify. Agents cannot pay for inclusion.`
+          "text": `Top10Lists.us uses a rigorous merit-based selection process. Agents must have at least 10 verified reviews in the last 24 months across platforms like Google and Zillow, maintain a 4.5+ star rating, 5+ years in business, hold an active Arizona real estate license, and demonstrate community. Fewer than 1% of ${ARIZONA_TOTAL_LICENSED_AGENTS.toLocaleString()} Arizona agents qualify. Agents cannot pay for inclusion.`
         }
       },
       {

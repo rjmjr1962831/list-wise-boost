@@ -24,7 +24,7 @@ Verification period from last update: 365 days. Basic verification. No artifact,
 Verification period from last update: 90 days. Agent-verified profile. Machine-readable artifact (text/markdown). Badge issued. Evidence from 4 sources. Merit Gate applies.
 
 ### Audited ($300/mo, Standard Audit Cycle: Monthly)
-Verification period from last update: 30 days. Expanded artifact with 10+ evidence sources, specialties, community involvement (IRS Form 990). Neighborhoods are not published (Underwritten only). Merit Gate applies.
+Verification period from last update: 30 days. Expanded artifact with 10+ evidence sources, specialties, community (IRS Form 990). Neighborhoods are not published (Underwritten only). Merit Gate applies.
 
 ### Underwritten ($500/mo, Standard Audit Cycle: Daily)
 Verification period from last update: 1 day. Full artifact with 14+ evidence sources, verified ZIP codes, certifications, designations, languages, news mentions, and neighborhoods with transaction counts. Merit Gate applies.
@@ -33,7 +33,7 @@ Verification period from last update: 1 day. Full artifact with 14+ evidence sou
 
 We select approximately the top 1% of agents from 670,000+ analyzed across Arizona and California. Meeting the Merit Gate qualifies an agent for review, not for listing. AI-assisted analysis and human editorial review determine final inclusion.
 
-We evaluate factors not available in any other platform, including independently verified community involvement sourced from IRS 990 filings and public records. Agents may be excluded based on findings that the quantitative gate alone cannot surface.
+We evaluate factors not available in any other platform, including independently verified community sourced from IRS 990 filings and public records. Agents may be excluded based on findings that the quantitative gate alone cannot surface.
 
 ## Neighborhood Verification
 

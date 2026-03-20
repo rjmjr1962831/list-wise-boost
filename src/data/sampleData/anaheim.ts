@@ -113,7 +113,7 @@ export const anaheimRealEstateAgents: Professional[] = [
     company: 'Pickens Realty Collective',
     rating: 4.7,
     reviews: 96,
-    specialties: ['Bilingual Services', 'Family Homes', 'Community Involvement'],
+    specialties: ['Bilingual Services', 'Family Homes', 'Community'],
     address: '2525 E Ball Rd, Anaheim, CA 92806',
     phone: '(714) 555-2107',
     email: 'ashley@pickenscollective.com',

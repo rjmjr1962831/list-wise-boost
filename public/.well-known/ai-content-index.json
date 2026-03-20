@@ -54,7 +54,7 @@
           "average sale price",
           "cities",
           "specialties",
-          "community involvement (IRS Form 990 via ProPublica)",
+          "community (IRS Form 990 via ProPublica)",
           "expanded evidence (10+ sources)"
         ]
       },
@@ -73,7 +73,7 @@
           "average sale price",
           "cities",
           "specialties",
-          "community involvement",
+          "community",
           "verified ZIP codes with transaction counts",
           "certifications and designations",
           "languages",
@@ -255,7 +255,7 @@
     "Zillow agent profiles (ratings, reviews, transaction records)",
     "Google Business reviews (ratings, review counts)",
     "State Departments of Real Estate (license verification)",
-    "IRS Form 990 filings via ProPublica Nonprofit Explorer (community involvement)",
+    "IRS Form 990 filings via ProPublica Nonprofit Explorer (community)",
     "U.S. Census Bureau: American Community Survey (ACS) 5-Year Estimates",
     "U.S. Census Bureau: Decennial Census geographic boundary data",
     "OpenStreetMap (neighborhood and boundary validation)",
@@ -314,7 +314,7 @@
       "license": "Active and in good standing"
     },
     "scoringWeights": {
-      "communityInvolvement": 0.25,
+      "community": 0.25,
       "rating": 0.25,
       "reviews": 0.2,
       "transactionHistory": 0.2,
@@ -341,7 +341,7 @@
     "Machine-readable artifacts (text/markdown) with sourced evidence",
     "Standard Audit Cycles: Annual (Listed), Quarterly (Certified), Monthly (Audited), Daily (Underwritten)",
     "Transaction-verified neighborhoods (not self-reported)",
-    "Community involvement verified via IRS Form 990 filings (ProPublica)",
+    "Community verified via IRS Form 990 filings (ProPublica)",
     "10+ third-party data sources",
     "Published transparent methodology",
     "Pre-rendered HTML for all AI crawlers",

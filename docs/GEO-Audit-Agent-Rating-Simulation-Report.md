@@ -7,7 +7,7 @@
 
 ## Executive Summary
 
-The GEO Audit system evaluates real estate agents on how well they are positioned for AI citation and generative search. It pulls certified agents from Supabase, runs neural search via Exa, scores them on seven factors (reviews, community involvement, platforms, authority, schema, AI optimization, entity clarity), and simulates projected scores for Top10Lists.us tier enrollment (Audited and Underwritten). Results are stored in `geo_audit_results`, exported to CSV, and used to generate personalized remediation plans.
+The GEO Audit system evaluates real estate agents on how well they are positioned for AI citation and generative search. It pulls certified agents from Supabase, runs neural search via Exa, scores them on seven factors (reviews, community, platforms, authority, schema, AI optimization, entity clarity), and simulates projected scores for Top10Lists.us tier enrollment (Audited and Underwritten). Results are stored in `geo_audit_results`, exported to CSV, and used to generate personalized remediation plans.
 
 **Key outputs:**
 - **Current score** (0–100): How well the agent is currently positioned for AI citation
@@ -60,7 +60,7 @@ Total score = sum of 7 factors, each capped. **Total max = 100.**
 | Factor | Max | Description |
 |--------|-----|--------------|
 | **factor_reviews** | 20 | Review volume and rating (Zillow, Google, internal) |
-| **factor_community** | 20 | Community involvement: nonprofit, church, board, civic, fundraising |
+| **factor_community** | 20 | Community: nonprofit, church, board, civic, fundraising |
 | **factor_platforms** | 15 | Presence on high-authority domains (Zillow, Realtor.com, LinkedIn, etc.) |
 | **factor_authority** | 15 | Third-party endorsement: news, awards, Forbes, HGTV, etc. |
 | **factor_schema** | 10 | Person/LocalBusiness JSON-LD on personal site (not brokerage templates) |
@@ -160,7 +160,7 @@ Remediation items are appended when factors fall below thresholds:
 
 | Condition | Recommendation |
 |-----------|----------------|
-| factor_community &lt; 10 | Document community involvement on website and directory profiles; named nonprofits, board positions, volunteer roles, years of service |
+| factor_community &lt; 10 | Document community on website and directory profiles; named nonprofits, board positions, volunteer roles, years of service |
 | factor_ai_optimization &lt; 6 | Create and publish llms.txt on personal website |
 | factor_schema &lt; 6 | Add Person and LocalBusiness JSON-LD schema to personal website |
 | factor_entity_clarity &lt; 6 + team/group signals | Create dedicated personal agent page with full name in URL and individual schema |
@@ -192,7 +192,7 @@ Remediation items are appended when factors fall below thresholds:
 | raw_mentions | text | Exa result snippets (truncated) |
 | authority_signals | text[] | Authority signals found |
 | remediation_plan | text | Full remediation text |
-| notes | text | e.g. "No community involvement signals found" |
+| notes | text | e.g. "No community signals found" |
 | status | text | 'pending' \| 'complete' \| 'error' |
 
 **Migrations:**
@@ -220,7 +220,7 @@ Arrays (community_signals, platforms_found, authority_signals) are joined with `
 - Brokerage template sites scored 3 on schema
 - Underwritten used fixed increments (+8 schema, +8 AI, etc.)
 
-### Patch 1: Community Involvement (7th factor)
+### Patch 1: Community (7th factor)
 
 - Added factor_community (0–20) and community_signals
 - New Exa search for volunteer/church/charity/board/mentor/youth/community

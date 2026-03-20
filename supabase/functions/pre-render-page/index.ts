@@ -471,7 +471,7 @@ function renderAgentProfile(a: any, cityName: string, stateName: string, stateSl
     <div class="kpi-block"><table><thead><tr><th>Metric</th><th>Value</th></tr></thead><tbody>${kpiRows.join("")}</tbody></table></div>
     <div class="deep-logic"><h4>Selection Logic and Reasoning</h4><p>${escapeHtml(rationale)}</p></div>
     <div class="biography"><h4>Professional Biography</h4><p>${escapeHtml(bio)}</p></div>
-    <div class="community-record"><h4>Verified Community Involvement</h4>${communityHtml}</div>
+    <div class="community-record"><h4>Verified Community</h4>${communityHtml}</div>
     <div class="achievements-record"><h4>Achievements</h4>${achievementsHtml || "<p>None listed.</p>"}</div>
     <div class="awards-record"><h4>Awards</h4>${awardsHtml || "<p>None listed.</p>"}</div>
     <div class="press-record"><h4>Press</h4>${pressHtml || "<p>None listed.</p>"}</div>

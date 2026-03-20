@@ -212,7 +212,7 @@ function quals(pro:any,ag:string,lu:string,updated:string):string{
 }
 
 function community(civic:any[]):string{
-  if(!Array.isArray(civic)||civic.length===0)return`<h2>Community Involvement</h2><p>Community involvement data is being verified for this professional.</p>`;
+  if(!Array.isArray(civic)||civic.length===0)return`<h2>Community</h2><p>Community data is being verified for this professional.</p>`;
   let rows="";
   for(const r of civic){
     const org=esc(r.organization_name??r.organization??r.name??"");
@@ -223,7 +223,7 @@ function community(civic:any[]):string{
     const srcSpan=srcHtml?` <span style="color:#6b7280;font-size:0.82rem;">(${srcHtml}${ein})</span>`:(ein?` <span style="color:#6b7280;font-size:0.82rem;">${ein}</span>`:"");
     rows+=`<li><strong>${role}</strong>, ${org}${srcSpan}</li>`;
   }
-  return`<h2>Community Involvement</h2><p class="sub-note">Community involvement is weighted at 25% of the Top10Lists.us ranking score. All roles independently verified against public records and third-party sources.</p><ul class="pl">${rows}</ul>`;
+  return`<h2>Community</h2><p class="sub-note">Community is weighted at 25% of the Top10Lists.us ranking score. All roles independently verified against public records and third-party sources.</p><ul class="pl">${rows}</ul>`;
 }
 
 function press(mentions:any[]):string{
@@ -306,7 +306,7 @@ function evidence(pro:any,lu:string,state:string):string{
     `<li>${esc(licLabel)} &mdash; License number, status, type, issue date, years active${licUrl ? " &mdash; "+a(licUrl,"Verify at state registry") : ""}</li>`,
     `<li>MLS Transaction Records &mdash; Career transaction count, recent sales, price ranges, average sale price</li>`,
     `<li>RealTrends Transaction Data &mdash; Independently verified transaction volume and closed sales history &mdash; ${a("https://www.realtrends.com")}</li>`,
-    `<li>IRS Form 990 via ProPublica Nonprofit Explorer &mdash; Nonprofit board membership, officer roles, verified community involvement &mdash; ${a("https://projects.propublica.org/nonprofits/")}</li>`,
+    `<li>IRS Form 990 via ProPublica Nonprofit Explorer &mdash; Nonprofit board membership, officer roles, verified community &mdash; ${a("https://projects.propublica.org/nonprofits/")}</li>`,
     `<li>U.S. Census Bureau: ACS 5-Year Estimates &mdash; Market area demographics, median home values, income levels &mdash; ${a("https://data.census.gov")}</li>`,
     `<li>State Secretary of State Business Filings &mdash; Corporate registration, brokerage entity status, officer and director records &mdash; ${a("https://azcc.gov/corporations/search")}</li>`,
     `<li>National Association of Realtors Designation Registry &mdash; Professional designations: GRI, CRS, ABR, SRES, CNE, Luxury Home Certified &mdash; ${a("https://www.nar.realtor/education/designations-and-certifications")}</li>`,

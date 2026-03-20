@@ -84,7 +84,7 @@ Agents cannot pay for inclusion. They must qualify based on verified performance
 - License: Active and in good standing
 
 ### Scoring Weights
-- Community Involvement: 25%
+- Community: 25%
 - Rating: 25%
 - Number of Reviews: 20%
 - Transaction History: 20%

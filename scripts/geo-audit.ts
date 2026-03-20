@@ -533,7 +533,7 @@ async function runAudit() {
 
       const reviewCount = Math.max(zillowReviews, googleReviews, agent.num_total_reviews ?? 0);
 
-      // Community involvement: depth-weighted scoring (Exa + DB)
+      // Community: depth-weighted scoring (Exa + DB)
       let exaResults: Array<{ text?: string }> = [];
       try {
         const cQuery = `"${agent.name}" "${agent.city}" volunteer OR church OR charity OR nonprofit OR foundation OR board OR mentor OR youth OR community`;
@@ -562,8 +562,8 @@ async function runAudit() {
 
       const communitySignals = mergedSignals.length
         ? mergedSignals.map((s) => `L${s.depthLevel} ${s.depthScore}pts: ${s.text.slice(0, 100)}`)
-        : ['No community involvement signals found'];
-      const notesCommunity = mergedSignals.length ? '' : 'No community involvement signals found';
+        : ['No community signals found'];
+      const notesCommunity = mergedSignals.length ? '' : 'No community signals found';
 
       // Testing requirement: Adam Hamblen must have factor_community >= 14
       if (agent.name.toLowerCase().includes('adam hamblen')) {
@@ -635,7 +635,7 @@ async function runAudit() {
       const planItems: string[] = [];
       if (factorCommunity < 10)
         planItems.push(
-          `Your community involvement score is ${factorCommunity}/20. Depth and tenure matter more than breadth: a 10-year board presidency outscores five one-time sponsorships. Document your highest-depth involvements first: nonprofit board positions, years of service, leadership titles, and verifiable org names. Named 501(c)(3) charities you support are especially valuable because they can be verified through public IRS records. Add these to your personal website and directory profiles. If you have deep involvement not yet documented online, the Audited tier surfaces this data from our verified sources — the community section of your Top10Lists profile becomes a crawlable citation that AI systems can find.`
+          `Your community score is ${factorCommunity}/20. Depth and tenure matter more than breadth: a 10-year board presidency outscores five one-time sponsorships. Document your highest-depth involvements first: nonprofit board positions, years of service, leadership titles, and verifiable org names. Named 501(c)(3) charities you support are especially valuable because they can be verified through public IRS records. Add these to your personal website and directory profiles. If you have deep involvement not yet documented online, the Audited tier surfaces this data from our verified sources — the community section of your Top10Lists profile becomes a crawlable citation that AI systems can find.`
         );
       if (factorAi < 6)
         planItems.push('Create and publish an llms.txt file on your personal website.');

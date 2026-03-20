@@ -37,7 +37,7 @@ interface ExaResult {
 interface AgentEnrichmentData {
   pressRemarks: string[];
   awardsRecognition: string[];
-  communityInvolvement: string[];
+  community: string[];
   publications: string[];
   verifiedSources: { url: string; description: string }[];
   confidence: "high" | "medium" | "low";
@@ -55,7 +55,7 @@ async function searchAgentEnrichment(
   // Query 1: Professional recognition and press
   const professionalQuery = `"${agentName}" ${city} ${state} realtor OR "real estate agent" (award OR recognition OR "top agent" OR "best realtor" OR featured OR press OR news OR magazine)`;
   
-  // Query 2: Community involvement
+  // Query 2: Community
   const communityQuery = `"${agentName}" ${city} ${state} (nonprofit OR charity OR "board member" OR volunteer OR foundation OR "gives back" OR community OR philanthropy)`;
   
   const results: ExaResult[] = [];
@@ -140,7 +140,7 @@ TASK:
 2. EXTRACT the following categories:
    - Press mentions (news articles, magazine features, interviews)
    - Awards and recognition (industry awards, "top agent" lists, professional honors)
-   - Community involvement (nonprofit board seats, charity work, volunteer roles, foundation involvement)
+   - Community (nonprofit board seats, charity work, volunteer roles, foundation involvement)
    - Publications (books, articles authored by the agent)
 
 3. For each item extracted, note the source URL.
@@ -156,7 +156,7 @@ RESPOND IN THIS EXACT JSON FORMAT:
 {
   "pressRemarks": ["Description of press mention - Source Name"],
   "awardsRecognition": ["Award or recognition - Year if known"],
-  "communityInvolvement": ["Role/organization - Description"],
+  "community": ["Role/organization - Description"],
   "publications": ["Title - Year if known"],
   "verifiedSources": [{"url": "https://...", "description": "What this source verifies"}],
   "confidence": "high|medium|low",
@@ -217,7 +217,7 @@ Only output valid JSON, no other text.`;
     return {
       pressRemarks: [],
       awardsRecognition: [],
-      communityInvolvement: [],
+      community: [],
       publications: [],
       verifiedSources: [],
       confidence: "low",
@@ -290,7 +290,7 @@ serve(async (req) => {
             enrichment: {
               pressRemarks: [],
               awardsRecognition: [],
-              communityInvolvement: [],
+              community: [],
               publications: [],
               verifiedSources: [],
               confidence: "low",
@@ -314,7 +314,7 @@ serve(async (req) => {
         console.log(`  Confidence: ${enrichment.confidence}`);
         console.log(`  Press mentions: ${enrichment.pressRemarks.length}`);
         console.log(`  Awards: ${enrichment.awardsRecognition.length}`);
-        console.log(`  Community: ${enrichment.communityInvolvement.length}`);
+        console.log(`  Community: ${enrichment.community.length}`);
         console.log(`  Publications: ${enrichment.publications.length}`);
         console.log(`  Summary: ${enrichment.summary}`);
         
