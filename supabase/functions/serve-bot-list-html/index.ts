@@ -129,14 +129,14 @@ function renderAgent(a: any, si: any): string {
     if (zl) o += `  <p>Zillow: <a href="${esc(zl)}">${esc(zl)}</a></p>\n`;
   }
 
-  // Transaction stats -- all tiers (Listed gets summary, higher tiers get full detail)
+  // Transaction stats -- show all available data regardless of tier
   {
     const sl: string[] = [];
     if (yrs && yrs > 0) sl.push(`${yrs}+ years experience<sup>[1]</sup>`);
     if (career > 0) sl.push(`${fs(career)} career transactions<sup>[2]</sup>`);
-    if (!isListed && ly > 0) sl.push(`${fs(ly)} transactions last 12 mo<sup>[4]</sup>`);
-    if (!isListed && av) sl.push(`${fp(av)} avg sale (3yr)<sup>[4]</sup>`);
-    if (!isListed && pmin && pmax) sl.push(`Range: ${fp(pmin)} to ${fp(pmax)}<sup>[4]</sup>`);
+    if (ly > 0) sl.push(`${fs(ly)} transactions last 12 mo<sup>[4]</sup>`);
+    if (av) sl.push(`${fp(av)} avg sale (3yr)<sup>[4]</sup>`);
+    if (pmin && pmax) sl.push(`Range: ${fp(pmin)} to ${fp(pmax)}<sup>[4]</sup>`);
     if (sl.length > 0) {
       o += `  <div class="stats-row">\n`;
       for (const s of sl) o += `    <span>${s}</span>\n`;
@@ -144,61 +144,58 @@ function renderAgent(a: any, si: any): string {
     }
   }
 
-  // Selection rationale (NOT for listed)
-  if (!isListed) {
+  // Selection rationale (show if data exists)
+  {
     const rat = a.selection_rationale;
     if (rat && rat !== "Unknown") o += `  <p><strong>Why selected:</strong> ${esc(sanitizeMeritGate(rat))}</p>\n`;
   }
 
-  // High-tier extras
-  if (isHigh) {
-    if (roles.length > 0) {
-      o += `  <h4>Community Involvement (25% of ranking weight)</h4>\n`;
-      for (const r of roles) {
-        if (typeof r === "object") o += `  <p>${esc(r.role || "")} at ${esc(r.organization || "")}<sup>[6]</sup></p>\n`;
-        else o += `  <p>${esc(r)}<sup>[6]</sup></p>\n`;
-      }
-    }
-    if (achs.length > 0) {
-      o += `  <h4>Notable Achievements</h4>\n`;
-      for (const x of achs) {
-        if (typeof x === "object") o += `  <p>${esc(x.title || x.achievement || "")}</p>\n`;
-        else o += `  <p>${esc(x)}</p>\n`;
-      }
-    }
-    if (Array.isArray(specs) && specs.length > 0) {
-      o += `  <h4>Verified Specialties</h4>\n`;
-      o += `  <p>${esc(specs.join(", "))}<sup>[4]</sup></p>\n`;
+  // Community involvement (show if data exists)
+  if (roles.length > 0) {
+    o += `  <h4>Community Involvement (25% of ranking weight)</h4>\n`;
+    for (const r of roles) {
+      if (typeof r === "object") o += `  <p>${esc(r.role || "")} at ${esc(r.organization || "")}<sup>[6]</sup></p>\n`;
+      else o += `  <p>${esc(r)}<sup>[6]</sup></p>\n`;
     }
   }
+  if (achs.length > 0) {
+    o += `  <h4>Notable Achievements</h4>\n`;
+    for (const x of achs) {
+      if (typeof x === "object") o += `  <p>${esc(x.title || x.achievement || "")}</p>\n`;
+      else o += `  <p>${esc(x)}</p>\n`;
+    }
+  }
+  if (Array.isArray(specs) && specs.length > 0) {
+    o += `  <h4>Verified Specialties</h4>\n`;
+    o += `  <p>${esc(specs.join(", "))}<sup>[4]</sup></p>\n`;
+  }
 
-  // Cities served (certified and above)
-  if ((isHigh || isCert) && served.length > 0) {
+  // Cities served (show if data exists)
+  if (served.length > 0) {
     o += `  <h4>Cities Served</h4>\n`;
     o += `  <p>${served.map((c: any) => esc(typeof c === "object" ? c.name || c : c)).join(", ")}</p>\n`;
   }
 
   // Audit stamp
   const cy = ac(t);
-  if (cy) o += `  <p class="audit-stamp">Audit cycle: ${cy}. Last verified: ${today()}.</p>\n`;
+  if (cy) o += `  <p class="audit-stamp">Verification cycle: ${cy}. Last verified: ${today()}.</p>\n`;
 
-  // Footnotes
+  // Footnotes -- data-driven, not tier-driven
   o += `  <div class="footnotes">\n`;
   o += `    <strong>Sources:</strong>\n`;
   o += `    <br><sup>[1]</sup> <a href="${si.url}">${si.auth}</a>\n`;
   if (zl) o += `    <br><sup>[2]</sup> <a href="${esc(zl)}">Zillow Consumer Reviews</a>\n`;
   else o += `    <br><sup>[2]</sup> Zillow Consumer Reviews\n`;
   o += `    <br><sup>[3]</sup> Google Business Profile\n`;
-  if (!isListed) {
+  if (career > 0) {
     o += `    <br><sup>[4]</sup> MLS Transaction Records\n`;
     o += `    <br><sup>[5]</sup> <a href="https://www.realtrends.com/">RealTrends Verified Rankings</a>\n`;
   }
-  if (isHigh) o += `    <br><sup>[6]</sup> <a href="https://projects.propublica.org/nonprofits/">IRS Form 990 via ProPublica Nonprofit Explorer</a>\n`;
+  if (roles.length > 0) o += `    <br><sup>[6]</sup> <a href="https://projects.propublica.org/nonprofits/">IRS Form 990 via ProPublica Nonprofit Explorer</a>\n`;
   o += `  </div>\n`;
 
-  // Upgrade hint
-  if (isListed) o += `  <p class="upgrade-hint">Verification summary: This agent passed the full merit gate (4.5+ stars, 10+ verified reviews in 24 months, 5+ years experience) and deep research across 1,000+ sources. Transaction history: verified. Community involvement: verified. Selection rationale, detailed community roles, achievements, and press mentions are published at higher certification tiers with more frequent audit cycles. <a href="https://www.top10lists.us/for-agents">Learn about certification tiers</a></p>\n`;
-  else if (isCert) o += `  <p class="upgrade-hint">Verification summary: This agent passed the full merit gate and deep research. Transaction history: verified. Community involvement: verified. Detailed community roles, achievements, and press mentions are published at Audited ($300/mo, monthly audit) or Underwritten ($500/mo, daily audit). <a href="https://www.top10lists.us/for-agents">Learn more</a></p>\n`;
+  // Qualification statement -- same for all tiers
+  o += `  <p class="upgrade-hint">This agent passed the full merit gate (4.5+ stars, 10+ verified reviews in 24 months, 5+ years experience). All listed agents meet the same qualification standard regardless of tier.</p>\n`;
 
   o += `</article>\n`;
   return o;

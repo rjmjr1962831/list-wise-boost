@@ -16,7 +16,7 @@ All agents must meet the Merit Gate: 4.5+ star rating, 10+ verified reviews in t
 
 ## Monthly Subscription: $500
 
-The Underwritten tier represents the highest level of verification. It adds verified ZIP codes, certifications, designations, languages, and the full evidence inventory to the artifact payload.
+The Underwritten tier includes comprehensive verification scope. Verified ZIP codes, certifications, designations, languages, and the full evidence inventory are included in the verification scope. All agents meet the same qualification gate regardless of tier.
 
 ## Standard Audit Cycle: Daily
 

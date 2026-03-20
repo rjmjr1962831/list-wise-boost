@@ -360,16 +360,16 @@ serve(async (req) => {
         description: "License number, status, type, issue date, years active",
         url: si.url,
       });
-      // Certified+: MLS
-      if (!isListed) {
+      // MLS (if transaction data exists)
+      if (career > 0) {
         sources.push({
           "@type": "CreativeWork",
           name: "MLS Transaction Records",
           description: "Career transaction count, recent sales, price ranges",
         });
       }
-      // Audited+: RealTrends, IRS 990, Census, Secretary of State
-      if (isHigh) {
+      // Extended sources (if community/research data exists)
+      if (roles.length > 0 || isHigh) {
         sources.push({ "@type": "CreativeWork", name: "RealTrends Transaction Data", description: "Independently verified transaction volume", url: "https://www.realtrends.com" });
         sources.push({ "@type": "CreativeWork", name: "IRS Form 990 via ProPublica Nonprofit Explorer", description: "Nonprofit board membership, community involvement", url: "https://projects.propublica.org/nonprofits/" });
         sources.push({ "@type": "CreativeWork", name: "U.S. Census Bureau: American Community Survey (ACS)", description: "Market demographics, median home values, income levels", url: "https://data.census.gov" });
@@ -491,32 +491,32 @@ serve(async (req) => {
 
     o += `</article>\n\n`;
 
-    // ---- Bio (certified and above) ----
-    if (!isListed && bio) {
+    // ---- Bio ----
+    if (bio) {
       o += `<section>\n  <h2>About ${nm}</h2>\n`;
       o += `  <div class="bio-section">\n    ${normBioText(sanitizeMeritGate(bio))}\n  </div>\n`;
       o += `</section>\n\n`;
     }
 
-    // ---- Selection rationale (certified and above) ----
-    if (!isListed && rat) {
+    // ---- Selection rationale ----
+    if (rat) {
       o += `<section>\n  <h2>Why We Selected ${nm}</h2>\n`;
       o += `  <p>${esc(normBioText(sanitizeMeritGate(rat)))}</p>\n`;
       o += `</section>\n\n`;
     }
 
-    // ---- Performance data -- all tiers get summary, higher tiers get full detail ----
+    // ---- Performance data -- show all available data regardless of tier ----
     {
       const rows: [string, string][] = [];
       if (a.years_experience && a.years_experience > 0) rows.push(["Years Experience", `${a.years_experience}+<sup>[3]</sup>`]);
       if (career > 0) rows.push(["Career Transactions", `${normNum(career)}<sup>[1]</sup>`]);
-      if (!isListed && ly > 0) {
+      if (ly > 0) {
         rows.push(["Transactions Last 12 Months", `${normNum(ly)}<sup>[4]</sup>`]);
-      } else if (!isListed && career > 0) {
+      } else if (career > 0) {
         rows.push(["Transactions Last 12 Months", `Not reported on Zillow (off-platform sales may not be captured)<sup>[4]</sup>`]);
       }
-      if (!isListed && a.average_value_3yr) rows.push(["Average Sale Price (3yr)", `${fp(a.average_value_3yr)}<sup>[4]</sup>`]);
-      if (!isListed && a.price_range_3yr_min && a.price_range_3yr_max) rows.push(["Price Range (3yr)", `${fp(a.price_range_3yr_min)} to ${fp(a.price_range_3yr_max)}<sup>[4]</sup>`]);
+      if (a.average_value_3yr) rows.push(["Average Sale Price (3yr)", `${fp(a.average_value_3yr)}<sup>[4]</sup>`]);
+      if (a.price_range_3yr_min && a.price_range_3yr_max) rows.push(["Price Range (3yr)", `${fp(a.price_range_3yr_min)} to ${fp(a.price_range_3yr_max)}<sup>[4]</sup>`]);
       if (a.review_stars_rating) rows.push(["Star Rating", `${a.review_stars_rating}/5<sup>[1][2]</sup>`]);
       if (a.num_total_reviews)   rows.push(["Total Reviews", `${normNum(a.num_total_reviews)}<sup>[1][2]</sup>`]);
 
@@ -525,9 +525,7 @@ serve(async (req) => {
         o += `  <table><thead><tr><th>Metric</th><th>Value</th></tr></thead><tbody>\n`;
         for (const [k, v] of rows) o += `    <tr><td>${k}</td><td>${v}</td></tr>\n`;
         o += `  </tbody></table>\n`;
-        if (isListed) {
-          o += `  <p>Verification summary: This agent passed the full merit gate (4.5+ stars, 10+ verified reviews in 24 months, 5+ years experience) and deep research across 1,000+ sources. Transaction history: verified. Community involvement: verified. Detailed selection rationale, community roles, achievements, and press mentions are published at higher certification tiers.</p>\n`;
-        }
+        o += `  <p>This agent passed the full merit gate (4.5+ stars, 10+ verified reviews in 24 months, 5+ years experience). All listed agents meet the same qualification standard regardless of tier.</p>\n`;
         o += `</section>\n\n`;
       }
     }
@@ -610,8 +608,8 @@ serve(async (req) => {
       o += `</section>\n\n`;
     }
 
-    // ---- Specialties (certified and above) ----
-    if (!isListed && Array.isArray(specs) && specs.length > 0) {
+    // ---- Specialties ----
+    if (Array.isArray(specs) && specs.length > 0) {
       o += `<section>\n  <h2>Verified Specialties</h2>\n`;
       o += `  <ul>\n`;
       for (const sp of specs) {
@@ -621,8 +619,8 @@ serve(async (req) => {
       o += `</section>\n\n`;
     }
 
-    // ---- Cities served (certified and above) ----
-    if (!isListed && served.length > 0) {
+    // ---- Cities served ----
+    if (served.length > 0) {
       o += `<section>\n  <h2>Cities Served</h2>\n  <p>\n`;
       for (const c of served) {
         const raw  = typeof c === "object" ? (c.name || String(c)) : String(c);
@@ -633,8 +631,8 @@ serve(async (req) => {
       o += `  </p>\n</section>\n\n`;
     }
 
-    // ---- Verification status (certified and above) ----
-    if (!isListed && cycle) {
+    // ---- Verification status ----
+    if (cycle) {
       o += `<section>\n  <h2>Verification Status</h2>\n`;
       o += `  <p>Status: Active &middot; Last verified: ${TODAY_ISO} &middot; Update frequency: ${cycle} &middot; Certification tier: ${tl(t)}</p>\n`;
       o += `</section>\n\n`;
@@ -666,10 +664,10 @@ serve(async (req) => {
     //   Certified:    4 sources  (Zillow, Google, State License, Zillow/Google for reviews)
     //   Audited:      8+ sources (adds RealTrends, MLS, ProPublica IRS 990, Census ACS)
     //   Underwritten: 14+ sources (adds NAR registry, Census boundary data, OpenStreetMap, press outlets)
-    const isCertifiedPlus  = !isListed;
-    const isAuditedPlus    = isHigh;   // audited or underwritten
-    const isUnderwrittenOnly = lo === "underwritten";
-    const hasPress = isHigh && press.length > 0;
+    const hasTransactions = career > 0;
+    const hasCommunityData = roles.length > 0 || isHigh;
+    const hasDeepVerification = isHigh;
+    const hasPress = press.length > 0;
 
     o += `<section id="data-sources">\n`;
     o += `  <h2>Master Source Index</h2>\n`;
@@ -684,34 +682,24 @@ serve(async (req) => {
     // [3] State license authority - all tiers
     o += `    <tr><td>[3]</td><td>${si.auth}</td><td>License number, status, type, issue date, years active</td><td><a href="${si.url}">${si.url}</a></td></tr>\n`;
 
-    // [4] MLS - certified and above
-    if (isCertifiedPlus) o += `    <tr><td>[4]</td><td>MLS Transaction Records</td><td>Career transaction count, recent sales, price ranges, average sale price</td><td>Varies by transaction record</td></tr>\n`;
+    // [4] MLS (if transaction data exists)
+    if (hasTransactions) o += `    <tr><td>[4]</td><td>MLS Transaction Records</td><td>Career transaction count, recent sales, price ranges, average sale price</td><td>Varies by transaction record</td></tr>\n`;
 
-    // [5] RealTrends - audited and above
-    if (isAuditedPlus) o += `    <tr><td>[5]</td><td>RealTrends Transaction Data</td><td>Independently verified transaction volume and closed sales history</td><td><a href="https://www.realtrends.com">https://www.realtrends.com</a></td></tr>\n`;
+    // [5] RealTrends (if within verification scope)
+    if (hasTransactions) o += `    <tr><td>[5]</td><td>RealTrends Transaction Data</td><td>Independently verified transaction volume and closed sales history</td><td><a href="https://www.realtrends.com">https://www.realtrends.com</a></td></tr>\n`;
 
-    // [6] IRS Form 990 via ProPublica - audited and above
-    if (isAuditedPlus) o += `    <tr><td>[6]</td><td>IRS Form 990 via ProPublica Nonprofit Explorer</td><td>Nonprofit board membership, officer roles, verified community involvement</td><td><a href="https://projects.propublica.org/nonprofits/">https://projects.propublica.org/nonprofits/</a></td></tr>\n`;
+    // [6] IRS Form 990 via ProPublica (if community data exists)
+    if (hasCommunityData) o += `    <tr><td>[6]</td><td>IRS Form 990 via ProPublica Nonprofit Explorer</td><td>Nonprofit board membership, officer roles, verified community involvement</td><td><a href="https://projects.propublica.org/nonprofits/">https://projects.propublica.org/nonprofits/</a></td></tr>\n`;
 
-    // [7] U.S. Census Bureau ACS - audited and above
-    if (isAuditedPlus) o += `    <tr><td>[7]</td><td>U.S. Census Bureau: American Community Survey (ACS) 5-Year Estimates</td><td>Market area demographics, median home values, income levels used in neighborhood tier pricing</td><td><a href="https://data.census.gov">https://data.census.gov</a></td></tr>\n`;
+    // [7] U.S. Census Bureau ACS (if within verification scope)
+    if (hasDeepVerification) o += `    <tr><td>[7]</td><td>U.S. Census Bureau: American Community Survey (ACS) 5-Year Estimates</td><td>Market area demographics, median home values, income levels</td><td><a href="https://data.census.gov">https://data.census.gov</a></td></tr>\n`;
 
-    // [8] State Secretary of State public records - audited and above
-    if (isAuditedPlus) o += `    <tr><td>[8]</td><td>State Secretary of State Business Filings</td><td>Corporate registration, brokerage entity status, officer and director records</td><td><a href="https://azcc.gov/corporations/search">https://azcc.gov/corporations/search</a></td></tr>\n`;
+    // [8] State Secretary of State (if within verification scope)
+    if (hasDeepVerification) o += `    <tr><td>[8]</td><td>State Secretary of State Business Filings</td><td>Corporate registration, brokerage entity status, officer and director records</td><td><a href="https://azcc.gov/corporations/search">https://azcc.gov/corporations/search</a></td></tr>\n`;
 
-    // [9] NAR designation registry - underwritten only
-    if (isUnderwrittenOnly) o += `    <tr><td>[9]</td><td>National Association of Realtors Designation Registry</td><td>Professional designations: GRI, CRS, ABR, SRES, CNE, Luxury Home Certified, and others</td><td><a href="https://www.nar.realtor/education/designations-and-certifications">https://www.nar.realtor/education/designations-and-certifications</a></td></tr>\n`;
-
-    // [10] Census boundary data - underwritten only
-    if (isUnderwrittenOnly) o += `    <tr><td>[10]</td><td>U.S. Census Bureau: Decennial Census Geographic Boundary Data</td><td>Neighborhood boundary delineation, ZIP code tabulation areas (ZCTAs)</td><td><a href="https://www.census.gov/geographies/mapping-files/time-series/geo/tiger-line-file.html">https://www.census.gov/geographies/mapping-files/...</a></td></tr>\n`;
-
-    // [11] OpenStreetMap - underwritten only
-    if (isUnderwrittenOnly) o += `    <tr><td>[11]</td><td>OpenStreetMap</td><td>Neighborhood boundary validation, cross-referenced against transaction geolocations</td><td><a href="https://www.openstreetmap.org">https://www.openstreetmap.org</a></td></tr>\n`;
-
-    // [12+] Press outlets - underwritten and audited when press data exists
+    // [9+] Press (if press data exists)
     if (hasPress) {
-      const pressRef = isUnderwrittenOnly ? "[12]" : "[9]";
-      o += `    <tr><td>${pressRef}</td><td>National and Regional Press Publications</td><td>Media coverage, awards coverage, and professional recognition. Publications include: Phoenix Business Journal, AZ Big Media, Arizona Foothills Magazine, Scottsdale Living Magazine, AZ Central, East Valley Tribune, RISMedia, Inman News, HousingWire, RealTrends, Top Agent Magazine, Real Producers Magazine, Forbes Global Properties, Digital Journal, and PRWeb. Individual article URLs linked in Press and Media section above.</td><td>See Press and Media section</td></tr>\n`;
+      o += `    <tr><td>[9]</td><td>National and Regional Press Publications</td><td>Media coverage, awards coverage, and professional recognition.</td><td>See Press and Media section</td></tr>\n`;
     }
 
     o += `  </tbody></table>\n`;

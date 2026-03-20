@@ -1,6 +1,11 @@
 {
   "buildCommand": "NODE_OPTIONS=--max-old-space-size=8192 npm run build",
   "ignoreCommand": "bash scripts/vercel-ignore-build.sh",
+  "functions": {
+    "api/vercel-log-drain.js": {
+      "maxDuration": 30
+    }
+  },
   "redirects": [
     {
       "source": "/admin",
