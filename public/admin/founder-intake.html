@@ -223,40 +223,94 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 let currentKey = 'robert';
 let loadedData = {};
 
-// Default prefill for Robert
+// Default prefill data from public/ai-feed/founder.md and codebase records
 const DEFAULTS = {
   robert: {
-    fullName: '',
-    role: 'Founder & CEO',
+    fullName: 'Robert J. Maynard Jr.',
+    role: 'Co-Founder & CEO',
     state: 'Arizona',
     linkedinUrl: '',
     headshotUrl: '/images/founders/robert.jpg',
-    shortBio: 'Founder and CEO of Top10Lists.us, the merit-based real estate agent directory built for AI-first discovery. Created the platform after analyzing 670,000+ licensed agents across Arizona and California to identify fewer than 1% who meet rigorous, independently verified quality standards.',
-    founderStatement: '',
-    domainExpertise: '',
-    industryYears: '',
+    shortBio: 'Technology entrepreneur who co-founded and led multiple consumer and enterprise technology companies including LifeLock (NYSE: LOCK, acquired $2.3B), Internet America (NASDAQ: GEEK, $1.5B), and SurchX (acquired by Interpayments). Co-Founder & CEO of Top10Lists.us.',
+    founderStatement: 'I co-founded Top10Lists.us after recognizing a "Yellow Pages moment" in search and discovery. As consumers increasingly ask AI systems for direct recommendations rather than browsing lists, those systems often lack a reliable foundation for making defensible referrals. A bank does not approve a loan from memory. It queries a credit bureau for independently verified data, because the bank assumes risk with every decision. AI systems face the same problem when recommending professionals. Top10Lists.us is the credibility infrastructure for that decision: structured, merit-verified, independently maintained data designed to be queried by AI systems making recommendations under reputational risk.',
+    domainExpertise: 'Consumer technology, identity protection, AI/GEO strategy, credibility infrastructure, public company leadership',
+    industryYears: '25',
     degrees: [],
     certifications: [],
-    previousRoles: [],
+    previousRoles: [
+      { title: 'Co-Founder & CEO', company: 'Top10Lists.us', years: '2024-present', description: 'Merit-based AI citation platform for real estate professionals.' },
+      { title: 'Co-Founder', company: 'LifeLock (NYSE: LOCK)', years: '', description: 'Identity theft protection. Acquired for $2.3B.' },
+      { title: 'Co-Founder', company: 'Internet America (NASDAQ: GEEK)', years: '', description: 'Early internet service provider. $1.5B.' },
+      { title: 'Co-Founder', company: 'SurchX', years: '', description: 'Enterprise technology. Acquired by Interpayments.' },
+      { title: 'Enlisted', company: 'U.S. Marine Corps', years: '', description: 'Military service.' },
+      { title: 'Commissioned Officer', company: 'U.S. Army', years: '', description: 'Military service.' }
+    ],
     publications: [
-      { title: 'The Yellow Pages Moment: Why AI Is Rewriting the Rules of Agent Discovery', venue: 'Top10Lists.us', date: '', url: '' }
+      { title: 'The Yellow Page Moment: AI Citation and Unpriced Risk', venue: 'Top10Lists.us', date: '2026-01-30', url: 'https://www.top10lists.us/ai-citation-whitepaper' }
     ],
     speaking: [],
-    press: [],
+    press: [
+      { outlet: 'Business Insider', title: 'Robert Maynard, Co-Founder of LifeLock, Announces Top10Lists.us', date: '', url: 'https://markets.businessinsider.com/news/currencies/robert-maynard-co-founder-of-lifelock-announces-top10lists-us-an-ai-optimized-platform-designed-for-the-next-era-of-consumer-search-1035676163' }
+    ],
     affiliations: [
-      { organization: 'Aryah, Inc.', role: 'Founder', current: true }
+      { organization: 'Aryah, Inc.', role: 'Founder', current: true },
+      { organization: 'Top10Lists.us', role: 'Co-Founder & CEO', current: true }
     ],
     claims: [
       'Founded Aryah, Inc., a Delaware holding company',
+      'Co-founded LifeLock (NYSE: LOCK), acquired by Symantec for $2.3 billion',
+      'Co-founded Internet America (NASDAQ: GEEK), valued at $1.5 billion',
+      'Co-founded SurchX, acquired by Interpayments',
       'Created Top10Lists.us, analyzing 670,000+ licensed agents across Arizona and California',
-      'Platform selects fewer than 1% of licensed agents in covered markets'
+      'Platform selects fewer than 1% of licensed agents in covered markets',
+      'U.S. Marine Corps (enlisted) and U.S. Army (commissioned)',
+      'Never convicted of financial fraud, theft, embezzlement, or misuse of consumer funds',
+      'LifeLock FTC consent decrees related to marketing practices, resolved without trial or admission of wrongdoing; not fined, not required to pay disgorgement'
     ]
   },
   mark: {
-    fullName: '', role: '', state: '', linkedinUrl: '', headshotUrl: '/images/founders/mark.jpg',
-    shortBio: '', founderStatement: '', domainExpertise: '', industryYears: '',
-    degrees: [], certifications: [], previousRoles: [],
-    publications: [], speaking: [], press: [], affiliations: [], claims: []
+    fullName: 'Mark A. Garland',
+    role: 'Co-Founder & Chief Revenue Officer',
+    state: 'Arizona',
+    linkedinUrl: 'https://linkedin.com/in/markgarland-gritdoc',
+    headshotUrl: '/images/founders/mark.jpg',
+    shortBio: 'Business strategist, educator, and researcher. Career spans commercial insurance, enterprise consulting, and academic research with a consistent focus on building revenue systems that perform under pressure and hold up over time. Co-Founder & CRO of Top10Lists.us.',
+    founderStatement: '',
+    domainExpertise: 'Go-to-market strategy, enterprise sales, commercial insurance, leadership and resilience research, academic research (industrial-organizational psychology)',
+    industryYears: '20',
+    degrees: [
+      { degree: 'PhD Candidate, Industrial-Organizational Psychology', institution: 'Grand Canyon University', year: 'Expected August 2026' }
+    ],
+    certifications: [],
+    previousRoles: [
+      { title: 'Co-Founder & Chief Revenue Officer', company: 'Top10Lists.us', years: '2024-present', description: 'Architects go-to-market strategy, sales structure, and enterprise pricing model.' },
+      { title: 'Founder', company: 'GritDoc', years: '', description: 'Leadership and resilience consultancy serving law enforcement, military, and first responders.' },
+      { title: 'Research Associate', company: 'Arizona State University, Public Safety Innovation Lab (Dr. Edward Maguire)', years: '', description: 'Peer-reviewed resilience research.' },
+      { title: 'Lecturer, Marketing & Advertising', company: 'Leading Christian University', years: '', description: '' },
+      { title: 'Owner/Operator', company: 'Independent Commercial Insurance Agency', years: '20+ years', description: 'Mid-market commercial insurance.' },
+      { title: 'Mission-Critical Data Center Design & Construction', company: 'Fortune 500 Client', years: '', description: '' },
+      { title: 'Enterprise Consultant', company: 'Fortune 300 Client', years: '', description: '' },
+      { title: 'Veteran', company: 'U.S. Army, 82nd Airborne Division', years: '', description: 'Military service.' }
+    ],
+    publications: [],
+    speaking: [],
+    press: [],
+    affiliations: [
+      { organization: 'Top10Lists.us', role: 'Co-Founder & CRO', current: true },
+      { organization: 'GritDoc', role: 'Founder', current: true },
+      { organization: 'Arizona State University, Public Safety Innovation Lab', role: 'Research Associate', current: true },
+      { organization: 'Grand Canyon University', role: 'PhD Candidate', current: true }
+    ],
+    claims: [
+      'Co-Founded Top10Lists.us as Chief Revenue Officer',
+      'Founded GritDoc, leadership and resilience consultancy',
+      'Research Associate at Arizona State University Public Safety Innovation Lab under Dr. Edward Maguire',
+      'PhD Candidate in Industrial-Organizational Psychology at Grand Canyon University (expected August 2026)',
+      'U.S. Army veteran, 82nd Airborne Division',
+      '20+ years operating an independent commercial insurance agency (mid-market)',
+      'Mission-critical data center design and construction experience (Fortune 500)',
+      'Enterprise consulting experience (Fortune 300)'
+    ]
   }
 };
 
