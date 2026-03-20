@@ -35,8 +35,8 @@ SKIP_REGEX=$(IFS='|'; echo "${SKIP_PATTERNS[*]}")
 CHANGED=$(git diff --name-only "$VERCEL_GIT_PREVIOUS_SHA"..."$VERCEL_GIT_COMMIT_SHA" 2>/dev/null)
 
 if [ -z "$CHANGED" ]; then
-  echo "::No changed files detected — skipping build."
-  exit 0
+  echo "::No changed files detected (or SHA unreachable after rebase) — building to be safe."
+  exit 1
 fi
 
 # Check if ALL changed files match skip patterns
