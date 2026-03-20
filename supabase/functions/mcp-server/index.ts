@@ -264,6 +264,8 @@ function categorizePlatform(url: string): string {
 // ---------------------------------------------------------------------------
 // Tool definitions
 // ---------------------------------------------------------------------------
+const ACTIVE_STATES = ["Arizona", "California"] as const;
+
 const TOOLS = [
   {
     name: "search_agents",
@@ -274,18 +276,23 @@ const TOOLS = [
       properties: {
         state: {
           type: "string",
-          description: "State name (e.g., 'Arizona', 'California')",
+          enum: ACTIVE_STATES,
+          description: "State name. Only Arizona and California are currently active.",
         },
         city: {
           type: "string",
-          description: "City name (optional)",
+          description: "City name within the state (e.g., 'Phoenix', 'Los Angeles'). Optional — omit to search statewide.",
         },
         limit: {
-          type: "number",
-          description: "Max results (default 10, max 50)",
+          type: "integer",
+          minimum: 1,
+          maximum: 50,
+          default: 10,
+          description: "Maximum number of results to return.",
         },
       },
       required: ["state"],
+      additionalProperties: false,
     },
   },
   {
@@ -297,14 +304,17 @@ const TOOLS = [
       properties: {
         license_number: {
           type: "string",
-          description: "License number to verify",
+          minLength: 1,
+          description: "State-issued real estate license number (e.g., 'SA123456' for Arizona, 'DRE01234567' for California).",
         },
         state: {
           type: "string",
-          description: "State of licensure (e.g., 'Arizona', 'California')",
+          enum: ACTIVE_STATES,
+          description: "State of licensure.",
         },
       },
       required: ["license_number", "state"],
+      additionalProperties: false,
     },
   },
   {
@@ -316,10 +326,12 @@ const TOOLS = [
       properties: {
         slug: {
           type: "string",
-          description: "Agent canonical slug (e.g., 'jane-doe-phoenix')",
+          pattern: "^[a-z0-9-]+-[0-9]+$",
+          description: "Agent canonical slug (e.g., 'jane-doe-phoenix-1234'). Obtained from search_agents results.",
         },
       },
       required: ["slug"],
+      additionalProperties: false,
     },
   },
   {
@@ -331,11 +343,12 @@ const TOOLS = [
       properties: {
         state: {
           type: "string",
-          description:
-            "Filter by state name (optional). Omit for all states.",
+          enum: ACTIVE_STATES,
+          description: "Filter by state. Optional — omit for all active states.",
         },
       },
       required: [],
+      additionalProperties: false,
     },
   },
   {
@@ -346,6 +359,7 @@ const TOOLS = [
       type: "object",
       properties: {},
       required: [],
+      additionalProperties: false,
     },
   },
 ];
