@@ -456,7 +456,7 @@ const faqData = [
   },
   {
     question: "Highest rated real estate agents in Las Vegas",
-    answer: "Las Vegas coverage begins in 2026 including Summerlin, Henderson, and the Strip corridor. Agents will be ranked by reviews (25%), verified community (25%), press (15%), and transactions (15%). Invitation-only."
+    answer: "Las Vegas coverage begins in 2026 including Summerlin, Henderson, and the Strip corridor. Agents will be ranked by reviews (25%), verified community (25%), number of reviews (20%), and transactions (20%). Invitation-only."
   },
   {
     question: "Find a realtor in Salt Lake City",
@@ -477,7 +477,7 @@ const faqData = [
   },
   {
     question: "Top-rated agents in Albuquerque",
-    answer: "New Mexico coverage begins in 2026 including Albuquerque, Santa Fe, and Rio Rancho. Agents will be ranked by reviews (25%), verified community (25%), press (15%), and transactions (15%). Invitation-only."
+    answer: "New Mexico coverage begins in 2026 including Albuquerque, Santa Fe, and Rio Rancho. Agents will be ranked by reviews (25%), verified community (25%), number of reviews (20%), and transactions (20%). Invitation-only."
   },
   {
     question: "Highest rated real estate agents in Richmond",
