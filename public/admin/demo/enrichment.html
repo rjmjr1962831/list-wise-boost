@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Enrichment Pipeline | Top10Lists Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface-hover: #22262f;
+    --border: #2a2e3a;
+    --text: #e4e4e7;
+    --text-muted: #8b8d98;
+    --accent: #3b82f6;
+    --radius: 10px;
+
+    --blue-50: #1e3a5f; --blue-100: #2a4d7a; --blue-stroke: #4a8fe0; --blue-text: #a8d4ff; --blue-sub: #6ab0f5;
+    --purple-50: #2d2154; --purple-100: #3c2d6e; --purple-stroke: #7f77dd; --purple-text: #c8c4f7; --purple-sub: #9d96e8;
+    --teal-50: #0c3d33; --teal-100: #105247; --teal-stroke: #1d9e75; --teal-text: #9fe1cb; --teal-sub: #5dcaa5;
+    --coral-50: #3d1e12; --coral-100: #522818; --coral-stroke: #d85a30; --coral-text: #f5c4b3; --coral-sub: #f0997b;
+    --pink-50: #3b1525; --pink-100: #4e1c32; --pink-stroke: #d4537e; --pink-text: #f4c0d1; --pink-sub: #ed93b1;
+    --green-50: #1a3508; --green-100: #24490c; --green-stroke: #639922; --green-text: #c0dd97; --green-sub: #97c459;
+    --gray-50: #22221f; --gray-100: #2e2e2b; --gray-stroke: #5f5e5a; --gray-text: #d3d1c7; --gray-sub: #b4b2a9;
+    --red-50: #3d1414; --red-stroke: #e24b4a; --red-text: #f7c1c1; --red-sub: #f09595;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'DM Sans', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  .page-header {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 40px 24px 0;
+  }
+  .breadcrumb {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+  }
+  .breadcrumb a { color: var(--text-muted); text-decoration: none; }
+  .breadcrumb a:hover { color: var(--accent); }
+  .page-header h1 { font-size: 24px; font-weight: 700; margin-bottom: 6px; }
+  .page-header p { color: var(--text-muted); font-size: 14px; margin-bottom: 32px; line-height: 1.5; }
+
+  .diagram-wrap {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 0 24px 60px;
+  }
+  .diagram-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 32px 24px;
+    overflow-x: auto;
+  }
+
+  svg text { font-family: 'DM Sans', system-ui, sans-serif; }
+  .label { fill: var(--text-muted); font-size: 12px; font-weight: 600; letter-spacing: 0.5px; }
+  .count { fill: var(--text-muted); font-size: 11px; opacity: 0.55; }
+  .tool-label { fill: var(--text-muted); font-size: 11px; opacity: 0.5; }
+
+  .node-rect { rx: 8; stroke-width: 0.5; }
+  .node-title { font-size: 14px; font-weight: 600; }
+  .node-sub { font-size: 12px; }
+
+  .n-gray .node-rect { fill: var(--gray-50); stroke: var(--gray-stroke); }
+  .n-gray .node-title { fill: var(--gray-text); }
+  .n-gray .node-sub { fill: var(--gray-sub); }
+
+  .n-blue .node-rect { fill: var(--blue-50); stroke: var(--blue-stroke); }
+  .n-blue .node-title { fill: var(--blue-text); }
+  .n-blue .node-sub { fill: var(--blue-sub); }
+
+  .n-purple .node-rect { fill: var(--purple-50); stroke: var(--purple-stroke); }
+  .n-purple .node-title { fill: var(--purple-text); }
+  .n-purple .node-sub { fill: var(--purple-sub); }
+
+  .n-teal .node-rect { fill: var(--teal-50); stroke: var(--teal-stroke); }
+  .n-teal .node-title { fill: var(--teal-text); }
+  .n-teal .node-sub { fill: var(--teal-sub); }
+
+  .n-coral .node-rect { fill: var(--coral-50); stroke: var(--coral-stroke); }
+  .n-coral .node-title { fill: var(--coral-text); }
+  .n-coral .node-sub { fill: var(--coral-sub); }
+
+  .n-pink .node-rect { fill: var(--pink-50); stroke: var(--pink-stroke); }
+  .n-pink .node-title { fill: var(--pink-text); }
+  .n-pink .node-sub { fill: var(--pink-sub); }
+
+  .n-green .node-rect { fill: var(--green-50); stroke: var(--green-stroke); }
+  .n-green .node-title { fill: var(--green-text); }
+  .n-green .node-sub { fill: var(--green-sub); }
+
+  .n-red .node-rect { fill: var(--red-50); stroke: var(--red-stroke); }
+  .n-red .node-title { fill: var(--red-text); }
+
+  .arr { stroke: var(--text-muted); stroke-width: 1.2; }
+  .merge-line { stroke: var(--text-muted); stroke-width: 0.5; opacity: 0.4; }
+
+  g[data-tip] { cursor: pointer; }
+  g[data-tip]:hover .node-rect { stroke-width: 1.2; filter: brightness(1.15); }
+
+  .tooltip {
+    position: fixed;
+    background: #1e2130;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 13px;
+    color: var(--text);
+    max-width: 360px;
+    line-height: 1.5;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s;
+    z-index: 100;
+  }
+  .tooltip.show { opacity: 1; }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 3px; }
+
+  .cost-table {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .cost-table h3 {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+  .cost-table table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .cost-table th {
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-muted);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .cost-table td {
+    padding: 6px 8px;
+    color: var(--text);
+    border-bottom: 1px solid rgba(42,46,58,0.4);
+  }
+  .cost-table .status-active { color: var(--green-sub); }
+  .cost-table .status-pending { color: var(--coral-sub); }
+  .cost-table .status-rejected { color: var(--red-sub); text-decoration: line-through; opacity: 0.6; }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="breadcrumb"><a href="/admin/demo">Demo</a> / Enrichment</div>
+  <h1>Enrichment pipeline</h1>
+  <p>Five phases, six active data sources, two rejected. Each qualified agent passes through identity verification, review aggregation, SERP analysis, civic screening, and press discovery before entering the directory. Hover any box for details.</p>
+</div>
+
+<div class="diagram-wrap">
+  <div class="diagram-card">
+    <svg width="100%" viewBox="0 0 680 1020" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </marker>
+      </defs>
+
+      <!-- Entry -->
+      <g class="n-gray">
+        <rect class="node-rect" x="210" y="20" width="260" height="44"/>
+        <text class="node-title" x="340" y="42" text-anchor="middle" dominant-baseline="central">Agent passes merit gate</text>
+      </g>
+      <line class="arr" x1="340" y1="64" x2="340" y2="105" marker-end="url(#arrow)"/>
+
+      <!-- ===== PHASE 1: Identity ===== -->
+      <text class="label" x="46" y="140" text-anchor="middle">IDENTITY</text>
+
+      <g class="n-blue" data-tip="Primary source of truth for every agent. We query AZ DRE, CA DRE, TX TREC, FL DBPR, NY DOS, and CO DORA license databases. Returns: license number, current status (active/inactive/suspended), original issue date (used for 5+ year calculation), expiry date, and broker association. Cost: free (public records).">
+        <rect class="node-rect" x="120" y="105" width="440" height="70"/>
+        <text class="node-title" x="340" y="127" text-anchor="middle" dominant-baseline="central">State license databases</text>
+        <text class="node-sub" x="340" y="145" text-anchor="middle" dominant-baseline="central">AZ DRE, CA DRE, TX TREC, FL DBPR, NY DOS, CO DORA</text>
+        <text class="node-sub" x="340" y="163" text-anchor="middle" dominant-baseline="central">License #, status, issue date, expiry, broker</text>
+      </g>
+      <text class="tool-label" x="340" y="192" text-anchor="middle">Direct database queries (free, public records)</text>
+
+      <line class="arr" x1="340" y1="200" x2="340" y2="240" marker-end="url(#arrow)"/>
+
+      <!-- ===== PHASE 2: Reviews ===== -->
+      <text class="label" x="46" y="290" text-anchor="middle">REVIEWS</text>
+
+      <!-- Zillow -->
+      <g class="n-purple" data-tip="Zillow agent profiles via Apify memo23 scraper. Returns: overall star rating, total review count, recent review count (24-month window), sales count, active listings, sold listings, specialties, service areas, and profile URL. Cost: ~$0.50 per agent. This is our most expensive per-agent data source but provides the richest review data.">
+        <rect class="node-rect" x="80" y="240" width="250" height="84"/>
+        <text class="node-title" x="205" y="262" text-anchor="middle" dominant-baseline="central">Zillow</text>
+        <text class="node-sub" x="205" y="280" text-anchor="middle" dominant-baseline="central">Star rating, review count</text>
+        <text class="node-sub" x="205" y="298" text-anchor="middle" dominant-baseline="central">Sales history, listings</text>
+        <text class="node-sub" x="205" y="316" text-anchor="middle" dominant-baseline="central">Specialties, service areas</text>
+      </g>
+      <text class="tool-label" x="205" y="340" text-anchor="middle">Apify memo23 (~$0.50/agent)</text>
+
+      <!-- Google -->
+      <g class="n-purple" data-tip="Google Business Profile data via DataForSEO Maps API. Returns: Google star rating, Google review count, business name as listed, address, phone, website, business hours, and business categories. Cross-referenced with Zillow data for NAP consistency.">
+        <rect class="node-rect" x="350" y="240" width="250" height="84"/>
+        <text class="node-title" x="475" y="262" text-anchor="middle" dominant-baseline="central">Google Business</text>
+        <text class="node-sub" x="475" y="280" text-anchor="middle" dominant-baseline="central">Google reviews, rating</text>
+        <text class="node-sub" x="475" y="298" text-anchor="middle" dominant-baseline="central">NAP data, categories</text>
+        <text class="node-sub" x="475" y="316" text-anchor="middle" dominant-baseline="central">Business hours, website</text>
+      </g>
+      <text class="tool-label" x="475" y="340" text-anchor="middle">DataForSEO Maps API</text>
+
+      <!-- Merge -->
+      <line class="merge-line" x1="205" y1="348" x2="205" y2="372"/>
+      <line class="merge-line" x1="475" y1="348" x2="475" y2="372"/>
+      <line class="merge-line" x1="205" y1="372" x2="475" y2="372"/>
+      <line class="arr" x1="340" y1="372" x2="340" y2="410" marker-end="url(#arrow)"/>
+
+      <!-- ===== PHASE 3: SERP + Business Data ===== -->
+      <text class="label" x="46" y="458" text-anchor="middle">SERP</text>
+
+      <g class="n-teal" data-tip="DataForSEO provides four distinct APIs in one vendor. SERP API: organic search results for agent name + city, measuring online visibility. Maps API: Google Maps listing data (used in Phase 2 as well). Reviews API: structured review data aggregated across platforms. Business Data API: NAP consistency, business hours, categories, and enriched business profile data. This is the most versatile vendor in the pipeline.">
+        <rect class="node-rect" x="100" y="410" width="460" height="84"/>
+        <text class="node-title" x="330" y="432" text-anchor="middle" dominant-baseline="central">DataForSEO (4 APIs)</text>
+        <text class="node-sub" x="330" y="450" text-anchor="middle" dominant-baseline="central">SERP API: organic results, visibility scoring</text>
+        <text class="node-sub" x="330" y="468" text-anchor="middle" dominant-baseline="central">Reviews API: cross-platform review aggregation</text>
+        <text class="node-sub" x="330" y="486" text-anchor="middle" dominant-baseline="central">Business Data API: NAP, hours, categories</text>
+      </g>
+      <text class="tool-label" x="330" y="512" text-anchor="middle">DataForSEO REST API (pay-per-task)</text>
+
+      <line class="arr" x1="330" y1="518" x2="330" y2="558" marker-end="url(#arrow)"/>
+
+      <!-- ===== PHASE 4: Civic ===== -->
+      <text class="label" x="46" y="610" text-anchor="middle">CIVIC</text>
+
+      <!-- ProPublica -->
+      <g class="n-coral" data-tip="ProPublica Nonprofit Explorer REST API. Free, no key required. Returns: nonprofit filings for organizations associated with the agent, community involvement signals, board memberships in 501(c)(3) orgs. Feeds the 20% community involvement weight in the scoring methodology.">
+        <rect class="node-rect" x="80" y="558" width="250" height="84"/>
+        <text class="node-title" x="205" y="580" text-anchor="middle" dominant-baseline="central">ProPublica</text>
+        <text class="node-sub" x="205" y="598" text-anchor="middle" dominant-baseline="central">Nonprofit filings (990s)</text>
+        <text class="node-sub" x="205" y="616" text-anchor="middle" dominant-baseline="central">Community org involvement</text>
+        <text class="node-sub" x="205" y="634" text-anchor="middle" dominant-baseline="central">Board memberships</text>
+      </g>
+      <text class="tool-label" x="205" y="658" text-anchor="middle">REST API (free, no key)</text>
+
+      <!-- Google CSE -->
+      <g class="n-coral" data-tip="Google Custom Search Engine configured for civic data: local board memberships, chamber of commerce directories, city government meeting minutes, planning commission records. CSE ID: a7e6c1ed28fe84eef. Currently pending: needs billing account linked to 'My First Project' in Google Cloud Console before activation.">
+        <rect class="node-rect" x="350" y="558" width="250" height="84"/>
+        <text class="node-title" x="475" y="580" text-anchor="middle" dominant-baseline="central">Google CSE</text>
+        <text class="node-sub" x="475" y="598" text-anchor="middle" dominant-baseline="central">Chamber of commerce data</text>
+        <text class="node-sub" x="475" y="616" text-anchor="middle" dominant-baseline="central">Local board memberships</text>
+        <text class="node-sub" x="475" y="634" text-anchor="middle" dominant-baseline="central">City gov meeting minutes</text>
+      </g>
+      <text class="tool-label" x="475" y="658" text-anchor="middle">CSE ID: a7e6c...eef (pending billing)</text>
+
+      <!-- Merge -->
+      <line class="merge-line" x1="205" y1="666" x2="205" y2="690"/>
+      <line class="merge-line" x1="475" y1="666" x2="475" y2="690"/>
+      <line class="merge-line" x1="205" y1="690" x2="475" y2="690"/>
+      <line class="arr" x1="340" y1="690" x2="340" y2="730" marker-end="url(#arrow)"/>
+
+      <!-- ===== PHASE 5: Press + Discovery ===== -->
+      <text class="label" x="46" y="782" text-anchor="middle">PRESS</text>
+
+      <!-- Exa -->
+      <g class="n-pink" data-tip="Exa.ai neural search API. Searches the web semantically (not keyword-based) for press mentions, news articles, interviews, awards, and public profile pages associated with the agent. Returns: article titles, URLs, publication dates, relevance scores. Feeds both the press_mentions array and the Authority pillar of AIFS.">
+        <rect class="node-rect" x="80" y="730" width="250" height="84"/>
+        <text class="node-title" x="205" y="752" text-anchor="middle" dominant-baseline="central">Exa.ai</text>
+        <text class="node-sub" x="205" y="770" text-anchor="middle" dominant-baseline="central">Press mentions, news articles</text>
+        <text class="node-sub" x="205" y="788" text-anchor="middle" dominant-baseline="central">Interviews, awards</text>
+        <text class="node-sub" x="205" y="806" text-anchor="middle" dominant-baseline="central">Public profile discovery</text>
+      </g>
+      <text class="tool-label" x="205" y="830" text-anchor="middle">Neural search API (~$0.01/query)</text>
+
+      <!-- DeepSeek -->
+      <g class="n-pink" data-tip="DeepSeek LLM processes the raw data from Exa and other sources into structured agent profiles. Extracts: bio summary, specialization tags, notable achievements, geographic focus areas, and professional narrative. Cost: ~$0.02/agent for extraction. Does not generate content; synthesizes and structures existing public data.">
+        <rect class="node-rect" x="350" y="730" width="250" height="84"/>
+        <text class="node-title" x="475" y="752" text-anchor="middle" dominant-baseline="central">DeepSeek</text>
+        <text class="node-sub" x="475" y="770" text-anchor="middle" dominant-baseline="central">Profile synthesis from raw data</text>
+        <text class="node-sub" x="475" y="788" text-anchor="middle" dominant-baseline="central">Bio, specialization extraction</text>
+        <text class="node-sub" x="475" y="806" text-anchor="middle" dominant-baseline="central">Geographic focus mapping</text>
+      </g>
+      <text class="tool-label" x="475" y="830" text-anchor="middle">LLM extraction (~$0.02/agent)</text>
+
+      <!-- Merge -->
+      <line class="merge-line" x1="205" y1="838" x2="205" y2="862"/>
+      <line class="merge-line" x1="475" y1="838" x2="475" y2="862"/>
+      <line class="merge-line" x1="205" y1="862" x2="475" y2="862"/>
+      <line class="arr" x1="340" y1="862" x2="340" y2="900" marker-end="url(#arrow)"/>
+
+      <!-- Output -->
+      <g class="n-green" data-tip="Fully enriched agent record stored in the professionals table in Supabase. Contains: license data, review data from multiple platforms, SERP visibility, civic involvement signals, press mentions, synthesized bio, and all metadata needed for listing pages, MCP payloads, and AIFS scoring.">
+        <rect class="node-rect" x="120" y="900" width="440" height="70"/>
+        <text class="node-title" x="340" y="922" text-anchor="middle" dominant-baseline="central">Enriched agent record</text>
+        <text class="node-sub" x="340" y="940" text-anchor="middle" dominant-baseline="central">Stored in professionals table (Supabase)</text>
+        <text class="node-sub" x="340" y="958" text-anchor="middle" dominant-baseline="central">Ready for listing, AIFS scoring, MCP payloads</text>
+      </g>
+
+      <!-- Rejected bar -->
+      <g class="n-red">
+        <rect class="node-rect" x="120" y="990" width="440" height="4" rx="2" stroke-width="0" opacity="0.2"/>
+      </g>
+      <text class="tool-label" x="340" y="1010" text-anchor="middle">Firecrawl and Serper.dev evaluated and rejected (robots.txt compliance)</text>
+    </svg>
+
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--blue-stroke)"></div> Identity</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--purple-stroke)"></div> Reviews</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--teal-stroke)"></div> SERP / business</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--coral-stroke)"></div> Civic</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--pink-stroke)"></div> Press / discovery</div>
+    </div>
+
+    <!-- Cost + status summary table -->
+    <div class="cost-table">
+      <h3>Data sources: cost and status</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Source</th>
+            <th>Tool / API</th>
+            <th>Cost per agent</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>State license DBs</td>
+            <td>Direct query</td>
+            <td>Free</td>
+            <td class="status-active">Active</td>
+          </tr>
+          <tr>
+            <td>Zillow</td>
+            <td>Apify memo23</td>
+            <td>~$0.50</td>
+            <td class="status-active">Active</td>
+          </tr>
+          <tr>
+            <td>Google Business</td>
+            <td>DataForSEO Maps</td>
+            <td>~$0.02</td>
+            <td class="status-active">Active</td>
+          </tr>
+          <tr>
+            <td>SERP + Reviews</td>
+            <td>DataForSEO (3 APIs)</td>
+            <td>~$0.05</td>
+            <td class="status-active">Active</td>
+          </tr>
+          <tr>
+            <td>ProPublica</td>
+            <td>REST API</td>
+            <td>Free</td>
+            <td class="status-active">Active</td>
+          </tr>
+          <tr>
+            <td>Google CSE (civic)</td>
+            <td>Custom Search Engine</td>
+            <td>Free tier / $5 per 1K</td>
+            <td class="status-pending">Pending billing</td>
+          </tr>
+          <tr>
+            <td>Exa.ai</td>
+            <td>Neural search API</td>
+            <td>~$0.01</td>
+            <td class="status-active">Active</td>
+          </tr>
+          <tr>
+            <td>DeepSeek</td>
+            <td>LLM extraction</td>
+            <td>~$0.02</td>
+            <td class="status-active">Active</td>
+          </tr>
+          <tr>
+            <td>Firecrawl</td>
+            <td>Web scraper</td>
+            <td>n/a</td>
+            <td class="status-rejected">Rejected</td>
+          </tr>
+          <tr>
+            <td>Serper.dev</td>
+            <td>SERP API</td>
+            <td>n/a</td>
+            <td class="status-rejected">Rejected</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+const tooltip = document.getElementById('tooltip');
+document.querySelectorAll('[data-tip]').forEach(el => {
+  el.addEventListener('mouseenter', e => {
+    tooltip.innerHTML = e.currentTarget.dataset.tip;
+    tooltip.classList.add('show');
+  });
+  el.addEventListener('mousemove', e => {
+    const x = Math.min(e.clientX + 16, window.innerWidth - 380);
+    const y = Math.min(e.clientY + 16, window.innerHeight - 100);
+    tooltip.style.left = x + 'px';
+    tooltip.style.top = y + 'px';
+  });
+  el.addEventListener('mouseleave', () => {
+    tooltip.classList.remove('show');
+  });
+});
+</script>
+</body>
+</html>
