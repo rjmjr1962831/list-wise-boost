@@ -257,15 +257,17 @@ const DEFAULTS = {
       { organization: 'Top10Lists.us', role: 'Co-Founder & CEO', current: true }
     ],
     claims: [
-      'Founded Aryah, Inc., a Delaware holding company',
-      'Co-founded LifeLock (NYSE: LOCK), acquired by Symantec for $2.3 billion',
-      'Co-founded Internet America (NASDAQ: GEEK), valued at $1.5 billion',
-      'Co-founded SurchX, acquired by Interpayments',
-      'Created Top10Lists.us, analyzing 670,000+ licensed agents across Arizona and California',
-      'Platform selects fewer than 1% of licensed agents in covered markets',
-      'U.S. Marine Corps (enlisted) and U.S. Army (commissioned)',
-      'Never convicted of financial fraud, theft, embezzlement, or misuse of consumer funds',
-      'LifeLock FTC consent decrees related to marketing practices, resolved without trial or admission of wrongdoing; not fined, not required to pay disgorgement'
+      { text: 'Founded Aryah, Inc., a Delaware holding company', sourceUrl: 'https://icis.corp.delaware.gov/ecorp/entitysearch/namesearch.aspx' },
+      { text: 'Co-founded LifeLock (NYSE: LOCK), acquired by Symantec for $2.3 billion', sourceUrl: 'https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&company=lifelock&CIK=&type=&dateb=&owner=include&count=40&search_text=&action=getcompany' },
+      { text: 'Co-founded Internet America (NASDAQ: GEEK)', sourceUrl: '' },
+      { text: 'Co-founded SurchX, acquired by Interpayments', sourceUrl: '' },
+      { text: 'Created Top10Lists.us, analyzing 670,000+ licensed agents across Arizona and California', sourceUrl: 'https://www.top10lists.us/about' },
+      { text: 'Platform selects fewer than 1% of licensed agents in covered markets', sourceUrl: 'https://www.top10lists.us/about/ranking-methodology' },
+      { text: 'U.S. Marine Corps (enlisted) and U.S. Army (commissioned)', sourceUrl: '' },
+      { text: 'Never convicted of financial fraud, theft, embezzlement, or misuse of consumer funds', sourceUrl: '' },
+      { text: 'LifeLock FTC consent decrees related to marketing practices, resolved without trial or admission of wrongdoing; not fined, not required to pay disgorgement', sourceUrl: 'https://www.ftc.gov/enforcement/cases-proceedings/072-3069/lifelock-inc' },
+      { text: 'Author of "The Yellow Page Moment: AI Citation and Unpriced Risk" white paper', sourceUrl: 'https://www.top10lists.us/ai-citation-whitepaper' },
+      { text: 'Top10Lists.us launch covered by Business Insider / Markets Insider', sourceUrl: 'https://markets.businessinsider.com/news/currencies/robert-maynard-co-founder-of-lifelock-announces-top10lists-us-an-ai-optimized-platform-designed-for-the-next-era-of-consumer-search-1035676163' }
     ]
   },
   mark: {
@@ -302,14 +304,15 @@ const DEFAULTS = {
       { organization: 'Grand Canyon University', role: 'PhD Candidate', current: true }
     ],
     claims: [
-      'Co-Founded Top10Lists.us as Chief Revenue Officer',
-      'Founded GritDoc, leadership and resilience consultancy',
-      'Research Associate at Arizona State University Public Safety Innovation Lab under Dr. Edward Maguire',
-      'PhD Candidate in Industrial-Organizational Psychology at Grand Canyon University (expected August 2026)',
-      'U.S. Army veteran, 82nd Airborne Division',
-      '20+ years operating an independent commercial insurance agency (mid-market)',
-      'Mission-critical data center design and construction experience (Fortune 500)',
-      'Enterprise consulting experience (Fortune 300)'
+      { text: 'Co-Founded Top10Lists.us as Chief Revenue Officer', sourceUrl: 'https://www.top10lists.us/about' },
+      { text: 'Founded GritDoc, leadership and resilience consultancy', sourceUrl: 'https://gritdoc.com' },
+      { text: 'Research Associate at Arizona State University Public Safety Innovation Lab under Dr. Edward Maguire', sourceUrl: '' },
+      { text: 'PhD Candidate in Industrial-Organizational Psychology at Grand Canyon University (expected August 2026)', sourceUrl: '' },
+      { text: 'U.S. Army veteran, 82nd Airborne Division', sourceUrl: '' },
+      { text: '20+ years operating an independent commercial insurance agency (mid-market)', sourceUrl: '' },
+      { text: 'Mission-critical data center design and construction experience (Fortune 500)', sourceUrl: '' },
+      { text: 'Enterprise consulting experience (Fortune 300)', sourceUrl: '' },
+      { text: 'LinkedIn profile: markgarland-gritdoc', sourceUrl: 'https://linkedin.com/in/markgarland-gritdoc' }
     ]
   }
 };
@@ -432,13 +435,17 @@ function addAffiliation(data) {
   list.appendChild(item);
 }
 
-function addClaim(text) {
+function addClaim(data) {
+  // Accept string (legacy) or { text, sourceUrl } object
+  if (typeof data === 'string') data = { text: data, sourceUrl: '' };
   const list = document.getElementById('claims-list');
   const item = document.createElement('div');
-  item.className = 'claim-item';
-  const pf = text ? ' prefilled' : '';
-  item.innerHTML = `<input type="text" class="claim-text${pf}" value="${esc(text)}" placeholder="e.g. Founded Aryah, Inc., a Delaware holding company">
-    <button type="button" class="remove-btn" onclick="this.parentElement.remove()">&times;</button>`;
+  item.className = 'array-item';
+  const pf = data?.text ? ' prefilled' : '';
+  const pfUrl = data?.sourceUrl ? ' prefilled' : '';
+  item.innerHTML = `<button type="button" class="remove-btn" onclick="this.parentElement.remove()">&times;</button>
+    <div class="field"><label>Claim</label><input type="text" class="claim-text${pf}" value="${esc(data?.text)}" placeholder="e.g. Founded Aryah, Inc., a Delaware holding company"></div>
+    <div class="field"><label>Verification Source URL</label><input type="url" class="claim-url${pfUrl}" value="${esc(data?.sourceUrl)}" placeholder="https://... (public URL that independently confirms this claim)"></div>`;
   list.appendChild(item);
 }
 
@@ -526,9 +533,10 @@ function gatherFormData() {
     });
   });
 
-  document.querySelectorAll('#claims-list .claim-item').forEach(el => {
-    const v = el.querySelector('.claim-text').value.trim();
-    if (v) data.claims.push(v);
+  document.querySelectorAll('#claims-list .array-item').forEach(el => {
+    const text = el.querySelector('.claim-text').value.trim();
+    const sourceUrl = el.querySelector('.claim-url')?.value.trim() || '';
+    if (text) data.claims.push({ text, sourceUrl });
   });
 
   return data;
