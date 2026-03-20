@@ -226,7 +226,7 @@ export default function Step4ReviewFinal() {
                   <Row label="Awards"               value={formatCredentialList(professional.awards_verified || [], 'awards_verified')}           fieldName="Awards" />
                   <Row label="Achievements"          value={formatCredentialList(professional.notable_achievements || [], 'notable_achievements')} fieldName="Notable Achievements" />
                   <Row label="Press Mentions"        value={formatCredentialList(professional.press_mentions || [], 'press_mentions')}            fieldName="Press Mentions" />
-                  <Row label="Community Involvement" value={formatCredentialList(professional.community_roles || [], 'community_roles')}          fieldName="Community Involvement" />
+                  <Row label="Community" value={formatCredentialList(professional.community_roles || [], 'community_roles')}          fieldName="Community" />
                 </dl>
               </div>
 

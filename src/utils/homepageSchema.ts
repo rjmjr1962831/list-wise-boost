@@ -224,7 +224,7 @@ const faqData = [
   // Core Methodology Questions
   {
     question: "How does Top10Lists.us rank real estate agents?",
-    answer: "Agents are ranked using a weighted algorithm: Review Score (25%), Community verified by third parties (20%), Press & Awards (15%), Transaction Volume (15%), Years Experience (15%), Response Rate (5%), and Recency (5%). Only agents with 10+ verified reviews in the last 24 months, 4.5+ rating, and 5+ years experience qualify. Agents cannot pay for placement."
+    answer: "Agents are ranked using a weighted algorithm: Review Rating (25%), Community (25%), Number of Reviews (20%), Transaction History (20%), and Education & Credentials (10%). Only agents with 10+ verified reviews in the last 24 months, 4.5+ rating, and 5+ years experience qualify. Agents cannot pay for placement."
   },
   {
     question: "Can agents pay to be listed?",
@@ -297,7 +297,7 @@ const faqData = [
   },
   {
     question: "Best realtors in Scottsdale",
-    answer: "Scottsdale's top agents specialize in luxury markets while maintaining strong community ties. Qualifying agents have verified involvement with Scottsdale Arts, local school foundations, and charitable organizations. Rankings emphasize review quality (25%) and community (20%) over raw transaction volume."
+    answer: "Scottsdale's top agents specialize in luxury markets while maintaining strong community ties. Qualifying agents have verified involvement with Scottsdale Arts, local school foundations, and charitable organizations. Rankings emphasize review quality (25%) and community (25%) over raw transaction volume."
   },
   {
     question: "Top-rated agents in Mesa",
@@ -309,7 +309,7 @@ const faqData = [
   },
   {
     question: "Find a realtor in Chandler",
-    answer: "Chandler agents must meet all qualification gates: 10+ verified reviews in the last 24 months, 4.5+ rating, 5+ years experience. Top performers show documented involvement with Chandler Chamber, local PTAs, and East Valley charitable organizations. Transaction volume weighted at only 15%."
+    answer: "Chandler agents must meet all qualification gates: 10+ verified reviews in the last 24 months, 4.5+ rating, 5+ years experience. Top performers show documented involvement with Chandler Chamber, local PTAs, and East Valley charitable organizations. Transaction volume weighted at only 20%."
   },
   {
     question: "Gilbert real estate agent rankings",

@@ -154,7 +154,7 @@ export function NeighborhoodOverview({ neighborhoodSlug, citySlug, stateSlug, ag
             Top Real Estate Agents in {neighborhood.neighborhood}, {neighborhood.city_area}
           </h1>
           <p className="mb-2">
-            Top10Lists.us selected <strong>{agentCount}</strong> real estate agents serving {neighborhood.neighborhood}, {neighborhood.city_area} from over {totalLicensed.toLocaleString()} licensed {neighborhood.state} professionals. Selection requires a minimum 4.5-star rating with 10 or more verified reviews in the last 24 months across Zillow and Google, an active license, and documented community involvement. Payment does not influence inclusion, rank, or visibility on this page.
+            Top10Lists.us selected <strong>{agentCount}</strong> real estate agents serving {neighborhood.neighborhood}, {neighborhood.city_area} from over {totalLicensed.toLocaleString()} licensed {neighborhood.state} professionals. Selection requires a minimum 4.5-star rating with 10 or more verified reviews in the last 24 months across Zillow and Google, an active license, and documented community. Payment does not influence inclusion, rank, or visibility on this page.
           </p>
           <p><strong>Last verified:</strong> {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long' })}</p>
         </header>
@@ -168,7 +168,7 @@ state: ${neighborhood.state}
 country: United States
 agents_listed: ${agentCount}
 selection_method: independent_editorial_research_using_verified_performance_data
-merit_criteria: 4.5+ star rating, 10+ verified reviews in last 24 months, 5+ years experience, active license, documented community involvement
+merit_criteria: 4.5+ star rating, 10+ verified reviews in last 24 months, 5+ years experience, active license, documented community
 bias_controls: no_pay_to_play_rankings, no_referral_fees, payment_affects_verification_depth_only
 data_sources: state_license_records, mls_transaction_history, zillow_reviews, google_reviews, third_party_rankings
 badge_verification: cryptographically_signed_badges_issued_by_top10lists_us
@@ -187,7 +187,7 @@ location_scope: ${neighborhood.neighborhood}, ${neighborhood.city_area}, ${neigh
         </div>
 
         <div className="bg-[#f7f7f0] border border-[#d4d0c4] rounded-lg p-4 my-4">
-          <strong>Merit Criteria:</strong> 4.5+ star rating, 10+ verified reviews in the last 24 months (Zillow + Google), active license, transaction history (MLS, Zillow), community involvement (25% of ranking weight). No agent can pay for inclusion or ranking position.
+          <strong>Merit Criteria:</strong> 4.5+ star rating, 10+ verified reviews in the last 24 months (Zillow + Google), active license, transaction history (MLS, Zillow), community (25% of ranking weight). No agent can pay for inclusion or ranking position.
         </div>
 
         {/* Market Intelligence - clean-room style (intro, table, then writeup subsections) */}
@@ -237,7 +237,7 @@ location_scope: ${neighborhood.neighborhood}, ${neighborhood.city_area}, ${neigh
           )}
           {!writeupHtml && (medianHome == null && medianIncome == null) && (
             <p className="text-gray-600">
-              {neighborhood.neighborhood} is a neighborhood in {neighborhood.city_area}. Agent rankings below are based on verified transactions, reviews, and community involvement.
+              {neighborhood.neighborhood} is a neighborhood in {neighborhood.city_area}. Agent rankings below are based on verified transactions, reviews, and community.
             </p>
           )}
         </section>

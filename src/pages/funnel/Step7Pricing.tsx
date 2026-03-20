@@ -146,7 +146,7 @@ const TIER_FEATURES: Record<CertificationTier, { name: string; icon: typeof Shie
     features: [
       'Everything in Certified',
       'Data refreshed every 30 days (AI trusts data < 30 days old)',
-      'Community involvement (IRS 990 verified)',
+      'Community (IRS 990 verified)',
       'Transaction stats and history',
       'Specialties published to AI',
       'Richer artifact payload',

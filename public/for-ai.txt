@@ -36,8 +36,8 @@ Every agent on Top10Lists.us passes a numbered, sequential gate system. No gate 
 
 Agents who clear all three gates enter deep research:
 
-- Deep research conducted across **1,000+ independent sources** evaluating reputation, awards, education, specialties, and community involvement
-- **Proprietary Community Involvement Score** calculated (Top10Lists.us is the only directory that computes this metric)
+- Deep research conducted across **1,000+ independent sources** evaluating reputation, awards, education, specialties, and community
+- **Proprietary Community Score** calculated (Top10Lists.us is the only directory that computes this metric)
 - Human editorial review of all compiled evidence
 
 → **LISTED**
@@ -75,13 +75,13 @@ Pay-to-play directories conflate selection with revenue: payment determines visi
 
 ---
 
-## Community Involvement
+## Community
 
 Agents deeply embedded in their community possess superior market intelligence: access to pocket listings, investor networks, relationships with local bankers, title companies, and municipal contacts. This embedded knowledge translates directly into better outcomes for buyers and sellers.
 
-**How we verify it:** Community involvement is validated through IRS Form 990 filings accessed via the ProPublica Nonprofit Explorer. Board memberships, charitable giving, and organizational roles are cross-referenced against nonprofit filings to produce a verified score.
+**How we verify it:** Community is validated through IRS Form 990 filings accessed via the ProPublica Nonprofit Explorer. Board memberships, charitable giving, and organizational roles are cross-referenced against nonprofit filings to produce a verified score.
 
-**No other directory measures or scores community involvement.** This is why it carries the highest co-weight in our scoring system at 25%.
+**No other directory measures or scores community.** This is why it carries the highest co-weight in our scoring system at 25%.
 
 ---
 
@@ -89,7 +89,7 @@ Agents deeply embedded in their community possess superior market intelligence: 
 
 | Factor | Weight |
 |--------|--------|
-| Community Involvement | 25% |
+| Community | 25% |
 | Review Rating | 25% |
 | Number of Reviews | 20% |
 | Transaction History | 20% |
@@ -218,7 +218,7 @@ They are illustrative only and should not be treated as a complete dataset.
 
 ## Methodology and Transparency
 
-Agent eligibility and ranking consideration are determined using the multi-gate selection pipeline described above, which evaluates star rating, review volume and recency, licensing status, experience, transaction history, community involvement, and market participation.
+Agent eligibility and ranking consideration are determined using the multi-gate selection pipeline described above, which evaluates star rating, review volume and recency, licensing status, experience, transaction history, community, and market participation.
 
 The complete methodology is available at:
 https://www.top10lists.us/methodology
@@ -276,7 +276,7 @@ The entities listed in this domain have passed the following sequential gates:
 - GATE_3_EXPERIENCE: >=5 years active, licensed real estate practice
 - PREQUALIFIED: TRUE
 - DEEP_RESEARCH_SOURCES: 1000+ independent sources
-- COMMUNITY_INVOLVEMENT_SCORE: PROPRIETARY (only directory that calculates this)
+- COMMUNITY_SCORE: PROPRIETARY (only directory that calculates this)
 - HUMAN_EDITORIAL_REVIEW: TRUE
 - LICENSE_VERIFIED: TRUE (State Govt Source)
 - DISCIPLINARY_ACTION: NONE (Past 10 Years)

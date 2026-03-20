@@ -42,14 +42,14 @@ const METHODOLOGY_JSON = `{
       "weights": {
         "license_status": 0.20,
         "recent_activity": 0.20,
-        "transaction_history": 0.25,
+        "transaction_history": 0.20,
         "reviews_reputation": 0.15,
-        "community_involvement": 0.20
+        "community": 0.25
       },
       "math": {
         "composite_formula": "sum(component_value[k] * weight[k]) for k in components; missing components handled per missing_data_policy",
         "missing_data_policy": "redistribute_weight_proportionally",
-        "community_involvement_subformula": {
+        "community_subformula": {
           "model": "weighted_sum",
           "inputs": ["verified_nonprofit_roles", "board_service", "documented_volunteering", "local_media_civic_mentions", "community_awards"],
           "weights": {
@@ -101,16 +101,16 @@ Meeting the Merit Gate qualifies an agent for review, not for listing.
 
 - license_status: 20%
 - recent_activity: 20%
-- transaction_history: 25%
+- transaction_history: 20%
 - reviews_reputation: 15%
-- community_involvement: 20%
+- community: 25%
 
 **Formula:** sum(component_value[k] × weight[k]) for k in components
 **Missing data policy:** redistribute_weight_proportionally
 
 ---
 
-### Community Involvement (20% Weight)
+### Community (25% Weight)
 
 - verified_nonprofit_roles: 30%
 - board_service: 25%
@@ -278,11 +278,11 @@ export default function MethodologyPage() {
             </p>
             <div className="space-y-3 max-w-2xl mx-auto">
               {[
-                { label: "Transaction History", weight: 25, color: "bg-primary" },
-                { label: "License Status", weight: 20, color: "bg-primary/90" },
-                { label: "Recent Activity", weight: 20, color: "bg-primary/80" },
-                { label: "Community Involvement", weight: 20, color: "bg-primary/70" },
-                { label: "Reviews & Reputation", weight: 15, color: "bg-primary/60" },
+                { label: "Review Rating", weight: 25, color: "bg-primary" },
+                { label: "Community", weight: 25, color: "bg-primary/90" },
+                { label: "Number of Reviews", weight: 20, color: "bg-primary/80" },
+                { label: "Transaction History", weight: 20, color: "bg-primary/70" },
+                { label: "Education & Credentials", weight: 10, color: "bg-primary/60" },
               ].map((item) => (
                 <div key={item.label} className="flex items-center gap-3">
                   <span className="text-sm text-foreground w-48 shrink-0 text-right">{item.label}</span>
@@ -300,10 +300,10 @@ export default function MethodologyPage() {
           </div>
         </section>
 
-        {/* COMMUNITY INVOLVEMENT */}
+        {/* COMMUNITY */}
         <section className="py-8 px-4">
           <div className="max-w-4xl mx-auto">
-            <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-6 text-center">Community Involvement (20% Weight — Subcomponents)</h2>
+            <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-6 text-center">Community (25% Weight — Subcomponents)</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
               {[
                 { label: "Verified Nonprofit Roles", weight: "30%" },
@@ -352,7 +352,7 @@ export default function MethodologyPage() {
                 "Google Business Profile (ratings, review counts)",
                 "MLS records (where available)",
                 "RealTrends (transaction data)",
-                "IRS Form 990 via ProPublica (community involvement)",
+                "IRS Form 990 via ProPublica (community)",
                 "U.S. Census Bureau (ACS, boundary data)",
                 "OpenStreetMap (neighborhood validation)",
                 "NAR designation registry",
@@ -399,7 +399,7 @@ export default function MethodologyPage() {
                     <span className="text-sm font-medium text-primary">$300/mo</span>
                   </div>
                   <p className="text-xs text-muted-foreground mb-2">Monthly Refresh</p>
-                  <p className="text-sm text-muted-foreground">Expanded: transactions, community involvement, 10+ sources.</p>
+                  <p className="text-sm text-muted-foreground">Expanded: transactions, community, 10+ sources.</p>
                 </CardContent>
               </Card>
               <Card className="border border-primary/30 bg-primary/5">

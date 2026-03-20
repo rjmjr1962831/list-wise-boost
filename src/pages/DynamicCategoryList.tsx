@@ -1162,7 +1162,7 @@ export default function DynamicCategoryList({
     : generatePageTitle(city, category.plural_name);
   
   const pageDescription = neighborhoodName
-    ? `After thorough research and analysis, we think these are some of the best ${category.plural_name.toLowerCase()} in ${neighborhoodName}, ${city.name}, ${city.state}. Expert-vetted professionals with verified licenses, reputations, community involvement, reviews, ratings and transaction history.`
+    ? `After thorough research and analysis, we think these are some of the best ${category.plural_name.toLowerCase()} in ${neighborhoodName}, ${city.name}, ${city.state}. Expert-vetted professionals with verified licenses, reputations, community, reviews, ratings and transaction history.`
     : generateMetaDescription(city, category.plural_name);
 
   const metadata = {
@@ -1452,7 +1452,7 @@ export default function DynamicCategoryList({
               `country: United States`,
               totalVerifiedCount > 0 ? `agents_listed: ${totalVerifiedCount}` : null,
               `selection_method: independent_editorial_research_using_verified_performance_data`,
-              `merit_criteria: 4.5+ star rating, 10+ verified reviews in last 24 months, 5+ years experience, active license, documented community involvement`,
+              `merit_criteria: 4.5+ star rating, 10+ verified reviews in last 24 months, 5+ years experience, active license, documented community`,
               `bias_controls: no_pay_to_play_rankings, no_referral_fees, payment_affects_verification_depth_only`,
               `data_sources: state_license_records, mls_transaction_history, zillow_reviews, google_reviews, third_party_rankings`,
               `badge_verification: cryptographically_signed_badges_issued_by_top10lists_us`,

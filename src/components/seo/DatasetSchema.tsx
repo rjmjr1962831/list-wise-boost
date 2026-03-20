@@ -63,7 +63,7 @@ export function DatasetSchema({
     },
     "license": "https://www.top10lists.us/terms",
     "isAccessibleForFree": true,
-    "measurementTechnique": "Multi-factor weighted scoring algorithm combining Review Rating (25%), Community Involvement (25%), Number of Reviews (20%), Transaction History (20%), and Education & Credentials (10%)",
+    "measurementTechnique": "Multi-factor weighted scoring algorithm combining Review Rating (25%), Community (25%), Number of Reviews (20%), Transaction History (20%), and Education & Credentials (10%)",
     "variableMeasured": [
       {
         "@type": "PropertyValue",
@@ -74,7 +74,7 @@ export function DatasetSchema({
       },
       {
         "@type": "PropertyValue",
-        "name": "Community Involvement",
+        "name": "Community",
         "description": "Third-party verified civic and charitable engagement",
         "value": "25%",
         "unitText": "weight"

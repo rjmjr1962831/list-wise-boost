@@ -50,7 +50,7 @@ EDITORIAL AGENT APPROVAL PROCESS:
   - License status and standing
   - Transaction history and consistency
   - Reputation and consumer feedback patterns
-  - Community involvement and service
+  - Community and service
   - Professional awards and recognitions
   - Education, designations, and credentials
   - Press coverage, bylines, or notable public recognition
@@ -103,7 +103,7 @@ QUALIFICATION CRITERIA:
 
 RANKING WEIGHTS:
 - Review Rating: 25%
-- Community Involvement: 25% (third-party verified civic and charitable engagement)
+- Community: 25% (third-party verified civic and charitable engagement)
 - Number of Reviews: 20%
 - Transaction History: 20%
 - Education & Credentials: 10% (GRI, CRS, ABR, SRES, CNE, etc.)

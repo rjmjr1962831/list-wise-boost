@@ -46,6 +46,14 @@ interface AuditScores {
   score_underwritten: number | null;
 }
 
+interface AISurfaces {
+  city_surfaces: number;
+  neighborhood_surfaces: number;
+  profile_surfaces: number;
+  total_surfaces: number;
+  computed_at: string;
+}
+
 export function OverviewSection({ professional }: OverviewSectionProps) {
   const navigate = useNavigate();
   const rawTier = professional.current_tier || professional.badge_tier || "certified";
@@ -53,6 +61,7 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
 
   const [crawlStats, setCrawlStats] = useState<CrawlStats | null>(null);
   const [scores, setScores] = useState<AuditScores | null>(null);
+  const [aiSurfaces, setAiSurfaces] = useState<AISurfaces | null>(null);
 
   useEffect(() => {
     if (!professional?.id) return;
@@ -75,6 +84,15 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
       .then(({ data }: any) => {
         const rows = data as AuditScores[] | null;
         if (rows && rows.length > 0) setScores(rows[0]);
+      });
+
+    supabase
+      .rpc("run_sql" as any, {
+        query: `SELECT city_surfaces, neighborhood_surfaces, profile_surfaces, total_surfaces, computed_at FROM agent_ai_surfaces WHERE agent_id = '${pid}' AND period = 'rolling_8d'`,
+      })
+      .then(({ data }: any) => {
+        const rows = data as AISurfaces[] | null;
+        if (rows && rows.length > 0) setAiSurfaces(rows[0]);
       });
   }, [professional?.id]);
 
@@ -230,7 +248,46 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
         </div>
       )}
 
-      {/* ── ROW 3: Quick AI Activity Context ── */}
+      {/* ── ROW 3: AI Surfaces Breakdown ── */}
+      {aiSurfaces && aiSurfaces.total_surfaces > 0 && (
+        <div className="rounded-xl border p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Activity className="h-4 w-4 text-primary" />
+              <p className="text-sm font-semibold">AI Surface Breakdown (Last 8 Days)</p>
+            </div>
+            <span className="text-xs text-muted-foreground">
+              Updated {new Date(aiSurfaces.computed_at).toLocaleDateString()}
+            </span>
+          </div>
+          <div className="grid grid-cols-3 gap-4 text-center">
+            <div className="rounded-lg bg-muted/50 p-3">
+              <p className="text-2xl font-black tabular-nums">{aiSurfaces.city_surfaces.toLocaleString()}</p>
+              <p className="text-xs text-muted-foreground mt-1">City Searches</p>
+            </div>
+            <div className="rounded-lg bg-muted/50 p-3">
+              <p className="text-2xl font-black tabular-nums">{aiSurfaces.neighborhood_surfaces.toLocaleString()}</p>
+              <p className="text-xs text-muted-foreground mt-1">Neighborhood Searches</p>
+            </div>
+            <div className="rounded-lg bg-muted/50 p-3">
+              <p className="text-2xl font-black tabular-nums">{aiSurfaces.profile_surfaces.toLocaleString()}</p>
+              <p className="text-xs text-muted-foreground mt-1">Direct Profile Views</p>
+            </div>
+          </div>
+          <div className="mt-3 flex items-center justify-between">
+            <p className="text-xs text-muted-foreground">
+              Total: <strong className="text-foreground">{aiSurfaces.total_surfaces.toLocaleString()}</strong> times surfaced to AI systems
+            </p>
+            {aiSurfaces.profile_surfaces > 0 && (
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-600 border border-emerald-500/30 font-medium">
+                Direct interest signal
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ── ROW 4: Quick AI Activity Context ── */}
       {crawlStats && crawlStats.total_crawls_30d > 0 && (
         <div className="rounded-xl border p-5">
           <div className="flex items-center gap-2 mb-3">

@@ -248,7 +248,7 @@ export default function ArtifactPage() {
               ?? null;
             const transactionsLastYearFloor = floorCount(transactionsLastYear);
 
-            // Community involvement: extract description strings, omit if empty
+            // Community: extract description strings, omit if empty
             const communityRoles = (data.community_roles ?? [])
               .map(r => r.description ?? r.role)
               .filter(Boolean);
@@ -337,7 +337,7 @@ export default function ArtifactPage() {
             // Underwritten-only fields
             if (tier === 'underwritten') {
               jsonld["underwritingDepth"] = "highest";
-              if (communityRoles.length > 0) jsonld["communityInvolvement"] = communityRoles;
+              if (communityRoles.length > 0) jsonld["community"] = communityRoles;
               if (awards.length > 0) jsonld["notableAwards"] = awards;
             }
 

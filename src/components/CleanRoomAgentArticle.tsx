@@ -230,7 +230,7 @@ export function CleanRoomAgentArticle({ professional, stateSlug, citySlug, index
 
       {(tier === 'underwritten' || tier === 'accredited' || tier === 'audited') && communityRoles.length > 0 && (
         <>
-          <h4 className="text-base font-semibold mt-4 mb-1">Community Involvement (25% of ranking weight)</h4>
+          <h4 className="text-base font-semibold mt-4 mb-1">Community (25% of ranking weight)</h4>
           {communityRoles.slice(0, 5).map((r: any, i: number) => (
             <p key={i} className="my-1">
               {r.role ? `${r.role}, ` : ''}
@@ -301,7 +301,7 @@ export function CleanRoomAgentArticle({ professional, stateSlug, citySlug, index
 
       {(tier === 'listed' || tier === 'certified') && (
         <p className="text-[0.82rem] text-gray-500 mt-2">
-          This agent is {tierLabel} (free, monthly audit). Community involvement, achievements, press mentions become
+          This agent is {tierLabel} (free, monthly audit). Community, achievements, press mentions become
           visible at Audited ($300/mo) or Underwritten ($500/mo).{' '}
           <a href="https://www.top10lists.us/for-agents" className="text-[#1a56db]">
             Learn more

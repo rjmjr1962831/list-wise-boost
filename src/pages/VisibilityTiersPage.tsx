@@ -63,7 +63,7 @@ const TIERS: TierConfig[] = [
     features: [
       'Richer data payload',
       'Monthly refresh',
-      'Community involvement, transaction stats',
+      'Community, transaction stats',
     ],
   },
   {

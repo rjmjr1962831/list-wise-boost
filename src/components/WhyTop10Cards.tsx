@@ -10,7 +10,7 @@ const cards = [
   {
     icon: Users,
     title: "Community Counts",
-    description: "We weight community involvement higher than sales volume."
+    description: "We weight community higher than sales volume."
   },
   {
     icon: ShieldCheck,

@@ -26,8 +26,8 @@ We aggregate reviews from multiple platforms (Zillow, Realtor.com, Google) to ca
 **3. License Verification**
 Every agent's license is verified against state regulatory databases to ensure they're in good standing.
 
-**4. Community Involvement**
-We look for agents who demonstrate local expertise through community involvement, local awards, and neighborhood knowledge.
+**4. Community**
+We look for agents who demonstrate local expertise through community, local awards, and neighborhood knowledge.
 
 **5. Responsiveness & Availability**
 Agents who respond quickly to inquiries and maintain high communication standards rank higher.
@@ -37,7 +37,7 @@ Unlike Zillow Premier Agent or similar programs, agents cannot pay to improve th
       { text: "Full Ranking Methodology", href: "/about/ranking-methodology" },
       { text: "View Arizona Rankings", href: "/arizona" }
     ],
-    metaDescription: "Top10Lists ranks real estate agents using verified sales data, client reviews, license verification, and community involvement - not pay-to-play advertising."
+    metaDescription: "Top10Lists ranks real estate agents using verified sales data, client reviews, license verification, and community - not pay-to-play advertising."
   },
   "can-agents-pay-to-be-listed-on-top10lists": {
     question: "Can agents pay to be listed on Top10Lists?",

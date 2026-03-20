@@ -33,7 +33,7 @@ As the founder and CEO of CalzaCo, a top-ranked real estate team brokering throu
 ### Military Background & Service
 As a former Marine and Air Force Spouse, Julie intimately understood how difficult it can be for military members and veterans to learn how to leverage their VA benefits to build stability for themselves outside of the military life. She built CalzaCo on providing honorable Real Estate solutions for military families and they remain the Top Ranked Real Estate solution for military buyers and sellers.
 
-### Community Involvement
+### Community
 CalzaCo has also consistently donated funds, resources, and hundreds of hours in volunteer time to Morale and Wellness initiatives for the Airmen of Luke AFB and local Veterans making them a staple in the military community.
 
 Julie Calza serves as the Blue Blazer Squadron vice chair at Fighter Country Foundation.

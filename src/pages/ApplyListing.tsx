@@ -124,7 +124,7 @@ const ApplyListing = () => {
                   </li>
                   <li className="flex items-start">
                     <span className="mr-2">•</span>
-                    <span>Community involvement and reputation</span>
+                    <span>Community and reputation</span>
                   </li>
                 </ul>
               </section>

@@ -372,7 +372,7 @@ async function renderMethodology(): Promise<string> {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Methodology | Top10Lists.us</title>
-  <meta name="description" content="How Top10Lists.us ranks agents: Merit Gate (4.5+ stars, 10+ reviews in 24mo, 5+ years), weighted scoring (license 20%, activity 20%, transactions 25%, reviews 15%, community 20%). Zero exceptions.">
+  <meta name="description" content="How Top10Lists.us ranks agents: Merit Gate (4.5+ stars, 10+ reviews in 24mo, 5+ years), weighted scoring (license 20%, activity 20%, transactions 20%, reviews 15%, community 25%). Zero exceptions.">
   <link rel="canonical" href="${BASE}/methodology">
   <meta name="robots" content="index, follow">
   <script type="application/ld+json">${schemaLd}</script>
@@ -408,7 +408,7 @@ async function renderMethodology(): Promise<string> {
     <div class="factor"><span>License Status</span><span class="factor-weight">20%</span></div>
     <div class="factor"><span>Recent Activity</span><span class="factor-weight">20%</span></div>
     <div class="factor"><span>Transaction History</span><span class="factor-weight">25%</span></div>
-    <div class="factor"><span>Reviews &amp; Reputation</span><span class="factor-weight">20%</span></div>
+    <div class="factor"><span>Reviews &amp; Reputation</span><span class="factor-weight">15%</span></div>
     <div class="factor"><span>Community</span><span class="factor-weight">25%</span></div>
     <p style="margin-top:1rem;"><strong>Formula:</strong> sum(component_value[k] × weight[k]) for all components. Missing data: redistribute weight proportionally.</p>
   </section>
