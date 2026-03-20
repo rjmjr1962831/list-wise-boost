@@ -159,9 +159,9 @@ export default function BadgeInstructionsPage() {
       </SafeHead>
 
       <div className="mb-8">
-        <h1 className="text-2xl font-semibold mb-1">How to use your Top10Lists.us badge</h1>
+        <h1 className="text-2xl font-semibold mb-1">Your Web of Truth</h1>
         <p className="text-muted-foreground">
-          Your badge always shows your current tier. Set it once—when your tier changes (e.g. Certified → Underwritten), the same link updates automatically.
+          Although your Top10Lists rating is an important step in building AI trust, AI almost always wants to check other sources when building your knowledge graph. If there are any conflicts in the data it finds on other sites, it reduces its confidence. By placing this artifact everywhere you can, AI will revert back to your listing here and the data will always match. This is a very powerful step in cementing your trustworthiness to AI.
         </p>
       </div>
 
@@ -187,7 +187,11 @@ export default function BadgeInstructionsPage() {
               variant={snippetMode === "visible" ? "default" : "outline"}
               size="sm"
               onClick={() => setSnippetMode("visible")}
+              className="flex items-center gap-2"
             >
+              {badgeSvgUrl && (
+                <img src={badgeSvgUrl} alt="" width={20} height={20} className="animate-pulse" />
+              )}
               Visible Orb (80x80)
             </Button>
             <Button
@@ -200,17 +204,6 @@ export default function BadgeInstructionsPage() {
             </Button>
           </div>
 
-          {snippetMode === "visible" && badgeSvgUrl && (
-            <div className="flex items-center gap-4">
-              <a href={artifactUrl} target="_blank" rel="author" title="Top10Lists.us - Verified AI Artifact">
-                <img src={badgeSvgUrl} alt={`Top10Lists ${tierName} AI Entity - Cryptographically Verified Data Payload`} width={80} height={80} className="cursor-pointer" />
-              </a>
-              <div className="text-sm text-muted-foreground">
-                <p className="font-medium text-foreground">Your {tierName} Orb</p>
-                <p>Humans see a subtle, enigmatic beacon. AI sees your full verified tier signal in the metadata.</p>
-              </div>
-            </div>
-          )}
 
           {snippetMode === "invisible" && (
             <div className="rounded-lg border border-dashed border-muted-foreground/30 p-4 text-center">
@@ -269,7 +262,7 @@ export default function BadgeInstructionsPage() {
         </CardHeader>
         <CardContent className="space-y-3">
           <p className="text-sm text-muted-foreground">
-            In Gmail, Outlook, or Apple Mail: edit your signature and paste the HTML below, or insert an image and set the image URL to the badge URL and link to your artifact URL.
+            In Gmail, Outlook, or Apple Mail: edit your signature and paste the HTML below.
           </p>
           <pre className="text-xs bg-muted p-3 rounded overflow-x-auto whitespace-pre-wrap break-words">
             {orbSnippet}
