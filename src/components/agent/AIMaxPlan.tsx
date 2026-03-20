@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Target, AlertTriangle, CheckCircle2, XCircle, TrendingUp,
   Globe, Search, Users, FileCode, Quote, ChevronDown, ChevronUp,
-  ExternalLink
+  ExternalLink, Plus
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -58,8 +58,9 @@ function bandFromScore(score: number): { label: string; color: string; bg: strin
   return { label: "High Fidelity", color: "text-green-500", bg: "bg-green-500" };
 }
 
-function PillarBar({ label, score, maxScore, icon: Icon, description, fixes }: {
-  label: string; score: number; maxScore: number; icon: any; description: string; fixes?: string[];
+function PillarBar({ label, score, maxScore, icon: Icon, description, fixes, isUnderwritten, hasWebOfTruth }: {
+  label: string; score: number; maxScore: number; icon: any; description: string;
+  fixes?: string[]; isUnderwritten?: boolean; hasWebOfTruth?: boolean;
 }) {
   const [showFixes, setShowFixes] = useState(false);
   const pct = Math.max(0, Math.min(100, (score / maxScore) * 100));
@@ -89,9 +90,21 @@ function PillarBar({ label, score, maxScore, icon: Icon, description, fixes }: {
       </div>
       <p className="text-xs text-muted-foreground">{description}</p>
       {showFixes && fixes && (
-        <ul className="text-xs text-muted-foreground space-y-1 ml-6 list-disc">
-          {fixes.map((f, i) => <li key={i}>{f}</li>)}
-        </ul>
+        <div className="text-xs text-muted-foreground space-y-1 ml-4">
+          {/* Top priorities with checkmarks */}
+          <div className={`flex items-center gap-2 ${isUnderwritten ? "text-green-600" : "text-foreground font-semibold"}`}>
+            {isUnderwritten ? <CheckCircle2 className="h-3.5 w-3.5 text-green-500 shrink-0" /> : <span className="w-3.5 h-3.5 rounded-full border-2 border-primary shrink-0" />}
+            {isUnderwritten ? "Underwritten — active" : "Upgrade to Underwritten (biggest single impact)"}
+          </div>
+          <div className={`flex items-center gap-2 ${hasWebOfTruth ? "text-green-600" : "text-foreground font-semibold"}`}>
+            {hasWebOfTruth ? <CheckCircle2 className="h-3.5 w-3.5 text-green-500 shrink-0" /> : <span className="w-3.5 h-3.5 rounded-full border-2 border-primary shrink-0" />}
+            {hasWebOfTruth ? "Web of Truth — enabled" : "Enable your Web of Truth on every platform"}
+          </div>
+          <p className="font-semibold text-foreground mt-2 mb-1">Or:</p>
+          {fixes.map((f, i) => (
+            <li key={i} className="list-disc ml-2">{f}</li>
+          ))}
+        </div>
       )}
     </div>
   );
@@ -136,21 +149,83 @@ function GapItem({ exists, label, impact, description }: {
   );
 }
 
-function PresenceItem({ exists, label, url }: { exists: boolean; label: string; url?: string }) {
+function PresenceItem({ exists, label, url, dbField, professionalId, onSaved }: {
+  exists: boolean; label: string; url?: string; dbField?: string; professionalId?: string; onSaved?: () => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [inputUrl, setInputUrl] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  const handleSave = async () => {
+    if (!inputUrl.trim() || !dbField || !professionalId) return;
+    setSaving(true);
+    try {
+      await supabase
+        .from("professionals")
+        .update({ [dbField]: inputUrl.trim() })
+        .eq("id", professionalId);
+      setEditing(false);
+      setInputUrl("");
+      onSaved?.();
+    } catch {
+      // silent
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
-    <div className="flex items-center justify-between py-1.5">
-      <div className="flex items-center gap-2">
-        {exists ? (
-          <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
-        ) : (
-          <XCircle className="h-4 w-4 text-red-400 shrink-0" />
-        )}
-        <span className="text-sm">{label}</span>
+    <div className="py-1.5">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          {exists ? (
+            <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
+          ) : (
+            <XCircle className="h-4 w-4 text-red-400 shrink-0" />
+          )}
+          <span className="text-sm">{label}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          {exists && url && (
+            <a href={url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline flex items-center gap-1">
+              View <ExternalLink className="h-3 w-3" />
+            </a>
+          )}
+          {!exists && dbField && !editing && (
+            <button
+              onClick={() => setEditing(true)}
+              className="text-xs text-primary hover:underline flex items-center gap-1"
+            >
+              <Plus className="h-3 w-3" /> Add
+            </button>
+          )}
+        </div>
       </div>
-      {exists && url && (
-        <a href={url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline flex items-center gap-1">
-          View <ExternalLink className="h-3 w-3" />
-        </a>
+      {editing && (
+        <div className="flex items-center gap-2 mt-1.5 ml-6">
+          <input
+            type="url"
+            value={inputUrl}
+            onChange={(e) => setInputUrl(e.target.value)}
+            placeholder={`https://...`}
+            className="flex-1 text-xs px-2 py-1 border rounded"
+            autoFocus
+            onKeyDown={(e) => e.key === "Enter" && handleSave()}
+          />
+          <button
+            onClick={handleSave}
+            disabled={saving || !inputUrl.trim()}
+            className="text-xs px-2 py-1 bg-primary text-white rounded hover:bg-primary/90 disabled:opacity-50"
+          >
+            {saving ? "..." : "Save"}
+          </button>
+          <button
+            onClick={() => { setEditing(false); setInputUrl(""); }}
+            className="text-xs px-2 py-1 text-muted-foreground hover:text-foreground"
+          >
+            Cancel
+          </button>
+        </div>
       )}
     </div>
   );
@@ -255,6 +330,9 @@ export function AIMaxPlan({ professional }: AIMaxPlanProps) {
   const platformCount = derivedPlatformCount;
   const agentName = data.full_name || professional.name || "Agent";
   const firstName = agentName.split(" ")[0];
+  const rawTier = (professional.current_tier || professional.badge_tier || "certified").toLowerCase();
+  const isUnderwritten = rawTier === "underwritten";
+  const hasWebOfTruth = !!professional.profile_link;
 
   return (
     <div className="space-y-6">
@@ -328,11 +406,12 @@ export function AIMaxPlan({ professional }: AIMaxPlanProps) {
             maxScore={25}
             icon={Globe}
             description="AI must know exactly who you are before it will recommend you. Name consistency, license verification, entity disambiguation."
+            isUnderwritten={isUnderwritten}
+            hasWebOfTruth={hasWebOfTruth}
             fixes={[
-              "Use your exact legal name consistently across Zillow, Google, Realtor.com, and your website",
-              "Verify your license number is visible and matches state records",
-              "Claim your Google Business Profile if you haven't already",
-              "Upgrade to Underwritten for continuous identity monitoring across all platforms",
+              "Create a LinkedIn profile with your license and brokerage (+3 pts)",
+              "Build a personal website with your name, license, and bio (+5 pts)",
+              "Claim your Google Business Profile (+2 pts)",
             ]}
           />
           <PillarBar
@@ -341,10 +420,13 @@ export function AIMaxPlan({ professional }: AIMaxPlanProps) {
             maxScore={25}
             icon={Quote}
             description="Can AI extract and cite your credentials when recommending you? Machine-readable data, structured profiles, artifact presence."
+            isUnderwritten={isUnderwritten}
+            hasWebOfTruth={hasWebOfTruth}
             fixes={[
-              "Enable your Web of Truth beacon on your website, Zillow bio, and email signature",
-              "Add schema markup to your personal website (or ask your web developer to)",
-              "Upgrade to Underwritten — your complete verified profile becomes a machine-readable artifact that AI can cite directly",
+              "Get mentioned in local press or industry publications (+2 to +3 pts)",
+              "Add schema markup to your personal website (+2 pts)",
+              "Make sure your Zillow and Realtor.com bios are complete and match your Top10Lists profile (+1 to +2 pts)",
+              "Ask your brokerage to link to your profile from their website (+1 to +2 pts)",
             ]}
           />
           <PillarBar
@@ -353,10 +435,13 @@ export function AIMaxPlan({ professional }: AIMaxPlanProps) {
             maxScore={20}
             icon={Users}
             description="Reviews and ratings across platforms. AI weights recent, diverse reviews heavily when deciding who to recommend."
+            isUnderwritten={isUnderwritten}
+            hasWebOfTruth={hasWebOfTruth}
             fixes={[
-              "Ask recent clients for reviews on Google and Zillow — AI weights reviews from the last 6 months most heavily",
-              "Respond to existing reviews — AI reads responses as engagement signals",
-              "Diversify review platforms — presence on 3+ platforms is stronger than 50 reviews on one",
+              "Ask recent clients for reviews on Google and Zillow — AI weights the last 6 months most heavily (+3 to +5 pts)",
+              "Get listed on Realtor.com if you're not already (+4 pts)",
+              "Get listed on HomeLight (+3 pts)",
+              "Respond to existing reviews — AI reads responses as engagement signals (+1 pt)",
             ]}
           />
           <PillarBar
@@ -365,10 +450,12 @@ export function AIMaxPlan({ professional }: AIMaxPlanProps) {
             maxScore={15}
             icon={Users}
             description="Third-party endorsements, press mentions, industry recognition. These are signals AI uses to distinguish you from similar agents."
+            isUnderwritten={isUnderwritten}
+            hasWebOfTruth={hasWebOfTruth}
             fixes={[
-              "Get mentioned in local publications or industry press — even a quote in a local article counts",
-              "Join a board or committee and make sure it's listed publicly",
-              "Upgrade to Audited or Underwritten — we verify and publish your community involvement from IRS 990 filings and public records",
+              "Get mentioned in local publications or industry press (+3 to +5 pts)",
+              "Write a detailed professional bio for your profiles — AI reads these (+5 pts)",
+              "Close more transactions — every 30 sales adds +1 pt (up to +8 pts)",
             ]}
           />
           <PillarBar
@@ -377,10 +464,13 @@ export function AIMaxPlan({ professional }: AIMaxPlanProps) {
             maxScore={15}
             icon={FileCode}
             description="Schema markup, website crawlability, structured data. This is the plumbing that lets AI read your information."
+            isUnderwritten={isUnderwritten}
+            hasWebOfTruth={hasWebOfTruth}
             fixes={[
-              "Add LocalBusiness or RealEstateAgent schema markup to your website",
-              "Make sure your website isn't blocking crawlers (check robots.txt)",
-              "Upgrade to Underwritten — we handle all technical optimization and publish your data in every machine-readable format AI systems consume",
+              "Make sure your website loads and isn't blocking crawlers (+5 pts)",
+              "Add LocalBusiness or RealEstateAgent schema markup to your website (+2 pts)",
+              "Create a Facebook business page (+2 pts)",
+              "Get listed on HomeLight and Realtor.com (+2 to +3 pts each)",
             ]}
           />
         </CardContent>
@@ -402,16 +492,16 @@ export function AIMaxPlan({ professional }: AIMaxPlanProps) {
         <CardContent>
           <div className="grid gap-0 divide-y">
             <PresenceItem exists={true} label="Top10Lists.us" url={`https://www.top10lists.us/${professional.state_slug}/agents/${professional.canonical_slug}`} />
-            <PresenceItem exists={hasZillow} label="Zillow" url={professional.zillow_profile_url || undefined} />
-            <PresenceItem exists={hasLinkedin} label="LinkedIn" url={professional.social_linkedin || undefined} />
-            <PresenceItem exists={hasRealtor} label="Realtor.com" url={professional.social_realtor_com || undefined} />
-            <PresenceItem exists={hasGoogle} label="Google Business Profile" url={professional.google_maps_url || undefined} />
-            <PresenceItem exists={hasPersonalSite} label="Personal Website" url={professional.website || professional.google_website || data.website || undefined} />
-            <PresenceItem exists={hasHomelight} label="HomeLight" url={professional.social_homelight || undefined} />
-            <PresenceItem exists={hasHomesCom} label="Homes.com" url={professional.social_homes_com || undefined} />
-            <PresenceItem exists={hasFacebook} label="Facebook" url={professional.social_facebook || undefined} />
-            <PresenceItem exists={hasInstagram} label="Instagram" url={professional.social_instagram || undefined} />
-            <PresenceItem exists={hasTiktok} label="TikTok" url={professional.social_tiktok || undefined} />
+            <PresenceItem exists={hasZillow} label="Zillow" url={professional.zillow_profile_url || undefined} dbField="zillow_profile_url" professionalId={professional.id} onSaved={() => window.location.reload()} />
+            <PresenceItem exists={hasLinkedin} label="LinkedIn" url={professional.social_linkedin || undefined} dbField="social_linkedin" professionalId={professional.id} onSaved={() => window.location.reload()} />
+            <PresenceItem exists={hasRealtor} label="Realtor.com" url={professional.social_realtor_com || undefined} dbField="social_realtor_com" professionalId={professional.id} onSaved={() => window.location.reload()} />
+            <PresenceItem exists={hasGoogle} label="Google Business Profile" url={professional.google_maps_url || undefined} dbField="google_maps_url" professionalId={professional.id} onSaved={() => window.location.reload()} />
+            <PresenceItem exists={hasPersonalSite} label="Personal Website" url={professional.website || professional.google_website || data.website || undefined} dbField="website" professionalId={professional.id} onSaved={() => window.location.reload()} />
+            <PresenceItem exists={hasHomelight} label="HomeLight" url={professional.social_homelight || undefined} dbField="social_homelight" professionalId={professional.id} onSaved={() => window.location.reload()} />
+            <PresenceItem exists={hasHomesCom} label="Homes.com" url={professional.social_homes_com || undefined} dbField="social_homes_com" professionalId={professional.id} onSaved={() => window.location.reload()} />
+            <PresenceItem exists={hasFacebook} label="Facebook" url={professional.social_facebook || undefined} dbField="social_facebook" professionalId={professional.id} onSaved={() => window.location.reload()} />
+            <PresenceItem exists={hasInstagram} label="Instagram" url={professional.social_instagram || undefined} dbField="social_instagram" professionalId={professional.id} onSaved={() => window.location.reload()} />
+            <PresenceItem exists={hasTiktok} label="TikTok" url={professional.social_tiktok || undefined} dbField="social_tiktok" professionalId={professional.id} onSaved={() => window.location.reload()} />
             <PresenceItem exists={hasPress} label="Press Mentions" url={Array.isArray(professional.press_mentions) && professional.press_mentions.length > 0 ? professional.press_mentions[0]?.url : undefined} />
             <PresenceItem exists={hasSchema} label="Schema Markup (any site)" />
           </div>
@@ -569,6 +659,62 @@ export function AIMaxPlan({ professional }: AIMaxPlanProps) {
                   The actions above are things you can do yourself, at no cost. Tier upgrades add verification depth,
                   refresh frequency, and expanded evidence sourcing — but the foundation is your own web presence.
                 </p>
+
+                {/* Certified vs Underwritten comparison */}
+                <details className="mt-6 text-sm">
+                  <summary className="cursor-pointer font-semibold text-primary hover:underline text-center">
+                    What does Underwritten actually give AI that Certified doesn't?
+                  </summary>
+                  <div className="mt-4 space-y-4 text-muted-foreground">
+                    <p>
+                      We analyzed the actual data payloads AI systems receive when they crawl a Certified agent vs. an Underwritten agent on Top10Lists.us. The difference is not cosmetic — it fundamentally changes what AI can verify, cite, and recommend.
+                    </p>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="rounded-lg border p-3">
+                        <p className="font-semibold text-foreground text-xs mb-2">Certified</p>
+                        <ul className="text-xs space-y-1">
+                          <li>4 data sections</li>
+                          <li>~11 KB payload</li>
+                          <li>Basic: name, license, rating, sales</li>
+                          <li>2 external links in schema</li>
+                          <li>2 specialties listed</li>
+                          <li>Quarterly refresh</li>
+                          <li>No community involvement</li>
+                          <li>No press mentions</li>
+                          <li>No awards</li>
+                          <li>No city-level verification</li>
+                        </ul>
+                      </div>
+                      <div className="rounded-lg border border-primary/30 bg-primary/5 p-3">
+                        <p className="font-semibold text-primary text-xs mb-2">Underwritten</p>
+                        <ul className="text-xs space-y-1">
+                          <li><strong>8 data sections</strong></li>
+                          <li><strong>~16 KB payload</strong></li>
+                          <li>Full: name, license, rating, sales, bio</li>
+                          <li><strong>3+ external links</strong> in schema</li>
+                          <li><strong>14+ specialties</strong> listed</li>
+                          <li><strong>Daily refresh</strong></li>
+                          <li><strong>Community roles verified</strong> (IRS 990)</li>
+                          <li><strong>Press coverage</strong> (8+ mentions)</li>
+                          <li><strong>Awards &amp; honors</strong> (10+ verified)</li>
+                          <li><strong>Cities served</strong> (transaction-verified)</li>
+                        </ul>
+                      </div>
+                    </div>
+
+                    <div className="rounded-lg bg-muted/50 border p-3 text-xs">
+                      <p className="font-semibold text-foreground mb-1">Why this matters to AI:</p>
+                      <p>
+                        AI systems make recommendations based on evidence depth. A Certified payload gives AI enough to confirm you exist and meet minimum thresholds — but not enough to confidently recommend you over a competitor. An Underwritten payload gives AI verified community involvement, press coverage, transaction-verified cities, and 14+ expertise signals. That's the difference between "this agent appears qualified" and "I can recommend this agent with confidence because I have independent evidence from 8+ sources."
+                      </p>
+                    </div>
+
+                    <p className="text-xs text-center">
+                      <strong className="text-foreground">Is it worth it?</strong> If AI is choosing between two agents and one has 4 data sections refreshed quarterly while the other has 8 sections refreshed daily with press, awards, and community verification — the decision isn't close.
+                    </p>
+                  </div>
+                </details>
               </>
             );
           })()}
