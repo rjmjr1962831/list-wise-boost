@@ -155,21 +155,16 @@ export default function BadgeInstructionsPage() {
       </div>
 
       {isListed && (
-        <Card className="mb-6 border-2 border-amber-500/30">
-          <CardContent className="p-6 text-center space-y-3">
-            <p className="text-lg font-semibold">Web of Truth is available on Certified and above</p>
+        <Card className="mb-6">
+          <CardContent className="p-6 text-center">
             <p className="text-sm text-muted-foreground">
-              Your Listed tier includes basic verification. Upgrade to Certified (free) or higher to enable your Web of Truth beacon and artifact page.
+              The Web of Truth beacon is available on Certified tier and above. Contact us or check your dashboard for details.
             </p>
-            <Link to={`/funnel/${artifactToken}/pricing`}>
-              <Button>View Upgrade Options <ChevronRight className="h-4 w-4 ml-1" /></Button>
-            </Link>
           </CardContent>
         </Card>
       )}
 
       {!isListed && (<>
-      {/* === Tier-enabled content below === */}
 
       {/* 1. Your Web of Truth Beacon */}
       <Card className="mb-6">
