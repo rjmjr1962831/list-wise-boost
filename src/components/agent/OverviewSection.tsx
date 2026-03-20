@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Activity, Shield, Zap, BadgeCheck, CheckCircle, XCircle, TrendingUp, ChevronRight, Bot } from "lucide-react";
+import { Activity, Shield, BadgeCheck, CheckCircle, XCircle, TrendingUp, ChevronRight, Bot } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -16,7 +16,6 @@ const BOT_DISPLAY: Record<string, string> = {
   "ByteSpider": "TikTok/ByteDance", "ClaudeBot": "Claude (Anthropic)",
   "PerplexityBot": "Perplexity", "Gemini-AI": "Google Gemini", "GPTBot": "OpenAI",
 };
-const SEO_BOTS = new Set(["AhrefsBot", "semrushbot", "SEMrushBot", "DotBot", "AdsBot-Google", "MJ12bot"]);
 
 function normalizeTier(t: string | null): string {
   const t0 = (t || "").toLowerCase();
@@ -29,6 +28,12 @@ const TIER_LABELS: Record<string, string> = {
   certified: "Certified (Free)",
   audited: "Audited ($300/mo)",
   underwritten: "Underwritten ($500/mo)",
+};
+
+const TIER_DESCRIPTIONS: Record<string, string> = {
+  certified: "Basic verification. Annual data refresh.",
+  audited: "Expanded verification. Monthly data refresh. 10+ sources.",
+  underwritten: "Complete verification. Daily refresh. Continuous monitoring.",
 };
 
 interface CrawlStats {
@@ -113,9 +118,6 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
 
   const maxScore = scores?.score_underwritten ?? 95;
 
-  const aiBots = (crawlStats?.bot_names_30d || []).filter((b) => !SEO_BOTS.has(b));
-  const displayBots = [...new Set(aiBots.map((b) => BOT_DISPLAY[b] || b))].sort();
-
   const handleUpgrade = () => {
     const token = professional.verification_token || professional.id;
     navigate(`/funnel/${token}/pricing`);
@@ -140,7 +142,7 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
             {surfacesData ? surfacesData.total.toLocaleString() : "--"}
           </p>
           <p className="text-xs text-slate-400 mt-1">
-            Times surfaced to AI systems
+            times surfaced to AI systems in the past 7 days
           </p>
 
           {/* Top bot pills from pre-computed data */}
@@ -168,18 +170,9 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
           <p className="text-xs text-muted-foreground mt-1">
             Current tier: {TIER_LABELS[currentTier]}
           </p>
-
-          {/* Mini score bar */}
-          <div className="mt-3 h-2 bg-muted rounded-full overflow-hidden">
-            <div
-              className="h-full bg-primary rounded-full transition-all duration-500"
-              style={{ width: `${pctCurrent}%` }}
-            />
-          </div>
-          <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
-            <span>0</span>
-            <span>{maxScore}</span>
-          </div>
+          <p className="text-xs text-muted-foreground mt-2">
+            {TIER_DESCRIPTIONS[currentTier]}
+          </p>
         </div>
 
         {/* Card 3: Web of Truth */}
@@ -205,7 +198,10 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
               <p className="text-xs text-muted-foreground mt-2">
                 Enable your artifact so AI systems can cite your verified credentials.
               </p>
-              <button className="mt-2 text-xs font-semibold text-primary flex items-center gap-1 hover:underline">
+              <button
+                className="mt-2 text-xs font-semibold text-primary flex items-center gap-1 hover:underline"
+                onClick={() => navigate(`/funnel/${professional.verification_token || professional.id}/pricing`)}
+              >
                 Enable Artifact <ChevronRight className="h-3 w-3" />
               </button>
             </>
@@ -254,59 +250,7 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
         </div>
       )}
 
-      {/* ── ROW 3: AI Surfaces ── */}
-      {surfacesData && surfacesData.total > 0 && (
-        <div className="rounded-xl border p-5">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <Activity className="h-4 w-4 text-primary" />
-              <p className="text-sm font-semibold">AI Surfaces</p>
-            </div>
-            {surfacesData.computed_at && (
-              <span className="text-xs text-muted-foreground">
-                Updated {new Date(surfacesData.computed_at).toLocaleDateString()}
-              </span>
-            )}
-          </div>
-
-          <p className="text-4xl font-black tabular-nums mb-1">
-            {surfacesData.total.toLocaleString()}
-          </p>
-          <p className="text-xs text-muted-foreground mb-4">
-            times surfaced to AI systems
-          </p>
-
-          {/* Top 5 bots + Other */}
-          <div className="space-y-2">
-            {(() => {
-              const top5 = surfacesData.bots.slice(0, 5);
-              const otherCount = surfacesData.bots.slice(5).reduce((s, b) => s + b.crawls, 0);
-              const maxCrawls = top5.length > 0 ? top5[0].crawls : 1;
-              const rows = [
-                ...top5.map((b) => ({
-                  label: BOT_DISPLAY[b.bot_name] || b.bot_name,
-                  count: b.crawls,
-                })),
-                ...(otherCount > 0 ? [{ label: "Other", count: otherCount }] : []),
-              ];
-              return rows.map((r) => (
-                <div key={r.label} className="flex items-center gap-3">
-                  <span className="text-xs text-foreground w-32 shrink-0 truncate text-right">{r.label}</span>
-                  <div className="flex-1 bg-muted rounded-full h-4 overflow-hidden">
-                    <div
-                      className="bg-primary/80 h-full rounded-full"
-                      style={{ width: `${Math.max(2, (r.count / maxCrawls) * 100)}%` }}
-                    />
-                  </div>
-                  <span className="text-xs text-muted-foreground tabular-nums w-16 text-right">{r.count.toLocaleString()}</span>
-                </div>
-              ));
-            })()}
-          </div>
-        </div>
-      )}
-
-      {/* ── ROW 4: Quick AI Activity Context ── */}
+      {/* ── ROW 3: Quick AI Activity Context ── */}
       {crawlStats && crawlStats.total_crawls_30d > 0 && (
         <div className="rounded-xl border p-5">
           <div className="flex items-center gap-2 mb-3">

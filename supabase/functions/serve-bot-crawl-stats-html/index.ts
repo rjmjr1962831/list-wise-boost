@@ -174,6 +174,7 @@ async function fetchAllData() {
           'city' as market_type
         FROM bot_crawl_logs
         WHERE page_path LIKE '%top10%'
+          AND crawled_at >= now() - interval '7 days'
           AND split_part(page_path, '/', 3) IN (
             'phoenix','tucson','mesa','chandler','gilbert','glendale','scottsdale',
             'los-angeles','san-diego','san-jose','san-francisco','fresno','sacramento','long-beach',
