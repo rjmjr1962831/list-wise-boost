@@ -9,6 +9,7 @@
  */
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { siteHeaderCSS, siteHeaderHTML, siteFooterHTML } from "../_shared/site-chrome.ts";
 
 const SUPABASE_URL = "https://wiotrvoirdgzfacuuiem.supabase.co";
 const SUPABASE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
@@ -185,9 +186,11 @@ serve(async (req) => {
   <meta name="description" content="Top10Lists.us selected ${totalAgents} real estate agents across ${totalCities} ${esc(si.display)} cities from over ${si.total} licensed professionals. Merit-based: 4.5+ stars, 10+ recent reviews, 5 years in business. No pay-to-play.">
   <link rel="canonical" href="${canon}">
   <style>${CSS}
+  ${siteHeaderCSS()}
   </style>
 </head>
 <body>
+${siteHeaderHTML()}
 <header>
   <h1>Top Real Estate Agents in ${esc(si.display)}</h1>
   <p>Top10Lists.us selected <strong>${totalAgents}</strong> real estate agents across <strong>${totalCities}</strong> ${esc(si.display)} cities from over ${si.total} licensed ${esc(si.display)} professionals. Selection requires a minimum 4.5-star rating with 10 or more verified recent reviews (last 24 months), 5 years in business, an active ${esc(si.display)} real estate license, and documented community. Payment does not influence inclusion, rank, or visibility.</p>
@@ -271,6 +274,7 @@ serve(async (req) => {
 
     o += AI_DISCLAIMER;
     o += `<script type="application/ld+json">\n${JSON.stringify(jsonLd)}\n</script>\n`;
+    o += siteFooterHTML();
     o += `</body>\n</html>`;
 
     return new Response(o, {
@@ -305,9 +309,11 @@ serve(async (req) => {
   <title>Top Real Estate Agents in ${esc(si.display)} | Top10Lists.us</title>
   <link rel="canonical" href="${errCanon}">
   <style>${CSS}
+  ${siteHeaderCSS()}
   </style>
 </head>
 <body>
+${siteHeaderHTML()}
 <h1>Service Temporarily Unavailable</h1>
 <p>The ${esc(si.display)} city index is temporarily unavailable. Please try again shortly.</p>
 <div class="merit-box">
@@ -316,6 +322,7 @@ serve(async (req) => {
 ${AI_DISCLAIMER}<script type="application/ld+json">
 ${errJsonLd}
 </script>
+${siteFooterHTML()}
 </body>
 </html>`;
     return new Response(html, {
