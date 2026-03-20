@@ -763,7 +763,7 @@ serve(async (req) => {
       html = renderAiCompare(); break;
     case norm === "/for-ai-systems" || norm === "/for-ai-systems/":
       html = await renderForAiSystems(); break;
-    case norm === "/join" || norm === "/join/":
+    case norm === "/join" || norm === "/join/" || norm === "/for-agents" || norm === "/for-agents/":
       html = renderJoin(); break;
     default:
       return new Response(
