@@ -19,8 +19,7 @@ const KEY_URLS = [
   'https://www.top10lists.us/about/founder',
   'https://www.top10lists.us/faq',
   'https://www.top10lists.us/for-agents',
-  'https://www.top10lists.us/compare',
-  
+
   // AI-specific pages
   'https://www.top10lists.us/for-ai',
   'https://www.top10lists.us/for-ai-systems',

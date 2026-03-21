@@ -42,8 +42,7 @@ const STATIC_PAGES = [
   // Editorial & Press
   "/press",
   "/editorial-updates",
-  // Comparison & Info
-  "/compare",
+  // Info
   "/zillow-explained",
   "/faq",
   // Legal

@@ -14,8 +14,6 @@ import { HomeErrorBoundary } from "@/components/HomeErrorBoundary";
 
 const CanonicalAgentProfile = lazy(() => import("@/pages/CanonicalAgentProfile"));
 const Privacy = lazy(() => import("@/pages/Privacy"));
-const AICompare = lazy(() => import("@/pages/AICompare"));
-const WhyAITrustsUs = lazy(() => import("@/pages/WhyAITrustsUs"));
 const TermsOfService = lazy(() => import("@/pages/TermsOfService"));
 const SMSTerms = lazy(() => import("@/pages/SMSTerms"));
 const OptInPolicy = lazy(() => import("@/pages/OptInPolicy"));
@@ -205,8 +203,6 @@ export const routeManifest: RouteObject[] = [
   { path: "/for-ai", element: React.createElement(ForAI, null) },
   { path: "/for-ai-systems", element: React.createElement(ForAISystems, null) },
   { path: "/transparency", element: React.createElement(Transparency, null) },
-  { path: "/ai-compare", element: React.createElement(AICompare, null) },
-  { path: "/why-ai-trusts-us", element: React.createElement(WhyAITrustsUs, null) },
   { path: "/ai-liability", element: React.createElement(AILiability, null) },
   { path: "/ai-citation-whitepaper", element: React.createElement(AICitationWhitepaper, null) },
   { path: "/protocol-services", element: React.createElement(ProtocolServices, null) },

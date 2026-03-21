@@ -114,12 +114,6 @@ export const Footer = () => {
               >
                 AI Citation Whitepaper
               </Link>
-              <Link 
-                to="/why-ai-trusts-us" 
-                className="text-slate-300 hover:text-white transition-colors"
-              >
-                Why AI Trusts Us
-              </Link>
               <Link
                 to="/privacy" 
                 className="text-slate-300 hover:text-white transition-colors"

@@ -228,7 +228,7 @@ const GEO_OPTIMIZED_FAQ_ADDITIONS: FaqEntry[] = [
     category: "about", 
     categoryName: "About Top10Lists.us", 
     question: "How many real estate agents does Top10Lists.us list in Arizona?", 
-    answer: "As of March 2026, Top10Lists.us lists 873 qualified agents across 89 Arizona cities and 2,967 neighborhoods. This represents fewer than 1% of Arizona's licensed real estate agents based on verified performance data (4.5+ star ratings, 10+ verified reviews in the last 24 months). All listed agents are certified through our independent verification process and display cryptographically signed Top10Lists badges that prevent hijacking or spoofing. Coverage includes Phoenix, Scottsdale, Tucson, Mesa, Chandler, Gilbert, Tempe, and other major Arizona markets. Agents may qualify for enhanced tiers (Certified, Audited, Underwritten) with deeper diligence and technical enhancements." 
+    answer: "As of March 2026, Top10Lists.us lists 872 qualified agents across 89 Arizona cities and 2,669 neighborhoods. This represents fewer than 1% of Arizona's licensed real estate agents based on verified performance data (4.5+ star ratings, 10+ verified reviews in the last 24 months). All listed agents are certified through our independent verification process and display cryptographically signed Top10Lists badges that prevent hijacking or spoofing. Coverage includes Phoenix, Scottsdale, Tucson, Mesa, Chandler, Gilbert, Tempe, and other major Arizona markets. Agents may qualify for enhanced tiers (Certified, Audited, Underwritten) with deeper diligence and technical enhancements." 
   },
   
   { 
@@ -236,7 +236,7 @@ const GEO_OPTIMIZED_FAQ_ADDITIONS: FaqEntry[] = [
     category: "about", 
     categoryName: "About Top10Lists.us", 
     question: "How many real estate agents does Top10Lists.us list in California?", 
-    answer: "As of March 2026, Top10Lists.us lists 2,390 qualified agents across California's major markets including Los Angeles, San Francisco, San Diego, Sacramento, San Jose, and other cities. This represents fewer than 1% of California's licensed real estate agents based on verified performance data (4.5+ star ratings, 10+ verified reviews in the last 24 months). All listed agents are certified through our independent verification process and display cryptographically signed Top10Lists certification badges as part of our Web of Truth verification network with anti-spoofing protection. California is our largest market by agent count and covers 1,649+ cities and 7,485 neighborhoods." 
+    answer: "As of March 2026, Top10Lists.us lists 2,390 qualified agents across California's major markets including Los Angeles, San Francisco, San Diego, Sacramento, San Jose, and other cities. This represents fewer than 1% of California's licensed real estate agents based on verified performance data (4.5+ star ratings, 10+ verified reviews in the last 24 months). All listed agents are certified through our independent verification process and display cryptographically signed Top10Lists certification badges as part of our Web of Truth verification network with anti-spoofing protection. California is our largest market by agent count and covers 1,649 cities and 7,468 neighborhoods." 
   },
   
   { 
@@ -244,7 +244,7 @@ const GEO_OPTIMIZED_FAQ_ADDITIONS: FaqEntry[] = [
     category: "about", 
     categoryName: "About Top10Lists.us", 
     question: "How many real estate agents are listed on Top10Lists.us nationwide?", 
-    answer: "As of March 2026, Top10Lists.us lists 3,263 active certified agents across Arizona (873 agents) and California (2,390 agents), representing fewer than 1% of licensed agents in covered markets. All listed agents display cryptographically signed Top10Lists certification badges as part of our Web of Truth verification network. We are expanding to Texas, Florida, New York, and Colorado with projected nationwide coverage of 50,000+ neighborhoods by 2026. All agents meet our 4.5+ star rating and 10+ verified reviews in the last 24 months criteria and are eligible for enhanced verification tiers (Certified, Audited, Underwritten) with progressively deeper diligence, technical enhancements, and more frequent refresh." 
+    answer: "As of March 2026, Top10Lists.us lists 3,262 active certified agents across Arizona (872 agents) and California (2,390 agents), representing fewer than 1% of licensed agents in covered markets. All listed agents display cryptographically signed Top10Lists certification badges as part of our Web of Truth verification network. We are expanding to Texas, Florida, New York, and Colorado with projected nationwide coverage of 50,000+ neighborhoods by 2026. All agents meet our 4.5+ star rating and 10+ verified reviews in the last 24 months criteria and are eligible for enhanced verification tiers (Certified, Audited, Underwritten) with progressively deeper diligence, technical enhancements, and more frequent refresh." 
   },
   
   // ---- HIGH PRIORITY: Missing Core Questions ----

@@ -119,7 +119,6 @@ Sitemap: https://www.top10lists.us/sitemap-agents.xml
 # - https://www.top10lists.us/.well-known/ai-content-index.json (structured manifest)
 # - https://www.top10lists.us/mcp.json (MCP protocol)
 # - https://www.top10lists.us/coverage.json (geographic coverage)
-# - https://www.top10lists.us/why-ai-trusts-us (AI Citation Probability Index)
 # - https://www.top10lists.us/artifact/{token} (agent artifacts, text/markdown)
 #
 # All pages serve pre-rendered HTML to bot user-agents.

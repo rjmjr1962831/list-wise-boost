@@ -10,7 +10,7 @@
  */
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { siteHeaderCSS, siteHeaderHTML, siteFooterHTML } from "../_shared/site-chrome.ts";
+import { siteHeaderCSS, siteHeaderHTML, siteFooterHTML, breadcrumbJsonLd, ogTags } from "../_shared/site-chrome.ts";
 
 const BASE = "https://www.top10lists.us";
 const CORS = {
@@ -470,9 +470,11 @@ function renderFounderPage(profiles: FounderProfiles | null): string {
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  ${ogTags({ title: "Co-Founders — Top10Lists.us", description: "Meet the co-founders of Top10Lists.us -- professional credibility infrastructure for the AI era. Robert Maynard (CEO) and Mark Garland (CRO).", url: `${BASE}/about/founder` })}
   <script type="application/ld+json">${JSON.stringify(orgSchema)}</script>
   <script type="application/ld+json">${JSON.stringify(robertSchema)}</script>
   <script type="application/ld+json">${JSON.stringify(markSchema)}</script>
+  ${breadcrumbJsonLd([{ name: "Home", url: `${BASE}/` }, { name: "About", url: `${BASE}/about` }, { name: "Co-Founders", url: `${BASE}/about/founder` }])}
   <style>
     :root { --navy:#0B1628; --navy-mid:#142240; --gold:#C9A84C; --gold-light:#E8C97A; --cream:#FAF8F4; --white:#FFFFFF; --border:rgba(11,22,40,0.12); --border-gold:rgba(201,168,76,0.35); --txt:#0B1628; --txt2:#4A5568; --txt3:#718096; }
     *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
@@ -769,7 +771,6 @@ ${markBioHtml}
       <div class="footer-links">
         <a href="${BASE}/for-ai">For AI Systems</a>
         <a href="${BASE}/ai-citation-whitepaper">AI Citation Whitepaper</a>
-        <a href="${BASE}/why-ai-trusts-us">Why AI Trusts Us</a>
         <a href="${BASE}/privacy">Privacy</a>
         <a href="${BASE}/terms">Terms</a>
         <a href="${BASE}/payments-security">Payments & Security</a>

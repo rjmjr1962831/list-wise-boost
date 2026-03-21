@@ -17,7 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { Loader2, Check } from "lucide-react";
-import { ListMaker, type ListMakerCriteria, getSavedListTemplates, type SavedListTemplate } from "./ListMaker";
+import { type ListMakerCriteria, getSavedListTemplates, type SavedListTemplate } from "./ListMaker";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -38,11 +38,12 @@ interface Campaign {
   total_clicks: number;
 }
 
-type Tab = "list-maker" | "wizard" | "review" | "monitor";
+type Tab = "wizard" | "review" | "monitor";
 
 const SENDER_ACCOUNTS = [
   "hello@toptenlists.us",
   "robert@toptenlists.us",
+  "mark@toptenlists.us",
   "hello@top10lists.us",
   "robert@top10lists.us",
 ];
@@ -67,7 +68,7 @@ const STATUS_COLORS: Record<string, string> = {
   complete: "bg-purple-200 text-purple-800",
 };
 
-const TEMPLATE_VARIABLES = [
+const BASE_TEMPLATE_VARIABLES = [
   { key: "firstName", label: "First Name" },
   { key: "lastName", label: "Last Name" },
   { key: "city", label: "City" },
@@ -78,7 +79,7 @@ const TEMPLATE_VARIABLES = [
   { key: "tier", label: "Tier" },
 ];
 
-const WIZARD_STEPS = ["Select List", "Create Email", "Review", "Test", "Launch"];
+const WIZARD_STEPS = ["Create or Select Campaign", "Build List", "Create Email", "Send Gates", "Review", "Test", "Launch"];
 
 const WIZARD_STATES = [
   { value: "arizona", label: "Arizona" },
@@ -176,7 +177,12 @@ function CampaignWizard({
   const subjectRef = useRef<HTMLInputElement>(null);
   const bodyRef = useRef<HTMLTextAreaElement>(null);
 
-  // Step 3: Test
+  // Step 3: Send Gates
+  const [maxPerDay, setMaxPerDay] = useState(35);
+  const [uptickPerDay, setUptickPerDay] = useState(10);
+  const [minSecondsBetweenSends, setMinSecondsBetweenSends] = useState(120);
+
+  // Step 5: Test
   const [draftCampaignId, setDraftCampaignId] = useState<string | null>(null);
   const [testSending, setTestSending] = useState(false);
   const [testsSent, setTestsSent] = useState<string[]>([]);
@@ -457,13 +463,9 @@ function CampaignWizard({
   };
 
   const canProceed = (s: number) => {
-    if (s === 0) return (listCount ?? 0) > 0;
-    if (s === 1)
-      return (
-        (campaignName.trim() || existingCampaignId) &&
-        subject.trim() &&
-        senders.length > 0
-      );
+    if (s === 0) return !!(campaignName.trim() || existingCampaignId);
+    if (s === 1) return (listCount ?? 0) > 0;
+    if (s === 2) return !!(subject.trim() && senders.length > 0);
     return true;
   };
 
@@ -487,6 +489,9 @@ function CampaignWizard({
     setLaunched(false);
     setLaunchedCount(0);
     setScheduledStartMST("");
+    setMaxPerDay(35);
+    setUptickPerDay(10);
+    setMinSecondsBetweenSends(120);
   };
 
   // ---- Variable insertion buttons ----
@@ -503,7 +508,7 @@ function CampaignWizard({
       <span className="text-xs text-muted-foreground mr-1 self-center">
         Insert:
       </span>
-      {TEMPLATE_VARIABLES.map((v) => (
+      {BASE_TEMPLATE_VARIABLES.map((v) => (
         <button
           key={v.key}
           type="button"
@@ -547,18 +552,58 @@ function CampaignWizard({
         ))}
       </div>
 
-      {/* ============ STEP 0: SELECT LIST ============ */}
+      {/* ============ STEP 0: CREATE OR SELECT CAMPAIGN ============ */}
       {step === 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Select List</CardTitle>
-            <CardDescription>
-              Filter agents to target. Only agents with email addresses are
-              included.
-            </CardDescription>
+            <CardTitle>Create or Select Campaign</CardTitle>
+            <CardDescription>Start a new campaign or continue an existing one.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Load from saved list */}
+            <div className="space-y-1">
+              <Label>Continue an existing campaign</Label>
+              <select
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                value={existingCampaignId}
+                onChange={(e) => handleSelectExistingCampaign(e.target.value)}
+              >
+                <option value="">— New campaign —</option>
+                {campaigns
+                  .filter((c) => ["draft", "pending_review", "approved", "paused"].includes(c.status))
+                  .map((c) => (
+                    <option key={c.id} value={c.id}>{c.name} ({c.status.replace("_", " ")})</option>
+                  ))}
+              </select>
+            </div>
+
+            {!existingCampaignId && (
+              <div className="space-y-1">
+                <Label>Campaign Name</Label>
+                <Input
+                  placeholder="e.g. Q1 Phoenix Outreach"
+                  value={campaignName}
+                  onChange={(e) => setCampaignName(e.target.value)}
+                />
+              </div>
+            )}
+
+            <div className="flex justify-end">
+              <Button onClick={() => setStep(1)} disabled={!campaignName.trim() && !existingCampaignId}>
+                Next: Build List &rarr;
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* ============ STEP 1: BUILD LIST ============ */}
+      {step === 1 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Build List</CardTitle>
+            <CardDescription>Filter agents to target. Only agents with email addresses are included.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
             {savedLists.length > 0 && (
               <div className="space-y-1">
                 <Label className="text-xs text-muted-foreground">Load a saved list</Label>
@@ -575,9 +620,7 @@ function CampaignWizard({
                 >
                   <option value="">— Select saved list (optional) —</option>
                   {savedLists.map((l) => (
-                    <option key={l.id} value={l.id}>
-                      {l.name} (saved {new Date(l.savedAt).toLocaleDateString()})
-                    </option>
+                    <option key={l.id} value={l.id}>{l.name} (saved {new Date(l.savedAt).toLocaleDateString()})</option>
                   ))}
                 </select>
               </div>
@@ -588,24 +631,10 @@ function CampaignWizard({
                 <Label className="text-sm whitespace-nowrap">Active</Label>
                 <select
                   className="h-9 rounded-md border bg-background px-3 text-sm"
-                  value={
-                    criteria.active === true
-                      ? "active"
-                      : criteria.active === false
-                        ? "inactive"
-                        : "all"
-                  }
+                  value={criteria.active === true ? "active" : criteria.active === false ? "inactive" : "all"}
                   onChange={(e) => {
                     const v = e.target.value;
-                    setCriteria((prev) => ({
-                      ...prev,
-                      active:
-                        v === "active"
-                          ? true
-                          : v === "inactive"
-                            ? false
-                            : ("all" as const),
-                    }));
+                    setCriteria((prev) => ({ ...prev, active: v === "active" ? true : v === "inactive" ? false : ("all" as const) }));
                   }}
                 >
                   <option value="active">Active only</option>
@@ -618,24 +647,10 @@ function CampaignWizard({
                 <Label className="text-sm">States</Label>
                 <div className="flex flex-wrap gap-1">
                   {WIZARD_STATES.map((s) => (
-                    <label
-                      key={s.value}
-                      className="flex items-center gap-1.5 text-sm cursor-pointer"
-                    >
+                    <label key={s.value} className="flex items-center gap-1.5 text-sm cursor-pointer">
                       <Checkbox
-                        checked={
-                          criteria.state_slugs?.includes(s.value) ?? false
-                        }
-                        onCheckedChange={(c) =>
-                          setCriteria((prev) => ({
-                            ...prev,
-                            state_slugs: c
-                              ? [...(prev.state_slugs || []), s.value]
-                              : (prev.state_slugs || []).filter(
-                                  (x) => x !== s.value
-                                ),
-                          }))
-                        }
+                        checked={criteria.state_slugs?.includes(s.value) ?? false}
+                        onCheckedChange={(c) => setCriteria((prev) => ({ ...prev, state_slugs: c ? [...(prev.state_slugs || []), s.value] : (prev.state_slugs || []).filter((x) => x !== s.value) }))}
                       />
                       <span>{s.label}</span>
                     </label>
@@ -647,24 +662,10 @@ function CampaignWizard({
                 <Label className="text-sm">Tiers</Label>
                 <div className="flex flex-wrap gap-1">
                   {WIZARD_TIERS.map((t) => (
-                    <label
-                      key={t.value}
-                      className="flex items-center gap-1.5 text-sm cursor-pointer"
-                    >
+                    <label key={t.value} className="flex items-center gap-1.5 text-sm cursor-pointer">
                       <Checkbox
-                        checked={
-                          criteria.current_tiers?.includes(t.value) ?? false
-                        }
-                        onCheckedChange={(c) =>
-                          setCriteria((prev) => ({
-                            ...prev,
-                            current_tiers: c
-                              ? [...(prev.current_tiers || []), t.value]
-                              : (prev.current_tiers || []).filter(
-                                  (x) => x !== t.value
-                                ),
-                          }))
-                        }
+                        checked={criteria.current_tiers?.includes(t.value) ?? false}
+                        onCheckedChange={(c) => setCriteria((prev) => ({ ...prev, current_tiers: c ? [...(prev.current_tiers || []), t.value] : (prev.current_tiers || []).filter((x) => x !== t.value) }))}
                       />
                       <span>{t.label}</span>
                     </label>
@@ -674,39 +675,19 @@ function CampaignWizard({
 
               <div className="flex items-center gap-2">
                 <Label className="text-sm whitespace-nowrap">Min rating</Label>
-                <Input
-                  type="number"
-                  min={0}
-                  max={5}
-                  step={0.1}
-                  className="w-20 h-9"
+                <Input type="number" min={0} max={5} step={0.1} className="w-20 h-9"
                   value={criteria.min_rating ?? ""}
-                  onChange={(e) =>
-                    setCriteria((prev) => ({
-                      ...prev,
-                      min_rating: parseFloat(e.target.value) || undefined,
-                    }))
-                  }
+                  onChange={(e) => setCriteria((prev) => ({ ...prev, min_rating: parseFloat(e.target.value) || undefined }))}
                 />
               </div>
 
               <label className="flex items-center gap-2">
-                <Checkbox
-                  checked={!!criteria.email_verified}
-                  onCheckedChange={(c) =>
-                    setCriteria((prev) => ({ ...prev, email_verified: !!c }))
-                  }
-                />
+                <Checkbox checked={!!criteria.email_verified} onCheckedChange={(c) => setCriteria((prev) => ({ ...prev, email_verified: !!c }))} />
                 <span className="text-sm">Email verified</span>
               </label>
 
               <label className="flex items-center gap-2">
-                <Checkbox
-                  checked={!!criteria.has_license}
-                  onCheckedChange={(c) =>
-                    setCriteria((prev) => ({ ...prev, has_license: !!c }))
-                  }
-                />
+                <Checkbox checked={!!criteria.has_license} onCheckedChange={(c) => setCriteria((prev) => ({ ...prev, has_license: !!c }))} />
                 <span className="text-sm">Has license</span>
               </label>
             </div>
@@ -714,35 +695,23 @@ function CampaignWizard({
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
                 <span className="text-2xl font-bold">
-                  {loadingCount ? (
-                    <Loader2 className="h-7 w-7 animate-spin text-muted-foreground" />
-                  ) : (
-                    listCount ?? "—"
-                  )}
+                  {loadingCount ? <Loader2 className="h-7 w-7 animate-spin text-muted-foreground" /> : listCount ?? "—"}
                 </span>
                 <span className="text-muted-foreground">agents with email</span>
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={fetchListCount}
-                disabled={loadingCount}
-              >
-                Refine
-              </Button>
+              <Button variant="outline" size="sm" onClick={fetchListCount} disabled={loadingCount}>Refine</Button>
             </div>
 
-            <div className="flex justify-end">
-              <Button onClick={() => setStep(1)} disabled={!canProceed(0)}>
-                Next: Create Email &rarr;
-              </Button>
+            <div className="flex justify-between">
+              <Button variant="outline" onClick={() => setStep(0)}>&larr; Back</Button>
+              <Button onClick={() => setStep(2)} disabled={(listCount ?? 0) === 0}>Next: Create Email &rarr;</Button>
             </div>
           </CardContent>
         </Card>
       )}
 
-      {/* ============ STEP 1: CREATE EMAIL ============ */}
-      {step === 1 && (
+      {/* ============ STEP 2: CREATE EMAIL ============ */}
+      {step === 2 && (
         <Card>
           <CardHeader>
             <CardTitle>Create Email</CardTitle>
@@ -752,31 +721,6 @@ function CampaignWizard({
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Existing campaign selector */}
-            <div className="space-y-1">
-              <Label className="text-xs text-muted-foreground">
-                Continue an existing campaign or start new
-              </Label>
-              <select
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                value={existingCampaignId}
-                onChange={(e) => handleSelectExistingCampaign(e.target.value)}
-              >
-                <option value="">— New campaign —</option>
-                {campaigns
-                  .filter((c) =>
-                    ["draft", "pending_review", "approved", "paused"].includes(
-                      c.status
-                    )
-                  )
-                  .map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name} ({c.status.replace("_", " ")})
-                    </option>
-                  ))}
-              </select>
-            </div>
-
             {/* Template loader */}
             <div className="space-y-1">
               <Label>Load from Existing Sequence</Label>
@@ -812,18 +756,6 @@ function CampaignWizard({
                 ))}
               </select>
             </div>
-
-            {/* Campaign name */}
-            {!existingCampaignId && (
-              <div className="space-y-1">
-                <Label>Campaign Name</Label>
-                <Input
-                  placeholder="e.g. Q1 Phoenix Outreach"
-                  value={campaignName}
-                  onChange={(e) => setCampaignName(e.target.value)}
-                />
-              </div>
-            )}
 
             {/* Subject */}
             <div className="space-y-1">
@@ -889,19 +821,72 @@ function CampaignWizard({
             </div>
 
             <div className="flex justify-between">
-              <Button variant="outline" onClick={() => setStep(0)}>
+              <Button variant="outline" onClick={() => setStep(1)}>
                 &larr; Back
               </Button>
-              <Button onClick={() => setStep(2)} disabled={!canProceed(1)}>
-                Next: Review &rarr;
+              <Button onClick={() => setStep(3)} disabled={!subject.trim() || senders.length === 0}>
+                Next: Send Gates &rarr;
               </Button>
             </div>
           </CardContent>
         </Card>
       )}
 
-      {/* ============ STEP 2: REVIEW ============ */}
-      {step === 2 && (
+      {/* ============ STEP 3: SEND GATES ============ */}
+      {step === 3 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Send Gates</CardTitle>
+            <CardDescription>Control sending speed to protect deliverability and stay within provider limits.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="space-y-1">
+                <Label>Max emails per mailbox per day</Label>
+                <Input type="number" min={1} max={2000} value={maxPerDay}
+                  onChange={(e) => setMaxPerDay(parseInt(e.target.value) || 35)} />
+                <p className="text-xs text-muted-foreground">Google Workspace allows up to 2,000/day. Start low (35) and ramp up.</p>
+              </div>
+              <div className="space-y-1">
+                <Label>Daily uptick per mailbox</Label>
+                <Input type="number" min={0} max={500} value={uptickPerDay}
+                  onChange={(e) => setUptickPerDay(parseInt(e.target.value) || 0)} />
+                <p className="text-xs text-muted-foreground">Increase max per day by this amount each day. 0 = flat rate.</p>
+              </div>
+              <div className="space-y-1">
+                <Label>Min seconds between sends (per mailbox)</Label>
+                <Input type="number" min={10} max={3600} value={minSecondsBetweenSends}
+                  onChange={(e) => setMinSecondsBetweenSends(parseInt(e.target.value) || 120)} />
+                <p className="text-xs text-muted-foreground">Spacing between emails from same sender. 120s = ~30/hour max.</p>
+              </div>
+            </div>
+
+            <div className="bg-muted/50 rounded p-3 text-sm space-y-1">
+              <p><span className="font-medium">Day 1 capacity:</span> {maxPerDay * senders.length} emails ({maxPerDay}/mailbox × {senders.length} senders)</p>
+              <p><span className="font-medium">Day 2 capacity:</span> {(maxPerDay + uptickPerDay) * senders.length} emails</p>
+              <p><span className="font-medium">Estimated days to send {listCount ?? 0}:</span> {senders.length > 0 ? (() => {
+                let remaining = listCount ?? 0;
+                let dayLimit = maxPerDay * senders.length;
+                let days = 0;
+                while (remaining > 0) {
+                  days++;
+                  remaining -= dayLimit;
+                  dayLimit += uptickPerDay * senders.length;
+                }
+                return days;
+              })() : "—"} sending days</p>
+            </div>
+
+            <div className="flex justify-between">
+              <Button variant="outline" onClick={() => setStep(2)}>&larr; Back</Button>
+              <Button onClick={() => setStep(4)}>Next: Review &rarr;</Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* ============ STEP 4: REVIEW ============ */}
+      {step === 4 && (
         <Card>
           <CardHeader>
             <CardTitle>Review</CardTitle>
@@ -975,17 +960,17 @@ function CampaignWizard({
             </details>
 
             <div className="flex justify-between">
-              <Button variant="outline" onClick={() => setStep(1)}>
+              <Button variant="outline" onClick={() => setStep(3)}>
                 &larr; Back
               </Button>
-              <Button onClick={() => setStep(3)}>Next: Test &rarr;</Button>
+              <Button onClick={() => setStep(5)}>Next: Test &rarr;</Button>
             </div>
           </CardContent>
         </Card>
       )}
 
-      {/* ============ STEP 3: TEST ============ */}
-      {step === 3 && (
+      {/* ============ STEP 5: TEST ============ */}
+      {step === 5 && (
         <Card>
           <CardHeader>
             <CardTitle>Test</CardTitle>
@@ -1031,10 +1016,10 @@ function CampaignWizard({
             )}
 
             <div className="flex justify-between">
-              <Button variant="outline" onClick={() => setStep(2)}>
+              <Button variant="outline" onClick={() => setStep(4)}>
                 &larr; Back
               </Button>
-              <Button onClick={() => setStep(4)}>
+              <Button onClick={() => setStep(6)}>
                 Next: Launch &rarr;
               </Button>
             </div>
@@ -1042,8 +1027,8 @@ function CampaignWizard({
         </Card>
       )}
 
-      {/* ============ STEP 4: LAUNCH ============ */}
-      {step === 4 && !launched && (
+      {/* ============ STEP 6: LAUNCH ============ */}
+      {step === 6 && !launched && (
         <Card>
           <CardHeader>
             <CardTitle>Launch</CardTitle>
@@ -1159,7 +1144,7 @@ function CampaignWizard({
             </div>
 
             <div className="flex justify-between">
-              <Button variant="outline" onClick={() => setStep(3)}>
+              <Button variant="outline" onClick={() => setStep(5)}>
                 &larr; Back
               </Button>
               <Button
@@ -1186,7 +1171,7 @@ function CampaignWizard({
       )}
 
       {/* ============ LAUNCHED ============ */}
-      {step === 4 && launched && (
+      {step === 6 && launched && (
         <Card>
           <CardContent className="pt-6 space-y-4 text-center">
             <Check className="h-12 w-12 text-green-600 mx-auto" />
@@ -1990,7 +1975,6 @@ export function CampaignManager() {
 
   const tabs: { key: Tab; label: string }[] = [
     { key: "wizard", label: "Campaign Wizard" },
-    { key: "list-maker", label: "List Maker" },
     { key: "review", label: "Review Queue" },
     { key: "monitor", label: "Campaign Monitor" },
   ];
@@ -2051,7 +2035,6 @@ export function CampaignManager() {
           </Card>
         </div>
       )}
-      {tab === "list-maker" && <ListMaker />}
       {tab === "review" && (
         <ReviewQueue
           campaigns={campaigns}

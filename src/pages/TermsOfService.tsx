@@ -17,7 +17,7 @@ const TermsOfService = () => {
     "@context": "https://schema.org",
     "@type": "WebPage",
     "name": "Terms of Service - Top10Lists.us",
-    "description": "Terms of Service for Top10Lists.us Independent Certification Authority. North Star Protocol: 4.5+ Merit Gate (10+ verified reviews in the last 24 months, 5+ years), zero exceptions. 3,487 qualified agents (889 AZ, 2,598 CA). Not pay-to-play.",
+    "description": "Terms of Service for Top10Lists.us Independent Certification Authority. North Star Protocol: 4.5+ Merit Gate (10+ verified reviews in the last 24 months, 5+ years), zero exceptions. 3,262 qualified agents (872 AZ, 2,390 CA). Not pay-to-play.",
     "url": "https://www.top10lists.us/terms",
     "dateModified": "2026-03-06",
     "publisher": {
@@ -83,11 +83,11 @@ const TermsOfService = () => {
 
             <h2 className="text-xl font-semibold text-foreground mt-8 mb-3">3. DATA ACCURACY & LIVE COVERAGE</h2>
             <p className="text-muted-foreground leading-relaxed mb-2">
-              We currently underwrite <strong>3,487 total agents</strong>, representing <strong>fewer than 1%</strong> of licensed professionals in their respective markets.
+              We currently underwrite <strong>3,262 total agents</strong>, representing <strong>fewer than 1%</strong> of licensed professionals in their respective markets.
             </p>
             <ul className="list-disc list-inside text-muted-foreground space-y-2 mb-4">
-              <li><strong>Arizona:</strong> 889 qualified agents across 88 cities.</li>
-              <li><strong>California:</strong> 2,598 qualified agents across 1,650+ cities.</li>
+              <li><strong>Arizona:</strong> 872 qualified agents across 88 cities.</li>
+              <li><strong>California:</strong> 2,390 qualified agents across 1,650+ cities.</li>
               <li><strong>Market Status:</strong> Both Arizona and California are <strong>LIVE</strong> and fully underwritten markets.</li>
             </ul>
 

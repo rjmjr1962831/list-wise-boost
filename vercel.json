@@ -287,14 +287,6 @@
       "destination": "/api/serve-clean-html?fn=serve-bot-content-html&path=%2Fmethodology"
     },
     {
-      "source": "/why-ai-trusts-us",
-      "destination": "/api/serve-clean-html?fn=serve-bot-content-html&path=%2Fwhy-ai-trusts-us"
-    },
-    {
-      "source": "/why-ai-trusts-us/",
-      "destination": "/api/serve-clean-html?fn=serve-bot-content-html&path=%2Fwhy-ai-trusts-us"
-    },
-    {
       "source": "/api/t",
       "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/email-track"
     },
@@ -369,14 +361,6 @@
     {
       "source": "/press/",
       "destination": "/api/serve-clean-html?fn=serve-bot-pages-html&path=%2Fpress"
-    },
-    {
-      "source": "/ai-compare",
-      "destination": "/api/serve-clean-html?fn=serve-bot-pages-html&path=%2Fai-compare"
-    },
-    {
-      "source": "/ai-compare/",
-      "destination": "/api/serve-clean-html?fn=serve-bot-pages-html&path=%2Fai-compare"
     },
     {
       "source": "/for-ai-systems",
