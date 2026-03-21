@@ -1953,15 +1953,27 @@ const CAMPAIGN_START = new Date("2026-03-21T12:00:00Z");
 function estimateEta(remaining: number): string {
   if (remaining <= 0) return "Complete";
   const daysSinceStart = Math.floor((Date.now() - CAMPAIGN_START.getTime()) / 86400000);
-  const perAccountPerDay = Math.floor(40 * Math.pow(1.10, daysSinceStart));
-  const dailyCapacity = perAccountPerDay * NUM_SENDERS;
-  if (dailyCapacity <= 0) return "Unknown";
-  // Throughput limited by 3-min gap: 20 sends/hr/account × 4 accounts × 15 hrs
-  const throughputCapacity = NUM_SENDERS * SENDS_PER_HOUR_PER_ACCOUNT * SEND_HOURS_PER_DAY;
-  const effectiveDaily = Math.min(dailyCapacity, throughputCapacity);
-  const totalHours = (remaining / effectiveDaily) * 24;
-  const days = Math.floor(totalHours / 24);
-  const hours = Math.round(totalHours % 24);
+  const throughputCap = NUM_SENDERS * SENDS_PER_HOUR_PER_ACCOUNT * SEND_HOURS_PER_DAY;
+  // Walk forward day by day with compounding limits
+  let left = remaining;
+  let day = daysSinceStart;
+  let daysNeeded = 0;
+  while (left > 0 && daysNeeded < 365) {
+    const perAccount = Math.floor(40 * Math.pow(1.10, day));
+    const dailyCap = Math.min(perAccount * NUM_SENDERS, throughputCap);
+    left -= dailyCap;
+    day++;
+    daysNeeded++;
+  }
+  if (daysNeeded === 0) return "< 1 day";
+  // Estimate partial last day
+  const lastDayPerAccount = Math.floor(40 * Math.pow(1.10, day - 1));
+  const lastDayCap = Math.min(lastDayPerAccount * NUM_SENDERS, throughputCap);
+  const lastDayUsed = lastDayCap + left; // left is negative = overshoot
+  const fractionOfLastDay = lastDayCap > 0 ? lastDayUsed / lastDayCap : 1;
+  const totalDays = daysNeeded - 1 + fractionOfLastDay;
+  const days = Math.floor(totalDays);
+  const hours = Math.round((totalDays - days) * SEND_HOURS_PER_DAY);
   if (days === 0 && hours === 0) return "< 1 hour";
   if (days === 0) return `${hours} hour${hours !== 1 ? "s" : ""}`;
   return `${days} day${days !== 1 ? "s" : ""} and ${hours} hour${hours !== 1 ? "s" : ""}`;
