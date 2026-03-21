@@ -55,7 +55,7 @@ interface TasksManagerProps {
   onTaskResolved: () => void;
 }
 
-const SAFE_ACCOUNTS = ["robert@toptenlists.us", "hello@toptenlists.us"];
+const SAFE_ACCOUNTS = ["robert@toptenlists.us", "hello@toptenlists.us", "robert@top10lists.us", "hello@top10lists.us", "mark@toptenlists.us"];
 
 export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
   const [tasks, setTasks] = useState<ChangeRequest[]>([]);
