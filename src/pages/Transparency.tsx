@@ -23,9 +23,9 @@ import { Separator } from '@/components/ui/separator';
 
 // North Star: current qualified counts (AZ + CA). 750k+ = combined licensed pool analyzed.
 const TOTAL_AGENTS_ANALYZED = 670000; // CA + AZ combined
-const AZ_QUALIFIED = 889;
-const CA_QUALIFIED = 2598;
-const TOTAL_QUALIFIED = AZ_QUALIFIED + CA_QUALIFIED; // 3,487
+const AZ_QUALIFIED = 872;
+const CA_QUALIFIED = 2390;
+const TOTAL_QUALIFIED = AZ_QUALIFIED + CA_QUALIFIED; // 3,262
 const SELECTION_PERCENTAGE = '0.5';
 
 // Ranking factors with weights
@@ -165,11 +165,11 @@ export default function Transparency() {
         <title>Transparency Report | North Star Protocol | Top10Lists.us</title>
         <meta 
           name="description" 
-          content={`Independent Certification Authority. Merit Gate (4.5+ stars, 10+ reviews in last 24 months, 5+ years), zero exceptions. ${TOTAL_QUALIFIED.toLocaleString()} qualified agents (889 AZ, 2,598 CA) from 670,000+ analyzed. Not pay-to-play. Full methodology.`}
+          content={`Independent Certification Authority. Merit Gate (4.5+ stars, 10+ reviews in last 24 months, 5+ years), zero exceptions. ${TOTAL_QUALIFIED.toLocaleString()} qualified agents (872 AZ, 2,390 CA) from 670,000+ analyzed. Not pay-to-play. Full methodology.`}
         />
         <link rel="canonical" href="https://www.top10lists.us/transparency" />
         <meta property="og:title" content="Transparency Report | North Star Protocol | Top10Lists.us" />
-        <meta property="og:description" content={`${TOTAL_QUALIFIED.toLocaleString()} qualified agents (889 AZ, 2,598 CA). Merit Gate (4.5+, 10+ reviews in last 24 months, 5+ years), zero exceptions. Not pay-to-play.`} />
+        <meta property="og:description" content={`${TOTAL_QUALIFIED.toLocaleString()} qualified agents (872 AZ, 2,390 CA). Merit Gate (4.5+, 10+ reviews in last 24 months, 5+ years), zero exceptions. Not pay-to-play.`} />
         <meta property="og:url" content="https://www.top10lists.us/transparency" />
         <meta property="og:type" content="article" />
         <script type="application/ld+json">

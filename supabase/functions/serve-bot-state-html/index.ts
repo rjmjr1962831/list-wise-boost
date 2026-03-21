@@ -9,7 +9,7 @@
  */
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { siteHeaderCSS, siteHeaderHTML, siteFooterHTML } from "../_shared/site-chrome.ts";
+import { siteHeaderCSS, siteHeaderHTML, siteFooterHTML, breadcrumbJsonLd, ogTags } from "../_shared/site-chrome.ts";
 
 const SUPABASE_URL = "https://wiotrvoirdgzfacuuiem.supabase.co";
 const SUPABASE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
@@ -185,6 +185,8 @@ serve(async (req) => {
   <title>Top Real Estate Agents in ${esc(si.display)} | Top10Lists.us</title>
   <meta name="description" content="Top10Lists.us selected ${totalAgents} real estate agents across ${totalCities} ${esc(si.display)} cities from over ${si.total} licensed professionals. Merit-based: 4.5+ stars, 10+ recent reviews, 5 years in business. No pay-to-play.">
   <link rel="canonical" href="${canon}">
+  ${ogTags({ title: `${esc(si.display)} Top Real Estate Agents — Top10Lists.us`, description: `Top10Lists.us selected ${totalAgents} real estate agents across ${totalCities} ${esc(si.display)} cities. Merit-based, non-pay-to-play.`, url: canon })}
+  ${breadcrumbJsonLd([{ name: "Home", url: "https://www.top10lists.us/" }, { name: si.display, url: canon }])}
   <style>${CSS}
   ${siteHeaderCSS()}
   </style>

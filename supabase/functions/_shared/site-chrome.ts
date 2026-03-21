@@ -85,6 +85,42 @@ export function siteHeaderHTML(): string {
 </header>`;
 }
 
+/** Generate BreadcrumbList JSON-LD script tag */
+export function breadcrumbJsonLd(crumbs: { name: string; url: string }[]): string {
+  const items = crumbs.map((c, i) => ({
+    "@type": "ListItem",
+    "position": i + 1,
+    "name": c.name,
+    "item": c.url,
+  }));
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": items,
+  };
+  return `<script type="application/ld+json">${JSON.stringify(schema)}</script>`;
+}
+
+/** Generate OG + Twitter meta tags */
+export function ogTags(opts: { title: string; description: string; url: string; type?: string }): string {
+  const ogType = opts.type || "website";
+  return [
+    `<meta property="og:title" content="${esc(opts.title)}">`,
+    `<meta property="og:description" content="${esc(opts.description)}">`,
+    `<meta property="og:type" content="${ogType}">`,
+    `<meta property="og:url" content="${esc(opts.url)}">`,
+    `<meta property="og:image" content="${BASE}/badges/og-default.png">`,
+    `<meta property="og:site_name" content="Top10Lists.us">`,
+    `<meta name="twitter:card" content="summary">`,
+    `<meta name="twitter:title" content="${esc(opts.title)}">`,
+    `<meta name="twitter:description" content="${esc(opts.description)}">`,
+  ].join("\n");
+}
+
+function esc(s: string): string {
+  return s.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
 export function siteFooterHTML(): string {
   const year = new Date().getFullYear();
   return `<footer class="site-footer">
@@ -119,7 +155,6 @@ export function siteFooterHTML(): string {
           <a href="${BASE}/press">Press</a>
           <a href="${BASE}/for-ai-systems">For AI Systems</a>
           <a href="${BASE}/ai-citation-whitepaper">AI Citation Whitepaper</a>
-          <a href="${BASE}/why-ai-trusts-us">Why AI Trusts Us</a>
           <a href="${BASE}/privacy">Privacy</a>
           <a href="${BASE}/terms">Terms</a>
           <a href="${BASE}/payments-security">Payments &amp; Security</a>

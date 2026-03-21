@@ -5,10 +5,11 @@
  */
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { siteHeaderCSS, siteHeaderHTML, siteFooterHTML } from "../_shared/site-chrome.ts";
+import { siteHeaderCSS, siteHeaderHTML, siteFooterHTML, breadcrumbJsonLd, ogTags } from "../_shared/site-chrome.ts";
 
 const SUPABASE_URL = "https://wiotrvoirdgzfacuuiem.supabase.co";
 const SUPABASE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+const BASE = "https://www.top10lists.us";
 const CORS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -327,6 +328,20 @@ serve(async (req) => {
   <title>Top Real Estate Agents in ${esc(loc)}, ${si.display} | Top10Lists.us</title>
   <meta name="description" content="${descMeta}">
   <link rel="canonical" href="${canon}">${noindexMeta}
+  ${ogTags({ title: isNh ? `${esc(nh.neighborhood)}, ${esc(city.name)} Top Real Estate Agents — Top10Lists.us` : `${esc(city.name)} Top Real Estate Agents — Top10Lists.us`, description: descMeta, url: canon })}
+  ${isNh
+    ? breadcrumbJsonLd([
+        { name: "Home", url: `${BASE}/` },
+        { name: si.display, url: `${BASE}/${pp.stateSlug}/top10realestateagents` },
+        { name: city.name, url: `${BASE}/${pp.stateSlug}/${pp.citySlug}/top10realestateagents` },
+        { name: nh.neighborhood, url: canon },
+      ])
+    : breadcrumbJsonLd([
+        { name: "Home", url: `${BASE}/` },
+        { name: si.display, url: `${BASE}/${pp.stateSlug}/top10realestateagents` },
+        { name: city.name, url: canon },
+      ])
+  }
   <style>${CSS}
   ${siteHeaderCSS()}
   </style>

@@ -66,25 +66,7 @@ const OUTPUT_FIELDS: { key: string; label: string }[] = [
   { key: "updated_at", label: "Updated At" },
 ];
 
-const LEGACY_AIFS_FIELDS: { key: string; label: string }[] = [
-  { key: "aifs_score_unlisted", label: "AIFS Score (Current)" },
-  { key: "aifs_score_listed", label: "AIFS Score (Listed)" },
-  { key: "aifs_score_certified", label: "AIFS Score (Certified)" },
-  { key: "aifs_score_audited", label: "AIFS Score (Audited)" },
-  { key: "aifs_score_underwritten", label: "AIFS Score (Underwritten)" },
-  { key: "aifs_lift_to_audited", label: "Lift to Audited" },
-  { key: "aifs_lift_to_underwritten", label: "Lift to Underwritten" },
-  { key: "aifs_most_recent_review_date", label: "Most Recent Review Date" },
-  { key: "aifs_gap_stale_reviews", label: "Gap: Stale Reviews" },
-  { key: "aifs_gap_no_linkedin", label: "Gap: No LinkedIn" },
-  { key: "aifs_gap_no_schema", label: "Gap: No Schema" },
-  { key: "aifs_gap_no_personal_site", label: "Gap: No Personal Site" },
-  { key: "aifs_gap_no_realtor", label: "Gap: No Realtor" },
-  { key: "aifs_gap_no_press", label: "Gap: No Press" },
-  { key: "aifs_artifact_url", label: "Artifact URL" },
-  { key: "footprint_band", label: "Footprint Band" },
-  { key: "footprint_context", label: "Footprint Context" },
-];
+const LEGACY_AIFS_FIELDS: { key: string; label: string }[] = [];
 
 const BOT_CRAWL_FIELDS: { key: string; label: string }[] = [
   { key: "ai_surfaces_total_7d", label: "AI Surfaces (7d total)" },
@@ -115,6 +97,7 @@ const AIFS_FIELDS: { key: string; label: string }[] = [
   { key: "aifs_crypto_verified", label: "AIFS: Crypto Verified" },
   { key: "aifs_internal_score", label: "AIFS: Internal Score" },
   { key: "aifs_gap_analysis", label: "AIFS: Gap Analysis" },
+  { key: "footprint_context", label: "Footprint Context" },
 ];
 
 const STATES = [
@@ -138,6 +121,7 @@ const TIERS = [
 const SENDER_ACCOUNTS = [
   "hello@toptenlists.us",
   "robert@toptenlists.us",
+  "mark@toptenlists.us",
   "hello@top10lists.us",
   "robert@top10lists.us",
 ];
@@ -164,6 +148,13 @@ export function ListMaker() {
   const [count, setCount] = useState<number | null>(null);
   const [loadingCount, setLoadingCount] = useState(false);
   const [exporting, setExporting] = useState(false);
+
+  // Email composer state
+  const [showEmailComposer, setShowEmailComposer] = useState(false);
+  const [emailSubject, setEmailSubject] = useState("");
+  const [emailBody, setEmailBody] = useState("");
+  const [emailCampaignName, setEmailCampaignName] = useState("");
+  const [savingEmail, setSavingEmail] = useState(false);
 
   // Add to Campaign state
   const [showCampaignPanel, setShowCampaignPanel] = useState(false);
@@ -787,40 +778,6 @@ export function ListMaker() {
           </div>
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <Label className="text-sm font-semibold">AIFS Score Fields (Legacy)</Label>
-              <button
-                type="button"
-                className="text-xs text-blue-500 hover:text-blue-700 underline"
-                onClick={() => {
-                  const allLegacyKeys = LEGACY_AIFS_FIELDS.map((f) => f.key);
-                  const allSelected = allLegacyKeys.every((k) => outputFields.includes(k));
-                  if (allSelected) {
-                    setOutputFields((prev) => prev.filter((k) => !allLegacyKeys.includes(k)));
-                  } else {
-                    setOutputFields((prev) => [...new Set([...prev, ...allLegacyKeys])]);
-                  }
-                }}
-              >
-                {LEGACY_AIFS_FIELDS.every((f) => outputFields.includes(f.key)) ? "Deselect all" : "Select all"}
-              </button>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-              {LEGACY_AIFS_FIELDS.map((f) => (
-                <label
-                  key={f.key}
-                  className="flex items-center gap-2 cursor-pointer text-sm"
-                >
-                  <Checkbox
-                    checked={outputFields.includes(f.key)}
-                    onCheckedChange={(c) => toggleOutputField(f.key, !!c)}
-                  />
-                  <span>{f.label}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-          <div>
-            <div className="flex items-center gap-3 mb-2">
               <Label className="text-sm font-semibold">AIFS Score Fields</Label>
               <button
                 type="button"
@@ -938,20 +895,23 @@ export function ListMaker() {
 
             <Button
               size="sm"
-              variant="secondary"
+              variant={showEmailComposer ? "default" : "secondary"}
               disabled={count === 0 || count === null || outputFields.length === 0}
               onClick={() => {
-                const allFields = [...OUTPUT_FIELDS, ...LEGACY_AIFS_FIELDS, ...BOT_CRAWL_FIELDS, ...AIFS_FIELDS];
-                const selectedVars = outputFields.map(key => {
-                  const f = allFields.find(f => f.key === key);
-                  return { key, label: f?.label ?? key };
-                });
-                localStorage.setItem("top10-list-to-email", JSON.stringify({ criteria, outputFields: selectedVars }));
-                window.dispatchEvent(new CustomEvent("list-to-email"));
+                if (!showEmailComposer && !emailBody) {
+                  setEmailBody(`<p>Hi {{first_name}},</p>
+
+<p></p>
+
+<p>You can view your dashboard <a href="{{magic_link}}">here</a>.</p>
+
+<p>Best,<br>Top10Lists.us</p>`);
+                }
+                setShowEmailComposer(!showEmailComposer);
               }}
             >
               <Mail className="h-4 w-4 mr-2" />
-              Create Email →
+              Create Email
             </Button>
 
             <Button
@@ -1067,8 +1027,146 @@ export function ListMaker() {
             </div>
           )}
 
+          {/* Inline email composer */}
+          {showEmailComposer && (
+            <div className="border rounded p-4 space-y-4 bg-muted/20">
+              <div className="flex items-center justify-between">
+                <Label className="text-sm font-semibold">Create Email for {count ?? 0} agents</Label>
+                <Button size="sm" variant="ghost" onClick={() => setShowEmailComposer(false)}>
+                  Close
+                </Button>
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-xs">Campaign Name</Label>
+                <Input
+                  className="h-8 text-sm"
+                  placeholder="e.g. Q1 AZ Outreach"
+                  value={emailCampaignName}
+                  onChange={(e) => setEmailCampaignName(e.target.value)}
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold">Subject</Label>
+                <Input
+                  className="h-8 text-sm"
+                  placeholder="e.g. {{first_name}}, your Top 10 listing is ready"
+                  value={emailSubject}
+                  onChange={(e) => setEmailSubject(e.target.value)}
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold">Body (HTML)</Label>
+                <textarea
+                  className="w-full min-h-[300px] rounded-md border bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring font-mono"
+                  value={emailBody}
+                  onChange={(e) => setEmailBody(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Unsubscribe link and List-Unsubscribe header are added automatically on send.
+                </p>
+              </div>
+
+              <div className="border rounded p-3 bg-muted/30 space-y-2">
+                <Label className="text-xs font-semibold">Merge variables — click to copy, then paste (Ctrl+V) into subject or body</Label>
+                <div className="flex flex-wrap gap-1">
+                  {outputFields.filter(k => k !== "magic_link").map(key => {
+                    const f = ALL_FIELD_DEFS.find(fd => fd.key === key);
+                    const tag = `{{${key}}}`;
+                    return (
+                      <span key={key} className="px-2 py-0.5 text-xs rounded-full border bg-blue-50 border-blue-200 text-blue-700 cursor-pointer select-none"
+                        onClick={() => {
+                          navigator.clipboard.writeText(tag);
+                          toast.success(`Copied ${tag}`);
+                        }}
+                      >{f?.label ?? key}</span>
+                    );
+                  })}
+                  {outputFields.includes("magic_link") && (
+                    <span className="px-2 py-0.5 text-xs rounded-full border bg-green-50 border-green-200 text-green-700 cursor-pointer select-none"
+                      onClick={() => {
+                        navigator.clipboard.writeText('<a href="{{magic_link}}">here</a>');
+                        toast.success('Copied magic link as <a href="{{magic_link}}">here</a>');
+                      }}
+                    >Magic Link (as "here")</span>
+                  )}
+                </div>
+              </div>
+
+              <Button
+                disabled={savingEmail || !emailSubject.trim()}
+                onClick={async () => {
+                  setSavingEmail(true);
+                  try {
+                    const name = emailCampaignName.trim() || "Campaign " + new Date().toISOString().slice(0, 16);
+                    const id = name.toLowerCase().replace(/[^a-z0-9]+/g, "-") + "-" + Date.now().toString(36);
+                    const { error } = await supabase.from("email_campaigns" as any).insert({
+                      id,
+                      name,
+                      status: "draft",
+                      template_subject: emailSubject,
+                      template_html: emailBody,
+                    } as any);
+                    if (error) throw error;
+                    toast.success(`Campaign "${name}" created as draft with template`);
+                    setEmailCampaignName("");
+                    setEmailSubject("");
+                    setEmailBody("");
+                    setShowEmailComposer(false);
+                  } catch (err: any) {
+                    toast.error("Failed: " + (err.message ?? ""));
+                  } finally {
+                    setSavingEmail(false);
+                  }
+                }}
+              >
+                {savingEmail && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Save as Draft Campaign
+              </Button>
+            </div>
+          )}
+
         </CardContent>
       </Card>
+    </div>
+  );
+}
+
+// Merge variable insert buttons for the inline email composer
+const ALL_FIELD_DEFS = [...OUTPUT_FIELDS, ...LEGACY_AIFS_FIELDS, ...BOT_CRAWL_FIELDS, ...AIFS_FIELDS];
+
+function EmailVarButtons({
+  setter,
+  selectedFields,
+}: {
+  setter: React.Dispatch<React.SetStateAction<string>>;
+  selectedFields: string[];
+}) {
+  const vars = selectedFields.map(key => {
+    const f = ALL_FIELD_DEFS.find(f => f.key === key);
+    return { key, label: f?.label ?? key };
+  });
+
+  const insertVar = (varName: string) => {
+    const tag = `{{${varName}}}`;
+    setter(prev => prev + tag);
+  };
+
+  return (
+    <div className="flex flex-wrap gap-1 mt-1">
+      <span className="text-xs text-muted-foreground mr-1 self-center">Insert:</span>
+      {vars.map(v => (
+        <button
+          key={v.key}
+          type="button"
+          className="px-2 py-0.5 text-xs rounded-full border bg-blue-50 border-blue-200 hover:bg-blue-100 text-blue-700 transition-colors cursor-pointer"
+          onClick={() => insertVar(v.key)}
+        >
+          {v.label}
+        </button>
+      ))}
     </div>
   );
 }

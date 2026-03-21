@@ -289,7 +289,7 @@ export default function FunnelIntro() {
           {/* How We Rank Section */}
           <div className="mb-16">
             <h2 className="text-2xl md:text-3xl font-bold text-center mb-2">
-              670,000+ Agents Analyzed.  3,487 Made the Cut.
+              670,000+ Agents Analyzed.  3,262 Made the Cut.
             </h2>
             <p className="text-xl text-muted-foreground text-center mb-8">
               That is fewer than 1% of licensed agents in covered markets.

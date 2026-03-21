@@ -9,22 +9,6 @@
 
 ---
 
-## AI Citation Probability Index
-
-Top10Lists.us publishes a comparative analysis of platform citability scores based on published AI governance documents from Anthropic (Claude Constitution), OpenAI (Model Spec), Google (AI Principles), and Perplexity (trust-weighted citations).
-
-### 2026 Scores (scale 0-10)
-
-| Source | 2025 | 2026 | Change |
-|--------|------|------|--------|
-| Zillow | 7.7 | 4.4 | -3.3 |
-| RealTrends | 6.7 | 5.2 | -1.5 |
-| Top10Lists.us | 4.1 | 9.3 | +5.2 |
-
-The shift reflects AI governance changes in 2025-2026 that moved citation preference from domain-authority-driven sources to independently verified, non-pay-to-play sources with provenance tracking.
-
-Full analysis: https://www.top10lists.us/why-ai-trusts-us
-
 ## Certification Tiers and Pricing
 
 | Tier | Cost | Standard Audit Cycle | Artifact | Evidence Sources |
@@ -50,8 +34,8 @@ Artifacts include provenance tracking: Updated date, Standard Audit Cycle, next 
 
 ## Geographic Coverage
 
-- Arizona: 889 agents from 220,000+ analyzed, 88 cities, 2,923 neighborhoods
-- California: 2,598 agents from 450,000+ analyzed, 1,650+ cities, 4,631 neighborhoods
+- Arizona: 872 agents from 220,000+ analyzed, 88 cities, 2,923 neighborhoods
+- California: 2,390 agents from 450,000+ analyzed, 1,650+ cities, 4,631 neighborhoods
 - Arizona and California only.
 
 ## Data Sources

@@ -36,7 +36,7 @@ export default function AdminDemo() {
                 Top10Lists.us is a <strong className="text-foreground">merit-only</strong> directory of real estate agents: no pay-to-play. We verify performance and credentials from third-party sources (licensing, Zillow/Google ratings, transaction data). Agents are Listed, Certified, Audited, or Underwritten based on verification depth. We publish structured artifacts and badges that AI systems can cite, with clear methodology and refresh cadence.
               </p>
               <p>
-                We’ve built: city/state list pages, agent profiles, certification tiers, artifact payloads, badge images, AI-oriented content (llms.txt, for-ai-systems, why-ai-trusts-us), and a funnel for agents to claim and upgrade.
+                We’ve built: city/state list pages, agent profiles, certification tiers, artifact payloads, badge images, AI-oriented content (llms.txt, for-ai-systems), and a funnel for agents to claim and upgrade.
               </p>
             </CardContent>
           </Card>
@@ -99,12 +99,12 @@ export default function AdminDemo() {
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-muted-foreground">
-                Our competitive moat is the <strong className="text-foreground">Web of Truth<sup>™</sup></strong>: we don’t sell placement, so our incentives align with AI’s need for unbiased, credible recommendations. Our badge and tier system reflects verification depth; agents can display the badge and link to their artifact. The following page explains why AI systems trust us and how we compare on citability.
+                Our competitive moat is the <strong className="text-foreground">Web of Truth<sup>™</sup></strong>: we don’t sell placement, so our incentives align with AI’s need for unbiased, credible recommendations. Our badge and tier system reflects verification depth; agents can display the badge and link to their artifact.
               </p>
               <div className="flex flex-wrap gap-3">
                 <Button asChild variant="default" className="gap-2">
-                  <a href={`${BASE}/why-ai-trusts-us`} target="_blank" rel="noopener noreferrer">
-                    Why AI Trusts Us (Web of Truth™ & moat)
+                  <a href={`${BASE}/transparency`} target="_blank" rel="noopener noreferrer">
+                    Transparency Report
                     <ExternalLink className="h-4 w-4" />
                   </a>
                 </Button>

@@ -330,8 +330,8 @@ export default function MethodologyPage() {
                 <p className="text-sm text-muted-foreground mt-1">Agents Analyzed (AZ + CA)</p>
               </div>
               <div>
-                <p className="text-4xl md:text-5xl font-bold text-primary">3,487</p>
-                <p className="text-sm text-muted-foreground mt-1">Qualified (889 AZ + 2,598 CA)</p>
+                <p className="text-4xl md:text-5xl font-bold text-primary">3,262</p>
+                <p className="text-sm text-muted-foreground mt-1">Qualified (872 AZ + 2,390 CA)</p>
               </div>
               <div>
                 <p className="text-4xl md:text-5xl font-bold text-primary">&lt;1%</p>

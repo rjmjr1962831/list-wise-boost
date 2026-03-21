@@ -30,7 +30,6 @@ const STATIC_PATHS = new Set([
   "/protocol-services",
   "/press",
   "/editorial-updates",
-  "/compare",
   "/zillow-explained",
   "/faq",
   "/privacy",
