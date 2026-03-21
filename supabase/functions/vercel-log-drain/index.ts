@@ -15,8 +15,7 @@
  */
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0";
-import { crypto } from "https://deno.land/std@0.168.0/crypto/mod.ts";
-import { encode as hexEncode } from "https://deno.land/std@0.168.0/encoding/hex.ts";
+// crypto + hex imports removed — signature verification disabled (proxy handles auth)
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -179,13 +178,14 @@ serve(async (req) => {
     user_agent: string;
     bot_name: string;
     crawled_at: string;
+    _slug?: string | null;
   }[] = [];
 
-  // Collect agent slugs we need to resolve
-  const slugsToResolve = new Map<string, number[]>(); // slug -> indices in rows
+  // Slug resolution: collect unique slugs, resolve in one query
+  const slugCache = new Map<string, string>(); // slug -> professional.id
+  const slugsToResolve = new Set<string>();
 
   for (const entry of entries) {
-    // Skip non-production, build logs, etc.
     if (entry.source === "build") { dbg_build_skipped++; continue; }
 
     const ua = entry.proxy?.userAgent || entry.userAgent || "";
@@ -194,17 +194,22 @@ serve(async (req) => {
     const botName = detectBot(ua);
     if (!botName) { dbg_not_bot++; continue; }
 
-    const path = entry.proxy?.path || entry.path || "";
+    let path = entry.proxy?.path || entry.path || "";
+    // After clean-room migration, Vercel rewrites resolve to /api/serve-clean-html?path=...
+    // Extract the original path from the query string if needed
+    if (path.startsWith("/api/serve-clean-html") || path.startsWith("/api/for-ai")) {
+      try {
+        const u = new URL(path, "https://www.top10lists.us");
+        const origPath = u.searchParams.get("path");
+        if (origPath) path = origPath;
+      } catch (_) {}
+    }
     if (!path) { dbg_no_path++; continue; }
 
     // Only process paths that are agent/list pages
-    const isAgentPage = AGENT_PATH_RE.test(path);
-    const isCityPage = CITY_PATH_RE.test(path);
-    const isNeighborhoodPage = NEIGHBORHOOD_PATH_RE.test(path);
-    const isArtifact = ARTIFACT_PATH_RE.test(path);
-    const isStatePage = STATE_PATH_RE.test(path);
-
-    if (!isAgentPage && !isCityPage && !isNeighborhoodPage && !isArtifact && !isStatePage) {
+    if (!AGENT_PATH_RE.test(path) && !CITY_PATH_RE.test(path) &&
+        !NEIGHBORHOOD_PATH_RE.test(path) && !ARTIFACT_PATH_RE.test(path) &&
+        !STATE_PATH_RE.test(path)) {
       dbg_path_filtered++;
       continue;
     }
@@ -219,65 +224,57 @@ serve(async (req) => {
       ts = new Date().toISOString();
     }
 
+    // Extract agent_id from artifact paths (UUID is in the URL)
     let agentId: string | null = null;
+    const artifactMatch = path.match(ARTIFACT_PATH_RE);
+    if (artifactMatch) agentId = artifactMatch[1];
 
-    // Direct UUID from artifact path
-    if (isArtifact) {
-      const m = path.match(ARTIFACT_PATH_RE);
-      if (m) agentId = m[1];
+    // Queue slug for batch resolution (agent profile pages)
+    const agentMatch = path.match(AGENT_PATH_RE);
+    if (agentMatch) {
+      const slug = agentMatch[2];
+      if (!slugCache.has(slug)) slugsToResolve.add(slug);
     }
 
-    const idx = rows.length;
     rows.push({
       agent_id: agentId,
       page_path: path,
       user_agent: ua.slice(0, 500),
       bot_name: botName,
       crawled_at: ts,
+      _slug: agentMatch ? agentMatch[2] : null, // temp field for resolution
     });
-
-    // Queue slug resolution for agent profile pages
-    if (isAgentPage) {
-      const m = path.match(AGENT_PATH_RE);
-      if (m) {
-        const slug = m[2];
-        if (!slugsToResolve.has(slug)) {
-          slugsToResolve.set(slug, []);
-        }
-        slugsToResolve.get(slug)!.push(idx);
-      }
-    }
   }
 
-  // Batch resolve agent slugs -> IDs
+  // Batch resolve agent slugs -> IDs (single query, no per-slug round trips)
   if (slugsToResolve.size > 0) {
-    const slugList = Array.from(slugsToResolve.keys());
-    // Supabase .in() has a limit, batch in groups of 100
-    for (let i = 0; i < slugList.length; i += 100) {
-      const batch = slugList.slice(i, i + 100);
+    try {
+      const slugList = Array.from(slugsToResolve).slice(0, 200); // cap at 200 unique slugs
       const { data: agents } = await sb
         .from("professionals")
         .select("id, canonical_slug")
-        .in("canonical_slug", batch)
-        .eq("active", true);
+        .in("canonical_slug", slugList);
       if (agents) {
-        for (const agent of agents) {
-          const indices = slugsToResolve.get(agent.canonical_slug);
-          if (indices) {
-            for (const idx of indices) {
-              rows[idx].agent_id = agent.id;
-            }
-          }
-        }
+        for (const a of agents) slugCache.set(a.canonical_slug, a.id);
       }
+    } catch (e) {
+      console.error("[drain] slug resolution failed (non-fatal):", e);
     }
   }
 
-  // Insert in batches of 500
+  // Apply resolved agent_ids
+  for (const row of rows) {
+    if (!row.agent_id && row._slug && slugCache.has(row._slug)) {
+      row.agent_id = slugCache.get(row._slug)!;
+    }
+    delete row._slug;
+  }
+
+  // Batch insert
   let inserted = 0;
   try {
-    for (let i = 0; i < rows.length; i += 500) {
-      const batch = rows.slice(i, i + 500);
+    for (let i = 0; i < rows.length; i += 1000) {
+      const batch = rows.slice(i, i + 1000);
       const { error } = await sb.from("bot_crawl_logs").insert(batch);
       if (error) {
         console.error("bot_crawl_logs insert error:", error.message, "batch_start:", i);

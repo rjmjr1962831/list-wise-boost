@@ -50,13 +50,30 @@ const SENDER_ACCOUNTS = [
 ];
 
 const SAMPLE_DATA: Record<string, string> = {
+  // snake_case (List Maker fields)
+  id: "sample-id",
+  name: "Jane Smith",
+  first_name: "Jane",
+  last_name: "Smith",
+  email: "jane@example.com",
+  phone: "(602) 555-1234",
+  website: "https://janesmithrealty.com",
+  company: "Sunshine Realty",
+  city_name: "Phoenix",
+  state_slug: "arizona",
+  current_tier: "Listed",
+  magic_link: "https://www.top10lists.us/dashboard/sample-token",
+  date_first_listed: "2025-06-15",
+  date_last_updated: "2026-03-20",
+  review_stars_rating: "4.9",
+  ai_surfaces_total_7d: "1,247",
+  canonical_slug: "jane-smith-1234",
+  // camelCase (legacy Campaign Wizard compat)
   firstName: "Jane",
   lastName: "Smith",
   city: "Phoenix",
   state: "Arizona",
-  company: "Sunshine Realty",
-  magicLink: "https://toptenlists.us/claim/sample-agent",
-  email: "jane@example.com",
+  magicLink: "https://www.top10lists.us/dashboard/sample-token",
   tier: "Listed",
 };
 
@@ -186,7 +203,7 @@ function CampaignWizard({
   // Step 3: Send Gates
   const [maxPerDay, setMaxPerDay] = useState(35);
   const [uptickPerDay, setUptickPerDay] = useState(10);
-  const [minSecondsBetweenSends, setMinSecondsBetweenSends] = useState(120);
+  const [minSecondsBetweenSends, setMinSecondsBetweenSends] = useState(300);
 
   // Step 5: Test
   const [draftCampaignId, setDraftCampaignId] = useState<string | null>(null);
@@ -348,39 +365,52 @@ function CampaignWizard({
         } as any)
         .eq("id", cId);
 
-      // Fetch matching agents (paginated)
-      const pageSize = 1000;
-      let offset = 0;
-      let allAgents: { id: string; name: string; email: string }[] = [];
+      // Fetch all agent data via list-maker-export (handles JOINs for AIFS, bot crawl, etc.)
+      const exportFields = [...new Set([
+        "id", "name", "email", "phone", "website", "company",
+        "canonical_slug", "state_slug", "current_tier", "magic_link",
+        "date_first_listed", "city_name", "review_stars_rating",
+        ...outputFields,
+      ])];
+      const { data: exportData, error: exportError } = await supabase.functions.invoke("list-maker-export", {
+        body: { criteria, outputFields: exportFields },
+      });
+      if (exportError) throw exportError;
+      if (exportData?.error) throw new Error(exportData.error);
 
-      while (true) {
-        let q = supabase
-          .from("professionals")
-          .select("id, name, email")
-          .not("email", "is", null)
-          .neq("email", "")
-          .range(offset, offset + pageSize - 1);
-        if (criteria.active === true) q = q.eq("active", true);
-        if (criteria.active === false) q = q.eq("active", false);
-        if (Array.isArray(criteria.state_slugs) && criteria.state_slugs.length > 0)
-          q = q.in("state_slug", criteria.state_slugs);
-        if (Array.isArray(criteria.current_tiers) && criteria.current_tiers.length > 0)
-          q = q.in("current_tier", criteria.current_tiers);
-        if (criteria.min_rating != null && criteria.min_rating > 0)
-          q = q.gte("review_stars_rating", criteria.min_rating);
-        if (criteria.email_verified) q = q.not("email_verified_at", "is", null);
-        if (criteria.has_license)
-          q = q.not("license_number", "is", null).neq("license_number", "");
-        const { data, error } = await q;
-        if (error) throw error;
-        const rows = (data ?? []) as unknown as {
-          id: string;
-          name: string;
-          email: string;
-        }[];
-        allAgents = allAgents.concat(rows);
-        if (rows.length < pageSize) break;
-        offset += pageSize;
+      // Parse CSV response into agent records
+      const csvText: string = exportData?.csv ?? "";
+      if (!csvText) throw new Error("No data returned from export");
+      const lines = csvText.split("\n").filter(Boolean);
+      if (lines.length < 2) {
+        toast.error("No agents with emails match criteria");
+        setLaunching(false);
+        return;
+      }
+      const headers = lines[0].split(",").map(h => h.replace(/^"|"$/g, ""));
+      // Map CSV headers back to field keys
+      const allFieldDefs = [...OUTPUT_FIELDS, ...BOT_CRAWL_FIELDS, ...AIFS_FIELDS];
+      const headerToKey: Record<string, string> = {};
+      for (const f of allFieldDefs) {
+        headerToKey[f.label] = f.key;
+      }
+      const fieldKeys = headers.map(h => headerToKey[h] || h.toLowerCase().replace(/[^a-z0-9]+/g, "_"));
+
+      const allAgents: Record<string, string>[] = [];
+      for (let i = 1; i < lines.length; i++) {
+        // Parse CSV row (handle quoted fields)
+        const row: string[] = [];
+        let current = "";
+        let inQuotes = false;
+        for (const ch of lines[i]) {
+          if (ch === '"') { inQuotes = !inQuotes; continue; }
+          if (ch === ',' && !inQuotes) { row.push(current); current = ""; continue; }
+          current += ch;
+        }
+        row.push(current);
+        const agent: Record<string, string> = {};
+        fieldKeys.forEach((key, idx) => { agent[key] = row[idx] ?? ""; });
+        if (agent.email) allAgents.push(agent);
       }
 
       if (allAgents.length === 0) {
@@ -398,18 +428,48 @@ function CampaignWizard({
         scheduledAtUTC = utcDate.toISOString();
       }
 
-      // Queue entries with raw template — cron interpolates at send time
-      const queueRows = allAgents.map((agent, i) => ({
-        campaign_id: cId,
-        agent_id: agent.id,
-        recipient_email: agent.email.trim().toLowerCase(),
-        recipient_name: agent.name || null,
-        sender_account: senders[i % senders.length],
-        subject: subject || "No subject",
-        html_body: body || "",
-        status: launchMode === "active" ? "approved" : "pending_review",
-        ...(scheduledAtUTC ? { scheduled_at: scheduledAtUTC } : {}),
-      }));
+      // Interpolate merge variables per agent at queue time
+      const baseUrl = "https://www.top10lists.us";
+      const queueRows = allAgents.map((agent, i) => {
+        const nameParts = (agent.name || "").trim().split(/\s+/);
+        const vars: Record<string, string> = {
+          id: agent.id || "",
+          name: agent.name || "",
+          first_name: nameParts[0] || "",
+          last_name: nameParts.slice(1).join(" "),
+          email: agent.email || "",
+          phone: agent.phone || "",
+          website: agent.website || "",
+          social_linkedin: agent.social_linkedin || "",
+          company: agent.company || agent.business_name || "",
+          canonical_slug: agent.canonical_slug || "",
+          state_slug: agent.state_slug || "",
+          current_tier: agent.current_tier || "",
+          magic_link: agent.verification_token ? `${baseUrl}/dashboard/${agent.verification_token}` : "",
+          date_first_listed: agent.card_created_at || agent.created_at || "",
+          date_last_updated: agent.updated_at || "",
+          zillow_profile_url: agent.zillow_profile_url || "",
+          city_name: (agent as any).cities?.name || "",
+          review_stars_rating: String(agent.review_stars_rating ?? ""),
+        };
+        let renderedSubject = subject || "No subject";
+        let renderedBody = body || "";
+        for (const [k, v] of Object.entries(vars)) {
+          renderedSubject = renderedSubject.replace(new RegExp(`\\{\\{${k}\\}\\}`, "g"), v);
+          renderedBody = renderedBody.replace(new RegExp(`\\{\\{${k}\\}\\}`, "g"), v);
+        }
+        return {
+          campaign_id: cId,
+          agent_id: agent.id,
+          recipient_email: agent.email.trim().toLowerCase(),
+          recipient_name: agent.name || null,
+          sender_account: senders[i % senders.length],
+          subject: renderedSubject,
+          html_body: renderedBody,
+          status: launchMode === "active" ? "approved" : "pending_review",
+          ...(scheduledAtUTC ? { scheduled_at: scheduledAtUTC } : {}),
+        };
+      });
 
       // Insert in batches of 500
       let inserted = 0;
@@ -475,7 +535,7 @@ function CampaignWizard({
     setScheduledStartMST("");
     setMaxPerDay(35);
     setUptickPerDay(10);
-    setMinSecondsBetweenSends(120);
+    setMinSecondsBetweenSends(300);
   };
 
   // ---- Merge variable definitions from selected output fields ----
@@ -484,6 +544,53 @@ function CampaignWizard({
     const f = ALL_FIELD_DEFS.find(fd => fd.key === key);
     return { key, label: f?.label ?? key };
   });
+
+  const YesterdayStats = () => {
+    const [stats, setStats] = useState<{sent: number, failed: number, pending: number} | null>(null);
+    useEffect(() => {
+      (async () => {
+        try {
+          const yesterday = new Date();
+          yesterday.setDate(yesterday.getDate() - 1);
+          const startOfDay = yesterday.toISOString().slice(0, 10) + "T00:00:00Z";
+          const endOfDay = yesterday.toISOString().slice(0, 10) + "T23:59:59Z";
+
+          const { count: sentCount } = await supabase
+            .from("email_queue" as any)
+            .select("id", { count: "exact", head: true })
+            .eq("status", "sent")
+            .gte("sent_at", startOfDay)
+            .lte("sent_at", endOfDay);
+
+          const { count: failedCount } = await supabase
+            .from("email_queue" as any)
+            .select("id", { count: "exact", head: true })
+            .eq("status", "failed")
+            .gte("updated_at", startOfDay)
+            .lte("updated_at", endOfDay);
+
+          const { count: pendingCount } = await supabase
+            .from("email_queue" as any)
+            .select("id", { count: "exact", head: true })
+            .in("status", ["approved", "pending_review"]);
+
+          setStats({ sent: sentCount ?? 0, failed: failedCount ?? 0, pending: pendingCount ?? 0 });
+        } catch { /* ignore */ }
+      })();
+    }, []);
+
+    if (!stats) return null;
+    return (
+      <div className="bg-muted/50 rounded p-3 text-sm space-y-1 mb-2">
+        <p className="font-medium text-xs text-muted-foreground">Yesterday's Activity</p>
+        <div className="flex gap-6">
+          <p><span className="font-semibold">{stats.sent}</span> sent</p>
+          <p><span className="font-semibold">{stats.failed}</span> failed</p>
+          <p><span className="font-semibold">{stats.pending}</span> pending in queue</p>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="space-y-6">
@@ -870,25 +977,26 @@ function CampaignWizard({
           <CardHeader>
             <CardTitle>Send Gates</CardTitle>
             <CardDescription>Control sending speed to protect deliverability and stay within provider limits.</CardDescription>
+            <YesterdayStats />
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="space-y-1">
                 <Label>Max emails per mailbox per day</Label>
-                <Input type="number" min={1} max={2000} value={maxPerDay}
+                <Input type="text" inputMode="numeric" value={maxPerDay}
                   onChange={(e) => setMaxPerDay(parseInt(e.target.value) || 35)} />
                 <p className="text-xs text-muted-foreground">Google Workspace allows up to 2,000/day. Start low (35) and ramp up.</p>
               </div>
               <div className="space-y-1">
                 <Label>Daily uptick per mailbox</Label>
-                <Input type="number" min={0} max={500} value={uptickPerDay}
+                <Input type="text" inputMode="numeric" value={uptickPerDay}
                   onChange={(e) => setUptickPerDay(parseInt(e.target.value) || 0)} />
                 <p className="text-xs text-muted-foreground">Increase max per day by this amount each day. 0 = flat rate.</p>
               </div>
               <div className="space-y-1">
                 <Label>Min seconds between sends (per mailbox)</Label>
-                <Input type="number" min={10} max={3600} value={minSecondsBetweenSends}
-                  onChange={(e) => setMinSecondsBetweenSends(parseInt(e.target.value) || 120)} />
+                <Input type="text" inputMode="numeric" value={minSecondsBetweenSends}
+                  onChange={(e) => setMinSecondsBetweenSends(parseInt(e.target.value) || 300)} />
                 <p className="text-xs text-muted-foreground">Spacing between emails from same sender. 120s = ~30/hour max.</p>
               </div>
             </div>
@@ -956,7 +1064,7 @@ function CampaignWizard({
             </div>
 
             {/* Rendered preview */}
-            <div className="border rounded p-4 space-y-2 bg-white">
+            <div className="border rounded p-4 space-y-2 bg-white text-black">
               <p className="text-xs font-medium text-muted-foreground">
                 Email Preview (sample data)
               </p>
@@ -972,7 +1080,7 @@ function CampaignWizard({
               </p>
               <hr />
               <div
-                className="prose prose-sm max-w-none"
+                className="text-sm max-w-none [&_p]:mb-3 [&_p]:mt-0 [&_h2]:text-lg [&_h2]:font-bold [&_h2]:mb-2 [&_h2]:mt-4 [&_h3]:text-base [&_h3]:font-semibold [&_h3]:mb-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-3 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:mb-3 [&_li]:mb-1 [&_a]:text-blue-600 [&_a]:underline"
                 dangerouslySetInnerHTML={{
                   __html: renderTemplate(body, SAMPLE_DATA),
                 }}
