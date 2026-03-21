@@ -149,6 +149,16 @@
       "permanent": true
     },
     {
+      "source": "/why-ai-trusts-us",
+      "destination": "/for-ai",
+      "permanent": true
+    },
+    {
+      "source": "/login",
+      "destination": "/agent-login",
+      "permanent": true
+    },
+    {
       "source": "/for-ai-systems",
       "destination": "/for-ai",
       "permanent": true

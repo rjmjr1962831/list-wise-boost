@@ -141,22 +141,20 @@ export function textToHtml(text: string): string {
 // 3. injectTracking
 // ---------------------------------------------------------------------------
 
-/** Regex for our own domain — these links are never rewritten. */
-const OUR_DOMAIN = /^https?:\/\/(www\.)?top10lists\.us(\/|$)/i;
-
 /**
  * Rewrite outbound links for click tracking and append an open-tracking pixel.
+ * All links are tracked, including our own domain (funnel magic links).
  */
 export function injectTracking(
   html: string,
   trackingId: string,
   trackBase: string,
 ): string {
-  // Rewrite href links for click tracking (skip our own domain)
   const tracked = html.replace(
     /href="(https?:\/\/[^"]+)"/g,
     (_match, url) => {
-      if (OUR_DOMAIN.test(url)) return _match;
+      // Never rewrite the tracking base URL itself (avoid infinite redirect)
+      if (url.startsWith(trackBase)) return _match;
       const trackUrl = `${trackBase}?t=c&eid=${encodeURIComponent(trackingId)}&url=${encodeURIComponent(url)}`;
       return `href="${trackUrl}"`;
     },

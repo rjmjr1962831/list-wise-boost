@@ -100,7 +100,8 @@ const Index = () => {
           <meta property="og:url" content="https://www.top10lists.us/" />
           <meta property="og:title" content="Verifiable Real Estate Agent Credentials for AI Systems | Top10Lists.us" />
           <meta property="og:description" content="Top10Lists.us is the merit-based real estate directory built for AI citation — verified agents, published methodology, zero pay-to-play." />
-          
+          <meta property="og:image" content="https://www.top10lists.us/og-image.png" />
+
           {/* JSON-LD Structured Data - Comprehensive Schema */}
           <script type="application/ld+json">
             {JSON.stringify({

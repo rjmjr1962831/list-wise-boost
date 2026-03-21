@@ -275,7 +275,7 @@ export default function Step1Intro() {
           {/* ═══ CTA ═══ */}
           <div className="text-center space-y-3">
             <Button onClick={handleContinue} size="lg" className="gap-2 w-full sm:w-auto text-lg px-8 py-6">
-              Let's Verify Your Profile
+              See What AI Knows About You
               <ArrowRight className="h-5 w-5" />
             </Button>
             <p className="text-xs text-slate-500">

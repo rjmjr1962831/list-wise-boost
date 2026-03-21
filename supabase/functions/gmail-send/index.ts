@@ -63,24 +63,20 @@ function textToHtml(text: string): string {
   return html;
 }
 
-const OUR_DOMAIN = /^https?:\/\/(www\.)?top10lists\.us(\/|$)/i;
-
 const corsHeaders: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
 function injectTracking(html: string, emailId: string): string {
-  // Rewrite links for click tracking (skip our own domain - /api/t not on prod yet)
   const tracked = html.replace(
     /href="(https?:\/\/[^"]+)"/g,
     (_match, url) => {
-      if (OUR_DOMAIN.test(url)) return _match; // use raw URL so magic links work
+      if (url.startsWith(TRACK_BASE)) return _match; // never rewrite tracker itself
       const trackUrl = `${TRACK_BASE}?t=c&eid=${encodeURIComponent(emailId)}&url=${encodeURIComponent(url)}`;
       return `href="${trackUrl}"`;
     }
   );
-  // Append open tracking pixel
   const pixel = `<img src="${TRACK_BASE}?t=o&eid=${encodeURIComponent(emailId)}" width="1" height="1" style="display:none" alt="">`;
   return tracked + pixel;
 }

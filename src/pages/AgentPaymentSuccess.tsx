@@ -21,6 +21,13 @@ interface AifsInfo {
 }
 
 const TIER_META: Record<string, { name: string; icon: typeof Shield; color: string; refresh: string; badgeSrc: string }> = {
+  certified: {
+    name: 'Certified',
+    icon: CheckCircle2,
+    color: 'text-blue-400',
+    refresh: 'every 90 days',
+    badgeSrc: '/badges/certified.png',
+  },
   audited: {
     name: 'Audited',
     icon: Shield,

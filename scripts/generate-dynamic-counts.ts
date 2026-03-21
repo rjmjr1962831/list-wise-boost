@@ -48,36 +48,78 @@ async function countAgents(): Promise<{ total: number; byState: Record<string, n
   return { total, byState };
 }
 
+/**
+ * Count only cities that have at least one qualifying agent (Sitemap Rule A).
+ * This matches the filter in generate-static-sitemaps.ts fetchCityIdsWithQualifiedAgents().
+ */
 async function countCities(): Promise<{ total: number; byState: Record<string, number> }> {
   const byState: Record<string, number> = {};
   let total = 0;
-  for (const state of SITEMAP_STATES) {
-    const { count, error } = await supabase
-      .from('cities')
-      .select('*', { count: 'exact', head: true })
-      .eq('active', true)
-      .eq('state_slug', state);
-    if (error) { console.error(`Error counting cities for ${state}:`, error); continue; }
-    byState[state] = count || 0;
-    total += count || 0;
+  try {
+    const { data, error } = await supabase.rpc('run_sql', {
+      query: `
+        SELECT p.state_slug, COUNT(DISTINCT p.city_id) AS city_count
+        FROM professionals p
+        WHERE p.active = true
+          AND p.city_id IS NOT NULL
+          AND p.review_stars_rating >= 4.5
+          AND p.num_total_reviews >= 10
+          AND p.state_slug IN ('arizona', 'california')
+        GROUP BY p.state_slug
+      `
+    });
+    if (error) { console.error('Error counting qualified cities:', error); }
+    for (const row of data || []) {
+      const count = parseInt(row.city_count, 10) || 0;
+      byState[row.state_slug] = count;
+      total += count;
+    }
+  } catch (err) {
+    console.error('RPC error counting cities:', err);
   }
   return { total, byState };
 }
 
+/**
+ * Count only neighborhoods whose parent city has at least one qualifying agent.
+ * Matches the sitemap logic in generate-static-sitemaps.ts (Sitemap Rule A):
+ * a neighborhood is included if its city_area_slug matches a city with a qualifying agent.
+ */
 async function countNeighborhoods(): Promise<{ total: number; byState: Record<string, number> }> {
-  const stateNameMap: Record<string, string> = { arizona: 'Arizona', california: 'California' };
   const byState: Record<string, number> = {};
   let total = 0;
-  for (const state of SITEMAP_STATES) {
-    const { count, error } = await supabase
-      .from('neighborhood_catalog')
-      .select('*', { count: 'exact', head: true })
-      .eq('is_active', true)
-      .not('primary_zip', 'is', null)
-      .eq('state', stateNameMap[state]);
-    if (error) { console.error(`Error counting neighborhoods for ${state}:`, error); continue; }
-    byState[state] = count || 0;
-    total += count || 0;
+  try {
+    const { data, error } = await supabase.rpc('run_sql', {
+      query: `
+        SELECT
+          CASE WHEN nc.state = 'Arizona' THEN 'arizona' ELSE 'california' END AS state_slug,
+          COUNT(*) AS nh_count
+        FROM neighborhood_catalog nc
+        JOIN cities c ON c.slug = nc.city_area_slug AND c.state_slug = CASE WHEN nc.state = 'Arizona' THEN 'arizona' ELSE 'california' END
+        WHERE nc.is_active = true
+          AND nc.primary_zip IS NOT NULL
+          AND nc.state IN ('Arizona', 'California')
+          AND c.active = true
+          AND c.id IN (
+            SELECT DISTINCT p.city_id
+            FROM professionals p
+            WHERE p.active = true
+              AND p.city_id IS NOT NULL
+              AND p.review_stars_rating >= 4.5
+              AND p.num_total_reviews >= 10
+              AND p.state_slug IN ('arizona', 'california')
+          )
+        GROUP BY 1
+      `
+    });
+    if (error) { console.error('Error counting qualified neighborhoods:', error); }
+    for (const row of data || []) {
+      const count = parseInt(row.nh_count, 10) || 0;
+      byState[row.state_slug] = count;
+      total += count;
+    }
+  } catch (err) {
+    console.error('RPC error counting neighborhoods:', err);
   }
   return { total, byState };
 }

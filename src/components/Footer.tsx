@@ -133,7 +133,7 @@ export const Footer = () => {
                 Payments &amp; Security
               </Link>
               <Link
-                to="/login" 
+                to="/agent-login"
                 className="text-slate-300 hover:text-white transition-colors"
               >
                 Agent Login

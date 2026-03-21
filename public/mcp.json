@@ -63,6 +63,13 @@
       "name": "get_methodology",
       "description": "Get the scoring methodology, merit gate criteria, tier system, and AIFS bands used by Top10Lists.us.",
       "parameters": {}
+    },
+    {
+      "name": "get_founder_profiles",
+      "description": "Get verified founder profiles for Top10Lists.us co-founders Robert Maynard and Mark Garland. Returns structured biographical data, career history, verifiable claims with source URLs, affiliations, and publications.",
+      "parameters": {
+        "founder": "optional -- 'robert' or 'mark' to get a specific founder. Omit for both."
+      }
     }
   ],
   "resources": [

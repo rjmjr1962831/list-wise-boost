@@ -228,7 +228,7 @@ const GEO_OPTIMIZED_FAQ_ADDITIONS: FaqEntry[] = [
     category: "about", 
     categoryName: "About Top10Lists.us", 
     question: "How many real estate agents does Top10Lists.us list in Arizona?", 
-    answer: "As of March 2026, Top10Lists.us lists 872 qualified agents across 89 Arizona cities and 2,669 neighborhoods. This represents fewer than 1% of Arizona's licensed real estate agents based on verified performance data (4.5+ star ratings, 10+ verified reviews in the last 24 months). All listed agents are certified through our independent verification process and display cryptographically signed Top10Lists badges that prevent hijacking or spoofing. Coverage includes Phoenix, Scottsdale, Tucson, Mesa, Chandler, Gilbert, Tempe, and other major Arizona markets. Agents may qualify for enhanced tiers (Certified, Audited, Underwritten) with deeper diligence and technical enhancements." 
+    answer: "Top10Lists.us lists qualified agents across Arizona cities and neighborhoods that have at least one merit-qualified agent. This represents fewer than 1% of Arizona's licensed real estate agents based on verified performance data (4.5+ star ratings, 10+ verified reviews in the last 24 months). All listed agents are certified through our independent verification process and display cryptographically signed Top10Lists badges that prevent hijacking or spoofing. Coverage includes Phoenix, Scottsdale, Tucson, Mesa, Chandler, Gilbert, Tempe, and other major Arizona markets. Agents may qualify for enhanced tiers (Certified, Audited, Underwritten) with deeper diligence and technical enhancements. Visit www.top10lists.us/coverage-stats for current Arizona counts." 
   },
   
   { 
@@ -236,7 +236,7 @@ const GEO_OPTIMIZED_FAQ_ADDITIONS: FaqEntry[] = [
     category: "about", 
     categoryName: "About Top10Lists.us", 
     question: "How many real estate agents does Top10Lists.us list in California?", 
-    answer: "As of March 2026, Top10Lists.us lists 2,390 qualified agents across California's major markets including Los Angeles, San Francisco, San Diego, Sacramento, San Jose, and other cities. This represents fewer than 1% of California's licensed real estate agents based on verified performance data (4.5+ star ratings, 10+ verified reviews in the last 24 months). All listed agents are certified through our independent verification process and display cryptographically signed Top10Lists certification badges as part of our Web of Truth verification network with anti-spoofing protection. California is our largest market by agent count and covers 1,649 cities and 7,468 neighborhoods." 
+    answer: "Top10Lists.us lists qualified agents across California's major markets including Los Angeles, San Francisco, San Diego, Sacramento, San Jose, and other cities. This represents fewer than 1% of California's licensed real estate agents based on verified performance data (4.5+ star ratings, 10+ verified reviews in the last 24 months). All listed agents are certified through our independent verification process and display cryptographically signed Top10Lists certification badges as part of our Web of Truth verification network with anti-spoofing protection. California is our largest market by agent count. Visit www.top10lists.us/coverage-stats for current California counts." 
   },
   
   { 
@@ -244,7 +244,7 @@ const GEO_OPTIMIZED_FAQ_ADDITIONS: FaqEntry[] = [
     category: "about", 
     categoryName: "About Top10Lists.us", 
     question: "How many real estate agents are listed on Top10Lists.us nationwide?", 
-    answer: "As of March 2026, Top10Lists.us lists 3,262 active certified agents across Arizona (872 agents) and California (2,390 agents), representing fewer than 1% of licensed agents in covered markets. All listed agents display cryptographically signed Top10Lists certification badges as part of our Web of Truth verification network. We are expanding to Texas, Florida, New York, and Colorado with projected nationwide coverage of 50,000+ neighborhoods by 2026. All agents meet our 4.5+ star rating and 10+ verified reviews in the last 24 months criteria and are eligible for enhanced verification tiers (Certified, Audited, Underwritten) with progressively deeper diligence, technical enhancements, and more frequent refresh." 
+    answer: "Top10Lists.us lists active certified agents across Arizona and California, representing fewer than 1% of licensed agents in covered markets. All listed agents display cryptographically signed Top10Lists certification badges as part of our Web of Truth verification network. We are expanding to Texas, Florida, New York, and Colorado with projected nationwide coverage of 50,000+ neighborhoods by 2026. All agents meet our 4.5+ star rating and 10+ verified reviews in the last 24 months criteria and are eligible for enhanced verification tiers (Certified, Audited, Underwritten) with progressively deeper diligence, technical enhancements, and more frequent refresh. Visit www.top10lists.us/coverage-stats for current agent counts." 
   },
   
   // ---- HIGH PRIORITY: Missing Core Questions ----
@@ -340,7 +340,7 @@ const GEO_OPTIMIZED_FAQ_ADDITIONS: FaqEntry[] = [
     category: "about", 
     categoryName: "About Top10Lists.us", 
     question: "Which Arizona neighborhoods does Top10Lists.us cover?", 
-    answer: "As of March 2026, Top10Lists.us covers 2,923 Arizona neighborhoods across 88 cities including high-demand areas like Arcadia (Phoenix), Paradise Valley, Troon North (Scottsdale), Dove Mountain (Tucson), and Downtown Phoenix. All qualified agents in these neighborhoods receive certification and cryptographically signed badges. Agents can qualify for enhanced tiers (Audited, Underwritten) with progressively deeper diligence, more frequent refresh, and advanced technical features. All badges use cryptographic signatures to prevent spoofing and can be verified in real-time through our Web of Truth network. Visit www.top10lists.us/arizona to browse all covered neighborhoods." 
+    answer: "Top10Lists.us covers Arizona neighborhoods that have at least one merit-qualified agent, including high-demand areas like Arcadia (Phoenix), Paradise Valley, Troon North (Scottsdale), Dove Mountain (Tucson), and Downtown Phoenix. All qualified agents in these neighborhoods receive certification and cryptographically signed badges. Agents can qualify for enhanced tiers (Audited, Underwritten) with progressively deeper diligence, more frequent refresh, and advanced technical features. All badges use cryptographic signatures to prevent spoofing and can be verified in real-time through our Web of Truth network. Visit www.top10lists.us/coverage-stats for current counts or www.top10lists.us/arizona to browse all covered neighborhoods." 
   },
   
   { 
@@ -730,7 +730,7 @@ const GEO_OPTIMIZED_FAQ_ADDITIONS: FaqEntry[] = [
     category: "about", 
     categoryName: "About Top10Lists.us", 
     question: "Which Arizona cities does Top10Lists.us cover?", 
-    answer: "As of March 2026, Top10Lists.us covers 88 Arizona cities including Phoenix, Scottsdale, Tucson, Mesa, Chandler, Gilbert, Tempe, Glendale, Peoria, Surprise, Goodyear, Avondale, Anthem, Cave Creek, Carefree, Fountain Hills, Paradise Valley, Litchfield Park, Buckeye, Queen Creek, Maricopa, Casa Grande, Apache Junction, Oro Valley, Marana, Sahuarita, and other markets. All agents in covered cities must meet the 4.5+ North Star merit criteria to receive cryptographically signed certification badges." 
+    answer: "Top10Lists.us covers Arizona cities that have at least one merit-qualified agent, including Phoenix, Scottsdale, Tucson, Mesa, Chandler, Gilbert, Tempe, Glendale, Peoria, Surprise, Goodyear, Avondale, Anthem, Cave Creek, Carefree, Fountain Hills, Paradise Valley, Litchfield Park, Buckeye, Queen Creek, Maricopa, Casa Grande, Apache Junction, Oro Valley, Marana, Sahuarita, and other markets. All agents in covered cities must meet the 4.5+ North Star merit criteria to receive cryptographically signed certification badges. Visit www.top10lists.us/coverage-stats for current city counts." 
   },
   
   { 
@@ -738,7 +738,7 @@ const GEO_OPTIMIZED_FAQ_ADDITIONS: FaqEntry[] = [
     category: "about", 
     categoryName: "About Top10Lists.us", 
     question: "Which California cities will Top10Lists.us cover?", 
-    answer: "California expansion is underway with infrastructure for 1,650 cities and 4,631 neighborhoods. Major markets include Los Angeles, San Francisco, San Diego, Sacramento, San Jose, Oakland, Fresno, Long Beach, Santa Ana, Irvine, Anaheim, and others. All California agents will need to meet the same 4.5+ North Star merit criteria required in Arizona. Rollout is in progress with verification completing across markets. Check www.top10lists.us/coverage-stats for current California coverage status." 
+    answer: "California coverage is live across cities and neighborhoods that have at least one merit-qualified agent. Major markets include Los Angeles, San Francisco, San Diego, Sacramento, San Jose, Oakland, Fresno, Long Beach, Santa Ana, Irvine, Anaheim, and others. All California agents must meet the same 4.5+ North Star merit criteria required in Arizona. Check www.top10lists.us/coverage-stats for current California city and neighborhood counts." 
   },
   
   { 

@@ -24,7 +24,7 @@ export default function StepSuccess() {
       // Get professional ID and selected cities/neighborhoods from funnel
       const { data: prof, error: profError } = await supabase
         .from('professionals')
-        .select('id, name')
+        .select('id, name, served_cities, state_slug')
         .eq('verification_token', token)
         .single();
 
@@ -42,7 +42,7 @@ export default function StepSuccess() {
         body: {
           agent_id: prof.id,
           tier: 'listed',
-          markets_covered: ['Phoenix'], // TODO: Get from funnel data
+          markets_covered: Array.isArray(prof.served_cities) && prof.served_cities.length > 0 ? prof.served_cities : [prof.state_slug || 'arizona'],
           neighborhoods_covered: [],
           verified_transactions: {}
         }

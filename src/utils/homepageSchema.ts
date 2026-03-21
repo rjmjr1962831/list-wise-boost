@@ -256,7 +256,7 @@ const faqData = [
   },
   {
     question: "What cities are currently covered?",
-    answer: "Arizona and California markets are live with verified agents. Arizona covers Phoenix, Scottsdale, Mesa, Chandler, Gilbert, Tucson, Tempe, and 40+ additional cities. California covers Los Angeles, San Francisco, San Diego, Sacramento, and 1,650+ cities. We serve Arizona and California only."
+    answer: "Arizona and California markets are live with verified agents. Arizona covers Phoenix, Scottsdale, Mesa, Chandler, Gilbert, Tucson, Tempe, and additional cities with qualifying agents. California covers Los Angeles, San Francisco, San Diego, Sacramento, and additional cities with qualifying agents. We serve Arizona and California only. Visit www.top10lists.us/coverage-stats for current counts."
   },
   {
     question: "How do I find a trustworthy real estate agent?",

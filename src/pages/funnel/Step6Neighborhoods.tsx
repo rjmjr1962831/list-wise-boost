@@ -264,7 +264,7 @@ export default function Step6Neighborhoods() {
             <CardHeader>
               <CardTitle className="text-white">Which neighborhoods are you an expert in?</CardTitle>
               <p className="text-sm text-slate-400">
-                Search and add the specific neighborhoods where your closed transaction history is strongest. We verify these selections against public transaction records.
+                Choose the neighborhoods where you've closed the most deals. Most agents select 5-10. Each neighborhood you add strengthens your local AI visibility.
               </p>
             </CardHeader>
             <CardContent className="space-y-6">

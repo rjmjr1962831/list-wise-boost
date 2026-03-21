@@ -412,8 +412,8 @@ Our weekly update cycle means you're seeing rankings based on recent performance
 
 **Coverage**
 
-**Arizona** - Complete (88 cities, 2,923 neighborhoods)
-**California** - Complete (1,650+ cities, 4,631 neighborhoods)
+**Arizona** - Live (cities and neighborhoods with qualifying agents)
+**California** - Live (cities and neighborhoods with qualifying agents)
 
 **Why Arizona First?**
 

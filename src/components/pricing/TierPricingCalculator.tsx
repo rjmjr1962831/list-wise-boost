@@ -5,7 +5,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 
 // ── Constants ──────────────────────────────────────────────────────────────
 
-const CLOSE_RATE = 0.3;
+const DEFAULT_CLOSE_RATE = 0.10;
 const AIFS_CAP = 95;
 
 type TierName = 'certified' | 'audited' | 'underwritten';
@@ -119,8 +119,10 @@ export function TierPricingCalculator({
 }: TierPricingCalculatorProps) {
   const [dealSize, setDealSize] = useState(500000);
   const [commRate, setCommRate] = useState(3);
+  const [closeRate, setCloseRate] = useState(DEFAULT_CLOSE_RATE * 100);
   const [isAnnual, setIsAnnual] = useState(false);
   const [expandedTier, setExpandedTier] = useState<TierName | null>(null);
+  const effectiveCloseRate = closeRate / 100;
 
   const baselineAifs = currentAifs - TIER_CONFIG[currentTier].uplift;
 
@@ -132,7 +134,7 @@ export function TierPricingCalculator({
 
   function tierCalc(tier: TierName) {
     const cfg = TIER_CONFIG[tier];
-    const closedDeals = Math.round(cfg.leads * CLOSE_RATE);
+    const closedDeals = Math.round(cfg.leads * effectiveCloseRate);
     const grossRevenue = commPerDeal * closedDeals;
     const annualCost = cfg.monthlyPrice === 0 ? 0 : isAnnual ? cfg.monthlyPrice * 10 : cfg.monthlyPrice * 12;
     const netAnnual = grossRevenue - annualCost;
@@ -158,7 +160,7 @@ export function TierPricingCalculator({
       {/* ── Personalize ── */}
       <div className="max-w-md mx-auto rounded-xl border border-slate-700 bg-slate-900/80 p-4">
         <p className="text-sm font-semibold text-white mb-3">Adjust to your market</p>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-3 gap-3">
           <div>
             <label className="block text-xs font-semibold text-slate-400 mb-1">Avg. deal size</label>
             <div className="relative">
@@ -178,6 +180,16 @@ export function TierPricingCalculator({
               value={commRate}
               onChange={(e) => setCommRate(parseFloat(e.target.value) || 0)}
               min={0} max={100} step={0.5}
+              className="w-full px-3 py-2 rounded-md border border-slate-600 bg-slate-800 text-lg font-medium text-white outline-none focus:border-primary"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-slate-400 mb-1">Close rate %</label>
+            <input
+              type="number"
+              value={closeRate}
+              onChange={(e) => setCloseRate(parseFloat(e.target.value) || 0)}
+              min={1} max={100} step={1}
               className="w-full px-3 py-2 rounded-md border border-slate-600 bg-slate-800 text-lg font-medium text-white outline-none focus:border-primary"
             />
           </div>
@@ -306,7 +318,7 @@ export function TierPricingCalculator({
                     </div>
                     <div className="flex justify-between">
                       <span className="text-slate-400">Close rate</span>
-                      <span className="text-white">30%</span>
+                      <span className="text-white">{closeRate}%</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-slate-400">Closed deals</span>
@@ -370,7 +382,7 @@ export function TierPricingCalculator({
                           : 'bg-amber-600 hover:bg-amber-700'
                     }`}
                   >
-                    {savingTier === tier ? 'Processing...' : tier === 'certified' ? 'Activate Certified (Free)' : `Upgrade to ${cfg.name}`}
+                    {savingTier === tier ? 'Processing...' : tier === 'certified' ? 'Activate Certified (Free)' : `Choose ${cfg.name} — ${priceDisplay}`}
                   </button>
                 )}
               </div>
