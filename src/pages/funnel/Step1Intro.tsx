@@ -16,6 +16,7 @@ interface Professional {
   company: string | null;
   verification_token: string | null;
   ai_surfaces_monthly_est: number | null;
+  ai_surfaces_7d?: number | null;
   review_stars_rating: number | null;
   num_total_reviews: number | null;
   years_experience: number | null;
@@ -103,6 +104,16 @@ export default function Step1Intro() {
         return;
       }
 
+      // Fetch 7-day AI surfaces
+      try {
+        const { data: surfaceRow } = await supabase
+          .from('agent_ai_surfaces' as any)
+          .select('total_surfaces')
+          .eq('agent_id', data.id)
+          .maybeSingle();
+        if (surfaceRow) data.ai_surfaces_7d = (surfaceRow as any).total_surfaces;
+      } catch { /* surfaces not available */ }
+
       setProfessional(data);
       trackFunnelEvent('funnel_landed', data);
       trackFunnelEvent('funnel_step_intro', data);
@@ -161,7 +172,7 @@ export default function Step1Intro() {
     );
   }
 
-  const surfaces = professional.ai_surfaces_monthly_est || 0;
+  const surfaces = professional.ai_surfaces_7d ?? professional.ai_surfaces_monthly_est ?? 0;
   const score = aifs?.score ?? null;
   const band = aifs?.band ?? null;
   const firstName = professional.name.split(' ')[0];
@@ -191,7 +202,7 @@ export default function Step1Intro() {
               <div className="text-2xl sm:text-3xl font-bold text-white">
                 {surfaces > 0 ? fmt(surfaces) : "--"}
               </div>
-              <div className="text-xs text-slate-400 mt-1">AI Surfaces / Month</div>
+              <div className="text-xs text-slate-400 mt-1">AI Surfaces / 7 Days</div>
               <div className="text-[10px] text-slate-500 mt-0.5">Times AI saw your name</div>
             </div>
             <div className="bg-white/5 border border-white/10 rounded-xl p-4 text-center">
