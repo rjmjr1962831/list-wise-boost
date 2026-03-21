@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { SafeHead } from "@/components/SafeHead";
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2 } from 'lucide-react';
+import { trackFunnelEvent } from '@/lib/funnel-track';
 import { FunnelBreadcrumbs } from '@/components/funnel/FunnelBreadcrumbs';
 import { TierPricingCalculator } from '@/components/pricing/TierPricingCalculator';
 import { toast } from 'sonner';
@@ -61,6 +62,7 @@ export default function Step7Pricing() {
       }
       if (!prof) { navigate('/404'); return; }
       setProfessional(prof);
+      trackFunnelEvent('funnel_step_pricing', prof);
     } catch {
       navigate('/404');
     } finally {
@@ -73,6 +75,7 @@ export default function Step7Pricing() {
 
   const handleSelectTier = async (tier: CertificationTier) => {
     if (!token || !professional) return;
+    trackFunnelEvent('funnel_tier_selected', professional, { tier });
     setSavingTier(tier);
     try {
       if (tier === 'certified') {
@@ -98,7 +101,7 @@ export default function Step7Pricing() {
         });
         if (error) { console.error('create-agent-checkout error:', error); throw error; }
         if (data?.error) { console.error('create-agent-checkout returned error:', data.error); throw new Error(data.error); }
-        if (data?.url) { window.location.href = data.url; }
+        if (data?.url) { trackFunnelEvent('funnel_checkout_started', professional, { tier }); window.location.href = data.url; }
         else throw new Error('No checkout URL returned');
       }
     } catch (err: unknown) {

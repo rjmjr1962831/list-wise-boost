@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { SafeHead } from "@/components/SafeHead";
 import { supabase } from '@/integrations/supabase/client';
+import { trackFunnelEvent } from '@/lib/funnel-track';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Loader2, ArrowRight, Eye, TrendingUp, Shield, Zap } from 'lucide-react';
@@ -103,6 +104,8 @@ export default function Step1Intro() {
       }
 
       setProfessional(data);
+      trackFunnelEvent('funnel_landed', data);
+      trackFunnelEvent('funnel_step_intro', data);
 
       // Fetch AIFS from geo_audit_results
       try {

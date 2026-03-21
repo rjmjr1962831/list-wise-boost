@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Loader2, ArrowRight, ArrowLeft, Search, X, Plus, MapPin } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { trackFunnelEvent } from '@/lib/funnel-track';
 import { FunnelBreadcrumbs } from '@/components/funnel/FunnelBreadcrumbs';
 
 interface Neighborhood {
@@ -59,10 +60,11 @@ export default function Step6Neighborhoods() {
     try {
       const { data } = await supabase
         .from('professionals')
-        .select('state_slug')
+        .select('id, name, state_slug')
         .eq('verification_token', token)
         .single();
       if (!data) { navigate('/404'); return; }
+      trackFunnelEvent('funnel_step_neighborhoods', { id: data.id, name: data.name });
       const stateMap: Record<string, string> = { arizona: 'Arizona', california: 'California' };
       setAgentState(stateMap[data.state_slug] || data.state_slug);
 
@@ -145,6 +147,18 @@ export default function Step6Neighborhoods() {
   };
 
   const handleContinue = async () => {
+    // Track neighborhood selection
+    try {
+      const { data: trackProf } = await supabase
+        .from('professionals')
+        .select('id, name')
+        .eq('verification_token', token)
+        .single();
+      if (trackProf) {
+        trackFunnelEvent('funnel_neighborhoods_selected', trackProf, { count: selectedList.length });
+      }
+    } catch { /* tracking is best-effort */ }
+
     // Save selections (fire and forget)
     if (selectedList.length > 0) {
       try {

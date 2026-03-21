@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, ArrowRight, ArrowLeft, HelpCircle, CheckCircle } from 'lucide-react';
+import { trackFunnelEvent } from '@/lib/funnel-track';
 import InlineReviewForm from '@/components/funnel/InlineReviewForm';
 import { FunnelBreadcrumbs } from '@/components/funnel/FunnelBreadcrumbs';
 
@@ -67,6 +68,7 @@ export default function Step2bCredentials() {
         .single();
       if (error || !data) { navigate('/404'); return; }
       setProfessional(data as Professional);
+      trackFunnelEvent('funnel_step_credentials', data as Professional);
     } catch { navigate('/404'); }
     finally { setLoading(false); }
   };

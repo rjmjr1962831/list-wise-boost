@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, ArrowRight, ArrowLeft, CheckCircle, Edit } from 'lucide-react';
 import { toast } from 'sonner';
 import { floorSales, floorReviews } from '@/utils/floorDisplay';
+import { trackFunnelEvent } from '@/lib/funnel-track';
 import { FunnelBreadcrumbs } from '@/components/funnel/FunnelBreadcrumbs';
 
 interface Professional {
@@ -96,6 +97,7 @@ export default function Step4ReviewFinal() {
         .single();
       if (error || !data) { navigate('/404'); return; }
       setProfessional(data);
+      trackFunnelEvent('funnel_step_review_final', data);
 
       // Load any pending review requests for this professional
       const { data: requests } = await supabase

@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { SafeHead } from "@/components/SafeHead";
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { trackFunnelEvent } from '@/lib/funnel-track';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, Home, Phone, ExternalLink, Copy } from 'lucide-react';
 import { toast } from 'sonner';
@@ -23,7 +24,7 @@ export default function StepSuccess() {
       // Get professional ID and selected cities/neighborhoods from funnel
       const { data: prof, error: profError } = await supabase
         .from('professionals')
-        .select('id')
+        .select('id, name')
         .eq('verification_token', token)
         .single();
 
@@ -32,6 +33,8 @@ export default function StepSuccess() {
         setGenerating(false);
         return;
       }
+
+      trackFunnelEvent('funnel_step_success', prof);
 
       // For now, generate a basic listed tier (free)
       // In production, this would be based on payment tier
