@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { Loader2, Download, RefreshCw, Users, Save, Trash2 } from "lucide-react";
+import { Loader2, Download, RefreshCw, Users, Save, Trash2, Mail } from "lucide-react";
 
 export interface ListMakerCriteria {
   active?: boolean | "all"; // true=active only, false=inactive only, "all"=both
@@ -934,6 +934,24 @@ export function ListMaker() {
             >
               <Users className="h-4 w-4 mr-2" />
               Add to Campaign
+            </Button>
+
+            <Button
+              size="sm"
+              variant="secondary"
+              disabled={count === 0 || count === null || outputFields.length === 0}
+              onClick={() => {
+                const allFields = [...OUTPUT_FIELDS, ...LEGACY_AIFS_FIELDS, ...BOT_CRAWL_FIELDS, ...AIFS_FIELDS];
+                const selectedVars = outputFields.map(key => {
+                  const f = allFields.find(f => f.key === key);
+                  return { key, label: f?.label ?? key };
+                });
+                localStorage.setItem("top10-list-to-email", JSON.stringify({ criteria, outputFields: selectedVars }));
+                window.dispatchEvent(new CustomEvent("list-to-email"));
+              }}
+            >
+              <Mail className="h-4 w-4 mr-2" />
+              Create Email →
             </Button>
 
             <Button

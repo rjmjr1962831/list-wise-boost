@@ -67,7 +67,7 @@ const STATUS_COLORS: Record<string, string> = {
   complete: "bg-purple-200 text-purple-800",
 };
 
-const TEMPLATE_VARIABLES = [
+const BASE_TEMPLATE_VARIABLES = [
   { key: "firstName", label: "First Name" },
   { key: "lastName", label: "Last Name" },
   { key: "city", label: "City" },
@@ -151,6 +151,29 @@ function CampaignWizard({
   onRefresh: () => void;
 }) {
   const [step, setStep] = useState(0);
+  const [extraVars, setExtraVars] = useState<{ key: string; label: string }[]>([]);
+
+  // Listen for "Create Email" from ListMaker
+  useEffect(() => {
+    const handler = () => {
+      try {
+        const raw = localStorage.getItem("top10-list-to-email");
+        if (!raw) return;
+        const { criteria: listCriteria, outputFields } = JSON.parse(raw);
+        // Load criteria from list
+        if (listCriteria) setCriteria(listCriteria);
+        // Add output fields as extra merge variables (dedupe against base)
+        const baseKeys = new Set(BASE_TEMPLATE_VARIABLES.map(v => v.key));
+        const extras = (outputFields || []).filter((f: { key: string }) => !baseKeys.has(f.key));
+        setExtraVars(extras);
+        // Jump to Create Email step
+        setStep(1);
+        localStorage.removeItem("top10-list-to-email");
+      } catch { /* ignore parse errors */ }
+    };
+    window.addEventListener("list-to-email", handler);
+    return () => window.removeEventListener("list-to-email", handler);
+  }, []);
 
   // Step 0: Select List
   const [criteria, setCriteria] = useState<ListMakerCriteria>({
@@ -490,6 +513,8 @@ function CampaignWizard({
   };
 
   // ---- Variable insertion buttons ----
+  const allVars = [...BASE_TEMPLATE_VARIABLES, ...extraVars];
+
   const VariableButtons = ({
     targetRef,
     setter,
@@ -503,11 +528,15 @@ function CampaignWizard({
       <span className="text-xs text-muted-foreground mr-1 self-center">
         Insert:
       </span>
-      {TEMPLATE_VARIABLES.map((v) => (
+      {allVars.map((v) => (
         <button
           key={v.key}
           type="button"
-          className="px-2 py-0.5 text-xs rounded-full border bg-background hover:bg-muted transition-colors cursor-pointer"
+          className={`px-2 py-0.5 text-xs rounded-full border transition-colors cursor-pointer ${
+            BASE_TEMPLATE_VARIABLES.some(b => b.key === v.key)
+              ? "bg-background hover:bg-muted"
+              : "bg-blue-50 border-blue-200 hover:bg-blue-100 text-blue-700"
+          }`}
           onClick={() => insertVariable(targetRef, setter, currentValue, v.key)}
         >
           {v.label}
@@ -1987,6 +2016,13 @@ export function CampaignManager() {
   useEffect(() => {
     fetchCampaigns();
   }, [fetchCampaigns]);
+
+  // Switch to wizard tab when ListMaker fires "Create Email"
+  useEffect(() => {
+    const handler = () => setTab("wizard");
+    window.addEventListener("list-to-email", handler);
+    return () => window.removeEventListener("list-to-email", handler);
+  }, []);
 
   const tabs: { key: Tab; label: string }[] = [
     { key: "wizard", label: "Campaign Wizard" },
