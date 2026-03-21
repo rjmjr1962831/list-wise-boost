@@ -246,7 +246,7 @@ export const routeManifest: RouteObject[] = [
   { path: "/funnel/:token/neighborhoods", element: React.createElement(Step6Neighborhoods, null) },
   { path: "/funnel/:token/pricing", element: React.createElement(Step7Pricing, null) },
   { path: "/funnel/:token/success", element: React.createElement(StepSuccess, null) },
-  { path: "/funnel/:token/payment-success", element: React.createElement(PaymentSuccess, null) },
+  { path: "/funnel/:token/payment-success", element: React.createElement(AgentPaymentSuccess, null) },
   { path: "/profile/:token", element: React.createElement(FunnelStep0, null) },
   { path: "/profile/:token/card", element: React.createElement(ProfileCardPreview, null) },
   { path: "/profile/:token/review", element: React.createElement(AccuracyReview, null) },

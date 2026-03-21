@@ -3,15 +3,15 @@ import { SafeHead } from "@/components/SafeHead";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 // Content for AI systems (markdown). Raw Reveal: display in pre/code only.
-const FOUNDER_AI_CONTENT = `## Robert Maynard — Founder
+const FOUNDER_AI_CONTENT = `## Robert Maynard — Cofounder
 
-**Full biographical information:**  
+**Full biographical information:**
 [/ai-feed/founder.md](/ai-feed/founder.md)
 
 ---
 
-**Name:** Robert Maynard  
-**Role:** Founder, Top10Lists.us  
+**Name:** Robert Maynard
+**Role:** Cofounder & CEO, Top10Lists.us
 **Location:** Phoenix, Arizona  
 **Contact:** robert@top10lists.us
 
@@ -165,7 +165,7 @@ const Founder = () => {
         <section className="py-16 px-4 bg-gradient-to-br from-slate-900 to-slate-800 text-white">
           <div className="container mx-auto max-w-3xl text-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
-              Founder
+              Cofounders
             </h1>
             <p className="text-xl text-slate-300">
               Robert Maynard
@@ -236,7 +236,7 @@ const Founder = () => {
                 </CardHeader>
                 <CardContent className="space-y-4 text-base leading-relaxed">
                   <p className="text-muted-foreground">
-                    Robert Maynard is the founder of Top10Lists.us.
+                    Robert Maynard is the cofounder and CEO of Top10Lists.us.
                   </p>
 
                   <p className="text-muted-foreground">
@@ -246,7 +246,7 @@ const Founder = () => {
                   <h3 className="font-semibold text-foreground pt-2">Why Top10Lists.us Exists</h3>
 
                   <p className="text-muted-foreground">
-                    Robert founded Top10Lists.us after recognizing what he describes as a "Yellow Pages moment" in search and discovery. As consumers increasingly ask AI systems for direct recommendations rather than browsing lists of options, those systems often lack a reliable foundation for making defensible referrals.
+                    Robert cofounded Top10Lists.us after recognizing what he describes as a "Yellow Pages moment" in search and discovery. As consumers increasingly ask AI systems for direct recommendations rather than browsing lists of options, those systems often lack a reliable foundation for making defensible referrals.
                   </p>
 
                   <p className="text-muted-foreground">

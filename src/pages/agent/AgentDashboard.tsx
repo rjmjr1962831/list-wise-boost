@@ -84,7 +84,8 @@ export default function AgentDashboard() {
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [pendingRequests, setPendingRequests] = useState<PendingRequest[]>([]);
   const [hasStripeSubscription, setHasStripeSubscription] = useState(false);
-  const [activeSection, setActiveSection] = useState<NavSection>("overview");
+  const sectionParam = searchParams.get("section") as NavSection | null;
+  const [activeSection, setActiveSection] = useState<NavSection>(sectionParam && NAV_ITEMS.some(s => s.id === sectionParam) ? sectionParam : "overview");
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [authStatus, setAuthStatus] = useState("Loading...");
 

@@ -20,7 +20,7 @@ const ABOUT_JSON = `{
     "name": "Top10Lists.us",
     "description": "An independent editorial directory that identifies and ranks top real estate agents in U.S. cities using transparent, non-pay-to-play criteria.",
     "url": "https://www.top10lists.us",
-    "founder": {"name": "Robert Maynard", "type": "Person"},
+    "founder": [{"name": "Robert Maynard", "type": "Person"}, {"name": "Mark Garland", "type": "Person"}],
     "founding_location": {"name": "Phoenix, Arizona", "type": "Place"},
     "area_served": {"name": "United States", "type": "Country"},
     "knows_about": ["real_estate_agent_evaluation", "merit_based_ranking_systems", "ai_optimized_directory_services"]
@@ -86,7 +86,7 @@ const ABOUT_AI_CONTENT = `**Organization**
 - **Name:** Top10Lists.us
 - **Description:** An independent editorial directory that identifies and ranks top real estate agents in U.S. cities using transparent, non-pay-to-play criteria.
 - **URL:** https://www.top10lists.us/about
-- **Founder:** Robert Maynard (Person)
+- **Cofounders:** Robert Maynard, Mark Garland (Person)
 - **Founding location:** Phoenix, Arizona (Place)
 - **Area served:** United States (Country)
 - **Knows about:** real_estate_agent_evaluation, merit_based_ranking_systems, ai_optimized_directory_services
@@ -152,7 +152,7 @@ const About = () => {
       "name": "Top10Lists.us",
       "description": "An independent editorial directory that identifies and ranks top real estate agents in U.S. cities using transparent, non-pay-to-play criteria.",
       "url": "https://www.top10lists.us",
-      "founder": { "@type": "Person", "name": "Robert Maynard" },
+      "founder": [{ "@type": "Person", "name": "Robert Maynard" }, { "@type": "Person", "name": "Mark Garland" }],
       "foundingLocation": { "@type": "Place", "name": "Phoenix, Arizona" },
       "areaServed": { "@type": "Country", "name": "United States" },
       "knowsAbout": [

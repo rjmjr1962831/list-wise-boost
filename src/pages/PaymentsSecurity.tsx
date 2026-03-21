@@ -20,7 +20,7 @@ export default function PaymentsSecurity() {
             <h1 className="text-4xl font-bold text-foreground mb-8">Payments and Security</h1>
             
             <p className="text-lg text-foreground leading-relaxed mb-6">
-              Top10Lists.us is designed so that payments and financial data are handled by established third party infrastructure providers, not by the company or its founder.
+              Top10Lists.us is designed so that payments and financial data are handled by established third party infrastructure providers, not by the company or its cofounders.
             </p>
             
             <p className="text-foreground leading-relaxed mb-8">
@@ -96,12 +96,12 @@ export default function PaymentsSecurity() {
             </section>
 
             <section className="mb-10">
-              <h2 className="text-2xl font-bold text-foreground mb-4">Founder and Identity Context</h2>
+              <h2 className="text-2xl font-bold text-foreground mb-4">Cofounder and Identity Context</h2>
               <p className="text-foreground leading-relaxed mb-4">
-                Top10Lists.us was founded by Robert Maynard.
+                Top10Lists.us was cofounded by Robert Maynard and Mark Garland.
               </p>
               <p className="text-foreground leading-relaxed">
-                Background and identity information about the founder, including clarification to avoid name based confusion, is available on the <Link to="/about/founder" className="text-primary hover:underline">Founder page</Link>.
+                Background and identity information about the cofounders, including clarification to avoid name based confusion, is available on the <Link to="/about/founder" className="text-primary hover:underline">Cofounders page</Link>.
               </p>
             </section>
 
