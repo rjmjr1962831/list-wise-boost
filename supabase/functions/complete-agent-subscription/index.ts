@@ -61,17 +61,27 @@ serve(async (req) => {
     }
     logStep('Professional found', { name: professional.name });
 
-    // Update professional as brand builder with enhanced tracking
+    // Determine badge tier from checkout metadata
+    const badgeTier = session.metadata?.badgeTier || null;
+    logStep('Badge tier from metadata', { badgeTier });
+
+    // Update professional as brand builder with enhanced tracking + badge tier
+    const updateFields: Record<string, any> = {
+      is_brand_builder: true,
+      funnel_status: 'subscribed',
+      funnel_completed_at: new Date().toISOString(),
+      subscription_status: 'active',
+      last_payment_at: new Date().toISOString(),
+      last_payment_status: 'succeeded',
+    };
+    if (badgeTier) {
+      updateFields.badge_tier = badgeTier;
+      updateFields.badge_status = 'active';
+    }
+
     const { error: updateError } = await supabase
       .from('professionals')
-      .update({
-        is_brand_builder: true,
-        funnel_status: 'subscribed',
-        funnel_completed_at: new Date().toISOString(),
-        subscription_status: 'active',
-        last_payment_at: new Date().toISOString(),
-        last_payment_status: 'succeeded',
-      })
+      .update(updateFields)
       .eq('id', professionalId);
 
     if (updateError) {
