@@ -38,6 +38,9 @@ interface Neighborhood {
 interface Agent {
   state_slug: string;
   canonical_slug: string;
+  current_tier?: string;
+  badge_tier?: string;
+  updated_at?: string;
 }
 
 // Normalize state to URL slug (neighborhood_catalog.state can be "Arizona", "TX", "New York", etc.)
@@ -138,7 +141,7 @@ async function fetchAllAgents(): Promise<Agent[]> {
   while (true) {
     const { data, error } = await supabase
       .from('professionals')
-      .select('state_slug, canonical_slug')
+      .select('state_slug, canonical_slug, current_tier, badge_tier, updated_at')
       .eq('active', true)
       .not('canonical_slug', 'is', null)
       .not('state_slug', 'is', null)
@@ -198,7 +201,7 @@ function writeSitemapParts(
 
 function generateCitySitemap(publicDir: string, cities: City[]): string[] {
   const locs = cities.map(c => `${BASE_URL}/${c.state_slug}/${c.slug}/top10realestateagents`);
-  return writeSitemapParts(publicDir, 'sitemap-cities', locs, 'weekly', '0.8');
+  return writeSitemapParts(publicDir, 'sitemap-cities', locs, 'daily', '0.8');
 }
 
 function generateNeighborhoodSitemap(publicDir: string, neighborhoods: Neighborhood[]): string[] {
@@ -208,12 +211,59 @@ function generateNeighborhoodSitemap(publicDir: string, neighborhoods: Neighborh
       const stateSlug = stateToSlug(n.state);
       return `${BASE_URL}/${stateSlug}/${n.city_area_slug}/${n.neighborhood_slug}/top10realestateagents`;
     });
-  return writeSitemapParts(publicDir, 'sitemap-neighborhoods', locs, 'weekly', '0.7');
+  return writeSitemapParts(publicDir, 'sitemap-neighborhoods', locs, 'daily', '0.7');
+}
+
+/**
+ * Tier-based lastmod for agent pages:
+ *   Underwritten: daily (today)
+ *   Audited: monthly (1st of current month or updated_at, whichever is newer)
+ *   Certified: quarterly (1st of current quarter or updated_at)
+ *   Listed: annual (1st of current year or updated_at)
+ */
+function agentLastmod(a: Agent): string {
+  const tier = (a.current_tier || a.badge_tier || 'listed').toLowerCase();
+  const d = today();
+  if (tier === 'underwritten') return d;
+  if (tier === 'audited') {
+    const monthStart = d.slice(0, 7) + '-01';
+    return a.updated_at ? (a.updated_at.slice(0, 10) > monthStart ? a.updated_at.slice(0, 10) : monthStart) : monthStart;
+  }
+  if (tier === 'certified') {
+    const now = new Date();
+    const qMonth = Math.floor(now.getMonth() / 3) * 3;
+    const quarterStart = `${now.getFullYear()}-${String(qMonth + 1).padStart(2, '0')}-01`;
+    return a.updated_at ? (a.updated_at.slice(0, 10) > quarterStart ? a.updated_at.slice(0, 10) : quarterStart) : quarterStart;
+  }
+  // Listed: annual
+  const yearStart = d.slice(0, 4) + '-01-01';
+  return a.updated_at ? (a.updated_at.slice(0, 10) > yearStart ? a.updated_at.slice(0, 10) : yearStart) : yearStart;
+}
+
+function agentChangefreq(a: Agent): string {
+  const tier = (a.current_tier || a.badge_tier || 'listed').toLowerCase();
+  if (tier === 'underwritten') return 'daily';
+  if (tier === 'audited') return 'monthly';
+  if (tier === 'certified') return 'monthly';
+  return 'yearly';
 }
 
 function generateAgentsSitemap(publicDir: string, agents: Agent[]): string[] {
-  const locs = agents.map(a => `${BASE_URL}/${a.state_slug}/agents/${a.canonical_slug}`);
-  return writeSitemapParts(publicDir, 'sitemap-agents', locs, 'monthly', '0.6');
+  // Agent sitemaps use per-agent lastmod and changefreq based on tier
+  const files: string[] = [];
+  for (let i = 0; i < agents.length; i += MAX_URLS_PER_SITEMAP) {
+    const chunk = agents.slice(i, i + MAX_URLS_PER_SITEMAP);
+    const partIndex = Math.floor(i / MAX_URLS_PER_SITEMAP);
+    const filename = partIndex === 0 ? 'sitemap-agents.xml' : `sitemap-agents-${partIndex + 1}.xml`;
+    let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
+    for (const a of chunk) {
+      xml += `  <url>\n    <loc>${BASE_URL}/${a.state_slug}/agents/${a.canonical_slug}</loc>\n    <lastmod>${agentLastmod(a)}</lastmod>\n    <changefreq>${agentChangefreq(a)}</changefreq>\n    <priority>0.6</priority>\n  </url>\n`;
+    }
+    xml += '</urlset>';
+    fs.writeFileSync(path.join(publicDir, filename), xml);
+    files.push(filename);
+  }
+  return files;
 }
 
 function generateSitemapIndex(publicDir: string, cityFiles: string[], neighborhoodFiles: string[], agentFiles: string[]): void {
@@ -302,6 +352,41 @@ function generateCoverageJson(cities: City[], neighborhoods: Neighborhood[]): st
   return JSON.stringify(coverage, null, 2);
 }
 
+function generatePagesSitemap(publicDir: string): void {
+  const d = today();
+  const pages = [
+    { loc: '/', priority: '1.0' },
+    { loc: '/about', priority: '0.8' },
+    { loc: '/about/ranking-methodology', priority: '0.8' },
+    { loc: '/about/founder', priority: '0.7' },
+    { loc: '/transparency', priority: '0.8' },
+    { loc: '/faq', priority: '0.8' },
+    { loc: '/for-ai', priority: '0.9' },
+    { loc: '/press', priority: '0.7' },
+    { loc: '/crawl-stats', priority: '0.6' },
+    { loc: '/privacy', priority: '0.3' },
+    { loc: '/terms', priority: '0.3' },
+    { loc: '/payments-security', priority: '0.3' },
+    { loc: '/ai-citation-whitepaper', priority: '0.6' },
+  ];
+  let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <!-- Generated: ${d} -->\n`;
+  for (const p of pages) {
+    xml += `  <url>\n    <loc>${BASE_URL}${p.loc}</loc>\n    <lastmod>${d}</lastmod>\n    <changefreq>daily</changefreq>\n    <priority>${p.priority}</priority>\n  </url>\n`;
+  }
+  xml += '</urlset>';
+  fs.writeFileSync(path.join(publicDir, 'sitemap-pages.xml'), xml);
+}
+
+function generateStatesSitemap(publicDir: string): void {
+  const d = today();
+  let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <!-- Generated: ${d} -->\n`;
+  for (const state of SITEMAP_STATES) {
+    xml += `  <url>\n    <loc>${BASE_URL}/${state}/top10realestateagents</loc>\n    <lastmod>${d}</lastmod>\n    <changefreq>daily</changefreq>\n    <priority>0.9</priority>\n  </url>\n`;
+  }
+  xml += '</urlset>';
+  fs.writeFileSync(path.join(publicDir, 'sitemap-states.xml'), xml);
+}
+
 async function main() {
   const publicDir = path.join(process.cwd(), 'public');
   console.log('Fetching cities, neighborhoods, and agents from Supabase...');
@@ -337,6 +422,12 @@ async function main() {
   const agentFiles = generateAgentsSitemap(publicDir, agents);
   console.log(`✓ Generated agent sitemap(s): ${agentFiles.join(', ')} (${agentCount} URLs)`);
 
+  generatePagesSitemap(publicDir);
+  console.log('✓ Generated sitemap-pages.xml');
+
+  generateStatesSitemap(publicDir);
+  console.log('✓ Generated sitemap-states.xml');
+
   generateSitemapIndex(publicDir, cityFiles, neighborhoodFiles, agentFiles);
   console.log('✓ Generated sitemap.xml index');
 
@@ -344,11 +435,9 @@ async function main() {
   fs.writeFileSync(path.join(publicDir, 'coverage.json'), coverageJson);
   console.log('✓ Generated coverage.json');
 
-  const totalUrls = cityCount + neighborhoodCount + agentCount;
-  const pagesAndStates = 41 + 6; // existing sitemap-pages.xml + sitemap-states.xml
+  const totalUrls = cityCount + neighborhoodCount + agentCount + 13 + SITEMAP_STATES.length;
   console.log('\nStatic sitemap generation complete.');
-  console.log(`  Total URLs in generated sitemaps: ${totalUrls} (cities + neighborhoods + agents)`);
-  console.log(`  Plus sitemap-pages.xml and sitemap-states.xml: ${pagesAndStates} → overall ~${totalUrls + pagesAndStates} indexable pages.`);
+  console.log(`  Total URLs across all sitemaps: ~${totalUrls}`);
 }
 
 main().catch(console.error);

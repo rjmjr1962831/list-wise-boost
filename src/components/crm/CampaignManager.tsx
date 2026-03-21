@@ -2,7 +2,7 @@
  * Campaign Manager: Step-by-step campaign wizard, review queue, and monitor.
  * Part of Email Sequencer v2.
  */
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,7 +17,8 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { Loader2, Check } from "lucide-react";
-import { type ListMakerCriteria, getSavedListTemplates, type SavedListTemplate } from "./ListMaker";
+import { type ListMakerCriteria, getSavedListTemplates, type SavedListTemplate, OUTPUT_FIELDS, BOT_CRAWL_FIELDS, AIFS_FIELDS } from "./ListMaker";
+import { RichEmailEditor } from "./RichEmailEditor";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -120,6 +121,10 @@ function renderTemplate(html: string, vars: Record<string, string>): string {
     out = out.replace(new RegExp(`\\{\\{${k}\\}\\}`, "g"), v);
   }
   out = out.replace(/\[\[BLOCK\]\]/g, "").replace(/\[\[\/BLOCK\]\]/g, "");
+  // If content looks like plain text (no HTML tags), convert newlines to <br>
+  if (!/<[a-z][\s\S]*>/i.test(out)) {
+    out = out.replace(/\n/g, "<br>");
+  }
   return out;
 }
 
@@ -151,7 +156,9 @@ function CampaignWizard({
   campaigns: Campaign[];
   onRefresh: () => void;
 }) {
-  const [step, setStep] = useState(0);
+  const [stepRaw, setStepRaw] = useState(0);
+  const step = stepRaw;
+  const setStep = (s: number) => { setStepRaw(s); window.scrollTo(0, 0); };
 
   // Step 0: Select List
   const [criteria, setCriteria] = useState<ListMakerCriteria>({
@@ -165,6 +172,7 @@ function CampaignWizard({
   const [listCount, setListCount] = useState<number | null>(null);
   const [loadingCount, setLoadingCount] = useState(false);
   const [savedLists] = useState<SavedListTemplate[]>(getSavedListTemplates);
+  const [outputFields, setOutputFields] = useState<string[]>(["first_name", "last_name", "email", "magic_link", "city_name", "current_tier"]);
 
   // Step 1: Create Email
   const [campaignName, setCampaignName] = useState("");
@@ -174,8 +182,6 @@ function CampaignWizard({
   const [templates, setTemplates] = useState<SequenceTemplate[]>([]);
   const [loadingTemplates, setLoadingTemplates] = useState(false);
   const [existingCampaignId, setExistingCampaignId] = useState<string>("");
-  const subjectRef = useRef<HTMLInputElement>(null);
-  const bodyRef = useRef<HTMLTextAreaElement>(null);
 
   // Step 3: Send Gates
   const [maxPerDay, setMaxPerDay] = useState(35);
@@ -254,29 +260,6 @@ function CampaignWizard({
       }
     })();
   }, []);
-
-  const insertVariable = (
-    ref: React.RefObject<HTMLInputElement | HTMLTextAreaElement | null>,
-    setter: React.Dispatch<React.SetStateAction<string>>,
-    currentValue: string,
-    varName: string
-  ) => {
-    const el = ref.current;
-    const tag = `{{${varName}}}`;
-    if (!el) {
-      setter(currentValue + tag);
-      return;
-    }
-    const start = el.selectionStart ?? currentValue.length;
-    const end = el.selectionEnd ?? start;
-    const newValue = currentValue.slice(0, start) + tag + currentValue.slice(end);
-    setter(newValue);
-    const newPos = start + tag.length;
-    setTimeout(() => {
-      el.setSelectionRange(newPos, newPos);
-      el.focus();
-    }, 0);
-  };
 
   const handleSelectExistingCampaign = (id: string) => {
     setExistingCampaignId(id);
@@ -483,6 +466,7 @@ function CampaignWizard({
     setSubject("");
     setBody("");
     setSenders([SENDER_ACCOUNTS[0]]);
+    setOutputFields(["first_name", "last_name", "email", "magic_link", "city_name", "current_tier"]);
     setExistingCampaignId("");
     setDraftCampaignId(null);
     setTestsSent([]);
@@ -494,32 +478,12 @@ function CampaignWizard({
     setMinSecondsBetweenSends(120);
   };
 
-  // ---- Variable insertion buttons ----
-  const VariableButtons = ({
-    targetRef,
-    setter,
-    currentValue,
-  }: {
-    targetRef: React.RefObject<HTMLInputElement | HTMLTextAreaElement | null>;
-    setter: React.Dispatch<React.SetStateAction<string>>;
-    currentValue: string;
-  }) => (
-    <div className="flex flex-wrap gap-1 mt-1">
-      <span className="text-xs text-muted-foreground mr-1 self-center">
-        Insert:
-      </span>
-      {BASE_TEMPLATE_VARIABLES.map((v) => (
-        <button
-          key={v.key}
-          type="button"
-          className="px-2 py-0.5 text-xs rounded-full border bg-background hover:bg-muted transition-colors cursor-pointer"
-          onClick={() => insertVariable(targetRef, setter, currentValue, v.key)}
-        >
-          {v.label}
-        </button>
-      ))}
-    </div>
-  );
+  // ---- Merge variable definitions from selected output fields ----
+  const ALL_FIELD_DEFS = [...OUTPUT_FIELDS, ...BOT_CRAWL_FIELDS, ...AIFS_FIELDS];
+  const mergeVars = outputFields.map(key => {
+    const f = ALL_FIELD_DEFS.find(fd => fd.key === key);
+    return { key, label: f?.label ?? key };
+  });
 
   return (
     <div className="space-y-6">
@@ -702,6 +666,75 @@ function CampaignWizard({
               <Button variant="outline" size="sm" onClick={fetchListCount} disabled={loadingCount}>Refine</Button>
             </div>
 
+            {/* Output fields — these become merge variables in the email */}
+            <div className="border-t pt-4 space-y-3">
+              <Label className="text-sm font-semibold">Select merge variables for email template</Label>
+              <p className="text-xs text-muted-foreground">Selected fields will be available as {"{{variable}}"} tags in the email editor.</p>
+
+              <div>
+                <Label className="text-xs text-muted-foreground mb-1 block">Agent Fields</Label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                  {OUTPUT_FIELDS.map((f) => (
+                    <label key={f.key} className="flex items-center gap-2 cursor-pointer text-sm">
+                      <Checkbox
+                        checked={outputFields.includes(f.key)}
+                        onCheckedChange={(c) => setOutputFields(prev => c ? [...prev, f.key] : prev.filter(k => k !== f.key))}
+                      />
+                      <span>{f.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <div className="flex items-center gap-3 mb-1">
+                  <Label className="text-xs text-muted-foreground">AIFS Score Fields</Label>
+                  <button type="button" className="text-xs text-blue-500 hover:text-blue-700 underline"
+                    onClick={() => {
+                      const keys = AIFS_FIELDS.map(f => f.key);
+                      const allSelected = keys.every(k => outputFields.includes(k));
+                      setOutputFields(prev => allSelected ? prev.filter(k => !keys.includes(k)) : [...new Set([...prev, ...keys])]);
+                    }}
+                  >{AIFS_FIELDS.every(f => outputFields.includes(f.key)) ? "Deselect all" : "Select all"}</button>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                  {AIFS_FIELDS.map((f) => (
+                    <label key={f.key} className="flex items-center gap-2 cursor-pointer text-sm">
+                      <Checkbox
+                        checked={outputFields.includes(f.key)}
+                        onCheckedChange={(c) => setOutputFields(prev => c ? [...prev, f.key] : prev.filter(k => k !== f.key))}
+                      />
+                      <span>{f.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <div className="flex items-center gap-3 mb-1">
+                  <Label className="text-xs text-muted-foreground">AI Surfaces (Bot Crawl Data)</Label>
+                  <button type="button" className="text-xs text-blue-500 hover:text-blue-700 underline"
+                    onClick={() => {
+                      const keys = BOT_CRAWL_FIELDS.map(f => f.key);
+                      const allSelected = keys.every(k => outputFields.includes(k));
+                      setOutputFields(prev => allSelected ? prev.filter(k => !keys.includes(k)) : [...new Set([...prev, ...keys])]);
+                    }}
+                  >{BOT_CRAWL_FIELDS.every(f => outputFields.includes(f.key)) ? "Deselect all" : "Select all"}</button>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                  {BOT_CRAWL_FIELDS.map((f) => (
+                    <label key={f.key} className="flex items-center gap-2 cursor-pointer text-sm">
+                      <Checkbox
+                        checked={outputFields.includes(f.key)}
+                        onCheckedChange={(c) => setOutputFields(prev => c ? [...prev, f.key] : prev.filter(k => k !== f.key))}
+                      />
+                      <span>{f.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </div>
+
             <div className="flex justify-between">
               <Button variant="outline" onClick={() => setStep(0)}>&larr; Back</Button>
               <Button onClick={() => setStep(2)} disabled={(listCount ?? 0) === 0}>Next: Create Email &rarr;</Button>
@@ -761,35 +794,34 @@ function CampaignWizard({
             <div className="space-y-1">
               <Label>Subject</Label>
               <Input
-                ref={subjectRef}
-                placeholder='e.g. {{firstName}}, your Top 10 listing is ready'
+                placeholder='e.g. {{first_name}}, your Top 10 listing is ready'
                 value={subject}
                 onChange={(e) => setSubject(e.target.value)}
-              />
-              <VariableButtons
-                targetRef={subjectRef}
-                setter={setSubject}
-                currentValue={subject}
               />
             </div>
 
             {/* Body */}
             <div className="space-y-1">
-              <Label>Body (HTML)</Label>
-              <textarea
-                ref={bodyRef}
-                className="w-full min-h-[200px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring font-mono"
-                placeholder={
-                  "<p>Hi {{firstName}},</p>\n<p>Your listing in {{city}}, {{state}} is live...</p>"
-                }
-                value={body}
-                onChange={(e) => setBody(e.target.value)}
-              />
-              <VariableButtons
-                targetRef={bodyRef}
-                setter={setBody}
-                currentValue={body}
-              />
+              <Label>Body</Label>
+              <RichEmailEditor value={body} onChange={setBody} />
+              <p className="text-xs text-muted-foreground">Unsubscribe link and List-Unsubscribe header are added automatically on send.</p>
+            </div>
+
+            {/* Merge variables — click to copy */}
+            <div className="border rounded p-3 bg-muted/30 space-y-2">
+              <Label className="text-xs font-semibold">Merge variables — click to copy, then paste (Ctrl+V) into subject or body</Label>
+              <div className="flex flex-wrap gap-1">
+                {mergeVars.filter(v => v.key !== "magic_link").map(v => (
+                  <span key={v.key} className="px-2 py-0.5 text-xs rounded-full border bg-blue-50 border-blue-200 text-blue-700 cursor-pointer select-none"
+                    onClick={() => { navigator.clipboard.writeText(`{{${v.key}}}`); toast.success(`Copied {{${v.key}}}`); }}
+                  >{v.label}</span>
+                ))}
+                {outputFields.includes("magic_link") && (
+                  <span className="px-2 py-0.5 text-xs rounded-full border bg-green-50 border-green-200 text-green-700 cursor-pointer select-none"
+                    onClick={() => { navigator.clipboard.writeText('<a href="{{magic_link}}">here</a>'); toast.success('Copied magic link as <a href="{{magic_link}}">here</a>'); }}
+                  >Magic Link (as "here")</span>
+                )}
+              </div>
             </div>
 
             {/* Sender accounts */}
