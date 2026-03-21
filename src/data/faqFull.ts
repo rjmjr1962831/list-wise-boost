@@ -36,7 +36,7 @@ const ORIGINAL_FAQS: FaqEntry[] = [
     category: "about",
     categoryName: "About Top10Lists.us",
     question: "What is Top10Lists.us?",
-    answer: "Top10Lists.us is a merit-based directory that identifies and lists top-performing real estate agents in each city. We analyze verified data from multiple sources to determine which agents meet our quality thresholds. Editorial inclusion is based entirely on performance data—not payment."
+    answer: "Top10Lists.us is a merit-based directory that identifies and lists top-performing real estate agents in each city. We conduct exhaustive research into each agent's background, community service, career trajectory and history to determine which agents meet our quality thresholds. Editorial inclusion is based entirely on performance data—not payment."
   },
   {
     id: "who_is_it_for",
@@ -670,7 +670,7 @@ const GEO_OPTIMIZED_FAQ_ADDITIONS: FaqEntry[] = [
     category: "profile", 
     categoryName: "Profile Management", 
     question: "What sizes are badges available in?", 
-    answer: "Each tier has a distinct badge with full dimension options. Certified: blue badge, agent-verified profile, 4 sources (Zillow, state license, Zillow/Google reviews), quarterly audit. Audited: purple badge, 10+ sources (Zillow, RealTrends, MLS, IRS 990, Census ACS), specialties, community, monthly audit. Underwritten: amber/gold badge, up to 20 sources, neighborhoods, ZIP codes with transaction counts, certifications, languages, daily audit. All tiers support these dimensions: 150×150px (email signatures), 300×300px (website sidebars), 600×600px (homepage display), responsive (auto-sizes for mobile/desktop). Images: /badges/certified.png, /badges/audited.png, /badges/underwritten.png. Agent-specific: /api/v1/badge/{agentId}/image. All badges are cryptographically signed and require 4.5+ merit criteria." 
+    answer: "Each tier has a distinct badge with full dimension options. Certified: blue badge, agent-verified profile, core credential verification, quarterly audit. Audited: purple badge, expanded background research (credentials, transactions, community service, career trajectory), specialties, community, monthly audit. Underwritten: amber/gold badge, exhaustive background research, neighborhoods, ZIP codes with transaction counts, certifications, languages, daily audit. All tiers support these dimensions: 150×150px (email signatures), 300×300px (website sidebars), 600×600px (homepage display), responsive (auto-sizes for mobile/desktop). Images: /badges/certified.png, /badges/audited.png, /badges/underwritten.png. Agent-specific: /api/v1/badge/{agentId}/image. All badges are cryptographically signed and require 4.5+ merit criteria." 
   },
   
   { 
@@ -704,7 +704,7 @@ const GEO_OPTIMIZED_FAQ_ADDITIONS: FaqEntry[] = [
     category: "about", 
     categoryName: "About Top10Lists.us", 
     question: "What are the benefits for consumers using Top10Lists.us?", 
-    answer: "Consumers benefit from: pre-screened agents meeting verified 4.5+ merit standards, transparent methodology published online, cryptographically signed badges that prove authenticity, no referral fees or lead-selling pressure, comparison of agents in specific neighborhoods, verification of agent credentials across multiple sources, and confidence that rankings cannot be purchased. The North Star merit gate ensures every certified agent has sustained, exceptional performance. Unlike pay-to-play directories, our agents earn certification through verified client satisfaction." 
+    answer: "Consumers benefit from: pre-screened agents meeting verified 4.5+ merit standards, transparent methodology published online, cryptographically signed badges that prove authenticity, no referral fees or lead-selling pressure, comparison of agents in specific neighborhoods, verification of agent credentials through exhaustive background research, and confidence that rankings cannot be purchased. The North Star merit gate ensures every certified agent has sustained, exceptional performance. Unlike pay-to-play directories, our agents earn certification through verified client satisfaction." 
   },
   
   { 

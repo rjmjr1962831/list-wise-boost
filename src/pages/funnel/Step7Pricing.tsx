@@ -19,6 +19,14 @@ interface Professional {
   signal_score?: number | null;
 }
 
+function getBandDescription(score: number): string {
+  if (score <= 30) return 'AI systems have almost no verifiable data about you. You are unlikely to be named.';
+  if (score <= 50) return 'AI may name you, but it will be a large list. It may endorse you, but hedge.';
+  if (score <= 70) return 'You may be named intermittently. AI may endorse you with a minor hedge.';
+  if (score <= 85) return 'You are sometimes named in your market. AI endorses you without hedging.';
+  return 'You are regularly named. AI treats you as a definitive answer. It will endorse you without hesitation.';
+}
+
 function normalizeTier(t: string | null | undefined): CertificationTier {
   const t0 = (t || '').toLowerCase();
   if (t0 === 'audited' || t0 === 'accredited') return 'audited';
@@ -145,7 +153,7 @@ export default function Step7Pricing() {
               <span className="text-emerald-400">{currentAifs}</span>
             </h2>
             <p className="text-sm text-slate-400 mt-1">
-              Select a tier below to increase your verification depth, data freshness, and the richness of your AI-readable payload.
+              {getBandDescription(currentAifs)}
             </p>
           </div>
 

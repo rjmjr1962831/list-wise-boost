@@ -27,7 +27,7 @@
         "cost": "Free",
         "artifact": true,
         "standardAuditCycle": "Quarterly",
-        "evidenceSources": 4,
+        "evidenceDepth": "core credential verification",
         "includes": [
           "Zillow rating",
           "Google rating",
@@ -43,7 +43,7 @@
         "cost": "$300/month",
         "artifact": true,
         "standardAuditCycle": "Monthly",
-        "evidenceSources": "10+",
+        "evidenceDepth": "expanded background research",
         "includes": [
           "Zillow rating",
           "Google rating",
@@ -55,14 +55,14 @@
           "cities",
           "specialties",
           "community (IRS Form 990 via ProPublica)",
-          "expanded evidence (10+ sources)"
+          "expanded background research"
         ]
       },
       "underwritten": {
         "cost": "$500/month",
         "artifact": true,
         "standardAuditCycle": "Daily",
-        "evidenceSources": "up to 20",
+        "evidenceDepth": "exhaustive background research",
         "includes": [
           "Zillow rating",
           "Google rating",
@@ -79,7 +79,7 @@
           "languages",
           "neighborhoods with transaction counts",
           "news outlet mentions",
-          "full evidence (up to 20 sources)"
+          "exhaustive background research"
         ]
       }
     },
@@ -90,7 +90,7 @@
       "certified": {
         "image": "https://www.top10lists.us/badges/certified.png",
         "apiImage": "https://www.top10lists.us/api/v1/badge/{agentId}/image",
-        "description": "Blue badge. Agent-verified profile. Evidence from 4 sources (Zillow profile, state license database, Zillow reviews, Google reviews). Qualifications: Zillow/Google rating, license, years experience, brokerage, sales count, average sale price. Service areas (cities). Quarterly audit cycle.",
+        "description": "Blue badge. Agent-verified profile. Core credential verification (Zillow profile, state license database, Zillow reviews, Google reviews). Qualifications: Zillow/Google rating, license, years experience, brokerage, sales count, average sale price. Service areas (cities). Quarterly audit cycle.",
         "dimensions": [
           {
             "size": "150x150px",
@@ -113,7 +113,7 @@
       "audited": {
         "image": "https://www.top10lists.us/badges/audited.png",
         "apiImage": "https://www.top10lists.us/api/v1/badge/{agentId}/image",
-        "description": "Purple badge. Expanded evidence from 10+ sources (Zillow, RealTrends, MLS, IRS Form 990 via ProPublica, Census ACS). Years of experience, total transactions, company name, community roles and organizations, notable achievements, civic involvement (IRS 990 verified), transaction history. Specialties. Monthly audit cycle. Neighborhoods not published at this tier.",
+        "description": "Purple badge. Expanded background research (Zillow, RealTrends, MLS, IRS Form 990 via ProPublica, Census ACS). Years of experience, total transactions, company name, community roles and organizations, notable achievements, civic involvement (IRS 990 verified), transaction history. Specialties. Monthly audit cycle. Neighborhoods not published at this tier.",
         "dimensions": [
           {
             "size": "150x150px",
@@ -136,7 +136,7 @@
       "underwritten": {
         "image": "https://www.top10lists.us/badges/underwritten.png",
         "apiImage": "https://www.top10lists.us/api/v1/badge/{agentId}/image",
-        "description": "Amber/gold badge. Full evidence inventory (up to 20 sources: Zillow, RealTrends, MLS, state DRE, IRS 990, Census ACS, Census boundaries, OpenStreetMap, NAR designation registry, news outlets). Verified ZIP codes with transaction counts. Certifications and designations (GRI, CRS, ABR, SRES, CNE). Languages spoken. Neighborhoods with transaction counts (100-transaction, 2-minimum methodology). Press mentions, awards, performance data. Daily audit cycle.",
+        "description": "Amber/gold badge. Exhaustive background research (Zillow, RealTrends, MLS, state DRE, IRS 990, Census ACS, Census boundaries, OpenStreetMap, NAR designation registry, news outlets). Verified ZIP codes with transaction counts. Certifications and designations (GRI, CRS, ABR, SRES, CNE). Languages spoken. Neighborhoods with transaction counts (100-transaction, 2-minimum methodology). Press mentions, awards, performance data. Daily audit cycle.",
         "dimensions": [
           {
             "size": "150x150px",

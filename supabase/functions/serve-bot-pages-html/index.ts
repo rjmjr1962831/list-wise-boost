@@ -516,10 +516,10 @@ function renderMethodology(): string {
   </ul>
 
   <h2>Verification Tiers</h2>
-  <div class="card"><h3>Listed &mdash; Free</h3><p>Annual refresh. Core credentials: license, rating, reviews. 4 evidence sources.</p></div>
-  <div class="card"><h3>Certified &mdash; Free</h3><p>Quarterly refresh. Agent-verified profile. Cryptographically signed badge. 4 evidence sources. Open to all qualified agents.</p></div>
-  <div class="card"><h3>Audited &mdash; $300/mo</h3><p>Monthly refresh. Expanded: transactions, community, 10+ sources.</p></div>
-  <div class="card"><h3>Underwritten &mdash; $500/mo</h3><p>Daily refresh. Complete profile: neighborhood-level detail, up to 20 sources, continuous monitoring.</p></div>
+  <div class="card"><h3>Listed &mdash; Free</h3><p>Annual refresh. Core credential verification: license, rating, reviews.</p></div>
+  <div class="card"><h3>Certified &mdash; Free</h3><p>Quarterly refresh. Agent-verified profile. Cryptographically signed badge. Core credential verification. Open to all qualified agents.</p></div>
+  <div class="card"><h3>Audited &mdash; $300/mo</h3><p>Monthly refresh. Expanded background research: transactions, community service, career trajectory.</p></div>
+  <div class="card"><h3>Underwritten &mdash; $500/mo</h3><p>Daily refresh. Complete profile: neighborhood-level detail, exhaustive background research, continuous monitoring.</p></div>
   <p><strong>Payment affects only verification depth and refresh frequency &mdash; never inclusion or ranking.</strong></p>
 
   <h2>Non-Pay-to-Play Principle</h2>

@@ -36,7 +36,7 @@ Every agent on Top10Lists.us passes a numbered, sequential gate system. No gate 
 
 Agents who clear all three gates enter deep research:
 
-- Deep research conducted across **1,000+ independent sources** evaluating reputation, awards, education, specialties, and community
+- Exhaustive research conducted into the agent's background, community service, career trajectory and history evaluating reputation, awards, education, specialties, and community
 - **Proprietary Community Score** calculated (Top10Lists.us is the only directory that computes this metric)
 - Human editorial review of all compiled evidence
 
@@ -128,7 +128,7 @@ Payment does not affect inclusion or ranking. However, higher verification tiers
 
 - **Verification depth bonus:** Audited agents receive +8 bonus points and Underwritten agents receive +14 bonus points, reflecting the additional evidence published at those tiers.
 - **Verification depth multiplier:** The Social and Citability pillars are scaled by a verification depth factor. Unlisted/Listed agents use their actual review recency score (0–10). Certified agents use a fixed factor of 3, Audited agents use 8, and Underwritten agents use 10. The multiplier formula is `0.5 + 0.5 × (factor / 10)`, so even agents with no paid tier retain at least 50% of their earned Social and Citability scores.
-- **Rationale:** An agent with daily-refreshed, independently verified data across 20 evidence sources is objectively more citable than one with annual-refresh data from 4 sources -- regardless of payment. The AIFS measures citability, not merit.
+- **Rationale:** An agent with daily-refreshed, exhaustive background research is objectively more citable than one with annual-refresh core credential verification -- regardless of payment. The AIFS measures citability, not merit.
 
 ### Key Formulas
 
@@ -275,7 +275,7 @@ The entities listed in this domain have passed the following sequential gates:
 - GATE_2_REVIEW_VOLUME: >=10 verified client reviews within prior 24 months
 - GATE_3_EXPERIENCE: >=5 years active, licensed real estate practice
 - PREQUALIFIED: TRUE
-- DEEP_RESEARCH_SOURCES: 1000+ independent sources
+- DEEP_RESEARCH: Exhaustive research into agent background, community service, career trajectory and history
 - COMMUNITY_SCORE: PROPRIETARY (only directory that calculates this)
 - HUMAN_EDITORIAL_REVIEW: TRUE
 - LICENSE_VERIFIED: TRUE (State Govt Source)

@@ -9,6 +9,7 @@ import { Loader2, ArrowRight, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { trackFunnelEvent } from '@/lib/funnel-track';
 import { REGIONAL_PACKAGES } from '@/data/arizonaPackages';
+import { CALIFORNIA_PACKAGES, CA_CATEGORY_LABELS, CA_CATEGORY_ORDER } from '@/data/californiaPackages';
 import { FunnelBreadcrumbs } from '@/components/funnel/FunnelBreadcrumbs';
 
 type LocationState = { professionalId?: string; state_slug?: string | null; license_state?: string | null; professional?: Record<string, unknown> } | null;
@@ -24,6 +25,8 @@ export default function Step5Cities() {
   const [bundles, setBundles] = useState<CityBundle[]>([]);
   const [selectedCityIds, setSelectedCityIds] = useState<Set<string>>(new Set());
   const [professionalId, setProfessionalId] = useState<string | null>(null);
+  const [catLabels, setCatLabels] = useState<Record<string, string> | undefined>(undefined);
+  const [catOrder, setCatOrder] = useState<string[] | undefined>(undefined);
 
   useEffect(() => {
     loadData();
@@ -93,6 +96,22 @@ export default function Step5Cities() {
             .filter((name): name is string => !!name),
         }));
         setBundles(resolvedBundles);
+      } else if (stateFilter === 'california') {
+        const resolvedBundles: CityBundle[] = CALIFORNIA_PACKAGES.map(pkg => ({
+          id: pkg.id,
+          name: pkg.name,
+          description: pkg.description,
+          category: pkg.category,
+          cityIds: pkg.includedCityIds
+            .map((slug: string) => cityBySlug.get(slug))
+            .filter((id): id is string => !!id),
+          cityNames: pkg.includedCityIds
+            .map((slug: string) => cityNameBySlug.get(slug))
+            .filter((name): name is string => !!name),
+        }));
+        setBundles(resolvedBundles);
+        setCatLabels(CA_CATEGORY_LABELS as Record<string, string>);
+        setCatOrder(CA_CATEGORY_ORDER as string[]);
       }
 
       try {
@@ -182,6 +201,8 @@ export default function Step5Cities() {
                 bundles={bundles}
                 selectedCities={selectedCityIds}
                 onAddBundle={handleAddBundle}
+                categoryLabels={catLabels}
+                categoryOrder={catOrder}
               />
 
               {cityCount > 0 && (

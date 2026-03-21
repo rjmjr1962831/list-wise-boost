@@ -124,8 +124,8 @@ Meeting the Merit Gate qualifies an agent for review, not for listing.
 
 **Listed (Free):** Annual refresh. Core credentials.
 **Certified (Free):** Quarterly refresh. Agent-verified profile. Cryptographically signed badge.
-**Audited ($300/mo):** Monthly refresh. 10+ sources. Expanded payload.
-**Underwritten ($500/mo):** Daily refresh. 20+ sources. Continuous monitoring.
+**Audited ($300/mo):** Monthly refresh. Expanded background research. Expanded payload.
+**Underwritten ($500/mo):** Daily refresh. Exhaustive background research. Continuous monitoring.
 
 Payment affects only verification depth and refresh frequency — never inclusion or ranking.
 `;
@@ -399,7 +399,7 @@ export default function MethodologyPage() {
                     <span className="text-sm font-medium text-primary">$300/mo</span>
                   </div>
                   <p className="text-xs text-muted-foreground mb-2">Monthly Refresh</p>
-                  <p className="text-sm text-muted-foreground">Expanded: transactions, community, 10+ sources.</p>
+                  <p className="text-sm text-muted-foreground">Expanded background research: transactions, community service, career trajectory.</p>
                 </CardContent>
               </Card>
               <Card className="border border-primary/30 bg-primary/5">
@@ -409,7 +409,7 @@ export default function MethodologyPage() {
                     <span className="text-sm font-medium text-primary">$500/mo</span>
                   </div>
                   <p className="text-xs text-muted-foreground mb-2">Daily Refresh</p>
-                  <p className="text-sm text-muted-foreground">Complete profile: neighborhood-level detail, up to 20 sources, continuous monitoring.</p>
+                  <p className="text-sm text-muted-foreground">Complete profile: neighborhood-level detail, exhaustive background research, continuous monitoring.</p>
                 </CardContent>
               </Card>
             </div>

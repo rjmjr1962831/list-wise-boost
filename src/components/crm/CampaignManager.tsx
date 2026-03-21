@@ -1946,21 +1946,19 @@ interface QueueStats {
 }
 
 const SEND_HOURS_PER_DAY = 15; // 5am-8pm = 15 hours
-const TICKS_PER_HOUR = 40; // every 90s = 40 ticks/hr
-const NUM_SENDERS = 5;
+const SENDS_PER_HOUR_PER_ACCOUNT = 20; // 3-min gap = 20 sends/hr
+const NUM_SENDERS = 4; // mark excluded from campaigns
 const CAMPAIGN_START = new Date("2026-03-21T12:00:00Z");
 
 function estimateEta(remaining: number): string {
   if (remaining <= 0) return "Complete";
-  // Current daily capacity across all 5 senders
   const daysSinceStart = Math.floor((Date.now() - CAMPAIGN_START.getTime()) / 86400000);
   const perAccountPerDay = Math.floor(40 * Math.pow(1.10, daysSinceStart));
   const dailyCapacity = perAccountPerDay * NUM_SENDERS;
   if (dailyCapacity <= 0) return "Unknown";
-  // But sequencer sends 1 per account per tick, so effective throughput is
-  // NUM_SENDERS * TICKS_PER_HOUR * SEND_HOURS_PER_DAY per day (if queue has enough)
-  const tickCapacity = NUM_SENDERS * TICKS_PER_HOUR * SEND_HOURS_PER_DAY;
-  const effectiveDaily = Math.min(dailyCapacity, tickCapacity);
+  // Throughput limited by 3-min gap: 20 sends/hr/account × 4 accounts × 15 hrs
+  const throughputCapacity = NUM_SENDERS * SENDS_PER_HOUR_PER_ACCOUNT * SEND_HOURS_PER_DAY;
+  const effectiveDaily = Math.min(dailyCapacity, throughputCapacity);
   const totalHours = (remaining / effectiveDaily) * 24;
   const days = Math.floor(totalHours / 24);
   const hours = Math.round(totalHours % 24);

@@ -32,7 +32,7 @@ Content-Type: text/markdown
 
 ### Artifact Payload
 
-**Evidence Considered (14+ sources):**
+**Exhaustive Background Research:**
 - Zillow agent profile and transaction records
 - RealTrends transaction data (where available)
 - MLS transaction records (where available)

@@ -1,13 +1,12 @@
 import { Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import type { BundleCategory } from '@/data/arizonaPackages';
 
 export interface CityBundle {
   id: string;
   name: string;
   description?: string;
-  category?: BundleCategory;
+  category?: string;
   cityIds: string[];
   cityNames?: string[];
 }
@@ -16,35 +15,33 @@ interface BundlesPanelProps {
   bundles: CityBundle[];
   selectedCities: Set<string>;
   onAddBundle: (bundleId: string, cityIds: string[]) => void;
+  categoryLabels?: Record<string, string>;
+  categoryOrder?: string[];
 }
-
-const CATEGORY_LABELS: Record<BundleCategory, string> = {
-  'market-type': 'Market-Type Bundles',
-  'metro-phoenix': 'Metro Phoenix Coverage',
-  'arizona-regional': 'Arizona Regional Coverage',
-};
-
-const CATEGORY_ORDER: BundleCategory[] = ['market-type', 'metro-phoenix', 'arizona-regional'];
 
 export function BundlesPanel({
   bundles,
   selectedCities,
   onAddBundle,
+  categoryLabels,
+  categoryOrder,
 }: BundlesPanelProps) {
   const isBundleAdded = (bundle: CityBundle) => {
     return bundle.cityIds.every((id) => selectedCities.has(id));
   };
 
   // Group bundles by category
-  const groupedBundles = CATEGORY_ORDER.reduce((acc, category) => {
+  const hasCategories = bundles.some(b => b.category);
+  const order = categoryOrder ?? [...new Set(bundles.map(b => b.category).filter(Boolean))] as string[];
+  const labels = categoryLabels ?? {};
+
+  const groupedBundles = order.reduce((acc, category) => {
     const categoryBundles = bundles.filter(b => b.category === category);
     if (categoryBundles.length > 0) {
       acc.push({ category, bundles: categoryBundles });
     }
     return acc;
-  }, [] as { category: BundleCategory; bundles: CityBundle[] }[]);
-
-  const hasCategories = bundles.some(b => b.category);
+  }, [] as { category: string; bundles: CityBundle[] }[]);
 
   const BundleCard = ({ bundle }: { bundle: CityBundle }) => {
     const isAdded = isBundleAdded(bundle);
@@ -101,7 +98,7 @@ export function BundlesPanel({
           {groupedBundles.map(({ category, bundles: categoryBundles }) => (
             <div key={category} className="p-4">
               <h4 className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-3">
-                {CATEGORY_LABELS[category]}
+                {labels[category] || category}
               </h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {categoryBundles.map((bundle) => (

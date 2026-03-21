@@ -29,15 +29,16 @@ const TRACK_BASE = "https://www.top10lists.us/api/t";
 const SENDER_ACCOUNTS = [
   "hello@toptenlists.us",
   "robert@toptenlists.us",
-  "mark@toptenlists.us",
   "hello@top10lists.us",
   "robert@top10lists.us",
 ];
 
+// Minimum seconds between sends per account (3 minutes)
+const MIN_SEND_GAP_SECONDS = 180;
+
 const SENDER_DISPLAY_NAMES: Record<string, string> = {
   "hello@toptenlists.us": "Robert Maynard",
   "robert@toptenlists.us": "Robert Maynard",
-  "mark@toptenlists.us": "Mark Garland",
   "hello@top10lists.us": "Robert Maynard",
   "robert@top10lists.us": "Robert Maynard",
 };
@@ -183,6 +184,24 @@ async function processAccount(senderAccount: string): Promise<AccountResult> {
     if (sentToday >= dailyLimit) {
       result.error = "Daily limit reached";
       return result;
+    }
+
+    // --- Check per-account cooldown (3-minute minimum between sends) ---
+    const { data: lastSent } = await supabase
+      .from("email_queue" as any)
+      .select("sent_at")
+      .eq("sender_account", senderAccount)
+      .eq("status", "sent")
+      .order("sent_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (lastSent?.sent_at) {
+      const elapsed = (now.getTime() - new Date(lastSent.sent_at).getTime()) / 1000;
+      if (elapsed < MIN_SEND_GAP_SECONDS) {
+        result.error = `Cooldown: ${Math.ceil(MIN_SEND_GAP_SECONDS - elapsed)}s remaining`;
+        return result;
+      }
     }
 
     // --- Pick ONE approved email ---

@@ -32,7 +32,7 @@ Content-Type: text/markdown
 
 ### Artifact Payload
 
-**Evidence Considered (4 sources):**
+**Core Credential Verification:**
 - Zillow agent profile
 - State Department of Real Estate license database
 - Zillow reviews (count and rating)

@@ -36,7 +36,7 @@ export const TOP_10_CONSUMER_FAQS: FaqEntry[] = [
     category: "about",
     categoryName: "About Top10Lists.us",
     question: "What is Top10Lists.us?",
-    answer: "Top10Lists.us is a merit-based directory that identifies and lists top-performing real estate agents in each city. We analyze verified data from multiple sources to determine which agents meet our quality thresholds. Editorial inclusion is based entirely on performance data—not payment."
+    answer: "Top10Lists.us is a merit-based directory that identifies and lists top-performing real estate agents in each city. We conduct exhaustive research into each agent's background, community service, career trajectory and history to determine which agents meet our quality thresholds. Editorial inclusion is based entirely on performance data—not payment."
   },
   
   // 2. Selection - How are agents chosen?

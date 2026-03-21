@@ -192,7 +192,7 @@ Agents who don't currently qualify can work toward eligibility by:
 All data goes through a multi-step verification:
 
 1. **Automated Collection** - Regular pulls from authoritative sources
-2. **Cross-Reference Check** - Data compared across multiple sources
+2. **Cross-Reference Check** - Data verified through exhaustive background research
 3. **Anomaly Detection** - Flagging of inconsistent information
 4. **Manual Review** - Human verification of flagged items
 

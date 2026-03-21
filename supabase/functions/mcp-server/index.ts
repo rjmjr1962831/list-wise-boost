@@ -902,7 +902,7 @@ function handleGetMethodology() {
     selection_pipeline: [
       "3 hard prequalification gates (merit gate)",
       "PREQUALIFIED",
-      "1,000+ source deep research",
+      "Exhaustive research into agent background, community service, career trajectory and history",
       "Proprietary Community Score (IRS Form 990 / ProPublica verified)",
       "Human editorial review",
       "LISTED",
