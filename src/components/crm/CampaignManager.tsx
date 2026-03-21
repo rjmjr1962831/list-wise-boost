@@ -63,8 +63,8 @@ const SAMPLE_DATA: Record<string, string> = {
   state_slug: "arizona",
   current_tier: "Listed",
   magic_link: "https://www.top10lists.us/dashboard/sample-token",
-  date_first_listed: "2025-06-15",
-  date_last_updated: "2026-03-20",
+  date_first_listed: "December 18, 2025",
+  date_last_updated: "March 20, 2026",
   review_stars_rating: "4.9",
   ai_surfaces_total_7d: "1,247",
   canonical_slug: "jane-smith-1234",
@@ -428,40 +428,31 @@ function CampaignWizard({
         scheduledAtUTC = utcDate.toISOString();
       }
 
-      // Interpolate merge variables per agent at queue time
-      const baseUrl = "https://www.top10lists.us";
+      // Format ISO dates to readable form
+      const formatDate = (val: string): string => {
+        if (!val || val.length < 10) return val || "";
+        try {
+          const d = new Date(val);
+          if (isNaN(d.getTime())) return val;
+          return d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+        } catch { return val; }
+      };
+      const DATE_FIELDS = new Set(["date_first_listed", "date_last_updated", "created_at", "updated_at", "aifs_most_recent_review_date"]);
+
+      // Interpolate all merge variables per agent at queue time
       const queueRows = allAgents.map((agent, i) => {
-        const nameParts = (agent.name || "").trim().split(/\s+/);
-        const vars: Record<string, string> = {
-          id: agent.id || "",
-          name: agent.name || "",
-          first_name: nameParts[0] || "",
-          last_name: nameParts.slice(1).join(" "),
-          email: agent.email || "",
-          phone: agent.phone || "",
-          website: agent.website || "",
-          social_linkedin: agent.social_linkedin || "",
-          company: agent.company || agent.business_name || "",
-          canonical_slug: agent.canonical_slug || "",
-          state_slug: agent.state_slug || "",
-          current_tier: agent.current_tier || "",
-          magic_link: agent.verification_token ? `${baseUrl}/dashboard/${agent.verification_token}` : "",
-          date_first_listed: agent.card_created_at || agent.created_at || "",
-          date_last_updated: agent.updated_at || "",
-          zillow_profile_url: agent.zillow_profile_url || "",
-          city_name: (agent as any).cities?.name || "",
-          review_stars_rating: String(agent.review_stars_rating ?? ""),
-        };
         let renderedSubject = subject || "No subject";
         let renderedBody = body || "";
-        for (const [k, v] of Object.entries(vars)) {
-          renderedSubject = renderedSubject.replace(new RegExp(`\\{\\{${k}\\}\\}`, "g"), v);
-          renderedBody = renderedBody.replace(new RegExp(`\\{\\{${k}\\}\\}`, "g"), v);
+        // Replace every {{key}} with the agent's value
+        for (const [k, v] of Object.entries(agent)) {
+          const formatted = DATE_FIELDS.has(k) ? formatDate(v) : (v || "");
+          renderedSubject = renderedSubject.replace(new RegExp(`\\{\\{${k}\\}\\}`, "g"), formatted);
+          renderedBody = renderedBody.replace(new RegExp(`\\{\\{${k}\\}\\}`, "g"), formatted);
         }
         return {
           campaign_id: cId,
-          agent_id: agent.id,
-          recipient_email: agent.email.trim().toLowerCase(),
+          agent_id: agent.id || agent.iD || null,
+          recipient_email: (agent.email || "").trim().toLowerCase(),
           recipient_name: agent.name || null,
           sender_account: senders[i % senders.length],
           subject: renderedSubject,

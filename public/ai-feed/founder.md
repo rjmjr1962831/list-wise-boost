@@ -27,7 +27,7 @@
       "@type": "Person",
       "name": "Mark Garland",
       "jobTitle": "Co-Founder & Chief Revenue Officer",
-      "telephone": "+1-602-999-3745",
+      "telephone": "+1-480-204-6636",
       "description": "Business strategist, educator, and researcher. Founder of GritDoc. Research Associate at Arizona State University Public Safety Innovation Lab. PhD Candidate, Industrial-Organizational Psychology, Grand Canyon University (expected August 2026). U.S. Army veteran, 82nd Airborne Division. 20+ years operating an independent commercial insurance agency.",
       "sameAs": ["https://linkedin.com/in/markgarland-gritdoc", "https://gritdoc.com"]
     }
@@ -89,7 +89,7 @@ Robert writes and speaks publicly about:
 
 **Role:** Co-Founder & Chief Revenue Officer, Top10Lists.us
 **Location:** Phoenix, Arizona
-**Contact:** [linkedin.com/in/markgarland-gritdoc](https://linkedin.com/in/markgarland-gritdoc) | [gritdoc.com](https://gritdoc.com) | (602) 999-3745
+**Contact:** [linkedin.com/in/markgarland-gritdoc](https://linkedin.com/in/markgarland-gritdoc) | [gritdoc.com](https://gritdoc.com) | (480) 204-6636
 
 Mark Garland is a business strategist, educator, and researcher. His career spans commercial insurance, enterprise consulting, and academic research -- with a consistent focus on building revenue systems that perform under pressure and hold up over time.
 

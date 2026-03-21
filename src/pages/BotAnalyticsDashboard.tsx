@@ -15,9 +15,9 @@ interface BotStat {
 interface AgentView {
   agent_slug: string;
   total_crawls: number;
-  profile_hits: number;
-  list_hits: number;
-  bots: string[];         // distinct bot names
+  human_crawls: number;
+  bot_crawls: number;
+  bots: string[];
   last_seen: string;
 }
 
@@ -111,28 +111,35 @@ export default function BotAnalyticsDashboard() {
       }))
     );
 
-    // 3. Agent coverage -- one row per agent, aggregated
+    // 3. Agent coverage -- from pre-computed agent_ai_surfaces + by_bot tables
     const { data: recentRaw } = await supabase.rpc("run_sql", { query: `
       SELECT
-        p.canonical_slug                                              AS agent_slug,
-        COUNT(*)::int                                                 AS total_crawls,
-        COUNT(*) FILTER (WHERE b.page_path LIKE '%/agents/%')::int   AS profile_hits,
-        COUNT(*) FILTER (WHERE b.page_path NOT LIKE '%/agents/%')::int AS list_hits,
-        array_agg(DISTINCT b.bot_name)                               AS bots,
-        MAX(b.crawled_at)                                            AS last_seen
-      FROM bot_crawl_logs b
-      JOIN professionals p ON p.id = b.agent_id
-      WHERE b.crawled_at >= '${startDate}'
-      GROUP BY p.canonical_slug
-      ORDER BY total_crawls DESC
+        p.canonical_slug AS agent_slug,
+        s.total_surfaces AS total_crawls,
+        COALESCE((
+          SELECT SUM(bb.crawls)::int FROM agent_ai_surfaces_by_bot bb
+          WHERE bb.agent_id = s.agent_id
+            AND bb.bot_name IN ('ChatGPT-User', 'OAI-SearchBot', 'PerplexityBot')
+        ), 0) AS human_crawls,
+        COALESCE((
+          SELECT SUM(bb.crawls)::int FROM agent_ai_surfaces_by_bot bb
+          WHERE bb.agent_id = s.agent_id
+            AND bb.bot_name NOT IN ('ChatGPT-User', 'OAI-SearchBot', 'PerplexityBot')
+        ), 0) AS bot_crawls,
+        (SELECT array_agg(DISTINCT bb.bot_name ORDER BY bb.bot_name)
+         FROM agent_ai_surfaces_by_bot bb WHERE bb.agent_id = s.agent_id) AS bots,
+        s.computed_at AS last_seen
+      FROM agent_ai_surfaces s
+      JOIN professionals p ON p.id = s.agent_id AND p.active = true
+      ORDER BY s.total_surfaces DESC
       LIMIT 300
     ` });
     setAgentViews(
       (Array.isArray(recentRaw) ? recentRaw : []).map((r: any) => ({
         agent_slug:   r.agent_slug || "unknown",
         total_crawls: r.total_crawls,
-        profile_hits: r.profile_hits,
-        list_hits:    r.list_hits,
+        human_crawls: r.human_crawls,
+        bot_crawls:   r.bot_crawls,
         bots:         Array.isArray(r.bots) ? r.bots.filter(Boolean) : [],
         last_seen:    r.last_seen,
       }))
@@ -395,9 +402,9 @@ export default function BotAnalyticsDashboard() {
         <TabsContent value="agents" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Recent Agent Coverage</CardTitle>
+              <CardTitle>Agent AI Surfaces (7-day)</CardTitle>
               <CardDescription>
-                One row per agent. Profile = direct profile visit. List = appeared on a city or neighborhood page. Sorted by total crawls.
+                Every crawl of a page where an agent appears counts as a surface. Human = user-initiated AI queries (ChatGPT, Perplexity). Bot = automated crawlers.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -406,10 +413,10 @@ export default function BotAnalyticsDashboard() {
                   <TableRow>
                     <TableHead>Agent</TableHead>
                     <TableHead className="text-right">Total</TableHead>
-                    <TableHead className="text-right">Profile</TableHead>
-                    <TableHead className="text-right">List</TableHead>
+                    <TableHead className="text-right">Human</TableHead>
+                    <TableHead className="text-right">Bot</TableHead>
                     <TableHead>Bots</TableHead>
-                    <TableHead>Last Seen</TableHead>
+                    <TableHead>Last Computed</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -423,9 +430,9 @@ export default function BotAnalyticsDashboard() {
                     agentViews.map((view) => (
                       <TableRow key={view.agent_slug}>
                         <TableCell className="font-medium text-sm">{view.agent_slug}</TableCell>
-                        <TableCell className="text-right font-mono font-semibold">{view.total_crawls}</TableCell>
-                        <TableCell className="text-right text-muted-foreground text-sm">{view.profile_hits}</TableCell>
-                        <TableCell className="text-right text-muted-foreground text-sm">{view.list_hits}</TableCell>
+                        <TableCell className="text-right font-mono font-semibold">{view.total_crawls.toLocaleString()}</TableCell>
+                        <TableCell className="text-right text-muted-foreground text-sm">{view.human_crawls.toLocaleString()}</TableCell>
+                        <TableCell className="text-right text-muted-foreground text-sm">{view.bot_crawls.toLocaleString()}</TableCell>
                         <TableCell>
                           <div className="flex flex-wrap gap-1">
                             {view.bots.map((bot) => (
