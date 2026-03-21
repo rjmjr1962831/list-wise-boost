@@ -347,6 +347,19 @@ async function processAccount(senderAccount: string): Promise<AccountResult> {
         })
         .eq("id", queueItem.id);
 
+      // Create task for permanent failures (bounces)
+      if (!isTransient || retryCount >= 3) {
+        const recipName = queueItem.recipient_name || queueItem.recipient_email;
+        await supabase.from("crm_tasks").insert({
+          professional_id: queueItem.agent_id || null,
+          task_type: "email_bounced",
+          title: `Bounced: ${recipName} — ${statusCode}`,
+          description: `Email to ${queueItem.recipient_email} failed permanently.\nSender: ${senderAccount}\nError: ${errBody.slice(0, 300)}`,
+          status: "pending",
+          priority: "normal",
+        });
+      }
+
       result.error = `Gmail send failed (${statusCode})`;
       return result;
     }
