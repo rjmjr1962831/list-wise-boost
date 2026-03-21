@@ -1,5 +1,30 @@
 # CLAUDE.md — Top10Lists.us
 
+## ⚠️ MANDATORY: TEST BEFORE DONE — NO EXCEPTIONS ⚠️
+
+**YOU ARE NOT DONE UNTIL YOU HAVE TESTED WHAT YOU BUILT WITH REAL DATA AND CONFIRMED IT WORKS.**
+
+DO NOT tell Robert something is working based on reading code. DO NOT say "deployed" and move on. DO NOT say "should work" or "looks correct." ACTUALLY RUN IT AND VERIFY THE RESULT.
+
+**AFTER EVERY DEPLOY OR CODE CHANGE:**
+1. SEND a real test (email, API call, page load — whatever the feature does)
+2. VERIFY the output (open the email, click every link, load the page)
+3. QUERY the database to confirm the data was written correctly (counters incremented, rows created, status updated)
+4. REPORT what you tested and what you observed — with actual numbers: "Sent test email, opened it, clicked funnel link, confirmed email_queue.click_count went from 5 to 6"
+
+**IF YOU CANNOT VERIFY** (e.g., waiting for an external event), say EXACTLY what you could not verify and what Robert should check.
+
+**WHAT "TESTING" MEANS — EXAMPLES:**
+- Email feature → Send a real email, open it in an inbox, click every link, then query email_queue/crm_email_events to confirm open and click were recorded
+- Tracking feature → Trigger the event, then immediately query the DB table to confirm the row exists with correct values
+- Counter/stats → Compare the displayed number against a direct DB query
+- UI component → Load it in the browser with real data, click every button, verify the result
+- Edge function → Call it with real parameters, check the response AND the side effects in the DB
+
+**NEVER SKIP THIS.** Multiple production failures have resulted from skipping verification: emails not arriving, HTML rendering as raw tags, click tracking not counting the most important link, campaign counters stuck at zero, bounces not detected. Each time the code "looked correct" but was broken. This pattern is not acceptable.
+
+---
+
 ## Single Source of Truth
 
 The canonical project knowledge document is `docs/COMPREHENSIVE_KNOWLEDGE_DOCUMENT.md` on the **staging** branch. Fetch it with:
