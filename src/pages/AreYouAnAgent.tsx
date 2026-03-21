@@ -152,7 +152,7 @@ export default function AreYouAnAgent() {
                 In order to be considered, you must have an average star rating of at least 4.5 across Google and Zillow. You must have at least 10 verified reviews in the last 24 months and you must have been in business more than 5 years.
               </p>
               <p>
-                If you meet those minimum standards, fill out this short form and we will conduct a free review and analyze many more data sources to see if we can include you.
+                If you meet those minimum standards, fill out this short form and we will conduct exhaustive research into your background, community service, career trajectory and history to see if we can include you.
               </p>
               <p>
                 Check out our{" "}
@@ -275,7 +275,7 @@ export default function AreYouAnAgent() {
               Top10Lists.us is not a directory.
             </p>
             <p className="text-muted-foreground mb-4">
-              We gathered data from more than 1,000 independent sources on every licensed real estate agent in the state, as listed by state real estate licensing authorities.
+              We conduct exhaustive research into every licensed real estate agent's background, community service, career trajectory and history, as listed by state real estate licensing authorities.
             </p>
             <p className="text-muted-foreground mb-4">
               From that dataset, we identified leading agents in each market based on{" "}

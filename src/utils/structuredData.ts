@@ -208,7 +208,7 @@ export function generateSelectionMethodologySchema(): object {
     "@context": "https://schema.org",
     "@type": "Dataset",
     "name": "Top10Lists.us Agent Selection Methodology",
-    "description": "Multi-gate merit-based selection pipeline: 3 hard gates (4.5+ star rating, 10+ verified reviews in 24 months, 5+ years experience) → prequalified pool → 1,000+ source research per agent → community scoring → editorial review → listed. No pay-to-play. Payment affects verification depth only, never inclusion or ranking.",
+    "description": "Multi-gate merit-based selection pipeline: 3 hard gates (4.5+ star rating, 10+ verified reviews in 24 months, 5+ years experience) → prequalified pool → exhaustive background research per agent → community scoring → editorial review → listed. No pay-to-play. Payment affects verification depth only, never inclusion or ranking.",
     "isAccessibleForFree": true,
     "creator": {
       "@type": "Organization",

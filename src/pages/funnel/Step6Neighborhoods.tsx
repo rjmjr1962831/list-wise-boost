@@ -22,13 +22,42 @@ interface Neighborhood {
 
 interface NearbyItem {
   id: string;
-  name?: string;
-  neighborhood?: string;
-  slug?: string;
-  neighborhood_slug?: string;
-  city?: string;
-  city_slug?: string;
-  distance_miles: number;
+  name: string;
+  city: string;
+  distance_miles: number | null;
+}
+
+/**
+ * Parse nearby_neighborhoods field — handles both formats:
+ * AZ: JSON array of { id, neighborhood, city, distance_miles, ... }
+ * CA: semicolon-delimited "Name, City; Name, City; ..."
+ */
+function parseNearbyField(raw: string | null | undefined): { isJson: boolean; items: NearbyItem[]; textPairs: { name: string; city: string }[] } {
+  if (!raw) return { isJson: false, items: [], textPairs: [] };
+  const trimmed = raw.trim();
+
+  // Try JSON first (AZ format)
+  if (trimmed.startsWith('[')) {
+    try {
+      const parsed = JSON.parse(trimmed);
+      const items: NearbyItem[] = parsed.map((p: any) => ({
+        id: p.id,
+        name: p.name || p.neighborhood || '',
+        city: p.city || p.city_slug || '',
+        distance_miles: p.distance_miles ?? null,
+      }));
+      return { isJson: true, items, textPairs: [] };
+    } catch { /* fall through */ }
+  }
+
+  // Semicolon-delimited format (CA format): "Name, City; Name, City"
+  const pairs = trimmed.split(';').map(s => s.trim()).filter(Boolean);
+  const textPairs = pairs.map(pair => {
+    const lastComma = pair.lastIndexOf(',');
+    if (lastComma === -1) return { name: pair, city: '' };
+    return { name: pair.slice(0, lastComma).trim(), city: pair.slice(lastComma + 1).trim() };
+  });
+  return { isJson: false, items: [], textPairs };
 }
 
 export default function Step6Neighborhoods() {
@@ -49,6 +78,7 @@ export default function Step6Neighborhoods() {
 
   // Nearby suggestions state
   const [nearbyItems, setNearbyItems] = useState<NearbyItem[]>([]);
+  const [nearbyLoading, setNearbyLoading] = useState(false);
   const [anchorName, setAnchorName] = useState<string | null>(null);
 
   useEffect(() => {
@@ -68,7 +98,6 @@ export default function Step6Neighborhoods() {
       const stateMap: Record<string, string> = { arizona: 'Arizona', california: 'California' };
       setAgentState(stateMap[data.state_slug] || data.state_slug);
 
-      // Get selected cities from Step 6 navigation state
       const navState = location.state as any;
       if (navState?.selectedCities) {
         setSelectedCities(new Set(navState.selectedCities));
@@ -98,38 +127,79 @@ export default function Step6Neighborhoods() {
     return () => clearTimeout(timer);
   }, [query, agentState]);
 
+  const resolveNearbyFromText = useCallback(async (
+    textPairs: { name: string; city: string }[],
+    excludeIds: string[],
+  ) => {
+    if (textPairs.length === 0) return;
+    setNearbyLoading(true);
+    try {
+      // Look up neighborhoods by name matching
+      const names = textPairs.map(p => p.name);
+      const { data } = await supabase
+        .from('neighborhood_catalog')
+        .select('id, neighborhood, neighborhood_slug, city_area, city_area_slug')
+        .eq('state', agentState!)
+        .eq('is_active', true)
+        .in('neighborhood', names)
+        .limit(50);
+
+      if (data) {
+        // Match by name AND city to avoid false positives
+        const matched: NearbyItem[] = [];
+        for (const pair of textPairs) {
+          const match = data.find(d =>
+            d.neighborhood === pair.name &&
+            d.city_area === pair.city &&
+            !excludeIds.includes(d.id)
+          );
+          if (match) {
+            matched.push({
+              id: match.id,
+              name: match.neighborhood,
+              city: match.city_area,
+              distance_miles: null,
+            });
+          }
+        }
+        setNearbyItems(matched);
+      }
+    } catch { /* best effort */ }
+    finally { setNearbyLoading(false); }
+  }, [agentState]);
+
   const addNeighborhood = useCallback((n: Neighborhood) => {
     if (selectedList.some(s => s.id === n.id)) return;
-    setSelectedList(prev => [...prev, n]);
+    const nextList = [...selectedList, n];
+    setSelectedList(nextList);
 
     // Parse nearby and show suggestions
-    if (n.nearby_neighborhoods) {
-      try {
-        const nearby: NearbyItem[] = JSON.parse(n.nearby_neighborhoods);
-        // Filter out already-selected and the anchor itself
-        const filtered = nearby.filter(nb =>
-          nb.id !== n.id && !selectedList.some(s => s.id === nb.id)
-        );
-        setNearbyItems(filtered);
-        setAnchorName(n.neighborhood);
-      } catch { setNearbyItems([]); }
+    const parsed = parseNearbyField(n.nearby_neighborhoods);
+    const excludeIds = nextList.map(s => s.id);
+    setAnchorName(n.neighborhood);
+
+    if (parsed.isJson) {
+      // AZ format — already have IDs
+      const filtered = parsed.items.filter(nb => !excludeIds.includes(nb.id));
+      setNearbyItems(filtered);
+    } else if (parsed.textPairs.length > 0) {
+      // CA format — need to look up IDs from DB
+      resolveNearbyFromText(parsed.textPairs, excludeIds);
+    } else {
+      setNearbyItems([]);
     }
 
-    // Clear search
     setQuery('');
     setSuggestions([]);
-  }, [selectedList]);
+  }, [selectedList, resolveNearbyFromText]);
 
   const addNearbyItem = useCallback((nb: NearbyItem) => {
-    const displayName = nb.name || nb.neighborhood || '';
-    const displaySlug = nb.slug || nb.neighborhood_slug || '';
-    const displayCity = nb.city || nb.city_slug || '';
     const asNeighborhood: Neighborhood = {
       id: nb.id,
-      neighborhood: displayName,
-      neighborhood_slug: displaySlug,
-      city_area: displayCity,
-      city_area_slug: nb.city_slug || '',
+      neighborhood: nb.name,
+      neighborhood_slug: '',
+      city_area: nb.city,
+      city_area_slug: '',
       state: agentState || '',
     };
     setSelectedList(prev => [...prev, asNeighborhood]);
@@ -147,7 +217,6 @@ export default function Step6Neighborhoods() {
   };
 
   const handleContinue = async () => {
-    // Track neighborhood selection
     try {
       const { data: trackProf } = await supabase
         .from('professionals')
@@ -159,7 +228,6 @@ export default function Step6Neighborhoods() {
       }
     } catch { /* tracking is best-effort */ }
 
-    // Save selections (fire and forget)
     if (selectedList.length > 0) {
       try {
         const { data: prof } = await supabase
@@ -168,8 +236,7 @@ export default function Step6Neighborhoods() {
           .eq('verification_token', token)
           .single();
         if (prof) {
-          // Save as neighborhood subscriptions or similar
-          // For now, pass through navigation state
+          // Save selections through navigation state
         }
       } catch { /* continue anyway */ }
     }
@@ -249,7 +316,7 @@ export default function Step6Neighborhoods() {
                     )}
 
                     {/* Nearby suggestions (shown after anchor selection) */}
-                    {query.length < 2 && nearbyItems.length > 0 && (
+                    {query.length < 2 && (nearbyItems.length > 0 || nearbyLoading) && (
                       <div>
                         <div className="flex items-center gap-2 mb-3">
                           <MapPin className="h-4 w-4 text-primary" />
@@ -257,23 +324,31 @@ export default function Step6Neighborhoods() {
                             Nearby {anchorName}:
                           </p>
                         </div>
-                        <div className="flex flex-wrap gap-2 mb-4">
-                          {nearbyItems.map((nb) => {
-                            const alreadySelected = selectedList.some(s => s.id === nb.id);
-                            if (alreadySelected) return null;
-                            return (
-                              <button
-                                key={nb.id}
-                                onClick={() => addNearbyItem(nb)}
-                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-sm text-white hover:bg-primary/20 hover:border-primary/30 transition-colors"
-                              >
-                                <span>{nb.name || nb.neighborhood}</span>
-                                <span className="text-slate-500 text-xs">{nb.distance_miles.toFixed(1)}mi</span>
-                                <Plus className="h-3 w-3 text-primary" />
-                              </button>
-                            );
-                          })}
-                        </div>
+                        {nearbyLoading ? (
+                          <div className="flex items-center gap-2 text-sm text-slate-500">
+                            <Loader2 className="h-3 w-3 animate-spin" /> Finding nearby neighborhoods...
+                          </div>
+                        ) : (
+                          <div className="flex flex-wrap gap-2 mb-4">
+                            {nearbyItems.map((nb) => {
+                              const alreadySelected = selectedList.some(s => s.id === nb.id);
+                              if (alreadySelected) return null;
+                              return (
+                                <button
+                                  key={nb.id}
+                                  onClick={() => addNearbyItem(nb)}
+                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-sm text-white hover:bg-primary/20 hover:border-primary/30 transition-colors"
+                                >
+                                  <span>{nb.name}</span>
+                                  {nb.distance_miles != null && (
+                                    <span className="text-slate-500 text-xs">{nb.distance_miles.toFixed(1)}mi</span>
+                                  )}
+                                  <Plus className="h-3 w-3 text-primary" />
+                                </button>
+                              );
+                            })}
+                          </div>
+                        )}
                         <button
                           onClick={resetSearch}
                           className="text-xs text-slate-500 hover:text-slate-300 transition-colors"
@@ -284,7 +359,7 @@ export default function Step6Neighborhoods() {
                     )}
 
                     {/* Empty state */}
-                    {query.length < 2 && nearbyItems.length === 0 && (
+                    {query.length < 2 && nearbyItems.length === 0 && !nearbyLoading && (
                       <div className="flex flex-col items-center justify-center h-full text-center py-8">
                         <Search className="h-8 w-8 text-slate-700 mb-3" />
                         <p className="text-sm text-slate-500">

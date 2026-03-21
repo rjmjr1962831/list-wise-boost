@@ -1045,7 +1045,7 @@ export default function DynamicCategoryList({
                     className="text-5xl md:text-6xl font-bold text-primary"
                   />
                   <p className="text-lg text-muted-foreground">
-                    data points across multiple sources
+                    data points from exhaustive background research
                   </p>
                 </div>
               </div>

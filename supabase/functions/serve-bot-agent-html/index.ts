@@ -640,10 +640,10 @@ ${siteHeaderHTML()}
 </div>\n\n`;
 
     // ---- Master Source Index ----
-    // Sources are tier-gated per the vetting-standards spec:
-    //   Certified:    4 sources  (Zillow, Google, State License, Zillow/Google for reviews)
-    //   Audited:      8+ sources (adds RealTrends, MLS, ProPublica IRS 990, Census ACS)
-    //   Underwritten: 14+ sources (adds NAR registry, Census boundary data, OpenStreetMap, press outlets)
+    // Verification depth is tier-gated per the vetting-standards spec:
+    //   Certified:    Core credential verification (Zillow, Google, State License, Zillow/Google for reviews)
+    //   Audited:      Expanded background research (adds RealTrends, MLS, ProPublica IRS 990, Census ACS)
+    //   Underwritten: Exhaustive background research (adds NAR registry, Census boundary data, OpenStreetMap, press outlets)
     const hasTransactions = career > 0;
     const hasCommunityData = roles.length > 0 || isHigh;
     const hasDeepVerification = isHigh;

@@ -619,7 +619,7 @@ export function AIMaxPlan({ professional }: AIMaxPlanProps) {
                 label: "Audited",
                 score: data.score_audited,
                 sublabel: "Monthly refresh",
-                aiMeaning: "AI sees expanded evidence from 10+ sources refreshed monthly. More likely to recommend you with detail and confidence.",
+                aiMeaning: "AI sees expanded background research refreshed monthly. More likely to recommend you with detail and confidence.",
               },
               {
                 key: "underwritten",

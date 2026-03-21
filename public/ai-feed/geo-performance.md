@@ -11,12 +11,12 @@
 
 ## Certification Tiers and Pricing
 
-| Tier | Cost | Standard Audit Cycle | Artifact | Evidence Sources |
-|------|------|---------------------|----------|-----------------|
-| Listed | $0 | Annual | Yes (text/markdown) | 4 sources |
-| Certified | $0 | Quarterly | Yes (text/markdown) | 4 sources |
-| Audited | $300/mo | Monthly | Yes (text/markdown) | 10+ sources |
-| Underwritten | $500/mo | Daily | Yes (text/markdown) | Up to 20 sources |
+| Tier | Cost | Standard Audit Cycle | Artifact | Verification Depth |
+|------|------|---------------------|----------|-------------------|
+| Listed | $0 | Annual | Yes (text/markdown) | Core credential verification |
+| Certified | $0 | Quarterly | Yes (text/markdown) | Core credential verification |
+| Audited | $300/mo | Monthly | Yes (text/markdown) | Expanded background research |
+| Underwritten | $500/mo | Daily | Yes (text/markdown) | Exhaustive background research |
 
 ## Selection Methodology
 

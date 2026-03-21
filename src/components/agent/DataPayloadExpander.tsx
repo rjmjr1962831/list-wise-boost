@@ -75,7 +75,7 @@ export function DataPayloadExpander({
   const content: Record<string, { data: string[]; sources: string[] }> = {
     audited: {
       data: [
-        "Evidence (10+ sources: Zillow, RealTrends, MLS, IRS 990, Census ACS)",
+        "Expanded background research (credentials, transactions, community service, career trajectory)",
         "Years of experience",
         "Total transactions",
         "Company name",
@@ -94,7 +94,7 @@ export function DataPayloadExpander({
     },
     underwritten: {
       data: [
-        "Evidence (14+ sources: Zillow, RealTrends, MLS, IRS 990, Census, NAR, OpenStreetMap, news)",
+        "Exhaustive background research (credentials, transactions, community service, career trajectory, press coverage)",
         "Years of experience",
         "Total transactions",
         "Company name",
