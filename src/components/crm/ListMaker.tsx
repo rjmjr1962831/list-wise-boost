@@ -46,6 +46,8 @@ function saveLists(lists: SavedListTemplate[]) {
 const OUTPUT_FIELDS: { key: string; label: string }[] = [
   { key: "id", label: "ID" },
   { key: "name", label: "Name" },
+  { key: "first_name", label: "First Name" },
+  { key: "last_name", label: "Last Name" },
   { key: "email", label: "Email" },
   { key: "phone", label: "Phone" },
   { key: "website", label: "Website" },
