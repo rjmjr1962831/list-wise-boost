@@ -62,7 +62,7 @@ const SAMPLE_DATA: Record<string, string> = {
   city_name: "Phoenix",
   state_slug: "arizona",
   current_tier: "Listed",
-  magic_link: "https://www.top10lists.us/dashboard/sample-token",
+  magic_link: "https://www.top10lists.us/funnel/sample-token",
   date_first_listed: "December 18, 2025",
   date_last_updated: "March 20, 2026",
   review_stars_rating: "4.9",
@@ -73,7 +73,7 @@ const SAMPLE_DATA: Record<string, string> = {
   lastName: "Smith",
   city: "Phoenix",
   state: "Arizona",
-  magicLink: "https://www.top10lists.us/dashboard/sample-token",
+  magicLink: "https://www.top10lists.us/funnel/sample-token",
   tier: "Listed",
 };
 
@@ -1936,6 +1936,39 @@ function ReviewQueue({
 // Campaign Monitor
 // ---------------------------------------------------------------------------
 
+// Per-campaign queue breakdown (loaded on mount + refresh)
+interface QueueStats {
+  sent: number;
+  approved: number;
+  failed: number;
+  unsubscribed: number;
+  sending: number;
+}
+
+const SEND_HOURS_PER_DAY = 15; // 5am-8pm = 15 hours
+const TICKS_PER_HOUR = 40; // every 90s = 40 ticks/hr
+const NUM_SENDERS = 5;
+const CAMPAIGN_START = new Date("2026-03-21T12:00:00Z");
+
+function estimateEta(remaining: number): string {
+  if (remaining <= 0) return "Complete";
+  // Current daily capacity across all 5 senders
+  const daysSinceStart = Math.floor((Date.now() - CAMPAIGN_START.getTime()) / 86400000);
+  const perAccountPerDay = Math.floor(40 * Math.pow(1.10, daysSinceStart));
+  const dailyCapacity = perAccountPerDay * NUM_SENDERS;
+  if (dailyCapacity <= 0) return "Unknown";
+  // But sequencer sends 1 per account per tick, so effective throughput is
+  // NUM_SENDERS * TICKS_PER_HOUR * SEND_HOURS_PER_DAY per day (if queue has enough)
+  const tickCapacity = NUM_SENDERS * TICKS_PER_HOUR * SEND_HOURS_PER_DAY;
+  const effectiveDaily = Math.min(dailyCapacity, tickCapacity);
+  const totalHours = (remaining / effectiveDaily) * 24;
+  const days = Math.floor(totalHours / 24);
+  const hours = Math.round(totalHours % 24);
+  if (days === 0 && hours === 0) return "< 1 hour";
+  if (days === 0) return `${hours} hour${hours !== 1 ? "s" : ""}`;
+  return `${days} day${days !== 1 ? "s" : ""} and ${hours} hour${hours !== 1 ? "s" : ""}`;
+}
+
 function CampaignMonitor({
   campaigns,
   loading,
@@ -1947,11 +1980,34 @@ function CampaignMonitor({
 }) {
   const visible = campaigns.filter((c) => c.status !== "draft");
   const [acting, setActing] = useState<string | null>(null);
+  const [queueStats, setQueueStats] = useState<Record<string, QueueStats>>({});
+
+  const loadQueueStats = useCallback(async () => {
+    if (visible.length === 0) return;
+    const stats: Record<string, QueueStats> = {};
+    for (const c of visible) {
+      const base = { sent: 0, approved: 0, failed: 0, unsubscribed: 0, sending: 0 };
+      const statuses = ["sent", "approved", "failed", "unsubscribed", "sending"] as const;
+      await Promise.all(
+        statuses.map(async (s) => {
+          const { count } = await supabase
+            .from("email_queue" as any)
+            .select("id", { count: "exact", head: true })
+            .eq("campaign_id", c.id)
+            .eq("status", s);
+          base[s] = count ?? 0;
+        })
+      );
+      stats[c.id] = base;
+    }
+    setQueueStats(stats);
+  }, [visible.map((c) => c.id).join(",")]);
 
   useEffect(() => {
-    const timer = setInterval(onRefresh, 30_000);
+    loadQueueStats();
+    const timer = setInterval(() => { onRefresh(); loadQueueStats(); }, 30_000);
     return () => clearInterval(timer);
-  }, [onRefresh]);
+  }, [onRefresh, loadQueueStats]);
 
   const handleStatusChange = async (id: string, newStatus: string) => {
     setActing(id);
@@ -1963,6 +2019,7 @@ function CampaignMonitor({
       if (error) throw error;
       toast.success(`Campaign status updated to ${newStatus}`);
       onRefresh();
+      loadQueueStats();
     } catch (err: any) {
       toast.error(err.message ?? "Failed to update status");
     } finally {
@@ -1971,7 +2028,7 @@ function CampaignMonitor({
   };
 
   const pct = (num: number, den: number) =>
-    den > 0 ? ((num / den) * 100).toFixed(1) + "%" : "0%";
+    den > 0 ? ((num / den) * 100).toFixed(1) + "%" : "—";
 
   return (
     <div className="space-y-4">
@@ -1988,85 +2045,109 @@ function CampaignMonitor({
           </CardContent>
         </Card>
       ) : (
-        visible.map((c) => (
-          <Card key={c.id}>
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-base">{c.name}</CardTitle>
-                <StatusBadge status={c.status} />
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
-                <div>
-                  <p className="text-muted-foreground text-xs">Recipients</p>
-                  <p className="font-semibold">{c.total_recipients}</p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground text-xs">Sent</p>
-                  <p className="font-semibold">{c.total_sent}</p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground text-xs">Opens</p>
-                  <p className="font-semibold">
-                    {c.total_opens}{" "}
-                    <span className="text-xs text-muted-foreground">
-                      ({pct(c.total_opens, c.total_sent)})
-                    </span>
-                  </p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground text-xs">Clicks</p>
-                  <p className="font-semibold">
-                    {c.total_clicks}{" "}
-                    <span className="text-xs text-muted-foreground">
-                      ({pct(c.total_clicks, c.total_sent)})
-                    </span>
-                  </p>
-                </div>
-              </div>
+        visible.map((c) => {
+          const qs = queueStats[c.id];
+          const remaining = qs ? qs.approved + qs.sending : 0;
+          const totalQueued = qs ? qs.sent + qs.approved + qs.failed + qs.unsubscribed + qs.sending : c.total_recipients;
+          const progressPct = totalQueued > 0 ? Math.round(((qs?.sent ?? c.total_sent) / totalQueued) * 100) : 0;
 
-              <div className="flex gap-2">
-                {c.status === "active" && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={acting === c.id}
-                    onClick={() => handleStatusChange(c.id, "paused")}
-                  >
-                    {acting === c.id && (
-                      <Loader2 className="mr-1 h-3 w-3 animate-spin" />
-                    )}
-                    Pause
-                  </Button>
+          return (
+            <Card key={c.id}>
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base">{c.name}</CardTitle>
+                  <StatusBadge status={c.status} />
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Progress bar */}
+                <div>
+                  <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                    <span>{progressPct}% sent</span>
+                    <span>{qs?.sent ?? c.total_sent} / {totalQueued}</span>
+                  </div>
+                  <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
+                    <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${progressPct}%` }} />
+                  </div>
+                </div>
+
+                {/* Stats grid */}
+                <div className="grid grid-cols-3 sm:grid-cols-6 gap-3 text-sm">
+                  <div>
+                    <p className="text-muted-foreground text-xs">Sent</p>
+                    <p className="font-semibold text-green-600">{qs?.sent ?? c.total_sent}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground text-xs">Opens</p>
+                    <p className="font-semibold">
+                      {c.total_opens}{" "}
+                      <span className="text-xs text-muted-foreground">
+                        ({pct(c.total_opens, qs?.sent ?? c.total_sent)})
+                      </span>
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground text-xs">Clicks</p>
+                    <p className="font-semibold">
+                      {c.total_clicks}{" "}
+                      <span className="text-xs text-muted-foreground">
+                        ({pct(c.total_clicks, qs?.sent ?? c.total_sent)})
+                      </span>
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground text-xs">Bounced</p>
+                    <p className="font-semibold text-red-500">{qs?.failed ?? 0}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground text-xs">Unsub'd</p>
+                    <p className="font-semibold text-orange-500">{qs?.unsubscribed ?? 0}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground text-xs">Remaining</p>
+                    <p className="font-semibold">{remaining}</p>
+                  </div>
+                </div>
+
+                {/* ETA */}
+                {remaining > 0 && (
+                  <div className="text-xs text-muted-foreground bg-muted/50 rounded-md px-3 py-2">
+                    Estimated completion: <span className="font-medium text-foreground">{estimateEta(remaining)}</span>
+                  </div>
                 )}
-                {c.status === "paused" && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={acting === c.id}
-                    onClick={() => handleStatusChange(c.id, "active")}
-                  >
-                    {acting === c.id && (
-                      <Loader2 className="mr-1 h-3 w-3 animate-spin" />
-                    )}
-                    Resume
-                  </Button>
-                )}
-                {(c.status === "active" || c.status === "paused") && (
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    disabled={acting === c.id}
-                    onClick={() => handleStatusChange(c.id, "complete")}
-                  >
-                    Complete
-                  </Button>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        ))
+
+                <div className="flex gap-2">
+                  {c.status === "active" && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={acting === c.id}
+                      onClick={() => handleStatusChange(c.id, "paused")}
+                    >
+                      {acting === c.id && (
+                        <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                      )}
+                      Pause
+                    </Button>
+                  )}
+                  {c.status === "paused" && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={acting === c.id}
+                      onClick={() => handleStatusChange(c.id, "active")}
+                    >
+                      {acting === c.id && (
+                        <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                      )}
+                      Resume
+                    </Button>
+                  )}
+                  </div>
+              </CardContent>
+            </Card>
+          );
+        })
       )}
       <p className="text-xs text-muted-foreground text-right">
         Auto-refreshes every 30s

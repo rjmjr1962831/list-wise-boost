@@ -140,7 +140,7 @@ serve(async (req) => {
 
     for (const row of rows) {
       const cells = outputFields.map((f) => {
-        if (f === "magic_link") return escape(row.verification_token ? `${baseUrl}/dashboard/${row.verification_token}` : "");
+        if (f === "magic_link") return escape(row.verification_token ? `${baseUrl}/funnel/${row.verification_token}` : "");
         if (f === "first_name" && row[f] == null) {
           const parts = String(row.name || "").trim().split(/\s+/);
           return escape(parts[0] || "");
