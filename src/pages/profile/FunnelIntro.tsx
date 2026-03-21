@@ -119,7 +119,7 @@ export default function FunnelIntro() {
     <>
       <SafeHead>
         <title>Welcome to Top10Lists | The AI-First Agent Directory</title>
-        <meta name="description" content="Join the invitation-only agent directory structured for AI citation and retrieval." />
+        <meta name="description" content="Join the merit-based agent directory structured for AI citation and retrieval." />
         <meta name="robots" content="noindex, nofollow" />
       </SafeHead>
 

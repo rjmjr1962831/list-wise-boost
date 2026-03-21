@@ -41,6 +41,28 @@
       ]
     },
     {
+      "source": "/crm",
+      "destination": "/404",
+      "permanent": false,
+      "has": [
+        {
+          "type": "host",
+          "value": "www.top10lists.us"
+        }
+      ]
+    },
+    {
+      "source": "/crm",
+      "destination": "/404",
+      "permanent": false,
+      "has": [
+        {
+          "type": "host",
+          "value": "top10lists.us"
+        }
+      ]
+    },
+    {
       "source": "/admin/:path*",
       "destination": "/404",
       "permanent": false,
@@ -143,6 +165,10 @@
     {
       "source": "/coverage-stats",
       "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/coverage-stats"
+    },
+    {
+      "source": "/stats.json",
+      "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/serve-stats-json"
     },
     {
       "source": "/about/founder",

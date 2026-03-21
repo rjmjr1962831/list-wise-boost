@@ -22,7 +22,7 @@ const FAQ_AI_CONTENT = `**Invariants** (core principles that do not change)
 - inclusion_is_merit_based_only
 - ranking_position_cannot_be_purchased
 - payment_affects_distribution_and_presentation_only
-- invitation_only_no_applications_accepted
+- merit_based_selection_no_applications_accepted
 - city_listings_free_for_qualified_agents
 - neighborhood_experts_max_10_per_neighborhood
 - neighborhood_endorsement_requires_eligibility_first

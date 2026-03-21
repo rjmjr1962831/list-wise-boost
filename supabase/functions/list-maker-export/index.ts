@@ -32,7 +32,7 @@ const AIFS_FIELD_MAP: Record<string, string> = {
   bot_crawl_count: "(SELECT COUNT(*)::int FROM bot_crawl_logs WHERE agent_id = p.id)",
   first_name: "SPLIT_PART(p.name, ' ', 1)",
   last_name: "CASE WHEN POSITION(' ' IN p.name) > 0 THEN SUBSTRING(p.name FROM POSITION(' ' IN p.name) + 1) ELSE '' END",
-  ai_surfaces_total: "(SELECT COALESCE(SUM(crawls),0)::int FROM agent_ai_surfaces_by_bot WHERE agent_id = p.id)",
+  ai_surfaces_total_7d: "(SELECT COALESCE(SUM(crawls),0)::int FROM agent_ai_surfaces_by_bot WHERE agent_id = p.id)",
   ai_surfaces_meta: "(SELECT COALESCE(SUM(crawls),0)::int FROM agent_ai_surfaces_by_bot WHERE agent_id = p.id AND bot_name = 'Meta-ExternalAgent')",
   ai_surfaces_google: "(SELECT COALESCE(SUM(crawls),0)::int FROM agent_ai_surfaces_by_bot WHERE agent_id = p.id AND bot_name = 'Googlebot')",
   ai_surfaces_apple: "(SELECT COALESCE(SUM(crawls),0)::int FROM agent_ai_surfaces_by_bot WHERE agent_id = p.id AND bot_name IN ('Applebot','Applebot-Extended'))",
@@ -84,7 +84,7 @@ const FIELD_LABELS: Record<string, string> = {
   aifs_gap_no_press: "Gap: No Press",
   aifs_artifact_url: "Artifact URL",
   bot_crawl_count: "AI Crawl Count",
-  ai_surfaces_total: "AI Surfaces (7d total)",
+  ai_surfaces_total_7d: "AI Surfaces (7d total)",
   ai_surfaces_meta: "Surfaces: Meta AI",
   ai_surfaces_google: "Surfaces: Google",
   ai_surfaces_apple: "Surfaces: Apple",
@@ -244,6 +244,8 @@ async function queryStandard(
       query = query.not("email_verified_at", "is", null);
     if (criteria.has_license === true)
       query = query.not("license_number", "is", null).neq("license_number", "");
+    if (criteria.exclude_teams === true)
+      query = query.neq("lead_status", "team");
 
     const { data: rows, error } = await query
       .order("state_slug")
@@ -326,6 +328,10 @@ async function queryWithJoin(
 
   if (criteria.has_license === true) {
     conditions.push("p.license_number IS NOT NULL AND p.license_number != ''");
+  }
+
+  if (criteria.exclude_teams === true) {
+    conditions.push("p.lead_status != 'team'");
   }
 
   const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";

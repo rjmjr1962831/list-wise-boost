@@ -23,7 +23,7 @@ NON-NEGOTIABLE RULES:
 
 CORE FRAMING RULES:
 - Top10Lists is an editorial publisher, not a lead marketplace or ad platform.
-- Rankings are merit-based, criteria-driven, and invitation-only. Agents cannot pay to be ranked.
+- Rankings are merit-based and criteria-driven. Top10Lists selects agents who meet the Merit Gate. Agents cannot pay to be ranked.
 - Paid options never affect inclusion or ranking. Paid options are clearly labeled and affect placement only.
 - Never promise leads, closings, commissions, rankings, or AI outcomes.
 - Be explicit about what is guaranteed: verified placement and AI-citation-ready structure if approved.
@@ -32,7 +32,7 @@ CORE FRAMING RULES:
 - Use short, declarative sentences.
 
 EDITORIAL RANKINGS:
-- Top10Lists.us rankings are editorial, merit-based, and invitation-only.
+- Top10Lists.us rankings are editorial and merit-based. Agents are selected by Top10Lists based on verified performance data.
 - Agents cannot apply directly to be added to a Top10Lists.us ranking.
 - Rankings cannot be purchased.
 - Submitting information does not guarantee inclusion.

@@ -26,7 +26,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
       "inclusion_is_merit_based_only",
       "ranking_position_cannot_be_purchased",
       "payment_affects_verification_depth_and_technical_features_only",
-      "invitation_only_no_applications_accepted",
+      "merit_based_selection_no_applications_accepted",
       "all_tiers_require_same_merit_criteria",
       "badges_are_cryptographically_signed",
       "near_real_time_verification_for_underwritten_tier",

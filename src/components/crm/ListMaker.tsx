@@ -19,6 +19,7 @@ export interface ListMakerCriteria {
   min_rating?: number;
   email_verified?: boolean;
   has_license?: boolean;
+  exclude_teams?: boolean;
 }
 
 export interface SavedListTemplate {
@@ -86,7 +87,7 @@ const LEGACY_AIFS_FIELDS: { key: string; label: string }[] = [
 ];
 
 const BOT_CRAWL_FIELDS: { key: string; label: string }[] = [
-  { key: "ai_surfaces_total", label: "AI Surfaces (7d total)" },
+  { key: "ai_surfaces_total_7d", label: "AI Surfaces (7d total)" },
   { key: "ai_surfaces_meta", label: "Surfaces: Meta AI" },
   { key: "ai_surfaces_google", label: "Surfaces: Google" },
   { key: "ai_surfaces_apple", label: "Surfaces: Apple" },
@@ -157,6 +158,7 @@ export function ListMaker() {
     min_rating: 0,
     email_verified: false,
     has_license: false,
+    exclude_teams: true,
   });
   const [outputFields, setOutputFields] = useState<string[]>(["id", "name", "email", "magic_link", "date_first_listed", "current_tier"]);
   const [count, setCount] = useState<number | null>(null);
@@ -190,6 +192,8 @@ export function ListMaker() {
     if (criteria.email_verified) q = q.not("email_verified_at", "is", null);
     if (criteria.has_license)
       q = q.not("license_number", "is", null).neq("license_number", "");
+    if (criteria.exclude_teams)
+      q = q.neq("lead_status", "team");
     return q;
   }, [criteria]);
 
@@ -333,6 +337,8 @@ export function ListMaker() {
         if (criteria.email_verified) q = q.not("email_verified_at", "is", null);
         if (criteria.has_license)
           q = q.not("license_number", "is", null).neq("license_number", "");
+        if (criteria.exclude_teams)
+          q = q.neq("lead_status", "team");
 
         const { data, error } = await q;
         if (error) throw error;
@@ -448,7 +454,7 @@ export function ListMaker() {
               bot_crawl_list: String(r.list_crawls_30d || 0),
               bot_crawl_bots: displayBots.join(", ") || "AI systems",
               bot_crawl_bots_count: String(displayBots.length || 0),
-              ai_surfaces_total: String(totalSurfaces),
+              ai_surfaces_total_7d: String(totalSurfaces),
               ai_surfaces_human: String(humanSurfaces),
               ...surfaceFields,
               ai_surfaces_top5_bots: top5Names.join(", "),
@@ -487,7 +493,7 @@ export function ListMaker() {
               mergeData.set(agentId, {
                 bot_crawl_total: "0", bot_crawl_profile: "0", bot_crawl_list: "0",
                 bot_crawl_bots: "", bot_crawl_bots_count: "0",
-                ai_surfaces_total: String(totalSurfaces),
+                ai_surfaces_total_7d: String(totalSurfaces),
                 ai_surfaces_human: String(humanSurfaces),
                 ...surfaceFields,
                 ai_surfaces_top5_bots: top5.slice(0, 5).map((b) => b.name).join(", "),
@@ -744,6 +750,16 @@ export function ListMaker() {
                 }
               />
               <span className="text-sm">Has license</span>
+            </label>
+
+            <label className="flex items-center gap-2">
+              <Checkbox
+                checked={!!criteria.exclude_teams}
+                onCheckedChange={(c) =>
+                  setCriteria((prev) => ({ ...prev, exclude_teams: !!c }))
+                }
+              />
+              <span className="text-sm">Exclude teams</span>
             </label>
           </div>
         </CardContent>

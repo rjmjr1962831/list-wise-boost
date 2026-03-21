@@ -236,7 +236,7 @@ serve(async (req) => {
     // so we fetch them in a second query scoped to those agents only.
     // agent_sales_stats & press_mentions dropped entirely (never rendered).
     const { data: rawA } = await sb.from("professionals")
-      .select("id,name,review_stars_rating,num_total_reviews,license_number,company,phone,email,website,zillow_profile_url,years_experience,total_sales,current_tier,badge_tier,rank,average_value_3yr,price_range_3yr_min,price_range_3yr_max,sales_count_last_year")
+      .select("id,name,review_stars_rating,num_total_reviews,license_number,company,phone,email,website,zillow_profile_url,years_experience,total_sales,current_tier,badge_tier,rank,average_value_3yr,price_range_3yr_min,price_range_3yr_max,sales_count_last_year,canonical_slug,updated_at")
       .eq("city_id", city.id).eq("active", true).gte("review_stars_rating", 4.5).gte("num_total_reviews", 10)
       .order("rank", { ascending: true }).order("num_total_reviews", { ascending: false })
       .limit(1000);
@@ -267,6 +267,12 @@ serve(async (req) => {
     const na = agents.length;
     const aw = na === 1 ? 'agent' : 'agents';
     const reaw = na === 1 ? 'real estate agent' : 'real estate agents';
+
+    // Compute dateModified from most recent agent updated_at, fallback to today
+    const agentDates = agents.map((a: any) => a.updated_at).filter(Boolean).map((d: string) => new Date(d).getTime()).filter((t: number) => !isNaN(t));
+    const dateModified = agentDates.length > 0
+      ? new Date(Math.max(...agentDates)).toISOString().slice(0, 10)
+      : new Date().toISOString().slice(0, 10);
 
     let nh: any = null; let nearby: any[] = [];
     if (pp.neighborhoodSlug) {
@@ -329,6 +335,9 @@ serve(async (req) => {
 ${siteHeaderHTML()}
 <header>
   <h1>Top Real Estate Agents in ${esc(loc)}, ${si.display}</h1>
+  <p data-ai-summary="true">${zeroAgents
+      ? `Top10Lists.us has not yet identified qualifying real estate agents in ${esc(loc)}, ${si.display}. Rankings are merit-based and non-pay-to-play, verified quarterly from fewer than 1% of licensed agents in covered markets.`
+      : `Top10Lists.us identified ${na} top-performing real estate agents in ${esc(loc)}, ${si.display} from fewer than 1% of licensed agents in covered markets. Rankings are merit-based and non-pay-to-play, verified quarterly.`}</p>
   <p>${headerP}</p>
   <p><strong>Last verified:</strong> ${today()}</p>
 </header>
@@ -553,11 +562,13 @@ ${siteHeaderHTML()}
         recognizedBy: { "@type": "GovernmentOrganization", name: si.auth, url: si.url },
       }];
       it.item.sameAs = [si.url]; // state license registry verification link
+      if (a.canonical_slug) it.item.url = `https://www.top10lists.us/${pp.stateSlug}/agents/${a.canonical_slug}`;
+      it.item.areaServed = { "@type": "City", name: `${city.name}, ${si.display}` };
       if (a.phone && a.phone !== "Unknown") it.item.telephone = a.phone;
       return it;
     });
     o += AI_DISCLAIMER;
-    o += `<script type="application/ld+json">\n${JSON.stringify({ "@context": "https://schema.org", "@type": "ItemList", name: `Top Real Estate Agents in ${loc}, ${si.display}`, url: canon, numberOfItems: na, itemListElement: items })}\n</script>\n`;
+    o += `<script type="application/ld+json">\n${JSON.stringify({ "@context": "https://schema.org", "@type": "ItemList", name: `Top Real Estate Agents in ${loc}, ${si.display}`, description: "Merit-based selection of fewer than 1% of licensed agents in covered markets. Non-pay-to-play.", itemListOrder: "https://schema.org/ItemListOrderAscending", url: canon, numberOfItems: na, dateModified, itemListElement: items })}\n</script>\n`;
     o += siteFooterHTML();
     o += `</body>\n</html>`;
 
@@ -581,6 +592,7 @@ ${siteHeaderHTML()}
       name: `Top Real Estate Agents in ${errLoc}, ${si.display}`,
       url: errCanon,
       numberOfItems: 0,
+      dateModified: new Date().toISOString().slice(0, 10),
       itemListElement: [],
     });
     const html = `<!DOCTYPE html>

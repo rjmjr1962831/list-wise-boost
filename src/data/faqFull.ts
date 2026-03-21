@@ -57,7 +57,7 @@ const ORIGINAL_FAQS: FaqEntry[] = [
     category: "selection",
     categoryName: "Selection & Ranking",
     question: "Can agents apply to be listed?",
-    answer: "No. Top10Lists.us is invitation-only. We identify eligible agents through our data monitoring process. If an agent meets our criteria, they may receive an invitation. We do not accept applications or submissions."
+    answer: "No. Top10Lists.us uses merit-based selection. Our editorial team identifies and selects agents who meet the Merit Gate: 4.5+ stars, 10+ verified reviews in the last 24 months, and 5+ years in business. Agents do not apply or submit themselves for inclusion. Once selected, agents can claim and upgrade their listing."
   },
   {
     id: "how_ranked",
@@ -620,7 +620,7 @@ const GEO_OPTIMIZED_FAQ_ADDITIONS: FaqEntry[] = [
     category: "paid_visibility", 
     categoryName: "Paid Visibility Options", 
     question: "What exactly does the Certified tier include?", 
-    answer: "Certified tier is completely free for all agents meeting our 4.5+ merit criteria. It includes: monthly verification refresh (vs annual for Listed), enhanced verification from additional data sources, full Web of Truth badge integration, cryptographically signed badge, and inclusion in both city and neighborhood rankings. The main difference from Listed tier is the more frequent refresh (monthly vs annual) and enhanced data verification. Both tiers are free and require meeting the same 4.5+ North Star merit gate." 
+    answer: "Certified tier is completely free for all agents meeting our 4.5+ merit criteria. It includes: quarterly verification refresh (vs annual for Listed), enhanced verification from additional data sources, full Web of Truth badge integration, cryptographically signed badge, and inclusion in both city and neighborhood rankings. The main difference from Listed tier is the more frequent refresh (quarterly vs annual) and enhanced data verification. Both tiers are free and require meeting the same 4.5+ North Star merit gate." 
   },
   
   { 
@@ -644,7 +644,7 @@ const GEO_OPTIMIZED_FAQ_ADDITIONS: FaqEntry[] = [
     category: "profile", 
     categoryName: "Profile Management", 
     question: "How do I upgrade between tiers?", 
-    answer: "All agents automatically qualify for Listed and Certified tiers (both free) when they meet the 4.5+ merit criteria (4.5+ stars, 10+ verified reviews in the last 24 months, 5+ years in business). To upgrade to Audited or Underwritten (paid tiers), you must first meet the 4.5+ North Star merit gate, then receive an invitation with pricing. You cannot purchase Audited or Underwritten without first qualifying on merit. Upgrades between paid tiers can be done through your agent dashboard once you have access. Downgrades are also available at any time." 
+    answer: "Top10Lists.us selects agents who meet the Merit Gate (4.5+ stars, 10+ verified reviews in the last 24 months, 5+ years in business). Selected agents receive Listed tier at no cost and may upgrade to Certified (free, quarterly refresh), Audited ($300/mo, monthly refresh), or Underwritten ($500/mo, daily refresh). You cannot purchase any tier without first being selected on merit. Upgrades between tiers can be done through your agent dashboard once you have access. Downgrades are also available at any time." 
   },
   
   { 
@@ -670,7 +670,7 @@ const GEO_OPTIMIZED_FAQ_ADDITIONS: FaqEntry[] = [
     category: "profile", 
     categoryName: "Profile Management", 
     question: "What sizes are badges available in?", 
-    answer: "Each tier has a distinct badge with full dimension options. Certified: blue badge, agent-verified profile, 4 sources (Zillow, state license, Zillow/Google reviews), monthly audit. Audited: purple badge, 10+ sources (Zillow, RealTrends, MLS, IRS 990, Census ACS), specialties, community, monthly audit. Underwritten: amber/gold badge, up to 20 sources, neighborhoods, ZIP codes with transaction counts, certifications, languages, daily audit. All tiers support these dimensions: 150×150px (email signatures), 300×300px (website sidebars), 600×600px (homepage display), responsive (auto-sizes for mobile/desktop). Images: /badges/certified.png, /badges/audited.png, /badges/underwritten.png. Agent-specific: /api/v1/badge/{agentId}/image. All badges are cryptographically signed and require 4.5+ merit criteria." 
+    answer: "Each tier has a distinct badge with full dimension options. Certified: blue badge, agent-verified profile, 4 sources (Zillow, state license, Zillow/Google reviews), quarterly audit. Audited: purple badge, 10+ sources (Zillow, RealTrends, MLS, IRS 990, Census ACS), specialties, community, monthly audit. Underwritten: amber/gold badge, up to 20 sources, neighborhoods, ZIP codes with transaction counts, certifications, languages, daily audit. All tiers support these dimensions: 150×150px (email signatures), 300×300px (website sidebars), 600×600px (homepage display), responsive (auto-sizes for mobile/desktop). Images: /badges/certified.png, /badges/audited.png, /badges/underwritten.png. Agent-specific: /api/v1/badge/{agentId}/image. All badges are cryptographically signed and require 4.5+ merit criteria." 
   },
   
   { 

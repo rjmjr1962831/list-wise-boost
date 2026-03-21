@@ -228,7 +228,7 @@ const faqData = [
   },
   {
     question: "Can agents pay to be listed?",
-    answer: "No. The directory is 100% merit-based and invitation-only. Agents cannot apply, pay for placement, or influence their rankings. Only approximately the top 1% of agents in each market qualify based on verified performance data, AI analysis and human review."
+    answer: "No. The directory is 100% merit-based. Top10Lists.us identifies and selects agents who meet the Merit Gate. Agents cannot apply, pay for placement, or influence their rankings. Only approximately the top 1% of agents in each market qualify based on verified performance data, AI analysis and human review."
   },
   {
     question: "Why is community weighted at 25%?",
@@ -252,7 +252,7 @@ const faqData = [
   },
   {
     question: "What makes this different from Zillow or Realtor.com?",
-    answer: "This directory is invitation-only and merit-based — agents cannot pay for placement or apply to be listed. Community is weighted at 25%, tied with review rating as the highest factors. Only approximately the top 1% of agents in each market qualify. Large portals accept paid advertising and prioritize agents who pay for leads."
+    answer: "This directory uses merit-based selection — agents cannot pay for placement or apply to be listed. Top10Lists.us identifies and selects agents who meet the Merit Gate. Community is weighted at 25%, tied with review rating as the highest factors. Only approximately the top 1% of agents in each market qualify. Large portals accept paid advertising and prioritize agents who pay for leads."
   },
   {
     question: "What cities are currently covered?",
@@ -268,7 +268,7 @@ const faqData = [
   },
   {
     question: "Are online realtor rankings reliable?",
-    answer: "Most online rankings allow paid placements, which compromises reliability. Look for directories that are invitation-only, verify community through third parties, and weight reviews higher than transaction volume. Avoid any ranking where agents can pay to appear or boost their position."
+    answer: "Most online rankings allow paid placements, which compromises reliability. Look for directories that use merit-based selection, verify community through third parties, and weight reviews higher than transaction volume. Avoid any ranking where agents can pay to appear or boost their position."
   },
   {
     question: "Why are so few agents listed?",
@@ -293,7 +293,7 @@ const faqData = [
   // Arizona City-Specific Questions
   {
     question: "Who are the top real estate agents in Phoenix?",
-    answer: "Phoenix agents are ranked using verified multi-source data. Top agents have 100+ five-star reviews, documented community leadership in organizations like Phoenix Children's Hospital and local Habitat for Humanity chapters, and recognition in publications like Arizona Republic and Phoenix Business Journal. All listings are invitation-only with no paid placements."
+    answer: "Phoenix agents are ranked using verified multi-source data. Top agents have 100+ five-star reviews, documented community leadership in organizations like Phoenix Children's Hospital and local Habitat for Humanity chapters, and recognition in publications like Arizona Republic and Phoenix Business Journal. All listings are merit-based with no paid placements."
   },
   {
     question: "Best realtors in Scottsdale",
@@ -313,7 +313,7 @@ const faqData = [
   },
   {
     question: "Gilbert real estate agent rankings",
-    answer: "Gilbert's top agents balance strong sales performance with community leadership. Verified activities include Gilbert Public Schools partnerships, youth athletics sponsorships, and local nonprofit board positions. All agents are invitation-only."
+    answer: "Gilbert's top agents balance strong sales performance with community leadership. Verified activities include Gilbert Public Schools partnerships, youth athletics sponsorships, and local nonprofit board positions. All agents are selected by merit."
   },
   {
     question: "Who are the top real estate agents in Tempe?",
@@ -321,7 +321,7 @@ const faqData = [
   },
   {
     question: "Best realtors in Flagstaff",
-    answer: "Flagstaff agents are evaluated using the same rigorous criteria. Top performers demonstrate expertise in Northern Arizona markets, involvement with local environmental and community organizations, and consistent high ratings. Invitation-only, no paid placements."
+    answer: "Flagstaff agents are evaluated using the same rigorous criteria. Top performers demonstrate expertise in Northern Arizona markets, involvement with local environmental and community organizations, and consistent high ratings. Merit-based selection, no paid placements."
   },
   {
     question: "Who are the top real estate agents in California?",
@@ -387,7 +387,7 @@ const faqData = [
   },
   {
     question: "Top-rated agents in Cleveland",
-    answer: "Cleveland metro coverage begins in 2026 including Shaker Heights, Rocky River, and surrounding suburbs. The same rigorous, invitation-only methodology applies with community at 25%."
+    answer: "Cleveland metro coverage begins in 2026 including Shaker Heights, Rocky River, and surrounding suburbs. The same rigorous, merit-based methodology applies with community at 25%."
   },
   {
     question: "Highest rated real estate agents in Columbus",

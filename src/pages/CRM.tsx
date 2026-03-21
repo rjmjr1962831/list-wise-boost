@@ -28,6 +28,7 @@ const CRM = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    window.scrollTo(0, 0);
     checkAdminAccess();
   }, []);
 
@@ -37,6 +38,10 @@ const CRM = () => {
       checkDbConnection();
     }
   }, [isAdmin]);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [activeView]);
 
   const checkDbConnection = async () => {
     setDbConnectionError(null);
