@@ -17,7 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { Loader2, Check } from "lucide-react";
-import { ListMaker, type ListMakerCriteria, getSavedListTemplates, type SavedListTemplate } from "./ListMaker";
+import { type ListMakerCriteria, getSavedListTemplates, type SavedListTemplate } from "./ListMaker";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -463,13 +463,9 @@ function CampaignWizard({
   };
 
   const canProceed = (s: number) => {
-    if (s === 0) return (listCount ?? 0) > 0;
-    if (s === 1)
-      return (
-        (campaignName.trim() || existingCampaignId) &&
-        subject.trim() &&
-        senders.length > 0
-      );
+    if (s === 0) return !!(campaignName.trim() || existingCampaignId);
+    if (s === 1) return (listCount ?? 0) > 0;
+    if (s === 2) return !!(subject.trim() && senders.length > 0);
     return true;
   };
 
@@ -493,6 +489,9 @@ function CampaignWizard({
     setLaunched(false);
     setLaunchedCount(0);
     setScheduledStartMST("");
+    setMaxPerDay(35);
+    setUptickPerDay(10);
+    setMinSecondsBetweenSends(120);
   };
 
   // ---- Variable insertion buttons ----
@@ -1017,10 +1016,10 @@ function CampaignWizard({
             )}
 
             <div className="flex justify-between">
-              <Button variant="outline" onClick={() => setStep(2)}>
+              <Button variant="outline" onClick={() => setStep(4)}>
                 &larr; Back
               </Button>
-              <Button onClick={() => setStep(4)}>
+              <Button onClick={() => setStep(6)}>
                 Next: Launch &rarr;
               </Button>
             </div>
@@ -1028,8 +1027,8 @@ function CampaignWizard({
         </Card>
       )}
 
-      {/* ============ STEP 4: LAUNCH ============ */}
-      {step === 4 && !launched && (
+      {/* ============ STEP 6: LAUNCH ============ */}
+      {step === 6 && !launched && (
         <Card>
           <CardHeader>
             <CardTitle>Launch</CardTitle>
@@ -1145,7 +1144,7 @@ function CampaignWizard({
             </div>
 
             <div className="flex justify-between">
-              <Button variant="outline" onClick={() => setStep(3)}>
+              <Button variant="outline" onClick={() => setStep(5)}>
                 &larr; Back
               </Button>
               <Button
@@ -1172,7 +1171,7 @@ function CampaignWizard({
       )}
 
       {/* ============ LAUNCHED ============ */}
-      {step === 4 && launched && (
+      {step === 6 && launched && (
         <Card>
           <CardContent className="pt-6 space-y-4 text-center">
             <Check className="h-12 w-12 text-green-600 mx-auto" />
