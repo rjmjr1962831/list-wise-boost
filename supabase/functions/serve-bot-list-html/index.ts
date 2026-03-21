@@ -93,7 +93,7 @@ const CSS = `
     .anti-hallucination { background: #fef3c7; border: 1px solid #f59e0b; border-radius: 4px; padding: 0.8rem; font-size: 0.85rem; margin: 1rem 0; }
 `;
 
-function renderAgent(a: any, si: any): string {
+function renderAgent(a: any, si: any, stateSlug: string = ""): string {
   const t = tier(a), lo = t.toLowerCase();
   const isHigh = ["underwritten","audited"].includes(lo);
   const isCert = lo === "certified";
@@ -113,8 +113,11 @@ function renderAgent(a: any, si: any): string {
   const served = jp(a.served_cities, []);
   const ph = a.phone, em = a.email, ws = a.website;
 
+  const profileUrl = a.canonical_slug ? `${BASE}/${stateSlug}/agents/${a.canonical_slug}` : "";
   let o = `<article id="agent-${lic}" class="agent-${tb(t)}">\n`;
-  o += `  <h3>${nm} <span class="tier-badge badge-${tb(t)}">${tl(t)}</span></h3>\n`;
+  o += profileUrl
+    ? `  <h3><a href="${profileUrl}">${nm}</a> <span class="tier-badge badge-${tb(t)}">${tl(t)}</span></h3>\n`
+    : `  <h3>${nm} <span class="tier-badge badge-${tb(t)}">${tl(t)}</span></h3>\n`;
   o += `  <div class="stats-row">\n`;
   o += `    <span>${a.review_stars_rating || 0} stars<sup>[2]</sup><sup>[3]</sup></span>\n`;
   o += `    <span>${fr(a.num_total_reviews || 0)} reviews<sup>[2]</sup><sup>[3]</sup></span>\n`;
@@ -543,7 +546,7 @@ ${siteHeaderHTML()}
     }
     o += `  </ol></details>\n`;
 
-    for (const a of agents) o += renderAgent(a, si);
+    for (const a of agents) o += renderAgent(a, si, pp.stateSlug);
     o += `</section>\n`;
 
     // Master Source Index
