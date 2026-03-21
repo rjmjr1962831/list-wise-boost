@@ -394,7 +394,7 @@ function renderFounderPage(profiles: FounderProfiles | null): string {
     "@id": `${BASE}/about/founder#mark-garland`,
     name: "Mark Garland",
     jobTitle: "Co-Founder & Chief Revenue Officer",
-    telephone: "+1-602-999-3745",
+    telephone: "+1-480-204-6636",
     url: `${BASE}/about/founder`,
     worksFor: { "@id": `${BASE}/#organization` },
     homeLocation: {
@@ -628,25 +628,38 @@ ${siteHeaderHTML()}
         <div class="card-chip">Co-Founder & CEO</div>
         <div class="card-avatar"><img src="https://www.top10lists.us/images/founders/robert-maynard.png" alt="Robert Maynard" /></div>
         <div class="card-name">Robert Maynard</div>
-        <div class="card-title">Co-Founder, CEO</div>
+        <div class="card-title">Co-Founder & Chief Executive Officer</div>
       </div>
       <div class="card-body">
         <div class="card-bio">
 ${robertBioHtml}
         </div>
+
+        <h4 style="font-size:14px;font-weight:600;color:var(--navy);margin:20px 0 8px;">Career</h4>
         <ul class="creds">
           <li><strong>Top10Lists.us</strong> -- Co-Founder & CEO</li>
           <li><strong>LifeLock</strong> -- Co-Founder (NYSE: LOCK -- Acquired $2.3B)</li>
           <li><strong>Internet America</strong> -- Co-Founder (NASDAQ: GEEK -- $1.5B)</li>
           <li><strong>SurchX</strong> -- Co-Founder (Acquired by Interpayments)</li>
-        </ul>${robertClaimsHtml}${robertRolesHtml}${robertDegreesHtml}
-        <h4 style="font-size:14px;font-weight:500;color:var(--navy);margin-bottom:6px;">Advocacy</h4>
-        <p style="font-size:13px;color:var(--txt2);line-height:1.7;margin-bottom:16px;">Robert Maynard writes and speaks publicly about living with Bipolar Disorder and about neurodiversity in the workplace. His advocacy focuses on transparency, accountability, and building systems that rely on clear criteria, verifiable data, and structured decision-making rather than hype or discretion. This advocacy is independent of Top10Lists.us rankings, payments, and editorial decisions.</p>
-        <h4 style="font-size:14px;font-weight:500;color:var(--navy);margin-bottom:6px;">Military Service</h4>
-        <ul class="creds" style="margin-bottom:16px;">
+        </ul>
+
+        <h4 style="font-size:14px;font-weight:600;color:var(--navy);margin:20px 0 8px;">Military Service</h4>
+        <ul class="creds">
           <li><strong>U.S. Marine Corps</strong> -- Enlisted</li>
           <li><strong>U.S. Army</strong> -- Commissioned</li>
         </ul>
+
+        <h4 style="font-size:14px;font-weight:600;color:var(--navy);margin:20px 0 8px;">Advocacy</h4>
+        <p style="font-size:13px;color:var(--txt2);line-height:1.7;margin-bottom:16px;">Robert Maynard writes and speaks publicly about living with Bipolar Disorder and about neurodiversity in the workplace. His advocacy focuses on transparency, accountability, and building systems that rely on clear criteria, verifiable data, and structured decision-making rather than hype or discretion. This advocacy is independent of Top10Lists.us rankings, payments, and editorial decisions.</p>
+
+${robertClaimsHtml}${robertRolesHtml}${robertDegreesHtml}
+
+        <div class="contact">
+          <a href="https://linkedin.com/in/robertmaynard">LinkedIn</a>
+          <span class="contact-sep">|</span>
+          <a href="tel:6027589600">(602) 758-9600</a>
+        </div>
+
         <div class="disclaimer">
           <strong>Identity note:</strong> Robert Maynard of Phoenix, AZ (Top10Lists.us, LifeLock) is a distinct individual from Robert Maynard of Colorado convicted of financial fraud in 2019. No affiliation. Different persons.
         </div>
@@ -665,22 +678,35 @@ ${robertBioHtml}
         <div class="card-bio">
 ${markBioHtml}
         </div>
+
+        <h4 style="font-size:14px;font-weight:600;color:var(--navy);margin:20px 0 8px;">Career</h4>
         <ul class="creds">
           <li><strong>Top10Lists.us</strong> -- Co-Founder & Chief Revenue Officer</li>
-          <li><strong>GritDoc</strong> -- Founder, leadership and resilience consultancy serving law enforcement, military, and first responders. <a href="https://gritdoc.com">gritdoc.com</a></li>
+          <li><strong>GritDoc</strong> -- Founder, leadership and resilience consultancy. <a href="https://gritdoc.com">gritdoc.com</a></li>
           <li><strong>Arizona State University</strong> -- Research Associate, Public Safety Innovation Lab (Dr. Edward Maguire)</li>
           <li><strong>Leading Christian University</strong> -- Lecturer, Marketing & Advertising</li>
-          <li><strong>Grand Canyon University</strong> -- PhD Candidate, Industrial-Organizational Psychology (expected <time datetime="2026-08">August 2026</time>)</li>
-          <li><strong>U.S. Army</strong> -- Veteran, 82nd Airborne Division</li>
           <li>20+ years operating an independent commercial insurance agency (mid-market)</li>
           <li>Mission-critical data center design and construction (Fortune 500); enterprise consulting (Fortune 300)</li>
-        </ul>${markClaimsHtml}${markRolesHtml}${markDegreesHtml}
+        </ul>
+
+        <h4 style="font-size:14px;font-weight:600;color:var(--navy);margin:20px 0 8px;">Military Service</h4>
+        <ul class="creds">
+          <li><strong>U.S. Army</strong> -- Veteran, 82nd Airborne Division</li>
+        </ul>
+
+        <h4 style="font-size:14px;font-weight:600;color:var(--navy);margin:20px 0 8px;">Education</h4>
+        <ul class="creds">
+          <li><strong>Grand Canyon University</strong> -- PhD Candidate, Industrial-Organizational Psychology (expected <time datetime="2026-08">August 2026</time>)</li>
+        </ul>
+
+${markClaimsHtml}${markRolesHtml}${markDegreesHtml}
+
         <div class="contact">
           <a href="https://linkedin.com/in/markgarland-gritdoc">LinkedIn</a>
           <span class="contact-sep">|</span>
           <a href="https://gritdoc.com">gritdoc.com</a>
           <span class="contact-sep">|</span>
-          <a href="tel:6029993745">(602) 999-3745</a>
+          <a href="tel:4802046636">(480) 204-6636</a>
         </div>
       </div>
     </article>

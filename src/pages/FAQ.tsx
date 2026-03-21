@@ -84,7 +84,7 @@ const FAQ = () => {
     "accountablePerson": {
       "@type": "Person",
       "name": "Robert Maynard",
-      "jobTitle": "Founder",
+      "jobTitle": "Cofounder & CEO",
       "url": `${BASE_URL}/about/founder`,
     },
   };

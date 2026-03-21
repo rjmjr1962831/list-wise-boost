@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loader2, ArrowRight, ArrowLeft, HelpCircle, X, Plus, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import { trackFunnelEvent } from '@/lib/funnel-track';
 import InlineReviewForm from '@/components/funnel/InlineReviewForm';
 import { floorSales, floorReviews } from '@/utils/floorDisplay';
 import { FunnelBreadcrumbs } from '@/components/funnel/FunnelBreadcrumbs';
@@ -147,6 +148,7 @@ export default function Step3Review2() {
       }
 
       setProfessional(data);
+      trackFunnelEvent('funnel_step_review2', data);
       setSelectedSpecialties(Array.isArray(data.specialty) ? data.specialty : []);
       setFormData({
         website: data.website || '',
@@ -169,6 +171,7 @@ export default function Step3Review2() {
 
   const handleSave = async () => {
     if (!professional) return;
+    trackFunnelEvent('funnel_data_saved', professional);
 
     setSaving(true);
     try {

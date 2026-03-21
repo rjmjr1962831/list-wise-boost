@@ -443,7 +443,7 @@ export default function AgentLanding() {
               
               <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
                 See how you're currently listed and discover what Brand Builder can do for your business. 
-                Then schedule 15 minutes with our founder to discuss your strategy.
+                Then schedule 15 minutes with our cofounder to discuss your strategy.
               </p>
 
               <div className="flex justify-center">

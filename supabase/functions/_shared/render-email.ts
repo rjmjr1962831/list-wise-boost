@@ -236,6 +236,30 @@ export function renderEmail(params: RenderEmailParams): {
  * Build an RFC 2045 multipart/alternative MIME message and return it as a
  * base64url-encoded string ready for the Gmail API `raw` field.
  */
+/**
+ * Encode a UTF-8 string as base64, then wrap at 76 characters per line
+ * per RFC 2045 Section 6.8.
+ */
+function base64Encode(text: string): string {
+  const raw = btoa(unescape(encodeURIComponent(text)));
+  // RFC 2045: max 76 characters per line
+  return raw.match(/.{1,76}/g)?.join("\r\n") ?? raw;
+}
+
+/**
+ * Quote a display name for email headers if it contains special characters.
+ * RFC 5322: display names with specials must be quoted-string.
+ */
+function formatMailbox(email: string, displayName?: string): string {
+  if (!displayName) return email;
+  // Quote the display name if it contains specials (parens, commas, etc.)
+  if (/[()<>@,;:\\".[\]]/.test(displayName)) {
+    const escaped = displayName.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+    return `"${escaped}" <${email}>`;
+  }
+  return `${displayName} <${email}>`;
+}
+
 export function buildRawMimeMessage(params: MimeParams): string {
   const {
     from,
@@ -252,8 +276,8 @@ export function buildRawMimeMessage(params: MimeParams): string {
 
   const boundary = `boundary_${Date.now()}_${Math.random().toString(36).slice(2)}`;
 
-  const fromHeader = fromName ? `${fromName} <${from}>` : from;
-  const toHeader = toName ? `${toName} <${to}>` : to;
+  const fromHeader = formatMailbox(from, fromName);
+  const toHeader = formatMailbox(to, toName);
 
   const lines: string[] = [
     `From: ${fromHeader}`,
@@ -273,13 +297,13 @@ export function buildRawMimeMessage(params: MimeParams): string {
     "Content-Type: text/plain; charset=utf-8",
     "Content-Transfer-Encoding: base64",
     "",
-    btoa(unescape(encodeURIComponent(plainBody))),
+    base64Encode(plainBody),
     "",
     `--${boundary}`,
     "Content-Type: text/html; charset=utf-8",
     "Content-Transfer-Encoding: base64",
     "",
-    btoa(unescape(encodeURIComponent(htmlBody))),
+    base64Encode(htmlBody),
     "",
     `--${boundary}--`,
   );

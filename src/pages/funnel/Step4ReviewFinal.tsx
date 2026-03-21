@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, ArrowRight, ArrowLeft, CheckCircle, Edit } from 'lucide-react';
 import { toast } from 'sonner';
 import { floorSales, floorReviews } from '@/utils/floorDisplay';
+import { trackFunnelEvent } from '@/lib/funnel-track';
 import { FunnelBreadcrumbs } from '@/components/funnel/FunnelBreadcrumbs';
 
 interface Professional {
@@ -96,6 +97,7 @@ export default function Step4ReviewFinal() {
         .single();
       if (error || !data) { navigate('/404'); return; }
       setProfessional(data);
+      trackFunnelEvent('funnel_step_review_final', data);
 
       // Load any pending review requests for this professional
       const { data: requests } = await supabase
@@ -244,19 +246,19 @@ export default function Step4ReviewFinal() {
                   <Row label="Total Sales" value={professional.total_sales != null ? (floorSales(professional.total_sales) ?? null) : null}                fieldName="Total Sales" />
                   <Row label="Rating"      value={professional.review_stars_rating ? `${professional.review_stars_rating} stars` : null}            fieldName="Reviews" />
                   <Row label="Reviews"     value={professional.num_total_reviews != null ? `${floorReviews(professional.num_total_reviews) ?? professional.num_total_reviews} reviews` : null} />
-                  {volumeDisplay && <Row label="Volume (3yr)" value={volumeDisplay} fieldName="Volume (3yr)" />}
-                  <Row label="Website"     value={professional.website} />
-                  <Row label="Title"       value={professional.title} />
-                  <Row label="Headline"    value={professional.headline} />
-                  <Row label="Address"     value={addressDisplay} />
+                  <Row label="Volume (3yr)" value={volumeDisplay} fieldName="Volume (3yr)" />
+                  <Row label="Website"     value={professional.website} fieldName="Website" />
+                  <Row label="Title"       value={professional.title} fieldName="Title" />
+                  <Row label="Headline"    value={professional.headline} fieldName="Headline" />
+                  <Row label="Address"     value={addressDisplay} fieldName="Address" />
                   <Row label="Specialties" value={Array.isArray(professional.specialty) ? professional.specialty.join(', ') : null} fieldName="Specialties" />
-                  {professional.social_facebook || professional.social_instagram || professional.social_linkedin ? (
-                    <Row label="Social" value={[professional.social_facebook, professional.social_instagram, professional.social_linkedin].filter(Boolean).join(' · ')} />
-                  ) : null}
-                  {professional.social_twitter && <Row label="Twitter/X" value={professional.social_twitter} />}
-                  {professional.social_tiktok  && <Row label="TikTok"   value={professional.social_tiktok} />}
-                  {professional.zillow_profile_url && <Row label="Zillow URL" value={professional.zillow_profile_url} />}
-                  {professional.sidebar_video_url  && <Row label="YouTube"   value={professional.sidebar_video_url} />}
+                  <Row label="Zillow"      value={professional.zillow_profile_url} fieldName="Zillow URL" />
+                  <Row label="LinkedIn"    value={professional.social_linkedin} fieldName="LinkedIn" />
+                  <Row label="Facebook"    value={professional.social_facebook} fieldName="Facebook" />
+                  <Row label="Instagram"   value={professional.social_instagram} fieldName="Instagram" />
+                  <Row label="Twitter/X"   value={professional.social_twitter} fieldName="Twitter/X" />
+                  <Row label="TikTok"      value={professional.social_tiktok} fieldName="TikTok" />
+                  <Row label="YouTube"     value={professional.sidebar_video_url} fieldName="YouTube" />
                 </dl>
               </div>
 

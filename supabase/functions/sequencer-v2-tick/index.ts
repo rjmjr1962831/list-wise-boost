@@ -29,6 +29,7 @@ const TRACK_BASE = "https://www.top10lists.us/api/t";
 const SENDER_ACCOUNTS = [
   "hello@toptenlists.us",
   "robert@toptenlists.us",
+  "mark@toptenlists.us",
   "hello@top10lists.us",
   "robert@top10lists.us",
 ];
@@ -41,7 +42,7 @@ const SENDER_DISPLAY_NAMES: Record<string, string> = {
   "robert@top10lists.us": "Robert Maynard",
 };
 
-const CAMPAIGN_START = new Date("2026-02-24T12:00:00Z"); // 5am MST
+const CAMPAIGN_START = new Date("2026-03-21T12:00:00Z"); // Reset: 40/day start, +10% daily
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
@@ -49,17 +50,18 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 // Helpers
 // ---------------------------------------------------------------------------
 
-function getDailyLimit(account: string, daysSinceStart: number): number {
-  if (account.endsWith("@toptenlists.us"))
-    return Math.min(25 + daysSinceStart * 5, 100);
-  if (account.endsWith("@top10lists.us"))
-    return Math.min(10 + daysSinceStart * 2, 25);
-  return 0;
+function getDailyLimit(_account: string, daysSinceStart: number): number {
+  // All accounts: start at 40, +10% per day, no cap
+  return Math.floor(40 * Math.pow(1.10, daysSinceStart));
 }
 
 function isInSendWindow(): boolean {
-  const mstHour = (new Date().getUTCHours() - 7 + 24) % 24;
-  return mstHour >= 8 && mstHour < 17;
+  const now = new Date();
+  const mstHour = (now.getUTCHours() - 7 + 24) % 24;
+  // Sunday = 0, Saturday = 6. Convert to MST day.
+  const mstDay = new Date(now.getTime() - 7 * 3600000).getUTCDay();
+  if (mstDay === 0) return false; // No sends on Sunday
+  return mstHour >= 5 && mstHour < 20;
 }
 
 function htmlToPlainText(html: string): string {
@@ -276,8 +278,9 @@ async function processAccount(senderAccount: string): Promise<AccountResult> {
 
     // --- Build email content with tracking ---
     const unsubFooter = buildUnsubFooter(unsubUrl);
+    const wrappedHtml = `<!DOCTYPE html><html><head><meta charset="utf-8"></head><body style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.6;color:#333;">${queueItem.html_body}${unsubFooter.html}</body></html>`;
     const trackedHtml = injectTracking(
-      queueItem.html_body + unsubFooter.html,
+      wrappedHtml,
       queueItem.tracking_pixel_id,
       TRACK_BASE
     );
@@ -439,7 +442,7 @@ serve(async (_req: Request) => {
     return new Response(
       JSON.stringify({
         success: true,
-        message: "Outside send window (8am-5pm MST)",
+        message: "Outside send window (5am-8pm MST, Mon-Sat)",
         results: [],
         elapsed_ms: Date.now() - startTime,
       }),

@@ -446,14 +446,13 @@ export default function AgentDashboard() {
   };
 
   const handleUpgradePackage = () => {
-    // Store professional context and navigate to visibility funnel
-    if (professionalId) {
-      sessionStorage.setItem('visibility_professional_id', professionalId);
+    // Navigate to funnel pricing page with token or professional ID
+    const token = verificationToken || professionalId;
+    if (token) {
+      navigate(`/funnel/${token}/pricing`);
+    } else {
+      toast.error('Could not determine your profile. Please contact support.');
     }
-    if (verificationToken) {
-      sessionStorage.setItem('visibility_professional_token', verificationToken);
-    }
-    navigate('/visibility/coverage');
   };
 
   const handleChangeFreeCity = () => {

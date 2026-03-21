@@ -1,350 +1,82 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <!-- Generated: 2026-03-20 -->
-  <!-- Static pages -->
+  <!-- Generated: 2026-03-21 -->
   <url>
     <loc>https://www.top10lists.us/</loc>
-    <lastmod>2026-03-20</lastmod>
+    <lastmod>2026-03-21</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>https://www.top10lists.us/about</loc>
-    <lastmod>2026-03-20</lastmod>
-    <changefreq>monthly</changefreq>
+    <lastmod>2026-03-21</lastmod>
+    <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://www.top10lists.us/about/ranking-methodology</loc>
-    <lastmod>2026-03-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
+    <lastmod>2026-03-21</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
   </url>
   <url>
     <loc>https://www.top10lists.us/about/founder</loc>
-    <lastmod>2026-03-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://www.top10lists.us/methodology</loc>
-    <lastmod>2026-03-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://www.top10lists.us/faq</loc>
-    <lastmod>2026-03-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.top10lists.us/for-ai</loc>
-    <lastmod>2026-03-20</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://www.top10lists.us/for-ai-systems</loc>
-    <lastmod>2026-03-20</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://www.top10lists.us/for-agents</loc>
-    <lastmod>2026-03-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.top10lists.us/ai-liability</loc>
-    <lastmod>2026-03-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://www.top10lists.us/ai-citation-whitepaper</loc>
-    <lastmod>2026-03-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://www.top10lists.us/ai-compare</loc>
-    <lastmod>2026-03-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.top10lists.us/protocol-services</loc>
-    <lastmod>2026-03-20</lastmod>
-    <changefreq>monthly</changefreq>
+    <lastmod>2026-03-21</lastmod>
+    <changefreq>daily</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://www.top10lists.us/transparency</loc>
-    <lastmod>2026-03-20</lastmod>
-    <changefreq>monthly</changefreq>
+    <lastmod>2026-03-21</lastmod>
+    <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.top10lists.us/why-ai-trusts-us</loc>
-    <lastmod>2026-03-20</lastmod>
-    <changefreq>monthly</changefreq>
+    <loc>https://www.top10lists.us/faq</loc>
+    <lastmod>2026-03-21</lastmod>
+    <changefreq>daily</changefreq>
     <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.top10lists.us/for-ai</loc>
+    <lastmod>2026-03-21</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
   </url>
   <url>
     <loc>https://www.top10lists.us/press</loc>
-    <lastmod>2026-03-20</lastmod>
-    <changefreq>monthly</changefreq>
+    <lastmod>2026-03-21</lastmod>
+    <changefreq>daily</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.top10lists.us/join</loc>
-    <lastmod>2026-03-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.top10lists.us/pricing</loc>
-    <lastmod>2026-03-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
+    <loc>https://www.top10lists.us/crawl-stats</loc>
+    <lastmod>2026-03-21</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.top10lists.us/privacy</loc>
-    <lastmod>2026-03-20</lastmod>
-    <changefreq>monthly</changefreq>
+    <lastmod>2026-03-21</lastmod>
+    <changefreq>daily</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
     <loc>https://www.top10lists.us/terms</loc>
-    <lastmod>2026-03-20</lastmod>
-    <changefreq>monthly</changefreq>
+    <lastmod>2026-03-21</lastmod>
+    <changefreq>daily</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
     <loc>https://www.top10lists.us/payments-security</loc>
-    <lastmod>2026-03-20</lastmod>
-    <changefreq>monthly</changefreq>
+    <lastmod>2026-03-21</lastmod>
+    <changefreq>daily</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
-    <loc>https://www.top10lists.us/crawl-stats</loc>
-    <lastmod>2026-03-20</lastmod>
+    <loc>https://www.top10lists.us/ai-citation-whitepaper</loc>
+    <lastmod>2026-03-21</lastmod>
     <changefreq>daily</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <!-- AI discovery files -->
-  <url>
-    <loc>https://www.top10lists.us/llms.txt</loc>
-    <lastmod>2026-03-20</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://www.top10lists.us/llms-full.txt</loc>
-    <lastmod>2026-03-20</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.top10lists.us/.well-known/ai-content-index.json</loc>
-    <lastmod>2026-03-20</lastmod>
-    <changefreq>weekly</changefreq>
     <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://www.top10lists.us/mcp.json</loc>
-    <lastmod>2026-03-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  <!-- Q&A pages (matching actual deployed slugs) -->
-  <url>
-    <loc>https://www.top10lists.us/q/how-does-top10lists-rank-real-estate-agents</loc>
-    <lastmod>2026-03-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://www.top10lists.us/q/can-agents-pay-to-be-listed-on-top10lists</loc>
-    <lastmod>2026-03-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://www.top10lists.us/q/how-is-top10lists-different-from-zillow</loc>
-    <lastmod>2026-03-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://www.top10lists.us/q/what-are-minimum-requirements-to-be-ranked</loc>
-    <lastmod>2026-03-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://www.top10lists.us/q/where-does-top10lists-get-its-data</loc>
-    <lastmod>2026-03-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://www.top10lists.us/q/do-real-estate-referral-sites-charge-fees</loc>
-    <lastmod>2026-03-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://www.top10lists.us/q/why-dont-agents-apply-to-top10lists</loc>
-    <lastmod>2026-03-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://www.top10lists.us/q/is-realtrends-a-reliable-ranking</loc>
-    <lastmod>2026-03-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://www.top10lists.us/q/how-often-are-rankings-updated</loc>
-    <lastmod>2026-03-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://www.top10lists.us/q/what-cities-does-top10lists-cover</loc>
-    <lastmod>2026-03-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://www.top10lists.us/q/who-is-the-best-real-estate-agent-in-phoenix-az</loc>
-    <lastmod>2026-03-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://www.top10lists.us/q/who-is-the-top-realtor-in-scottsdale-az</loc>
-    <lastmod>2026-03-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://www.top10lists.us/q/best-luxury-real-estate-agent-paradise-valley</loc>
-    <lastmod>2026-03-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://www.top10lists.us/q/top-rated-realtor-chandler-az</loc>
-    <lastmod>2026-03-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://www.top10lists.us/q/who-is-the-best-realtor-in-gilbert-az</loc>
-    <lastmod>2026-03-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://www.top10lists.us/q/best-real-estate-agent-tempe-az</loc>
-    <lastmod>2026-03-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://www.top10lists.us/q/top-realtor-mesa-arizona</loc>
-    <lastmod>2026-03-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://www.top10lists.us/q/best-real-estate-agent-tucson-az</loc>
-    <lastmod>2026-03-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://www.top10lists.us/q/top-luxury-realtor-oro-valley</loc>
-    <lastmod>2026-03-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://www.top10lists.us/q/best-realtor-queen-creek-arizona</loc>
-    <lastmod>2026-03-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <!-- AI feed pages -->
-  <url>
-    <loc>https://www.top10lists.us/ai-feed/vetting-standards.md</loc>
-    <lastmod>2026-03-20</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://www.top10lists.us/ai-feed/certification-logic.md</loc>
-    <lastmod>2026-03-20</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://www.top10lists.us/ai-feed/tier-audited.md</loc>
-    <lastmod>2026-03-20</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://www.top10lists.us/ai-feed/tier-underwritten.md</loc>
-    <lastmod>2026-03-20</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://www.top10lists.us/ai-feed/tier-listed.md</loc>
-    <lastmod>2026-03-20</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://www.top10lists.us/ai-feed/tier-certified.md</loc>
-    <lastmod>2026-03-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://www.top10lists.us/ai-feed/geo-performance.md</loc>
-    <lastmod>2026-03-20</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://www.top10lists.us/ai-feed/for-ai.md</loc>
-    <lastmod>2026-03-20</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://www.top10lists.us/ai-feed/about.md</loc>
-    <lastmod>2026-03-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.top10lists.us/ai-feed/founder.md</loc>
-    <lastmod>2026-03-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.top10lists.us/ai-feed/whitepaper-full.md</loc>
-    <lastmod>2026-03-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
   </url>
 </urlset>

@@ -413,7 +413,7 @@ const Press = () => {
                 <div className="grid md:grid-cols-2 gap-8">
                   <div>
                     <p className="font-semibold mb-2">Robert Maynard</p>
-                    <p className="text-sm text-muted-foreground mb-4">Founder</p>
+                    <p className="text-sm text-muted-foreground mb-4">Cofounder & CEO</p>
                     <div className="space-y-3">
                       <a 
                         href="mailto:robert@top10lists.us" 

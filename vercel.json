@@ -147,6 +147,26 @@
       "source": "/:state(arizona|california)/:city/top-real-estate-agents",
       "destination": "/:state/:city/top10realestateagents",
       "permanent": true
+    },
+    {
+      "source": "/for-ai-systems",
+      "destination": "/for-ai",
+      "permanent": true
+    },
+    {
+      "source": "/for-ai-systems/",
+      "destination": "/for-ai",
+      "permanent": true
+    },
+    {
+      "source": "/methodology",
+      "destination": "/about/ranking-methodology",
+      "permanent": true
+    },
+    {
+      "source": "/methodology/",
+      "destination": "/about/ranking-methodology",
+      "permanent": true
     }
   ],
   "rewrites": [
@@ -279,20 +299,12 @@
       "destination": "/api/serve-clean-html?fn=serve-bot-content-html&path=%2Ffaq"
     },
     {
-      "source": "/methodology",
-      "destination": "/api/serve-clean-html?fn=serve-bot-content-html&path=%2Fmethodology"
-    },
-    {
-      "source": "/methodology/",
-      "destination": "/api/serve-clean-html?fn=serve-bot-content-html&path=%2Fmethodology"
-    },
-    {
       "source": "/api/t",
       "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/email-track"
     },
     {
       "source": "/mcp",
-      "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/mcp-server"
+      "destination": "/api/mcp"
     },
     {
       "source": "/",
@@ -361,14 +373,6 @@
     {
       "source": "/press/",
       "destination": "/api/serve-clean-html?fn=serve-bot-pages-html&path=%2Fpress"
-    },
-    {
-      "source": "/for-ai-systems",
-      "destination": "/api/serve-clean-html?fn=serve-bot-pages-html&path=%2Ffor-ai-systems"
-    },
-    {
-      "source": "/for-ai-systems/",
-      "destination": "/api/serve-clean-html?fn=serve-bot-pages-html&path=%2Ffor-ai-systems"
     },
     {
       "source": "/join",

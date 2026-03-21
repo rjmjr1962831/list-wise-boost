@@ -1,6 +1,6 @@
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import Stripe from 'https://esm.sh/stripe@14.21.0'
+import { serve } from 'https://deno.land/std@0.190.0/http/server.ts'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.2'
+import Stripe from 'https://esm.sh/stripe@18.5.0'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -21,7 +21,7 @@ serve(async (req) => {
 
   try {
     const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
-      apiVersion: '2023-10-16',
+      apiVersion: '2025-08-27.basil',
     })
 
     const supabase = createClient(
@@ -103,15 +103,19 @@ async function handleInvoicePaid(invoice: any, supabase: any) {
     return
   }
 
-  // Determine tier based on amount
+  // Determine tier from subscription metadata (set by create-agent-checkout)
+  // Fall back to amount-based detection: Underwritten $500/mo, Audited $300/mo
   let tier = 'certified'
-  if (amountPaid >= 150) {
+  const subMeta = invoice.subscription_details?.metadata || {}
+  if (subMeta.badgeTier) {
+    tier = subMeta.badgeTier
+  } else if (amountPaid >= 500) {
     tier = 'underwritten'
-  } else if (amountPaid >= 100) {
+  } else if (amountPaid >= 300) {
     tier = 'audited'
   }
 
-  console.log('Determined tier:', tier)
+  console.log('Determined tier:', tier, { fromMetadata: !!subMeta.badgeTier })
 
   // Find professional by email (case-insensitive)
   const { data: professional, error: lookupError } = await supabase

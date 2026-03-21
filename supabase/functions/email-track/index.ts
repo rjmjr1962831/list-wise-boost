@@ -177,7 +177,7 @@ serve(async (req) => {
       }
     }
 
-    // Log to crm_contact_activity
+    // Log to crm_contact_activity + create CRM task
     if (queueRow.agent_id && ((isOpen && !queueRow.opened_at) || isClick)) {
       supabase.from("crm_contact_activity").insert({
         professional_id: queueRow.agent_id,
@@ -190,6 +190,31 @@ serve(async (req) => {
         sequence_name: queueRow.campaign_id,
         metadata: { source: "sequencer_v2", ip: ip.split(",")[0].trim(), user_agent: ua.substring(0, 200) },
       }).then(() => {});
+
+      // Create follow-up task for opens and clicks
+      const { data: agentData } = await supabase
+        .from("professionals").select("name").eq("id", queueRow.agent_id).maybeSingle();
+      const agentName = agentData?.name || queueRow.recipient_email;
+
+      if (isClick) {
+        await supabase.from("crm_tasks").insert({
+          professional_id: queueRow.agent_id,
+          task_type: "email_clicked",
+          title: `Follow up: ${agentName} clicked your email`,
+          description: `Clicked link in campaign "${queueRow.campaign_id}". Call them while hot.`,
+          status: "pending",
+          priority: "high",
+        });
+      } else if (isOpen && !queueRow.opened_at) {
+        await supabase.from("crm_tasks").insert({
+          professional_id: queueRow.agent_id,
+          task_type: "email_opened",
+          title: `Follow up: ${agentName} opened your email`,
+          description: `Opened campaign email "${queueRow.campaign_id}". Good time for a call.`,
+          status: "pending",
+          priority: "normal",
+        });
+      }
     }
   }
 

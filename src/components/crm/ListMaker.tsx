@@ -11,6 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { Loader2, Download, RefreshCw, Users, Save, Trash2, Mail } from "lucide-react";
+import { RichEmailEditor } from "./RichEmailEditor";
 
 export interface ListMakerCriteria {
   active?: boolean | "all"; // true=active only, false=inactive only, "all"=both
@@ -44,7 +45,7 @@ function saveLists(lists: SavedListTemplate[]) {
   localStorage.setItem(SAVED_LISTS_KEY, JSON.stringify(lists));
 }
 
-const OUTPUT_FIELDS: { key: string; label: string }[] = [
+export const OUTPUT_FIELDS: { key: string; label: string }[] = [
   { key: "id", label: "ID" },
   { key: "name", label: "Name" },
   { key: "first_name", label: "First Name" },
@@ -68,7 +69,7 @@ const OUTPUT_FIELDS: { key: string; label: string }[] = [
 
 const LEGACY_AIFS_FIELDS: { key: string; label: string }[] = [];
 
-const BOT_CRAWL_FIELDS: { key: string; label: string }[] = [
+export const BOT_CRAWL_FIELDS: { key: string; label: string }[] = [
   { key: "ai_surfaces_total_7d", label: "AI Surfaces (7d total)" },
   { key: "ai_surfaces_meta", label: "Surfaces: Meta AI" },
   { key: "ai_surfaces_google", label: "Surfaces: Google" },
@@ -83,7 +84,7 @@ const BOT_CRAWL_FIELDS: { key: string; label: string }[] = [
   { key: "ai_surfaces_top5_bots", label: "Top 5 Bots (names)" },
 ];
 
-const AIFS_FIELDS: { key: string; label: string }[] = [
+export const AIFS_FIELDS: { key: string; label: string }[] = [
   { key: "aifs_score", label: "AIFS Score" },
   { key: "aifs_band", label: "AIFS Band" },
   { key: "aifs_serp_knowledge_graph", label: "AIFS: Knowledge Graph" },
@@ -1058,12 +1059,8 @@ export function ListMaker() {
               </div>
 
               <div className="space-y-1">
-                <Label className="text-xs font-semibold">Body (HTML)</Label>
-                <textarea
-                  className="w-full min-h-[300px] rounded-md border bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring font-mono"
-                  value={emailBody}
-                  onChange={(e) => setEmailBody(e.target.value)}
-                />
+                <Label className="text-xs font-semibold">Body</Label>
+                <RichEmailEditor value={emailBody} onChange={setEmailBody} />
                 <p className="text-xs text-muted-foreground">
                   Unsubscribe link and List-Unsubscribe header are added automatically on send.
                 </p>

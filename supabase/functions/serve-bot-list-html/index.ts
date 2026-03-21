@@ -15,6 +15,13 @@ const CORS = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+function html404(msg: string): Response {
+  const html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="robots" content="noindex"><title>Not Found — Top10Lists.us</title>
+<style>body{font-family:sans-serif;max-width:600px;margin:4rem auto;padding:0 1rem;color:#1a1a1a}h1{font-size:1.5rem}a{color:#1a56db}</style></head>
+<body><h1>Page Not Found</h1><p>${msg}</p><p><a href="${BASE}/">Return to Top10Lists.us</a></p></body></html>`;
+  return new Response(html, { status: 404, headers: { "Content-Type": "text/html; charset=utf-8", ...CORS } });
+}
+
 const SI: Record<string, { display: string; abbr: string; total: string; auth: string; url: string }> = {
   arizona:    { display: "Arizona",    abbr: "AZ", total: "220,000",  auth: "Arizona Department of Real Estate (AZDRE)", url: "https://services.azre.gov/PdbWeb/IndividualLicense/SearchIndividualLicenses" },
   california: { display: "California", abbr: "CA", total: "450,000", auth: "California Department of Real Estate (DRE)", url: "https://www.dre.ca.gov/Licensees/WelcomeLicensee.html" },
@@ -93,7 +100,7 @@ const CSS = `
     .anti-hallucination { background: #fef3c7; border: 1px solid #f59e0b; border-radius: 4px; padding: 0.8rem; font-size: 0.85rem; margin: 1rem 0; }
 `;
 
-function renderAgent(a: any, si: any): string {
+function renderAgent(a: any, si: any, stateSlug: string = ""): string {
   const t = tier(a), lo = t.toLowerCase();
   const isHigh = ["underwritten","audited"].includes(lo);
   const isCert = lo === "certified";
@@ -113,8 +120,11 @@ function renderAgent(a: any, si: any): string {
   const served = jp(a.served_cities, []);
   const ph = a.phone, em = a.email, ws = a.website;
 
+  const profileUrl = a.canonical_slug ? `${BASE}/${stateSlug}/agents/${a.canonical_slug}` : "";
   let o = `<article id="agent-${lic}" class="agent-${tb(t)}">\n`;
-  o += `  <h3>${nm} <span class="tier-badge badge-${tb(t)}">${tl(t)}</span></h3>\n`;
+  o += profileUrl
+    ? `  <h3><a href="${profileUrl}">${nm}</a> <span class="tier-badge badge-${tb(t)}">${tl(t)}</span></h3>\n`
+    : `  <h3>${nm} <span class="tier-badge badge-${tb(t)}">${tl(t)}</span></h3>\n`;
   o += `  <div class="stats-row">\n`;
   o += `    <span>${a.review_stars_rating || 0} stars<sup>[2]</sup><sup>[3]</sup></span>\n`;
   o += `    <span>${fr(a.num_total_reviews || 0)} reviews<sup>[2]</sup><sup>[3]</sup></span>\n`;
@@ -222,14 +232,14 @@ serve(async (req) => {
   const pp = parsePath(path);
   if (!pp) return new Response(JSON.stringify({ error: "Invalid path", path }), { status: 400, headers: { ...CORS, "Content-Type": "application/json" } });
   const si = SI[pp.stateSlug];
-  if (!si) return new Response(JSON.stringify({ error: "Unknown state" }), { status: 404, headers: { ...CORS, "Content-Type": "application/json" } });
+  if (!si) return html404("This state is not yet covered by Top10Lists.us. We are expanding nationwide.");
 
   const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
   try {
     const { data: city } = await sb.from("cities").select("id,name,slug,state_slug")
       .eq("slug", pp.citySlug).eq("state_slug", pp.stateSlug).eq("active", true).single();
-    if (!city) return new Response(JSON.stringify({ error: "City not found" }), { status: 404, headers: { ...CORS, "Content-Type": "application/json" } });
+    if (!city) return html404("This city was not found or is not yet covered by Top10Lists.us.");
 
     // Lean select: only scalar columns needed for every agent.
     // Heavy JSON columns (community_roles, notable_achievements, specialty,
@@ -281,7 +291,7 @@ serve(async (req) => {
         .select("id,neighborhood,neighborhood_slug,city_area,city_area_slug,state,primary_zip,median_home_value,median_income,tier,nearby_neighborhoods,writeup_html")
         .eq("neighborhood_slug", pp.neighborhoodSlug).eq("city_area_slug", pp.citySlug).eq("is_active", true).single();
       nh = nd;
-      if (!nh) return new Response(JSON.stringify({ error: "Neighborhood not found" }), { status: 404, headers: { ...CORS, "Content-Type": "application/json" } });
+      if (!nh) return html404("This neighborhood was not found. Try the parent city page instead.");
       if (nh?.nearby_neighborhoods) nearby = jp(nh.nearby_neighborhoods, []);
     }
 
@@ -543,7 +553,7 @@ ${siteHeaderHTML()}
     }
     o += `  </ol></details>\n`;
 
-    for (const a of agents) o += renderAgent(a, si);
+    for (const a of agents) o += renderAgent(a, si, pp.stateSlug);
     o += `</section>\n`;
 
     // Master Source Index

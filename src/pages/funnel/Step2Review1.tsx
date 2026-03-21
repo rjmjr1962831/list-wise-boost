@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loader2, ArrowRight, ArrowLeft, HelpCircle, Eye, EyeOff, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import { trackFunnelEvent } from '@/lib/funnel-track';
 import InlineReviewForm from '@/components/funnel/InlineReviewForm';
 import { FunnelBreadcrumbs } from '@/components/funnel/FunnelBreadcrumbs';
 
@@ -76,6 +77,7 @@ export default function Step2Review1() {
       }
 
       setProfessional(data);
+      trackFunnelEvent('funnel_step_review1', data);
 
       const pn = data.phone_numbers as any;
       let mobile = '', mobilePub = true;
@@ -155,6 +157,7 @@ export default function Step2Review1() {
 
   const handleSave = async () => {
     if (!professional) return;
+    trackFunnelEvent('funnel_data_saved', professional);
 
     setSaving(true);
     try {

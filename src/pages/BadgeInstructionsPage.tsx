@@ -192,9 +192,6 @@ export default function BadgeInstructionsPage() {
               onClick={() => setSnippetMode("visible")}
               className="flex items-center gap-2"
             >
-              {badgeSvgUrl && (
-                <img src={badgeSvgUrl} alt="" width={20} height={20} className="animate-pulse" />
-              )}
               Visible Orb (80x80)
             </Button>
             <Button
@@ -207,6 +204,17 @@ export default function BadgeInstructionsPage() {
             </Button>
           </div>
 
+          {/* Live orb preview */}
+          {snippetMode === "visible" && (
+            <div className="flex justify-center py-6">
+              <img
+                src={`/badges/${rawTier === "underwritten" ? "underwritten" : rawTier === "audited" ? "audited" : "certified"}.png`}
+                alt=""
+                style={{ height: 160, width: "auto", border: "none", animation: "orbPulse 2s ease-in-out infinite" }}
+              />
+              <style>{`@keyframes orbPulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.08); opacity: 0.85; } }`}</style>
+            </div>
+          )}
 
           {snippetMode === "invisible" && (
             <div className="rounded-lg border border-dashed border-muted-foreground/30 p-4 text-center">

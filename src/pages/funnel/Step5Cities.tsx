@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, ArrowRight, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
+import { trackFunnelEvent } from '@/lib/funnel-track';
 import { REGIONAL_PACKAGES } from '@/data/arizonaPackages';
 import { FunnelBreadcrumbs } from '@/components/funnel/FunnelBreadcrumbs';
 
@@ -38,6 +39,7 @@ export default function Step5Cities() {
 
     if (passedState?.professionalId) {
       setProfessionalId(passedState.professionalId);
+      trackFunnelEvent('funnel_step_cities', { id: passedState.professionalId, name: (passedState.professional as any)?.name });
       const st = passedState.license_state || passedState.state_slug;
       if (st) stateFilter = typeof st === 'string' ? st.replace(/\s+/g, '-').toLowerCase() : 'arizona';
     } else {
@@ -54,6 +56,7 @@ export default function Step5Cities() {
         }
 
         setProfessionalId(prof.id);
+        trackFunnelEvent('funnel_step_cities', { id: prof.id });
         const st = prof.license_state || prof.state_slug;
         if (st) stateFilter = typeof st === 'string' ? st.replace(/\s+/g, '-').toLowerCase() : 'arizona';
       } catch {
@@ -138,6 +141,9 @@ export default function Step5Cities() {
     if (selectedCityIds.size === 0) {
       toast.error('Please add at least one bundle');
       return;
+    }
+    if (professionalId) {
+      trackFunnelEvent('funnel_cities_selected', { id: professionalId, name: (passedState?.professional as any)?.name }, { count: selectedCityIds.size });
     }
 
     toast.success(`${selectedCityIds.size} cities selected!`);
