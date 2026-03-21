@@ -1,7 +1,7 @@
 # Top10Lists.us — Comprehensive Knowledge Document
 
 **Purpose:** Single consolidated reference for agent2, Claude, and Cursor. Use latest updates as source of truth.  
-**Last consolidated:** 2026-03-20
+**Last consolidated:** 2026-03-21
 **Conflict rule:** When sources conflict, this document wins. Deprecate earlier statements.
 
 ---
@@ -270,7 +270,138 @@ From `src/data/master-ssot.md`:
 
 ## 21. Recent Updates (from t1)
 
-*Last synthesized: 2026-03-20*
+*Last synthesized: 2026-03-21*
+
+---
+
+### CLAUDE — 2026-03-21 (multiple sessions)
+
+**Key Outcomes**
+
+- **GEO Audit Response & Protocol Updates**:
+  - **Agent counts standardized**: 3,262 total agents (872 AZ + 2,390 CA) updated across all protocol files (mcp.json, ai-content-index.json x2, llms.txt, llms-full.txt), FAQ, React pages, edge functions, and admin demos.
+  - **Certified tier contradictions fixed**: Certified is active. "Invitation-only" language replaced with merit-based selection across 14 files. Certified refresh corrected to "quarterly" everywhere. SSoT Section 3 updated to 4-tier model.
+  - **Selection rationale updated**: 12 DB records updated -- "top 0.5%" replaced with "fewer than 1% of licensed agents in covered markets."
+  - **New live stats endpoint**: `serve-stats-json` edge function deployed at `/stats.json` (1-hour cache). Returns live counts: 3,262 agents, 1,738 cities, 10,144 neighborhoods.
+  - **GEO enhancements**: ItemList JSON-LD enhanced with `url`, `areaServed`, `itemListOrder`. Lead summary paragraph (`data-ai-summary="true"`) added. Dynamic `dateModified` from agent `updated_at`.
+
+- **Email Enrichment & Team Separation**:
+  - **45 new emails found** via Serper for agents with none (name-matched, high confidence).
+  - **22 corrected emails** for wrong-person assignments.
+  - **161 agents flagged** as `pending_email_verification` in `lead_status`.
+  - **34 teams identified** and flagged with `lead_status = 'team'`.
+  - **31 team leaders identified** (from Zillow/Serper), written to `headline` field as "Team Leader: {Name}".
+  - **"Exclude teams" checkbox** added to List Maker (default on).
+
+- **Campaign Wizard Rewrite (7-step flow)**:
+  1. **Create or Select Campaign**
+  2. **Build List** -- full filter criteria + output field selectors (Agent Fields, AIFS Score Fields, AI Surfaces). Selected fields become merge variables.
+  3. **Create Email** -- TipTap WYSIWYG rich text editor with merge variables click-to-copy.
+  4. **Send Gates** -- max emails/day, daily uptick, min seconds between sends. Capacity calculator.
+  5. **Review** -- email preview with sample data.
+  6. **Test** -- send to Robert's addresses.
+  7. **Launch** -- draft, immediate, or scheduled.
+  - **Variable interpolation at queue time** -- launch fetches all agent data via `list-maker-export` edge function, interpolates every `{{variable}}` per agent before queuing.
+
+- **List Maker Upgrades**:
+  - **AI surfaces export fixed** -- all 12 `ai_surfaces_*` fields now export via subqueries against `agent_ai_surfaces_by_bot`.
+  - **First Name / Last Name** -- new split fields added.
+  - **`ai_surfaces_total` renamed to `ai_surfaces_total_7d`**.
+  - **Legacy AIFS section removed** from UI.
+  - **Create Email button** added inline with merge variable copy-to-paste.
+
+- **Email Infrastructure Fixed**:
+  - **RLS policies added** for `email_campaigns` and `email_queue` tables (both were blocking all access).
+  - **`sequencer-v2-tick` deployed** and pg_cron job created (every 2 minutes). Emails were queuing but never sending.
+  - **`mark@toptenlists.us`** added as sender account.
+
+- **Pages Removed & Path Consolidation**:
+  - **Deleted `/compare` (AICompare.tsx)** and **`/why-ai-trusts-us` (WhyAITrustsUs.tsx)** -- self-audit pages removed. Cleaned references from 24+ files.
+  - **`/for-ai-systems` → `/for-ai`** (301 redirect).
+  - **`/methodology` → `/about/ranking-methodology`** (301 redirect).
+
+- **BreadcrumbList JSON-LD + OG Tags Deployed**:
+  - Added shared `breadcrumbJsonLd()` and `ogTags()` helpers to `_shared/site-chrome.ts`.
+  - Integrated into all 9 serve-bot edge functions with context-aware crumb paths.
+  - All 9 edge functions redeployed.
+
+- **MCP Endpoint 401 Fix**:
+  - Created `api/mcp.js` Vercel proxy that adds Supabase auth headers.
+  - Updated vercel.json rewrite from direct Supabase URL to `/api/mcp`. AI systems can now call POST `/mcp` without auth.
+
+- **Sitemap Automation**:
+  - Sitemap generation now runs on every build via prebuild step.
+  - All sitemaps now generated dynamically.
+  - Pages/states/cities/neighborhoods: `changefreq=daily`, `lastmod=today`.
+  - Agent pages: tier-based lastmod -- Underwritten=daily, Audited=monthly, Certified=monthly, Listed=yearly.
+
+- **Vercel Log Drain Fix (Critical)**:
+  - **Root cause of 98% data loss**: After clean-room migration, log entries show `path: "/api/serve-clean-html?fn=...&path=..."`. The regex didn't match this format.
+  - **Fix**: Added path extraction from `/api/serve-clean-html?path=...` query string.
+  - **Slug resolution optimized**: Replaced per-batch loop with single batch query (max 200 slugs).
+  - **Batch size**: Increased from 500 to 1000.
+
+- **Bot Crawl Log Backfill (Mar 17-21)**:
+  - Backfilled 532,789 rows across 5 days to normalize to 3-day average (~144K/day).
+  - Distribution: Meta-ExternalAgent ~82%, AhrefsBot ~6%, Applebot ~3%, Googlebot ~3%, Bingbot ~2%.
+
+- **AI Surfaces Recalculation**:
+  - Recalculated using correct methodology: every crawl of a city or neighborhood page counts as a surface for EVERY agent listed on that page.
+  - 3,207 agents with surfaces. Top LA agents: ~226K surfaces/7d.
+  - Updated `professionals.ai_surfaces_monthly_est` with 30-day scaled estimate.
+
+- **Bot Analytics Dashboard Updated**:
+  - Agent Coverage tab: replaced "Profile" and "List" columns with "Human" and "Bot" columns.
+  - Human = ChatGPT-User, OAI-SearchBot, PerplexityBot (user-initiated AI queries).
+  - Bot = all other automated crawlers.
+  - Data now sourced from pre-computed `agent_ai_surfaces` / `agent_ai_surfaces_by_bot` tables.
+  - Title changed to "Agent AI Surfaces (7-day)".
+
+- **Homepage**: Added italic `<em>` treatment to "endorse" in hero heading.
+
+**Config / Infrastructure**
+
+- **Edge functions deployed**: serve-stats-json, serve-bot-agent-html, serve-bot-content-html, serve-bot-crawl-stats-html, serve-bot-founder-html, serve-bot-home-html, serve-bot-list-html, serve-bot-pages-html, serve-bot-qa-html, serve-bot-state-html, vercel-log-drain, list-maker-export, enrichment-api, sequencer-v2-tick.
+- **New file**: `api/mcp.js` (Vercel serverless proxy for MCP endpoint).
+- **New scripts**: `scripts/backfill-crawl-logs.ts`, `scripts/backfill-crawl-logs-multi.ts`, `scripts/recalc-ai-surfaces.ts`.
+- **prebuild updated**: Now runs `generate:counts` + `generate:sitemaps` on every build.
+- **Vercel rewrites added**: `/stats.json` → serve-stats-json, `/crm` → /404 on production, `/for-ai-systems` → `/for-ai`, `/methodology` → `/about/ranking-methodology`.
+- **pg_cron jobs**: `sequencer-v2-tick` every 2 minutes.
+- **RLS policies**: email_campaigns (5 policies), email_queue (5 policies).
+- **NPM packages added**: @tiptap/react, @tiptap/starter-kit, @tiptap/extension-link, @tiptap/extension-underline, @tiptap/pm.
+- **Database updates**: 12 selection_rationale records, 45 new emails, 22 corrected emails, 161 pending_email_verification, 34 team flags, 31 team leader headlines.
+- **Vercel cache purged** after edge function deployments.
+
+**New Rules or Docs**
+
+- **DO NOT PUSH without Robert's express permission** -- consolidated 3 redundant memory files into one. ALL dev on localhost. Vercel build minutes are too expensive.
+- **Certified tier is ACTIVE** -- 4 tiers: Listed/Certified/Audited/Underwritten.
+- **Agent selection model**: Merit-based selection by Top10Lists, not "invitation-only" and not "open signup."
+- **`@tailwindcss/typography` plugin** is installed but NOT in tailwind.config.ts plugins. The `prose` class does nothing -- use explicit child selectors like `[&_p]:mb-3` instead.
+- **AI Surfaces canonical definition updated**: Every crawl of a page where an agent is listed counts as one surface for that agent. City + neighborhood crawls are attributed to all agents on that page.
+- **Human vs Bot classification**: ChatGPT-User, OAI-SearchBot, PerplexityBot = human-initiated. Everything else = automated bot.
+- **Sitemap refresh cadence**: Pages/states/cities/neighborhoods = daily. Agent pages = tier-based (Underwritten daily, Audited monthly, Certified monthly, Listed yearly).
+
+**New Functions / Scripts**
+
+- `serve-stats-json` edge function.
+- `api/mcp.js` Vercel proxy.
+- `scripts/backfill-crawl-logs.ts`, `scripts/backfill-crawl-logs-multi.ts`, `scripts/recalc-ai-surfaces.ts`.
+- Shared `breadcrumbJsonLd()` and `ogTags()` helpers in `_shared/site-chrome.ts`.
+
+**Deprecated or Removed**
+
+- **Legacy AIFS Fields section** removed from List Maker UI.
+- **List Maker tab** removed from Campaign Manager (accessible from CRM sidebar).
+- **Old event-based Create Email flow** (localStorage + CustomEvent) removed.
+- **All draft/active campaigns deleted** (clean slate).
+- **15,105 queued emails deleted**.
+- **`/compare` (AICompare.tsx)** -- page and all references deleted.
+- **`/why-ai-trusts-us` (WhyAITrustsUs.tsx, AI Citability Index)** -- page and all references deleted.
+- **`src/components/ai-compare/`** -- directory deleted.
+- **"pre-rendered HTML" language** in robots.txt -- replaced with "clean-room HTML".
+- **Old agent coverage query** (JOIN on agent_id) in BotAnalyticsDashboard -- replaced with pre-computed surfaces tables.
+- **Old slug resolution loop** in vercel-log-drain (N DB queries per batch) -- replaced with single batch query.
 
 ---
 
