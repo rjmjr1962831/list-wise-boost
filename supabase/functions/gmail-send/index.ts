@@ -95,8 +95,9 @@ function buildRawEmail(params: {
   threadId?: string; inReplyTo?: string; references?: string; unsubUrl?: string;
 }): string {
   const boundary = `boundary_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+  const displayName = params.from.startsWith("mark@") ? "Mark Garland" : "Robert Maynard";
   const lines = [
-    `From: Robert Maynard <${params.from}>`,
+    `From: ${displayName} <${params.from}>`,
     `To: ${params.to}`,
     `Subject: ${params.subject}`,
     "MIME-Version: 1.0",
