@@ -226,7 +226,7 @@ export default function AgentPaymentSuccess() {
               <p className="text-xs text-slate-600 mt-4">Ref: {sessionId}</p>
             )}
             <div className="mt-6">
-              <Button asChild variant="outline">
+              <Button asChild variant="outline" className="border-slate-500 text-white hover:bg-slate-800">
                 <Link to="/">Return Home</Link>
               </Button>
             </div>
@@ -401,7 +401,7 @@ export default function AgentPaymentSuccess() {
             <Button
               size="lg"
               variant="outline"
-              className="gap-2"
+              className="gap-2 border-slate-500 text-white hover:bg-slate-800"
               onClick={() => setShowQuestionForm(true)}
               disabled={questionSubmitted}
             >
@@ -436,6 +436,7 @@ export default function AgentPaymentSuccess() {
                     type="button"
                     variant="outline"
                     size="sm"
+                    className="border-slate-500 text-white hover:bg-slate-800"
                     onClick={() => setShowQuestionForm(false)}
                     disabled={submittingQuestion}
                   >

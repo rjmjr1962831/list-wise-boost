@@ -85,6 +85,11 @@ function injectTracking(html: string, emailId: string): string {
   return tracked + pixel;
 }
 
+function base64EncodeRfc(text: string): string {
+  const raw = btoa(unescape(encodeURIComponent(text)));
+  return raw.match(/.{1,76}/g)?.join("\r\n") ?? raw;
+}
+
 function buildRawEmail(params: {
   from: string; to: string; subject: string; bodyText: string; bodyHtml: string;
   threadId?: string; inReplyTo?: string; references?: string; unsubUrl?: string;
@@ -106,13 +111,13 @@ function buildRawEmail(params: {
     "Content-Type: text/plain; charset=utf-8",
     "Content-Transfer-Encoding: base64",
     "",
-    btoa(unescape(encodeURIComponent(params.bodyText))),
+    base64EncodeRfc(params.bodyText),
     "",
     `--${boundary}`,
     "Content-Type: text/html; charset=utf-8",
     "Content-Transfer-Encoding: base64",
     "",
-    btoa(unescape(encodeURIComponent(params.bodyHtml))),
+    base64EncodeRfc(params.bodyHtml),
     "",
     `--${boundary}--`,
   );
@@ -168,13 +173,22 @@ serve(async (req) => {
   // Generate a tracking ID (will be replaced by gmail message ID after send)
   const trackingId = crypto.randomUUID();
 
-  // Plain text gets URL, HTML gets clickable word
+  // Detect if message_body is already HTML (from TipTap or campaign wizard)
+  const isHtml = /<[a-z][\s\S]*>/i.test(message_body);
+
+  // Plain text: strip HTML tags if input is HTML, otherwise use as-is
+  const plainText = isHtml
+    ? message_body.replace(/<br\s*\/?>/gi, "\n").replace(/<\/p>/gi, "\n\n").replace(/<[^>]+>/g, "").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&nbsp;/g, " ").replace(/\n{3,}/g, "\n\n").trim()
+    : message_body;
   const plainBody = (unsubUrl
-    ? message_body + `\n\n---\nUnsubscribe: ${unsubUrl}`
-    : message_body).replace(/\[\[BLOCK\]\]\n?/g, "---\n").replace(/\n?\[\[\/BLOCK\]\]/g, "\n---");
-  const baseHtml = textToHtml(message_body);
+    ? plainText + `\n\n---\nUnsubscribe: ${unsubUrl}`
+    : plainText).replace(/\[\[BLOCK\]\]\n?/g, "---\n").replace(/\n?\[\[\/BLOCK\]\]/g, "\n---");
+
+  // HTML: use as-is if already HTML, otherwise convert plain text to HTML
+  const innerHtml = isHtml ? message_body : textToHtml(message_body);
   const unsubHtml = unsubUrl ? `<br><br><hr style="border:none;border-top:1px solid #ccc;margin-top:20px;"><p style="font-size:13px;color:#555;margin-top:12px;"><a href="${unsubUrl}" style="color:#555;text-decoration:underline;">Unsubscribe</a></p>` : "";
-  const trackedHtml = injectTracking(baseHtml + unsubHtml, trackingId);
+  const baseHtml = `<!DOCTYPE html><html><head><meta charset="utf-8"></head><body style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.6;color:#333;">${innerHtml}${unsubHtml}</body></html>`;
+  const trackedHtml = injectTracking(baseHtml, trackingId);
 
   const raw = buildRawEmail({
     from: from_account,
