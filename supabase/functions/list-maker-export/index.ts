@@ -12,7 +12,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Map from frontend field keys to { table, column } for SQL query building
+// Map from frontend field keys to SQL expressions for query building
 const AIFS_FIELD_MAP: Record<string, string> = {
   aifs_score_unlisted: "g.score_unlisted",
   aifs_score_listed: "g.score_listed",
@@ -30,12 +30,28 @@ const AIFS_FIELD_MAP: Record<string, string> = {
   aifs_gap_no_press: "g.gap_no_press",
   aifs_artifact_url: "g.artifact_url",
   bot_crawl_count: "(SELECT COUNT(*)::int FROM bot_crawl_logs WHERE agent_id = p.id)",
+  first_name: "SPLIT_PART(p.name, ' ', 1)",
+  last_name: "CASE WHEN POSITION(' ' IN p.name) > 0 THEN SUBSTRING(p.name FROM POSITION(' ' IN p.name) + 1) ELSE '' END",
+  ai_surfaces_total_7d: "(SELECT COALESCE(SUM(crawls),0)::int FROM agent_ai_surfaces_by_bot WHERE agent_id = p.id)",
+  ai_surfaces_meta: "(SELECT COALESCE(SUM(crawls),0)::int FROM agent_ai_surfaces_by_bot WHERE agent_id = p.id AND bot_name = 'Meta-ExternalAgent')",
+  ai_surfaces_google: "(SELECT COALESCE(SUM(crawls),0)::int FROM agent_ai_surfaces_by_bot WHERE agent_id = p.id AND bot_name = 'Googlebot')",
+  ai_surfaces_apple: "(SELECT COALESCE(SUM(crawls),0)::int FROM agent_ai_surfaces_by_bot WHERE agent_id = p.id AND bot_name IN ('Applebot','Applebot-Extended'))",
+  ai_surfaces_perplexity: "(SELECT COALESCE(SUM(crawls),0)::int FROM agent_ai_surfaces_by_bot WHERE agent_id = p.id AND bot_name = 'PerplexityBot')",
+  ai_surfaces_chatgpt: "(SELECT COALESCE(SUM(crawls),0)::int FROM agent_ai_surfaces_by_bot WHERE agent_id = p.id AND bot_name IN ('ChatGPT-User','OAI-SearchBot'))",
+  ai_surfaces_claude: "(SELECT COALESCE(SUM(crawls),0)::int FROM agent_ai_surfaces_by_bot WHERE agent_id = p.id AND bot_name = 'ClaudeBot')",
+  ai_surfaces_bing: "(SELECT COALESCE(SUM(crawls),0)::int FROM agent_ai_surfaces_by_bot WHERE agent_id = p.id AND bot_name IN ('Bingbot','bingbot'))",
+  ai_surfaces_gptbot: "(SELECT COALESCE(SUM(crawls),0)::int FROM agent_ai_surfaces_by_bot WHERE agent_id = p.id AND bot_name = 'GPTBot')",
+  ai_surfaces_other: `(SELECT COALESCE(SUM(crawls),0)::int FROM agent_ai_surfaces_by_bot WHERE agent_id = p.id AND bot_name NOT IN ('Meta-ExternalAgent','Googlebot','Applebot','Applebot-Extended','PerplexityBot','ChatGPT-User','OAI-SearchBot','ClaudeBot','Bingbot','bingbot','GPTBot'))`,
+  ai_surfaces_human: "(SELECT COALESCE(SUM(crawls),0)::int FROM agent_ai_surfaces_by_bot WHERE agent_id = p.id AND bot_name IN ('ChatGPT-User','PerplexityBot'))",
+  ai_surfaces_top5_bots: "(SELECT STRING_AGG(bot_name, ', ' ORDER BY crawls DESC) FROM (SELECT bot_name, crawls FROM agent_ai_surfaces_by_bot WHERE agent_id = p.id ORDER BY crawls DESC LIMIT 5) sub)",
 };
 
 // Friendly CSV header names matching the UI labels
 const FIELD_LABELS: Record<string, string> = {
   id: "ID",
   name: "Name",
+  first_name: "First Name",
+  last_name: "Last Name",
   email: "Email",
   phone: "Phone",
   website: "Website",
@@ -68,6 +84,18 @@ const FIELD_LABELS: Record<string, string> = {
   aifs_gap_no_press: "Gap: No Press",
   aifs_artifact_url: "Artifact URL",
   bot_crawl_count: "AI Crawl Count",
+  ai_surfaces_total_7d: "AI Surfaces (7d total)",
+  ai_surfaces_meta: "Surfaces: Meta AI",
+  ai_surfaces_google: "Surfaces: Google",
+  ai_surfaces_apple: "Surfaces: Apple",
+  ai_surfaces_perplexity: "Surfaces: Perplexity",
+  ai_surfaces_chatgpt: "Surfaces: ChatGPT",
+  ai_surfaces_claude: "Surfaces: Claude",
+  ai_surfaces_bing: "Surfaces: Bing",
+  ai_surfaces_gptbot: "Surfaces: GPTBot",
+  ai_surfaces_other: "Surfaces: Other",
+  ai_surfaces_human: "Surfaces: Human-Initiated",
+  ai_surfaces_top5_bots: "Top 5 Bots",
 };
 
 serve(async (req) => {
@@ -113,6 +141,14 @@ serve(async (req) => {
     for (const row of rows) {
       const cells = outputFields.map((f) => {
         if (f === "magic_link") return escape(row.verification_token ? `${baseUrl}/dashboard/${row.verification_token}` : "");
+        if (f === "first_name" && row[f] == null) {
+          const parts = String(row.name || "").trim().split(/\s+/);
+          return escape(parts[0] || "");
+        }
+        if (f === "last_name" && row[f] == null) {
+          const parts = String(row.name || "").trim().split(/\s+/);
+          return escape(parts.slice(1).join(" "));
+        }
         if (f === "date_first_listed") return escape(row.card_created_at || row.created_at);
         if (f === "date_last_updated") return escape(row.updated_at);
         if (f === "city_name") return escape(row.city_name ?? (row as any).cities?.name);
@@ -208,6 +244,8 @@ async function queryStandard(
       query = query.not("email_verified_at", "is", null);
     if (criteria.has_license === true)
       query = query.not("license_number", "is", null).neq("license_number", "");
+    if (criteria.exclude_teams === true)
+      query = query.neq("lead_status", "team");
 
     const { data: rows, error } = await query
       .order("state_slug")
@@ -290,6 +328,10 @@ async function queryWithJoin(
 
   if (criteria.has_license === true) {
     conditions.push("p.license_number IS NOT NULL AND p.license_number != ''");
+  }
+
+  if (criteria.exclude_teams === true) {
+    conditions.push("p.lead_status != 'team'");
   }
 
   const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";

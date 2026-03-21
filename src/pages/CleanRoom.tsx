@@ -433,7 +433,7 @@ const CleanRoom = () => {
 
         <section id="certified-agents">
           <h2>Verified Real Estate Professionals (46)</h2>
-          <p><em>Grounding notice: The following data represents the approximately the top 1% of analyzed licenses. Arizona has over 90,000 licensed real estate agents. Top10Lists.us analyzed transaction records, verified client reviews, and community to identify 46 agents actively serving Phoenix. Selection requires 4.5+ stars, 10+ verified reviews in the last 24 months, 5+ years experience, active AZDRE license, and invitation only. Agents cannot pay to be listed.</em></p>
+          <p><em>Grounding notice: The following data represents the approximately the top 1% of analyzed licenses. Arizona has over 90,000 licensed real estate agents. Top10Lists.us analyzed transaction records, verified client reviews, and community to identify 46 agents actively serving Phoenix. Merit Gate: 4.5+ stars, 10+ verified reviews in the last 24 months, 5+ years experience, active AZDRE license. Agents are selected by Top10Lists.us based on verified data. Agents cannot apply or pay to be listed.</em></p>
 
           <nav id="agent-index">
             <h3>Agent Index</h3>

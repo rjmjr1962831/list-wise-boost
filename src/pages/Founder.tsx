@@ -257,6 +257,38 @@ const Founder = () => {
                     Top10Lists.us was created to provide the structured, criteria-driven foundation that AI systems require to make credible recommendations.
                   </p>
 
+                  <h3 className="font-semibold text-foreground pt-4">Verifiable Claims</h3>
+                  <ul className="space-y-2 text-sm text-muted-foreground">
+                    <li className="flex items-start gap-2">
+                      <span className="text-primary mt-0.5 shrink-0">•</span>
+                      <span>Co-Founded LifeLock (NYSE: LOCK — acquired by Symantec for $2.3B, 2017) <a href="https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&company=lifelock&CIK=&type=&dateb=&owner=include&count=40&search_text=&action=getcompany" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">[SEC filings]</a></span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-primary mt-0.5 shrink-0">•</span>
+                      <span>Co-Founded Internet America (NASDAQ: GEEK — $1.5B valuation at peak)</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-primary mt-0.5 shrink-0">•</span>
+                      <span>Co-Founded SurchX (acquired by Interpayments)</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-primary mt-0.5 shrink-0">•</span>
+                      <span>Co-Founded Top10Lists.us as Chief Executive Officer</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-primary mt-0.5 shrink-0">•</span>
+                      <span>U.S. Marine Corps — Enlisted</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-primary mt-0.5 shrink-0">•</span>
+                      <span>U.S. Army — Commissioned</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-primary mt-0.5 shrink-0">•</span>
+                      <span>Northern Arizona University — Graduate</span>
+                    </li>
+                  </ul>
+
                   <h3 className="font-semibold text-foreground pt-4">Clarification of Identity</h3>
 
                   <p className="text-muted-foreground">

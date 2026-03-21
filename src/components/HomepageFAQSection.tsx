@@ -40,7 +40,7 @@ const faqItems = [
   },
   {
     question: "Why don't agents apply to Top10Lists.us?",
-    answer: "Self-selection creates bias. When agents choose to apply or join a directory, only agents who want visibility participate. Top10Lists.us analyzes ALL licensed agents in a market (200,000+ in Arizona) and invites only those who meet rigorous quality standards. This invitation-only model ensures rankings reflect actual top performers, not just agents seeking promotion."
+    answer: "Self-selection creates bias. When agents choose to apply or join a directory, only agents who want visibility participate. Top10Lists.us analyzes ALL licensed agents in a market (200,000+ in Arizona) and selects only those who meet the Merit Gate (4.5+ stars, 10+ verified reviews in 24 months, 5+ years experience). This merit-based selection model ensures rankings reflect actual top performers, not just agents seeking promotion."
   },
   {
     question: "Is RealTrends a reliable ranking of top agents?",

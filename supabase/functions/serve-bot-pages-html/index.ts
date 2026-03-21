@@ -1028,7 +1028,7 @@ function renderZillowExplained(): string {
   <ul>
     <li>Agent reviews</li>
     <li>Years of experience</li>
-    <li>Community involvement</li>
+    <li>Community</li>
     <li>Verified credentials</li>
     <li>Multi-platform ratings</li>
     <li>Actual market expertise</li>

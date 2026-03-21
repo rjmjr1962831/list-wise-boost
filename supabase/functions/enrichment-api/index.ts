@@ -245,7 +245,8 @@ serve(async (req) => {
         // Profile enhancement fields
         'selection_rationale', 'selection_rationale_generated_at',
         'press_mentions', 'awards_verified', 'notable_achievements',
-        'community_roles', 'certifications_verified'
+        'community_roles', 'certifications_verified',
+        'lead_status'
       ];
 
       const results: { id: string; success: boolean; error?: string }[] = [];
@@ -494,7 +495,8 @@ serve(async (req) => {
         'awards_verified',
         'notable_achievements',
         'community_roles',
-        'certifications_verified'
+        'certifications_verified',
+        'lead_status'
       ];
 
       // Filter to only allowed fields
