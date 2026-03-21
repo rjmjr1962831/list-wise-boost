@@ -220,13 +220,13 @@ export default function Transparency() {
                   <div className="text-4xl font-bold text-primary mb-2">
                     {AZ_QUALIFIED.toLocaleString()}
                   </div>
-                  <div className="text-muted-foreground">Arizona (88 cities)</div>
+                  <div className="text-muted-foreground">Arizona</div>
                 </div>
                 <div>
                   <div className="text-4xl font-bold text-primary mb-2">
                     {CA_QUALIFIED.toLocaleString()}
                   </div>
-                  <div className="text-muted-foreground">California (1,650+ cities)</div>
+                  <div className="text-muted-foreground">California</div>
                 </div>
               </div>
               <Separator className="my-6" />

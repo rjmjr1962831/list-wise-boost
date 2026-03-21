@@ -1953,15 +1953,27 @@ const CAMPAIGN_START = new Date("2026-03-21T12:00:00Z");
 function estimateEta(remaining: number): string {
   if (remaining <= 0) return "Complete";
   const daysSinceStart = Math.floor((Date.now() - CAMPAIGN_START.getTime()) / 86400000);
-  const perAccountPerDay = Math.floor(40 * Math.pow(1.10, daysSinceStart));
-  const dailyCapacity = perAccountPerDay * NUM_SENDERS;
-  if (dailyCapacity <= 0) return "Unknown";
-  // Throughput limited by 3-min gap: 20 sends/hr/account × 4 accounts × 15 hrs
-  const throughputCapacity = NUM_SENDERS * SENDS_PER_HOUR_PER_ACCOUNT * SEND_HOURS_PER_DAY;
-  const effectiveDaily = Math.min(dailyCapacity, throughputCapacity);
-  const totalHours = (remaining / effectiveDaily) * 24;
-  const days = Math.floor(totalHours / 24);
-  const hours = Math.round(totalHours % 24);
+  const throughputCap = NUM_SENDERS * SENDS_PER_HOUR_PER_ACCOUNT * SEND_HOURS_PER_DAY;
+  // Walk forward day by day with compounding limits
+  let left = remaining;
+  let day = daysSinceStart;
+  let daysNeeded = 0;
+  while (left > 0 && daysNeeded < 365) {
+    const perAccount = Math.floor(40 * Math.pow(1.10, day));
+    const dailyCap = Math.min(perAccount * NUM_SENDERS, throughputCap);
+    left -= dailyCap;
+    day++;
+    daysNeeded++;
+  }
+  if (daysNeeded === 0) return "< 1 day";
+  // Estimate partial last day
+  const lastDayPerAccount = Math.floor(40 * Math.pow(1.10, day - 1));
+  const lastDayCap = Math.min(lastDayPerAccount * NUM_SENDERS, throughputCap);
+  const lastDayUsed = lastDayCap + left; // left is negative = overshoot
+  const fractionOfLastDay = lastDayCap > 0 ? lastDayUsed / lastDayCap : 1;
+  const totalDays = daysNeeded - 1 + fractionOfLastDay;
+  const days = Math.floor(totalDays);
+  const hours = Math.round((totalDays - days) * SEND_HOURS_PER_DAY);
   if (days === 0 && hours === 0) return "< 1 hour";
   if (days === 0) return `${hours} hour${hours !== 1 ? "s" : ""}`;
   return `${days} day${days !== 1 ? "s" : ""} and ${hours} hour${hours !== 1 ? "s" : ""}`;
@@ -1979,6 +1991,7 @@ function CampaignMonitor({
   const visible = campaigns.filter((c) => c.status !== "draft");
   const [acting, setActing] = useState<string | null>(null);
   const [queueStats, setQueueStats] = useState<Record<string, QueueStats>>({});
+  const [activityFeed, setActivityFeed] = useState<Record<string, { name: string; email: string; event: string; time: string }[]>>({});
 
   const loadQueueStats = useCallback(async () => {
     if (visible.length === 0) return;
@@ -1999,6 +2012,44 @@ function CampaignMonitor({
       stats[c.id] = base;
     }
     setQueueStats(stats);
+
+    // Load recent activity per campaign (opens, clicks, funnel events)
+    const feed: Record<string, { name: string; email: string; event: string; time: string }[]> = {};
+    for (const c of visible) {
+      // Recent opens and clicks from queue
+      const { data: recentQueue } = await supabase
+        .from("email_queue" as any)
+        .select("recipient_name, recipient_email, opened_at, clicked_at")
+        .eq("campaign_id", c.id)
+        .or("opened_at.not.is.null,clicked_at.not.is.null")
+        .order("updated_at", { ascending: false })
+        .limit(20);
+
+      const events: { name: string; email: string; event: string; time: string }[] = [];
+      if (recentQueue) {
+        for (const q of recentQueue as any[]) {
+          if (q.clicked_at) events.push({ name: q.recipient_name || "", email: q.recipient_email, event: "clicked", time: q.clicked_at });
+          else if (q.opened_at) events.push({ name: q.recipient_name || "", email: q.recipient_email, event: "opened", time: q.opened_at });
+        }
+      }
+
+      // Funnel events from crm_tasks for agents in this campaign
+      const { data: tasks } = await supabase
+        .from("crm_tasks" as any)
+        .select("title, task_type, created_at")
+        .in("task_type", ["funnel_landed", "funnel_pricing_viewed", "funnel_tier_selected", "funnel_checkout", "funnel_completed"])
+        .order("created_at", { ascending: false })
+        .limit(10);
+      if (tasks) {
+        for (const t of tasks as any[]) {
+          events.push({ name: t.title, email: "", event: t.task_type, time: t.created_at });
+        }
+      }
+
+      events.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
+      feed[c.id] = events.slice(0, 15);
+    }
+    setActivityFeed(feed);
   }, [visible.map((c) => c.id).join(",")]);
 
   useEffect(() => {
@@ -2111,6 +2162,37 @@ function CampaignMonitor({
                 {remaining > 0 && (
                   <div className="text-xs text-muted-foreground bg-muted/50 rounded-md px-3 py-2">
                     Estimated completion: <span className="font-medium text-foreground">{estimateEta(remaining)}</span>
+                  </div>
+                )}
+
+                {/* Live Activity Feed */}
+                {activityFeed[c.id] && activityFeed[c.id].length > 0 && (
+                  <div className="border rounded-md overflow-hidden">
+                    <div className="bg-muted/50 px-3 py-1.5 text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                      Live Activity
+                    </div>
+                    <div className="max-h-[240px] overflow-y-auto divide-y divide-border">
+                      {activityFeed[c.id].map((ev, i) => {
+                        const ago = (() => {
+                          const mins = Math.floor((Date.now() - new Date(ev.time).getTime()) / 60000);
+                          if (mins < 1) return "just now";
+                          if (mins < 60) return `${mins}m ago`;
+                          const hrs = Math.floor(mins / 60);
+                          if (hrs < 24) return `${hrs}h ago`;
+                          return `${Math.floor(hrs / 24)}d ago`;
+                        })();
+                        const icon = ev.event === "clicked" ? "🔥" : ev.event === "opened" ? "👀" : ev.event === "funnel_landed" ? "🚀" : ev.event === "funnel_pricing_viewed" ? "💰" : ev.event === "funnel_tier_selected" ? "✅" : ev.event === "funnel_completed" ? "🎉" : "📌";
+                        const label = ev.event === "clicked" ? "Clicked" : ev.event === "opened" ? "Opened" : ev.event.replace("funnel_", "").replace(/_/g, " ");
+                        return (
+                          <div key={i} className="flex items-center gap-2 px-3 py-2 text-xs">
+                            <span>{icon}</span>
+                            <span className="font-medium truncate flex-1">{ev.name || ev.email}</span>
+                            <span className="text-muted-foreground shrink-0">{label}</span>
+                            <span className="text-muted-foreground shrink-0">{ago}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                 )}
 

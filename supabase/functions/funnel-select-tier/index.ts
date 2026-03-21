@@ -96,6 +96,22 @@ serve(async (req) => {
       throw updateError;
     }
 
+    // Alert Robert on tier selection
+    const { data: profName } = await supabase.from("professionals").select("name, email").eq("id", prof.id).maybeSingle();
+    const agentLabel = profName?.name || profName?.email || prof.id;
+    try {
+      await fetch(`${supabaseUrl}/functions/v1/gmail-send`, {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${supabaseKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          from_account: "robert@top10lists.us",
+          to: "rjmjr1@proton.me",
+          subject: `TIER SELECTED: ${agentLabel} chose ${body.tier.toUpperCase()}`,
+          message_body: `${agentLabel} just selected the ${body.tier} tier in the funnel.\n\nAgent ID: ${prof.id}\nEmail: ${profName?.email || "unknown"}\nTier: ${body.tier}\nTime: ${new Date().toISOString()}`,
+        }),
+      });
+    } catch { /* alert is best-effort */ }
+
     return new Response(
       JSON.stringify({ success: true, professionalId: prof.id, tier: body.tier }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }

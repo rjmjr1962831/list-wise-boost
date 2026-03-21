@@ -1,10 +1,29 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const supabase = createClient(
-  Deno.env.get("SUPABASE_URL")!,
-  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
-);
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+
+const ALERT_RECIPIENT = "rjmjr1@proton.me";
+
+async function sendAlert(subject: string, body: string) {
+  try {
+    await fetch(`${SUPABASE_URL}/functions/v1/gmail-send`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from_account: "robert@top10lists.us",
+        to: ALERT_RECIPIENT,
+        subject,
+        message_body: body,
+      }),
+    });
+  } catch { /* alert is best-effort */ }
+}
 
 // 1x1 transparent GIF
 const PIXEL = Uint8Array.from(
@@ -159,11 +178,18 @@ serve(async (req) => {
 
     // Increment campaign-level counters
     if (queueRow.campaign_id) {
-      if (isOpen && !queueRow.opened_at) {
-        supabase.rpc("run_sql", { query: `UPDATE email_campaigns SET total_opens = total_opens + 1 WHERE id = '${queueRow.campaign_id.replace(/'/g, "''")}'` }).then(() => {});
-      }
-      if (isClick && !queueRow.clicked_at) {
-        supabase.rpc("run_sql", { query: `UPDATE email_campaigns SET total_clicks = total_clicks + 1 WHERE id = '${queueRow.campaign_id.replace(/'/g, "''")}'` }).then(() => {});
+      const { data: camp } = await supabase
+        .from("email_campaigns")
+        .select("total_opens, total_clicks")
+        .eq("id", queueRow.campaign_id)
+        .maybeSingle();
+      if (camp) {
+        if (isOpen && !queueRow.opened_at) {
+          supabase.from("email_campaigns").update({ total_opens: (camp.total_opens ?? 0) + 1 }).eq("id", queueRow.campaign_id).then(() => {});
+        }
+        if (isClick && !queueRow.clicked_at) {
+          supabase.from("email_campaigns").update({ total_clicks: (camp.total_clicks ?? 0) + 1 }).eq("id", queueRow.campaign_id).then(() => {});
+        }
       }
     }
 
@@ -205,6 +231,10 @@ serve(async (req) => {
           status: "pending",
           priority: "high",
         });
+        sendAlert(
+          `CLICK: ${agentName}`,
+          `${agentName} (${queueRow.recipient_email}) clicked a link in your campaign email.\n\nLink: ${linkUrl || "unknown"}\nCampaign: ${queueRow.campaign_id}\n\nThis is a hot lead — call them now.`
+        );
       } else if (isOpen && !queueRow.opened_at) {
         await supabase.from("crm_tasks").insert({
           professional_id: queueRow.agent_id,

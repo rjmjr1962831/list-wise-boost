@@ -347,6 +347,19 @@ async function processAccount(senderAccount: string): Promise<AccountResult> {
         })
         .eq("id", queueItem.id);
 
+      // Create task for permanent failures (bounces)
+      if (!isTransient || retryCount >= 3) {
+        const recipName = queueItem.recipient_name || queueItem.recipient_email;
+        await supabase.from("crm_tasks").insert({
+          professional_id: queueItem.agent_id || null,
+          task_type: "email_bounced",
+          title: `Bounced: ${recipName} — ${statusCode}`,
+          description: `Email to ${queueItem.recipient_email} failed permanently.\nSender: ${senderAccount}\nError: ${errBody.slice(0, 300)}`,
+          status: "pending",
+          priority: "normal",
+        });
+      }
+
       result.error = `Gmail send failed (${statusCode})`;
       return result;
     }
@@ -474,10 +487,87 @@ serve(async (_req: Request) => {
     SENDER_ACCOUNTS.map((account) => processAccount(account))
   );
 
+  // Sweep for post-delivery bounces: check Gmail inboxes for mailer-daemon messages
+  let bouncesDetected = 0;
+  try {
+    for (const senderAccount of SENDER_ACCOUNTS) {
+      const { data: emailAccount } = await supabase
+        .from("crm_email_accounts")
+        .select("*")
+        .eq("email", senderAccount)
+        .maybeSingle();
+      if (!emailAccount) continue;
+
+      const accessToken = await getValidToken(emailAccount);
+
+      // Search for recent bounce messages
+      const searchRes = await fetch(
+        `https://www.googleapis.com/gmail/v1/users/me/messages?q=from:mailer-daemon+is:unread&maxResults=10`,
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+      );
+      const searchData = await searchRes.json();
+      if (!searchData.messages || searchData.messages.length === 0) continue;
+
+      for (const msg of searchData.messages) {
+        const msgRes = await fetch(
+          `https://www.googleapis.com/gmail/v1/users/me/messages/${msg.id}?format=metadata&metadataHeaders=To`,
+          { headers: { Authorization: `Bearer ${accessToken}` } }
+        );
+        const msgData = await msgRes.json();
+        const snippet = msgData.snippet || "";
+
+        // Extract bounced email from snippet
+        const emailMatch = snippet.match(/(\S+@\S+\.\S+)/);
+        if (!emailMatch) continue;
+        const bouncedEmail = emailMatch[1].replace(/[<>]/g, "").toLowerCase();
+
+        // Mark matching queue entries as failed
+        const { data: updated } = await supabase
+          .from("email_queue")
+          .update({
+            status: "failed",
+            failure_reason: "Post-delivery bounce: " + snippet.slice(0, 200),
+            failed_at: new Date().toISOString(),
+          })
+          .eq("recipient_email", bouncedEmail)
+          .eq("status", "sent")
+          .select("id, agent_id, recipient_name, campaign_id");
+
+        if (updated && updated.length > 0) {
+          bouncesDetected += updated.length;
+          const recipName = updated[0].recipient_name || bouncedEmail;
+
+          // Create bounce task
+          await supabase.from("crm_tasks").insert({
+            professional_id: updated[0].agent_id || null,
+            task_type: "email_bounced",
+            title: `Bounced email: ${bouncedEmail}`,
+            description: `Email to ${bouncedEmail} bounced.\nSnippet: ${snippet.slice(0, 300)}`,
+            status: "pending",
+            priority: "normal",
+          });
+        }
+
+        // Mark Gmail message as read
+        await fetch(
+          `https://www.googleapis.com/gmail/v1/users/me/messages/${msg.id}/modify`,
+          {
+            method: "POST",
+            headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
+            body: JSON.stringify({ removeLabelIds: ["UNREAD"] }),
+          }
+        );
+      }
+    }
+  } catch (err) {
+    console.error("Bounce sweep error:", err);
+  }
+
   return new Response(
     JSON.stringify({
       success: true,
       results,
+      bouncesDetected,
       elapsed_ms: Date.now() - startTime,
     }),
     { headers: { "Content-Type": "application/json" } }

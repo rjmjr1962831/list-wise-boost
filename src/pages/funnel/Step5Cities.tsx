@@ -158,7 +158,7 @@ export default function Step5Cities() {
 
   const handleContinue = () => {
     if (selectedCityIds.size === 0) {
-      toast.error('Please add at least one bundle');
+      toast.error('Please select at least one city area.');
       return;
     }
     if (professionalId) {

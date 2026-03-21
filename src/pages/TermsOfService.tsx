@@ -83,11 +83,11 @@ const TermsOfService = () => {
 
             <h2 className="text-xl font-semibold text-foreground mt-8 mb-3">3. DATA ACCURACY & LIVE COVERAGE</h2>
             <p className="text-muted-foreground leading-relaxed mb-2">
-              We currently underwrite <strong>3,262 total agents</strong>, representing <strong>fewer than 1%</strong> of licensed professionals in their respective markets.
+              We underwrite agents across Arizona and California, representing <strong>fewer than 1%</strong> of licensed professionals in their respective markets. See <a href="/coverage-stats" className="underline">coverage-stats</a> for current counts.
             </p>
             <ul className="list-disc list-inside text-muted-foreground space-y-2 mb-4">
-              <li><strong>Arizona:</strong> 872 qualified agents across 88 cities.</li>
-              <li><strong>California:</strong> 2,390 qualified agents across 1,650+ cities.</li>
+              <li><strong>Arizona:</strong> Qualified agents across cities with merit-qualified professionals.</li>
+              <li><strong>California:</strong> Qualified agents across cities with merit-qualified professionals.</li>
               <li><strong>Market Status:</strong> Both Arizona and California are <strong>LIVE</strong> and fully underwritten markets.</li>
             </ul>
 

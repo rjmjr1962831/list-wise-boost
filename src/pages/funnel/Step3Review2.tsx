@@ -472,7 +472,7 @@ export default function Step3Review2() {
                 </div>
 
                 <div>
-                  <Label htmlFor="title">Title (e.g. DDS, DMD)</Label>
+                  <Label htmlFor="title">Title (e.g. REALTOR, Broker, CRS)</Label>
                   <p className="text-xs text-slate-500 mb-1">You can edit this field directly.</p>
                   <Input
                     id="title"
@@ -655,7 +655,7 @@ export default function Step3Review2() {
               <div className="flex gap-3 pt-4">
                 <Button
                   variant="outline"
-                  onClick={() => navigate(`/funnel/${token}/review-1`)}
+                  onClick={() => navigate(`/funnel/${token}/review-credentials`)}
                   className="gap-2 border-white/20 text-slate-300 hover:text-white hover:bg-white/10"
                 >
                   <ArrowLeft className="h-4 w-4" />

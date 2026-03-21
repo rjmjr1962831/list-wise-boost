@@ -79,7 +79,7 @@ export default function Step7Pricing() {
   };
 
   const currentTier = normalizeTier(professional?.current_tier ?? professional?.badge_tier);
-  const currentAifs = professional?.signal_score ?? 42;
+  const currentAifs = professional?.signal_score ?? 24;
 
   const handleSelectTier = async (tier: CertificationTier) => {
     if (!token || !professional) return;
