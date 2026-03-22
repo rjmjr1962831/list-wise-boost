@@ -255,7 +255,7 @@ serve(async (req) => {
     if (pp.neighborhoodSlug) {
       const { data: nhAgents } = await sb.from("professionals")
         .select(LEAN_COLS)
-        .contains("served_neighborhoods", [pp.neighborhoodSlug])
+        .filter("served_neighborhoods", "cs", JSON.stringify([pp.neighborhoodSlug]))
         .eq("active", true).gte("review_stars_rating", 4.5).gte("num_total_reviews", 10)
         .order("rank", { ascending: true }).order("num_total_reviews", { ascending: false })
         .limit(1000);
