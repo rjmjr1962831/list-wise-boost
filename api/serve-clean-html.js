@@ -204,22 +204,10 @@ export default async function handler(req, res) {
     }
 
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    // Browser + Vercel CDN caching (ptm purges CDN on deploy)
-    // Crawl stats: 1 hour cache (heavy queries, rolling data barely changes)
-    // Agent/list/state pages: 5 min cache
-    // Content pages (for-ai, transparency, faq): no CDN cache for real-time updates
-    const cacheable5m = ['serve-bot-agent-html', 'serve-bot-list-html', 'serve-bot-state-html'];
-    const cacheable1h = ['serve-bot-crawl-stats-html'];
-    if (cacheable1h.includes(fn)) {
-      res.setHeader('Cache-Control', 'public, max-age=3600, stale-while-revalidate=7200');
-      res.setHeader('Vercel-CDN-Cache-Control', 's-maxage=3600, stale-while-revalidate=7200');
-    } else if (cacheable5m.includes(fn)) {
-      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=3600');
-      res.setHeader('Vercel-CDN-Cache-Control', 's-maxage=300, stale-while-revalidate=3600');
-    } else {
-      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=3600');
-      res.setHeader('Vercel-CDN-Cache-Control', 's-maxage=0');
-    }
+    // No CDN cache — every request hits origin so inline bot logging captures all crawls.
+    // Browser cache only (5 min) to avoid redundant fetches from same user session.
+    res.setHeader('Cache-Control', 'public, max-age=300');
+    res.setHeader('Vercel-CDN-Cache-Control', 's-maxage=0');
     res.status(upstream.status).send(html);
   } catch (err) {
     res.status(502).json({ error: 'Upstream fetch failed', detail: err.message });
