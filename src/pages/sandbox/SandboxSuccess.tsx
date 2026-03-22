@@ -1,16 +1,46 @@
-import { useEffect, useState } from "react";
-import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { SafeHead } from "@/components/SafeHead";
-import { supabase } from "@/integrations/supabase/client";
-import { useGA4Tracking } from "@/hooks/useGA4Tracking";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { CheckCircle2, Loader2 } from "lucide-react";
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { SafeHead } from '@/components/SafeHead';
+import { supabase } from '@/integrations/supabase/client';
+import { Button } from '@/components/ui/button';
+import { CheckCircle2, Loader2, RotateCcw } from 'lucide-react';
+import { useGA4Tracking } from '@/hooks/useGA4Tracking';
+import { SandboxNugget } from './SandboxNugget';
+import { validateToken } from './utils';
 
-function tierLabel(tier: string): string {
-  if (tier === "audited") return "Audited";
-  if (tier === "underwritten") return "Underwritten";
-  return "Certified";
+/** Revert a professional back to Listed tier via the edge function */
+async function revertToListed(token: string, snapshot: Record<string, any> | null) {
+  const updates: [string, any][] = [
+    ['phone_visible', true],
+    ['email_visible', true],
+  ];
+
+  // Restore snapshot fields if we have them
+  if (snapshot) {
+    if (snapshot.email !== undefined) updates.push(['email', snapshot.email]);
+    if (snapshot.phone !== undefined) updates.push(['phone', snapshot.phone]);
+    if (snapshot.phone_numbers !== undefined) updates.push(['phone_numbers', snapshot.phone_numbers]);
+    if (snapshot.website !== undefined) updates.push(['website', snapshot.website]);
+  }
+
+  // Fire all field resets in parallel via edge function
+  await Promise.all(
+    updates.map(([field, value]) =>
+      supabase.functions.invoke('update-professional-field', {
+        body: { token, field, value },
+      }).catch(() => {})
+    )
+  );
+
+  // Reset tier back to listed via funnel-select-tier
+  await supabase.functions.invoke('funnel-select-tier', {
+    body: { token, tier: 'listed' },
+  }).catch(() => {
+    // Fallback: try certified (the free tier)
+    supabase.functions.invoke('funnel-select-tier', {
+      body: { token, tier: 'certified' },
+    }).catch(() => {});
+  });
 }
 
 export default function SandboxSuccess() {
@@ -18,151 +48,136 @@ export default function SandboxSuccess() {
   const navigate = useNavigate();
   const location = useLocation();
   const { trackEvent } = useGA4Tracking();
-
-  const passedProfessional = (location.state as any)?.professional ?? null;
-  const passedTier: string = (location.state as any)?.tier ?? "certified";
-
+  const navState = location.state as { tier?: string } | null;
   const [loading, setLoading] = useState(true);
   const [professional, setProfessional] = useState<any>(null);
-  const [tier] = useState(passedTier);
+  const [reverted, setReverted] = useState(false);
+  const [reverting, setReverting] = useState(false);
 
-  useEffect(() => { window.scrollTo(0, 0); }, []);
+  const tier = navState?.tier || 'certified';
 
   useEffect(() => {
-    const load = async () => {
-      if (!token) { navigate("/check-profile"); return; }
+    window.scrollTo(0, 0);
+    if (!token) return;
+    validateToken(token).then(async (result) => {
+      if (result.status === 'valid' && result.professional) {
+        setProfessional(result.professional);
+        trackEvent('sandbox_funnel_complete', {
+          professional_id: result.professional.id,
+        });
 
-      let prof = passedProfessional;
-
-      if (!prof) {
-        try {
-          const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(token);
-          let { data, error } = await supabase
-            .from("professionals")
-            .select("id, name, current_tier, badge_tier, cities:city_id (name, state_slug, slug)")
-            .eq("verification_token", token)
-            .maybeSingle();
-          if (!data && !error && isUUID) {
-            const fb = await supabase
-              .from("professionals")
-              .select("id, name, current_tier, badge_tier, cities:city_id (name, state_slug, slug)")
-              .eq("id", token)
-              .maybeSingle();
-            data = fb.data; error = fb.error;
-          }
-          if (error || !data) { navigate("/check-profile"); return; }
-          prof = data;
-        } catch { navigate("/check-profile"); return; }
+        // Auto-revert: restore snapshot and reset to Listed
+        const snapshotRaw = sessionStorage.getItem(`sandbox_snapshot_${token}`);
+        const snapshot = snapshotRaw ? JSON.parse(snapshotRaw) : null;
+        setReverting(true);
+        await revertToListed(token, snapshot);
+        setReverted(true);
+        setReverting(false);
       }
-
-      setProfessional(prof);
       setLoading(false);
-    };
-    load();
-  }, [token, passedProfessional, navigate]);
-
-  useEffect(() => {
-    if (!loading && professional) {
-      trackEvent("sandbox_funnel_complete", {
-        professional_id: professional.id,
-        tier,
-      });
-    }
-  }, [loading, professional, tier, trackEvent]);
+    });
+  }, [token]);
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <SafeHead><title>Success | Top10Lists.us</title><meta name="robots" content="noindex, nofollow" /></SafeHead>
-        <Loader2 className="h-12 w-12 animate-spin text-primary" />
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
 
-  if (!professional) return null;
+  const firstName = professional?.name?.split(' ')[0] || 'Agent';
+  const isPaid = tier === 'audited' || tier === 'underwritten';
+  const tierName = tier.charAt(0).toUpperCase() + tier.slice(1);
 
-  const firstName = (professional.name || "").split(" ")[0] || "Agent";
-  const isFree = tier === "certified" || tier === "listed";
-  const citySlug = professional.cities?.slug;
-  const stateSlug = professional.cities?.state_slug;
-  const publicUrl = stateSlug && citySlug ? `/${stateSlug}/${citySlug}` : "/check-profile";
+  const profileUrl = professional?.profile_link
+    || (professional?.cities?.state_slug && professional?.cities?.slug
+      ? `/${professional.cities.state_slug}/${professional.cities.slug}/top10realestateagents`
+      : '/');
 
   return (
-    <div className="min-h-screen bg-background">
+    <>
       <SafeHead>
-        <title>You're All Set | Top10Lists.us</title>
+        <title>Success | Top10Lists.us</title>
         <meta name="robots" content="noindex, nofollow" />
       </SafeHead>
 
-      <div className="max-w-lg mx-auto px-4 py-8 sm:py-16">
-        <Card>
-          <CardContent className="pt-8 pb-8 text-center">
-            <CheckCircle2 className="h-16 w-16 text-green-500 mx-auto mb-4" />
+      <div className="min-h-screen bg-background py-10 px-4">
+        <div className="max-w-xl mx-auto space-y-6 text-center">
+          <CheckCircle2 className="h-16 w-16 text-green-500 mx-auto" />
 
-            {isFree ? (
-              <>
-                <h1 className="text-2xl font-bold mb-2">
-                  You're all set, {firstName}.
-                </h1>
-                <p className="text-muted-foreground mb-6 max-w-sm mx-auto">
-                  Your listing is live and AI systems can reference it right now.
-                </p>
-                <div className="text-left bg-muted/50 rounded-lg p-4 mb-6 text-sm space-y-2">
-                  <p>
-                    <strong>Quarterly refresh:</strong> Your data will be re-verified every 90 days at no cost.
-                  </p>
-                  <p>
-                    <strong>Citation compounding:</strong> The longer your listing stays active, the more frequently AI systems reference it.
-                  </p>
-                  <p>
-                    <strong>Upgrade anytime:</strong> You can switch to a paid tier whenever you want more depth and faster refresh cycles.
-                  </p>
-                </div>
-              </>
-            ) : (
-              <>
-                <h1 className="text-2xl font-bold mb-2">
-                  Welcome to {tierLabel(tier)}, {firstName}.
-                </h1>
-                <p className="text-muted-foreground mb-4 max-w-sm mx-auto">
-                  {tier === "underwritten"
-                    ? "Your profile now receives daily monitoring and maximum data depth. AI systems have every reason to name you as a definitive answer."
-                    : "Your profile now receives monthly refreshes with expanded data. AI systems have significantly more information to cite when recommending you."}
-                </p>
-                <p className="text-sm text-muted-foreground mb-6 max-w-sm mx-auto">
-                  Your AI Footprint Score will update within 24 hours to reflect your new tier.
-                </p>
-              </>
-            )}
+          <SandboxNugget>
+            AI citation compounds. Each time a system references your profile successfully, it reinforces the pattern. Competitors who start later are catching up to a moving target.
+          </SandboxNugget>
 
-            <div className="flex flex-col gap-3">
-              <Button
-                className="w-full bg-primary hover:bg-primary/90"
-                onClick={() => navigate(publicUrl)}
-              >
-                View My Public Listing
-              </Button>
-              {isFree ? (
-                <Button
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => navigate(`/sandbox/${token}/tier`)}
-                >
+          {!isPaid ? (
+            <>
+              <h1 className="text-2xl font-bold">You're all set, {firstName}.</h1>
+              <div className="space-y-4 text-left text-sm text-muted-foreground">
+                <p>Your listing is live and AI systems can reference it right now.</p>
+                <p>Your profile will be refreshed quarterly to keep your data current.</p>
+                <p>You can upgrade your verification tier anytime to give AI systems more data to work with.</p>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center pt-4">
+                <Button asChild>
+                  <a href={profileUrl}>Go to Dashboard</a>
+                </Button>
+                <Button variant="outline" onClick={() => navigate(`/sandbox/${token}/tier`)}>
                   Explore Upgrade Options
                 </Button>
-              ) : (
-                <Button
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => navigate("/badge-instructions")}
-                >
+              </div>
+            </>
+          ) : (
+            <>
+              <h1 className="text-2xl font-bold">Welcome to {tierName}, {firstName}.</h1>
+              <div className="space-y-4 text-left text-sm text-muted-foreground">
+                {tier === 'audited' ? (
+                  <p>
+                    Your Audited verification is active. Your profile will be refreshed monthly with expanded verification covering transaction history, community involvement, and career data.
+                  </p>
+                ) : (
+                  <p>
+                    Your Underwritten verification is active. Your profile will be refreshed daily with comprehensive verification covering transaction history, community data, press mentions, awards, neighborhood endorsements, and certifications.
+                  </p>
+                )}
+                <p>Your AI Footprint Score will update within 24 hours to reflect your new tier.</p>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center pt-4">
+                <Button asChild>
+                  <a href={profileUrl}>Go to Dashboard</a>
+                </Button>
+                <Button variant="outline" onClick={() => navigate('/badge-instructions')}>
                   Set Up Your Badge
                 </Button>
+              </div>
+            </>
+          )}
+
+          {/* Dev mode: auto-revert + test again */}
+          <div className="border-t pt-6 mt-6 space-y-3">
+            <div className="inline-flex items-center gap-2 rounded-md bg-amber-500/10 border border-amber-500/30 px-3 py-1.5 text-xs text-amber-600">
+              {reverting ? (
+                <><Loader2 className="h-3 w-3 animate-spin" /> Reverting changes...</>
+              ) : reverted ? (
+                <><RotateCcw className="h-3 w-3" /> Dev mode: agent reverted to Listed. All changes cleared.</>
+              ) : (
+                'Dev mode active'
               )}
             </div>
-          </CardContent>
-        </Card>
+            <div>
+              <Button
+                variant="outline"
+                onClick={() => navigate(`/sandbox/${token}`)}
+                disabled={reverting}
+                className="gap-2"
+              >
+                <RotateCcw className="h-4 w-4" />
+                Test Again
+              </Button>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

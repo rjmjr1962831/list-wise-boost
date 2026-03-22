@@ -159,7 +159,7 @@ export function TierPricingCalculator({
     <div className="space-y-6" style={{ fontFamily: "'Inter', system-ui, sans-serif", fontWeight: 500 }}>
       {/* ── Personalize ── */}
       <div className="max-w-md mx-auto rounded-xl border border-slate-700 bg-slate-900/80 p-4">
-        <p className="text-sm font-semibold text-white mb-3">Adjust to your market</p>
+        <p className="text-sm font-semibold text-white mb-3">Calculate your first year revenue uplift</p>
         <div className="grid grid-cols-3 gap-3">
           <div>
             <label className="block text-xs font-semibold text-slate-400 mb-1">Avg. deal size</label>

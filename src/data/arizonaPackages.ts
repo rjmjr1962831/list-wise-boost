@@ -224,7 +224,7 @@ export const REGIONAL_PACKAGES: RegionalPackage[] = [
 
 // Category labels for display
 export const BUNDLE_CATEGORY_LABELS: Record<BundleCategory, string> = {
-  'market-type': 'Market-Type Bundles',
+  'market-type': 'Luxury',
   'metro-phoenix': 'Metro Phoenix Coverage',
   'arizona-regional': 'Arizona Regional Coverage',
 };
