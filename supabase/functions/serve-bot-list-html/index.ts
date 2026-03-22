@@ -246,11 +246,34 @@ serve(async (req) => {
     // served_cities, selection_rationale) are only rendered for non-listed tiers,
     // so we fetch them in a second query scoped to those agents only.
     // agent_sales_stats & press_mentions dropped entirely (never rendered).
-    const { data: rawA } = await sb.from("professionals")
-      .select("id,name,review_stars_rating,num_total_reviews,license_number,company,phone,email,website,zillow_profile_url,years_experience,total_sales,current_tier,badge_tier,rank,average_value_3yr,price_range_3yr_min,price_range_3yr_max,sales_count_last_year,canonical_slug,updated_at")
-      .eq("city_id", city.id).eq("active", true).gte("review_stars_rating", 4.5).gte("num_total_reviews", 10)
-      .order("rank", { ascending: true }).order("num_total_reviews", { ascending: false })
-      .limit(1000);
+    const LEAN_COLS = "id,name,review_stars_rating,num_total_reviews,license_number,company,phone,email,website,zillow_profile_url,years_experience,total_sales,current_tier,badge_tier,rank,average_value_3yr,price_range_3yr_min,price_range_3yr_max,sales_count_last_year,canonical_slug,updated_at";
+
+    let rawA: any[] | null = null;
+    let neighborhoodFiltered = false;
+
+    // For neighborhood pages, try filtering by served_neighborhoods first
+    if (pp.neighborhoodSlug) {
+      const { data: nhAgents } = await sb.from("professionals")
+        .select(LEAN_COLS)
+        .contains("served_neighborhoods", [pp.neighborhoodSlug])
+        .eq("active", true).gte("review_stars_rating", 4.5).gte("num_total_reviews", 10)
+        .order("rank", { ascending: true }).order("num_total_reviews", { ascending: false })
+        .limit(1000);
+      if (nhAgents && nhAgents.length >= 3) {
+        rawA = nhAgents;
+        neighborhoodFiltered = true;
+      }
+    }
+
+    // City-level query: used for city pages, or as fallback when neighborhood has < 3 agents
+    if (!rawA) {
+      const { data: cityAgents } = await sb.from("professionals")
+        .select(LEAN_COLS)
+        .eq("city_id", city.id).eq("active", true).gte("review_stars_rating", 4.5).gte("num_total_reviews", 10)
+        .order("rank", { ascending: true }).order("num_total_reviews", { ascending: false })
+        .limit(1000);
+      rawA = cityAgents;
+    }
 
     // Identify non-listed agents that need heavy columns
     const allAgents = rawA || [];
@@ -600,7 +623,7 @@ ${siteHeaderHTML()}
     // Bot crawl logging removed -- now handled by Vercel log drain (vercel-log-drain edge function)
     // which captures ALL requests including CDN cache hits
 
-    return new Response(o, { status: zeroAgents ? 404 : 200, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": zeroAgents ? "public, max-age=3600" : "public, max-age=0, s-maxage=60, stale-while-revalidate=30", "X-Agents-Count": String(na), "X-Page-Type": isNh ? "neighborhood" : "city", ...CORS } });
+    return new Response(o, { status: zeroAgents ? 404 : 200, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": zeroAgents ? "no-store" : "public, max-age=0, s-maxage=3600, stale-while-revalidate=300", "X-Agents-Count": String(na), "X-Page-Type": isNh ? "neighborhood" : "city", ...CORS } });
   } catch (_e: unknown) {
     console.error("serve-bot-list-html error:", pp.stateSlug, pp.citySlug, pp.neighborhoodSlug, _e instanceof Error ? _e.message : String(_e), _e instanceof Error ? _e.stack : "");
     // Build a proper clean-room error page with canonical + JSON-LD so crawlers
