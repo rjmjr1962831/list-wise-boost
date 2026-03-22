@@ -56,11 +56,20 @@ function getDailyLimit(_account: string, daysSinceStart: number): number {
   return Math.floor(40 * Math.pow(1.10, daysSinceStart));
 }
 
+/** Convert a Date to MST (UTC-7, Arizona — no DST). */
+function toMST(d: Date): Date {
+  return new Date(d.getTime() - 7 * 3600000);
+}
+
+/** Return "YYYY-MM-DD" in MST so volume tracking aligns with the send window. */
+function getMSTDateStr(d: Date): string {
+  return toMST(d).toISOString().slice(0, 10);
+}
+
 function isInSendWindow(): boolean {
-  const now = new Date();
-  const mstHour = (now.getUTCHours() - 7 + 24) % 24;
-  // Sunday = 0, Saturday = 6. Convert to MST day.
-  const mstDay = new Date(now.getTime() - 7 * 3600000).getUTCDay();
+  const mst = toMST(new Date());
+  const mstHour = mst.getUTCHours();
+  const mstDay = mst.getUTCDay(); // 0=Sunday
   if (mstDay === 0) return false; // No sends on Sunday
   return mstHour >= 5 && mstHour < 20;
 }
@@ -144,7 +153,7 @@ interface AccountResult {
 
 async function processAccount(senderAccount: string): Promise<AccountResult> {
   const now = new Date();
-  const todayStr = now.toISOString().slice(0, 10);
+  const todayStr = getMSTDateStr(now); // MST date — aligns with send window
   const daysSinceStart = Math.floor(
     (now.getTime() - CAMPAIGN_START.getTime()) / 86400000
   );
@@ -186,6 +195,25 @@ async function processAccount(senderAccount: string): Promise<AccountResult> {
       return result;
     }
 
+    // --- Check campaign-level daily limit (all accounts combined) ---
+    // Sum ALL accounts' volume for this MST day to enforce a global cap
+    const { data: allVolumeRows } = await supabase
+      .from("email_send_volume")
+      .select("emails_sent")
+      .eq("send_date", todayStr);
+
+    const totalSentToday = (allVolumeRows ?? []).reduce(
+      (sum: number, r: { emails_sent: number }) => sum + (r.emails_sent ?? 0),
+      0
+    );
+    // Global daily cap = per-account limit × number of accounts
+    // (keeps total across all accounts within the intended ramp)
+    const globalDailyLimit = dailyLimit * SENDER_ACCOUNTS.length;
+    if (totalSentToday >= globalDailyLimit) {
+      result.error = `Global daily limit reached (${totalSentToday}/${globalDailyLimit})`;
+      return result;
+    }
+
     // --- Check per-account cooldown (3-minute minimum between sends) ---
     const { data: lastSent } = await supabase
       .from("email_queue" as any)
@@ -224,6 +252,36 @@ async function processAccount(senderAccount: string): Promise<AccountResult> {
     if (!queueItem) {
       result.error = "No approved emails in queue";
       return result;
+    }
+
+    // --- Check campaign is still active (respect pause) ---
+    if (queueItem.campaign_id) {
+      const { data: campaign } = await supabase
+        .from("email_campaigns")
+        .select("status, max_per_day")
+        .eq("id", queueItem.campaign_id)
+        .maybeSingle();
+
+      if (campaign && campaign.status !== "active") {
+        result.error = `Campaign is ${campaign.status ?? "unknown"}`;
+        return result;
+      }
+
+      // Enforce campaign-level max_per_day if set
+      if (campaign?.max_per_day && campaign.max_per_day > 0) {
+        const { count: campaignSentToday } = await supabase
+          .from("email_queue")
+          .select("id", { count: "exact", head: true })
+          .eq("campaign_id", queueItem.campaign_id)
+          .eq("status", "sent")
+          .gte("sent_at", todayStr + "T00:00:00-07:00")
+          .lt("sent_at", todayStr + "T23:59:59-07:00");
+
+        if ((campaignSentToday ?? 0) >= campaign.max_per_day) {
+          result.error = `Campaign daily limit reached (${campaignSentToday}/${campaign.max_per_day})`;
+          return result;
+        }
+      }
     }
 
     // --- Pre-send: check unsubscribes ---
