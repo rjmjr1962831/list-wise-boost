@@ -117,6 +117,14 @@ const AgentLookup = lazy(() => import("@/pages/AgentLookup"));
 const CleanRoom = lazy(() => import("@/pages/CleanRoom"));
 const NeighborhoodApply = lazy(() => import("@/pages/NeighborhoodApply"));
 
+const SandboxStep1 = lazy(() => import("@/pages/sandbox/SandboxStep1"));
+const SandboxStep2 = lazy(() => import("@/pages/sandbox/SandboxStep2"));
+const SandboxStep3Why = lazy(() => import("@/pages/sandbox/SandboxStep3Why"));
+const SandboxStep4Cities = lazy(() => import("@/pages/sandbox/SandboxStep4Cities"));
+const SandboxStep5Tier = lazy(() => import("@/pages/sandbox/SandboxStep5Tier"));
+const SandboxStep6Neighborhoods = lazy(() => import("@/pages/sandbox/SandboxStep6Neighborhoods"));
+const SandboxSuccess = lazy(() => import("@/pages/sandbox/SandboxSuccess"));
+
 const AdminDashboard = lazy(() => import("@/pages/AdminDashboard"));
 /** Demo walkthrough: staging-only internal document; never on www. */
 const AdminDemo = import.meta.env.VITE_IS_PRODUCTION !== "1"
@@ -271,6 +279,13 @@ export const routeManifest: RouteObject[] = [
   { path: "/profile/:token/select", element: React.createElement(SelectionPlaceholder, null) },
   { path: "/profile/:token/schedule", element: React.createElement(ScheduleCall, null) },
   { path: "/profile-view/:token", element: React.createElement(ProfileView, null) },
+  { path: "/sandbox/:token", element: React.createElement(SandboxStep1, null) },
+  { path: "/sandbox/:token/contact", element: React.createElement(SandboxStep2, null) },
+  { path: "/sandbox/:token/why", element: React.createElement(SandboxStep3Why, null) },
+  { path: "/sandbox/:token/cities", element: React.createElement(SandboxStep4Cities, null) },
+  { path: "/sandbox/:token/tier", element: React.createElement(SandboxStep5Tier, null) },
+  { path: "/sandbox/:token/neighborhoods", element: React.createElement(SandboxStep6Neighborhoods, null) },
+  { path: "/sandbox/:token/success", element: React.createElement(SandboxSuccess, null) },
   { path: "/coming-soon/:stateSlug/:citySlug", element: React.createElement(CityComingSoon, null) },
   { path: "/albuquerque/:categorySlug", element: React.createElement(AlbuquerqueRedirect, null) },
   { path: "/albuquerque/:categorySlug/:agentSlug", element: React.createElement(AlbuquerqueRedirect, null) },

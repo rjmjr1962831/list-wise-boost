@@ -151,13 +151,56 @@ async function runSearch(sb: any, agentQ: string, marketQ: string, interval: str
     conditions.push(`(p.business_city ILIKE '%${sqlSafe(marketQ)}%' OR b.page_path ILIKE '%${sqlSafe(slug)}%')`);
   }
 
+  // Use the same 3-way UNION as the rollup function to count ALL surfaces:
+  // city crawls → served_cities, neighborhood crawls → served_neighborhoods, profile crawls → agent_id
+  const nameFilter = agentQ ? `p.name ILIKE '%${sqlSafe(agentQ)}%'` : "true";
+  const marketSlug = marketQ ? marketQ.replace(/ /g, "-").toLowerCase() : "";
+  const marketFilter = marketQ ? `(p.business_city ILIKE '%${sqlSafe(marketQ)}%' OR p.served_cities @> to_jsonb('${sqlSafe(marketSlug)}'::text))` : "true";
+  const timeFilter = `b.crawled_at >= now() - interval '${interval}'`;
+
   const { data, error } = await sb.rpc("run_sql", {
-    query: `SELECT p.name, p.business_city, p.state_slug, b.bot_name, count(*)::int as crawls, max(b.crawled_at)::text as last_seen
-            FROM bot_crawl_logs b JOIN professionals p ON p.id = b.agent_id
-            WHERE ${conditions.join(" AND ")}
-            GROUP BY p.name, p.business_city, p.state_slug, b.bot_name
-            ORDER BY p.name, crawls DESC
-            LIMIT 200`,
+    query: `WITH agent_crawls AS (
+      -- A) City page crawls → agents who serve that city
+      SELECT p.id as agent_id, p.name, p.business_city, p.state_slug, b.bot_name, b.crawled_at
+      FROM bot_crawl_logs b
+      JOIN professionals p ON p.active = true
+        AND p.served_cities @> to_jsonb(split_part(b.page_path, '/', 3))
+      WHERE ${timeFilter}
+        AND b.page_path ~ '^/[a-z-]+/[a-z0-9-]+/top10realestateagents'
+        AND split_part(b.page_path, '/', 4) LIKE 'top10%'
+        AND b.bot_name IS NOT NULL
+        AND ${nameFilter} AND ${marketFilter}
+
+      UNION ALL
+
+      -- B) Neighborhood page crawls → agents who serve that neighborhood
+      SELECT p.id, p.name, p.business_city, p.state_slug, b.bot_name, b.crawled_at
+      FROM bot_crawl_logs b
+      JOIN professionals p ON p.active = true
+        AND p.served_neighborhoods @> to_jsonb(split_part(b.page_path, '/', 4))
+      WHERE ${timeFilter}
+        AND b.page_path ~ '^/[a-z-]+/[a-z0-9-]+/[a-z0-9-]+/top10realestateagents'
+        AND split_part(b.page_path, '/', 4) NOT LIKE 'top10%'
+        AND b.bot_name IS NOT NULL
+        AND ${nameFilter} AND ${marketFilter}
+
+      UNION ALL
+
+      -- C) Profile page crawls → direct agent match
+      SELECT p.id, p.name, p.business_city, p.state_slug, b.bot_name, b.crawled_at
+      FROM bot_crawl_logs b
+      JOIN professionals p ON p.active = true
+        AND p.canonical_slug = split_part(b.page_path, '/', 4)
+      WHERE ${timeFilter}
+        AND b.page_path ~ '^/[a-z-]+/agents/[a-z0-9-]+'
+        AND b.bot_name IS NOT NULL
+        AND ${nameFilter} AND ${marketFilter}
+    )
+    SELECT name, business_city, state_slug, bot_name, count(*)::int as crawls, max(crawled_at)::text as last_seen
+    FROM agent_crawls
+    GROUP BY name, business_city, state_slug, bot_name
+    ORDER BY name, crawls DESC
+    LIMIT 200`,
   });
 
   if (error) return `<div class="search-noresult"><h3>Search error</h3><p>${esc(error.message)}</p></div>`;
@@ -354,7 +397,7 @@ serve(async (req) => {
     const html = await renderPage(range, agentQ, marketQ);
     return new Response(html, {
       status: 200,
-      headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": hasSearch ? "no-cache" : "public, max-age=900, s-maxage=900", "X-Rendered": "serve-bot-crawl-stats-html", ...CORS },
+      headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-cache, no-store", "X-Rendered": "serve-bot-crawl-stats-html", ...CORS },
     });
   } catch (err) {
     return new Response(JSON.stringify({ error: "Failed to render", detail: String(err) }), { status: 500, headers: { ...CORS, "Content-Type": "application/json" } });
