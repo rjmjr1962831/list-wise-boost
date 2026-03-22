@@ -296,14 +296,14 @@ async function syncAccount(account: any) {
   const token = await getValidToken(account);
 
   const listRes = await fetch(
-    `https://www.googleapis.com/gmail/v1/users/me/messages?maxResults=20&q=newer_than:1d -from:me -in:trash`,
+    `https://www.googleapis.com/gmail/v1/users/me/messages?maxResults=50&q=newer_than:7d -in:trash`,
     { headers: { Authorization: `Bearer ${token}` } }
   );
   const list = await listRes.json();
   if (!list.messages) return { synced: 0 };
 
   let synced = 0;
-  for (const msg of list.messages.slice(0, 20)) {
+  for (const msg of list.messages.slice(0, 50)) {
     const { data: existing } = await supabase
       .from("crm_emails")
       .select("id")
@@ -333,6 +333,7 @@ async function syncAccount(account: any) {
       "hello@top10lists.us",
       "robert@toptenlists.us",
       "hello@toptenlists.us",
+      "mark@toptenlists.us",
     ]);
     const direction = OUR_ACCOUNTS.has(fromEmail.toLowerCase()) ? "outbound" : "inbound";
 
@@ -373,7 +374,14 @@ async function syncAccount(account: any) {
           .eq("email", fromLower)
           .limit(1)
           .maybeSingle();
-        if (!knownEnrollment && !knownContact && !knownPro) continue;
+        // Also check email_queue — agents we emailed via campaigns
+        const { data: knownQueued } = await supabase
+          .from("email_queue")
+          .select("id")
+          .eq("recipient_email", fromLower)
+          .limit(1)
+          .maybeSingle();
+        if (!knownEnrollment && !knownContact && !knownPro && !knownQueued) continue;
       }
     }
 

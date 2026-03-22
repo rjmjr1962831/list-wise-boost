@@ -31,6 +31,7 @@ const SENDER_ACCOUNTS = [
   "robert@toptenlists.us",
   "hello@top10lists.us",
   "robert@top10lists.us",
+  "mark@toptenlists.us",
 ];
 
 // Minimum seconds between sends per account (3 minutes)
@@ -41,6 +42,7 @@ const SENDER_DISPLAY_NAMES: Record<string, string> = {
   "robert@toptenlists.us": "Robert Maynard",
   "hello@top10lists.us": "Robert Maynard",
   "robert@top10lists.us": "Robert Maynard",
+  "mark@toptenlists.us": "Mark Garland",
 };
 
 const CAMPAIGN_START = new Date("2026-03-21T12:00:00Z"); // Reset: 40/day start, +10% daily
@@ -51,9 +53,22 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 // Helpers
 // ---------------------------------------------------------------------------
 
-function getDailyLimit(_account: string, daysSinceStart: number): number {
-  // All accounts: start at 40, +10% per day, no cap
-  return Math.floor(40 * Math.pow(1.10, daysSinceStart));
+// Per-account starting limits. top10lists.us domain is recovering — start lower.
+const ACCOUNT_BASE_LIMIT: Record<string, number> = {
+  "hello@toptenlists.us": 40,
+  "robert@toptenlists.us": 40,
+  "hello@top10lists.us": 25,
+  "robert@top10lists.us": 25,
+  "mark@toptenlists.us": 40,
+};
+
+// Compound at 10%/day until 300, then hold at 300.
+const MAX_DAILY_PER_ACCOUNT = 300;
+
+function getDailyLimit(account: string, daysSinceStart: number): number {
+  const base = ACCOUNT_BASE_LIMIT[account] ?? 40;
+  const compounded = Math.floor(base * Math.pow(1.10, daysSinceStart));
+  return Math.min(compounded, MAX_DAILY_PER_ACCOUNT);
 }
 
 /** Convert a Date to MST (UTC-7, Arizona — no DST). */
@@ -179,7 +194,7 @@ async function processAccount(senderAccount: string): Promise<AccountResult> {
       return result;
     }
 
-    // --- Check daily volume ---
+    // --- Check daily volume (read-only, for reporting) ---
     const { data: volumeRow } = await supabase
       .from("email_send_volume")
       .select("emails_sent")
@@ -195,8 +210,7 @@ async function processAccount(senderAccount: string): Promise<AccountResult> {
       return result;
     }
 
-    // --- Check campaign-level daily limit (all accounts combined) ---
-    // Sum ALL accounts' volume for this MST day to enforce a global cap
+    // --- Check global daily limit (all accounts combined, read-only) ---
     const { data: allVolumeRows } = await supabase
       .from("email_send_volume")
       .select("emails_sent")
@@ -206,13 +220,14 @@ async function processAccount(senderAccount: string): Promise<AccountResult> {
       (sum: number, r: { emails_sent: number }) => sum + (r.emails_sent ?? 0),
       0
     );
-    // Global daily cap = per-account limit × number of accounts
-    // (keeps total across all accounts within the intended ramp)
     const globalDailyLimit = dailyLimit * SENDER_ACCOUNTS.length;
     if (totalSentToday >= globalDailyLimit) {
       result.error = `Global daily limit reached (${totalSentToday}/${globalDailyLimit})`;
       return result;
     }
+
+    // NOTE: The actual atomic slot claim happens AFTER email is picked and
+    // campaign checks pass, right before sending. See "Atomic slot claim" below.
 
     // --- Check per-account cooldown (3-minute minimum between sends) ---
     const { data: lastSent } = await supabase
@@ -318,7 +333,28 @@ async function processAccount(senderAccount: string): Promise<AccountResult> {
       }
     }
 
-    // --- Claim the row (optimistic lock) ---
+    // --- Atomic slot claim: ensure volume row exists, then conditionally increment ---
+    // Step 1: Ensure row exists (idempotent)
+    await supabase.from("email_send_volume").upsert(
+      { sender_account: senderAccount, send_date: todayStr, emails_sent: 0, daily_limit: dailyLimit },
+      { onConflict: "sender_account,send_date", ignoreDuplicates: true }
+    );
+    // Step 2: Atomic conditional increment — only succeeds if under limit
+    const { data: slotClaimed } = await supabase
+      .from("email_send_volume")
+      .update({ emails_sent: sentToday + 1, daily_limit: dailyLimit })
+      .eq("sender_account", senderAccount)
+      .eq("send_date", todayStr)
+      .eq("emails_sent", sentToday) // CAS: only if count hasn't changed since we read it
+      .select("id")
+      .maybeSingle();
+
+    if (!slotClaimed) {
+      result.error = "Slot claim failed (concurrent send or limit reached)";
+      return result;
+    }
+
+    // --- Claim the queue row (optimistic lock) ---
     const { data: claimed, error: claimErr } = await supabase
       .from("email_queue")
       .update({ status: "sending", updated_at: now.toISOString() })
@@ -328,6 +364,13 @@ async function processAccount(senderAccount: string): Promise<AccountResult> {
       .maybeSingle();
 
     if (claimErr || !claimed) {
+      // Roll back the slot claim
+      await supabase
+        .from("email_send_volume")
+        .update({ emails_sent: sentToday })
+        .eq("sender_account", senderAccount)
+        .eq("send_date", todayStr)
+        .eq("emails_sent", sentToday + 1);
       result.error = "Failed to claim row (already claimed)";
       return result;
     }
@@ -435,29 +478,7 @@ async function processAccount(senderAccount: string): Promise<AccountResult> {
       })
       .eq("id", queueItem.id);
 
-    // --- Upsert email_send_volume ---
-    const { data: existingVolume } = await supabase
-      .from("email_send_volume")
-      .select("id, emails_sent")
-      .eq("sender_account", senderAccount)
-      .eq("send_date", todayStr)
-      .maybeSingle();
-
-    if (existingVolume) {
-      await supabase
-        .from("email_send_volume")
-        .update({
-          emails_sent: existingVolume.emails_sent + 1,
-        })
-        .eq("id", existingVolume.id);
-    } else {
-      await supabase.from("email_send_volume").insert({
-        sender_account: senderAccount,
-        send_date: todayStr,
-        emails_sent: 1,
-        daily_limit: dailyLimit,
-      });
-    }
+    // Volume already incremented atomically before send (slot claim above)
 
     // --- Increment campaign total_sent ---
     if (queueItem.campaign_id) {
@@ -540,7 +561,9 @@ serve(async (_req: Request) => {
     );
   }
 
-  // Process all sender accounts in parallel
+  // Process all accounts in parallel. Race conditions are prevented by
+  // atomic CAS slot claim (WHERE emails_sent = X) — if two accounts read
+  // the same count, only one increment succeeds, the other backs off.
   const results = await Promise.all(
     SENDER_ACCOUNTS.map((account) => processAccount(account))
   );
