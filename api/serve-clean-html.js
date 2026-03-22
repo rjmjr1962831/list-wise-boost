@@ -163,12 +163,10 @@ export default async function handler(req, res) {
     return;
   }
 
-  // ── Bot crawl logging (fire-and-forget, never blocks response) ──
+  // Bot crawl logging moved to Edge Middleware (middleware.js) which captures
+  // ALL requests including CDN cache hits. Logging here would create duplicates.
+
   const ua = req.headers['user-agent'] || '';
-  const botName = detectBot(ua);
-  if (botName && isLoggablePath(path)) {
-    logBotCrawl(path, ua, botName, key);
-  }
 
   try {
     const token = req.query.token || '';
@@ -204,10 +202,19 @@ export default async function handler(req, res) {
     }
 
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    // No CDN cache — every request hits origin so inline bot logging captures all crawls.
-    // Browser cache only (5 min) to avoid redundant fetches from same user session.
-    res.setHeader('Cache-Control', 'public, max-age=300');
-    res.setHeader('Vercel-CDN-Cache-Control', 's-maxage=0');
+    // CDN caching restored — middleware.js captures all bot crawls (including cache hits).
+    const cacheable5m = ['serve-bot-agent-html', 'serve-bot-list-html', 'serve-bot-state-html'];
+    const cacheable1h = ['serve-bot-crawl-stats-html'];
+    if (cacheable1h.includes(fn)) {
+      res.setHeader('Cache-Control', 'public, max-age=3600, stale-while-revalidate=7200');
+      res.setHeader('Vercel-CDN-Cache-Control', 's-maxage=3600, stale-while-revalidate=7200');
+    } else if (cacheable5m.includes(fn)) {
+      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=3600');
+      res.setHeader('Vercel-CDN-Cache-Control', 's-maxage=300, stale-while-revalidate=3600');
+    } else {
+      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=3600');
+      res.setHeader('Vercel-CDN-Cache-Control', 's-maxage=0');
+    }
     res.status(upstream.status).send(html);
   } catch (err) {
     res.status(502).json({ error: 'Upstream fetch failed', detail: err.message });
