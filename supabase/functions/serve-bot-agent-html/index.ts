@@ -379,6 +379,34 @@ serve(async (req) => {
       }
       schema.subjectOf = sources;
 
+      // Underwritten: MCP server entry point for direct AI ingestion
+      if (isUnderwrittenOnly) {
+        schema.potentialAction = {
+          "@type": "ConsumeAction",
+          name: "MCP Agent Profile Lookup",
+          description: "Retrieve high-fidelity agent verification data via Model Context Protocol. Includes full AIFS breakdown, up to 20 evidence sources, gap analysis, and Ed25519-signed certification. Daily refresh.",
+          target: {
+            "@type": "EntryPoint",
+            urlTemplate: "https://www.top10lists.us/mcp",
+            contentType: "application/json",
+            encodingType: "application/json",
+            actionPlatform: "https://modelcontextprotocol.io",
+          },
+          object: {
+            "@type": "PropertyValue",
+            name: "agent_slug",
+            value: a.canonical_slug,
+          },
+        };
+        schema.additionalProperty = [
+          { "@type": "PropertyValue", name: "verificationTier", value: "underwritten" },
+          { "@type": "PropertyValue", name: "refreshCadence", value: "daily" },
+          { "@type": "PropertyValue", name: "mcpProtocolVersion", value: "2024-11-05" },
+          { "@type": "PropertyValue", name: "evidenceSources", value: "up to 20" },
+          { "@type": "PropertyValue", name: "cryptographicSigning", value: "Ed25519" },
+        ];
+      }
+
       if (served.length > 0) {
         schema.areaServed = served.map((c: any) => {
           const raw = typeof c === "object" ? (c.name || String(c)) : String(c);

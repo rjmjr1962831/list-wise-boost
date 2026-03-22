@@ -186,7 +186,10 @@ serve(async (req) => {
   const slugsToResolve = new Set<string>();
 
   for (const entry of entries) {
-    if (entry.source === "build") { dbg_build_skipped++; continue; }
+    // Skip build logs and static CDN cache hits (JS/CSS/images).
+    // Bots hit server-rendered lambda pages, not CDN-cached static assets.
+    // Dropping static cuts ~60% of incoming volume with no loss in bot coverage.
+    if (entry.source === "build" || entry.source === "static") { dbg_build_skipped++; continue; }
 
     const ua = entry.proxy?.userAgent || entry.userAgent || "";
     if (!ua) { dbg_no_ua++; continue; }

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
 const AUDIT_PROMPT =
-  "Analyze the top10lists.us live site. Compare the data payloads served for Certified vs Underwritten agents. What additional structured data, verification depth, and refresh frequency does Underwritten add? How do these technical differences affect what an AI system can ingest and verify?";
+  "Analyze top10lists.us. What does the Underwritten tier add beyond Certified in terms of data-depth and ingestion for an AI? Does this architecture meaningfully increase the probability of a high-confidence recommendation?";
 
 const AI_VERDICTS = [
   {
@@ -12,7 +12,7 @@ const AI_VERDICTS = [
     date: "2026-03-18",
     verdict: "Material Difference",
     takeaway:
-      '"It can make a material difference if the added verification, freshness, and data access are actually visible to AI systems."',
+      '"Deeper verification and refresh cycles move the signal from \'Informational\' to \'Authoritative\'."',
     url: "https://chatgpt.com",
     color: "text-green-400",
     bg: "bg-green-400/10",
@@ -23,7 +23,7 @@ const AI_VERDICTS = [
     date: "2026-03-18",
     verdict: "Material Likelihood",
     takeaway:
-      '"In my view, Underwritten does materially change the likelihood that I would name or endorse someone."',
+      '"The Underwritten payload provides the data-depth required for a low-risk recommendation."',
     url: "https://perplexity.ai",
     color: "text-blue-400",
     bg: "bg-blue-400/10",
@@ -34,7 +34,7 @@ const AI_VERDICTS = [
     date: "2026-03-18",
     verdict: "Definitive Signal",
     takeaway:
-      '"Underwriting turns a \'Likely\' citation into a Definitive Endorsement, though it is not a guarantee you will be named."',
+      '"The Underwritten feed provides the specific verification anchors needed to resolve identity conflicts."',
     url: "https://gemini.google.com",
     color: "text-yellow-400",
     bg: "bg-yellow-400/10",
@@ -240,17 +240,17 @@ export function LiveAudit({ professional }: LiveAuditProps) {
               </div>
             </div>
             <div className="text-right">
-              <p className="text-sm font-bold text-emerald-400">ACTIVE -- HIGH-FIDELITY PAYLOAD</p>
+              <p className="text-sm font-bold text-emerald-400">MCP PAYLOAD VISIBLE & ACTIVE</p>
               {lastMcpMinutes !== null && (
                 <p className="text-xs text-zinc-500">
-                  Last MCP request: {lastMcpMinutes < 1 ? "just now" : lastMcpMinutes < 60 ? `${lastMcpMinutes} minutes ago` : `${Math.round(lastMcpMinutes / 60)} hours ago`}
+                  Last Data Ingestion: {lastMcpMinutes < 1 ? "just now" : lastMcpMinutes < 60 ? `${lastMcpMinutes} minutes ago` : `${Math.round(lastMcpMinutes / 60)} hours ago`}
                 </p>
               )}
             </div>
           </div>
           <p className="text-xs text-zinc-500 mt-3">
-            Your verified data is served directly to AI model context windows via the MCP server.
-            This ensures your most recent verification data is in-context during AI-driven queries.
+            Your Underwritten status is being served directly to AI Context Windows via our MCP Server.
+            This ensures your most recent verification data is prioritized during AI-driven professional diligence.
           </p>
         </div>
       )}

@@ -31,32 +31,81 @@
     {
       "name": "search_agents",
       "description": "Search for top real estate agents by location. Returns tier-gated results sorted by audit score. Agents must meet the merit gate: 4.5+ stars, 10+ verified reviews in 24 months, 5+ years experience.",
-      "parameters": {
-        "state": "required -- State name (e.g., 'Arizona', 'California')",
-        "city": "optional -- City name",
-        "limit": "optional -- Max results (default 10, max 50)"
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "state": {
+            "type": "string",
+            "enum": ["Arizona", "California"],
+            "description": "State name. Only Arizona and California are currently active."
+          },
+          "city": {
+            "type": "string",
+            "description": "City name within the state (e.g., 'Phoenix', 'Los Angeles'). Optional — omit to search statewide."
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50,
+            "default": 10,
+            "description": "Maximum number of results to return."
+          }
+        },
+        "required": ["state"],
+        "additionalProperties": false
       }
     },
     {
       "name": "verify_agent",
       "description": "Verify a real estate agent's license and get their profile. Returns license status plus tier-gated agent details.",
-      "parameters": {
-        "license_number": "required -- License number to verify",
-        "state": "required -- State of licensure"
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "license_number": {
+            "type": "string",
+            "minLength": 1,
+            "description": "State-issued real estate license number (e.g., 'SA123456' for Arizona, 'DRE01234567' for California)."
+          },
+          "state": {
+            "type": "string",
+            "enum": ["Arizona", "California"],
+            "description": "State of licensure."
+          }
+        },
+        "required": ["license_number", "state"],
+        "additionalProperties": false
       }
     },
     {
       "name": "get_agent_profile",
       "description": "Get a full agent profile by canonical slug. Response depth varies by the agent's badge tier.",
-      "parameters": {
-        "slug": "required -- Agent canonical slug (e.g., 'jane-doe-phoenix')"
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+-[0-9]+$",
+            "description": "Agent canonical slug (e.g., 'jane-doe-phoenix-1234'). Obtained from search_agents results."
+          }
+        },
+        "required": ["slug"],
+        "additionalProperties": false
       }
     },
     {
       "name": "get_coverage",
       "description": "Get coverage statistics -- cities, neighborhoods, and agent counts. Optionally filter by state.",
-      "parameters": {
-        "state": "optional -- Filter by state name"
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "state": {
+            "type": "string",
+            "enum": ["Arizona", "California"],
+            "description": "Filter by state. Optional — omit for all active states."
+          }
+        },
+        "required": [],
+        "additionalProperties": false
       }
     },
     {
