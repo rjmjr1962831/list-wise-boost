@@ -1,16 +1,16 @@
 {
-  "generated_at": "2026-03-22T15:10:45.341Z",
+  "generated_at": "2026-03-22T15:30:36.599Z",
   "base_url": "https://www.top10lists.us",
   "stats": {
-    "total_cities": 364,
-    "total_neighborhoods": 8083,
+    "total_cities": 447,
+    "total_neighborhoods": 8367,
     "states": 2
   },
   "states": {
     "arizona": {
       "name": "Arizona",
-      "cities_count": 36,
-      "neighborhoods_count": 1949,
+      "cities_count": 38,
+      "neighborhoods_count": 2233,
       "cities": [
         {
           "name": "Anthem",
@@ -46,6 +46,11 @@
           "name": "Carefree",
           "slug": "carefree",
           "url": "https://www.top10lists.us/arizona/carefree/top10realestateagents"
+        },
+        {
+          "name": "Casas Adobes",
+          "slug": "casas-adobes",
+          "url": "https://www.top10lists.us/arizona/casas-adobes/top10realestateagents"
         },
         {
           "name": "Cave Creek",
@@ -191,6 +196,11 @@
           "name": "Wickenburg",
           "slug": "wickenburg",
           "url": "https://www.top10lists.us/arizona/wickenburg/top10realestateagents"
+        },
+        {
+          "name": "Yuma",
+          "slug": "yuma",
+          "url": "https://www.top10lists.us/arizona/yuma/top10realestateagents"
         }
       ],
       "neighborhoods": {
@@ -938,6 +948,632 @@
             "slug": "winterhaven-estates",
             "zip": "86442",
             "url": "https://www.top10lists.us/arizona/bullhead-city/winterhaven-estates/top10realestateagents"
+          }
+        ],
+        "casas-adobes": [
+          {
+            "name": "Alta Mira Village",
+            "slug": "alta-mira-village",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/alta-mira-village/top10realestateagents"
+          },
+          {
+            "name": "Appian Estates at Casas Adbobes",
+            "slug": "appian-estates-at-casas-adbobes",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/appian-estates-at-casas-adbobes/top10realestateagents"
+          },
+          {
+            "name": "Briargate",
+            "slug": "briargate",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/briargate/top10realestateagents"
+          },
+          {
+            "name": "Bridlewood Ranch Estates",
+            "slug": "bridlewood-ranch-estates",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/bridlewood-ranch-estates/top10realestateagents"
+          },
+          {
+            "name": "Campos Adobes",
+            "slug": "campos-adobes",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/campos-adobes/top10realestateagents"
+          },
+          {
+            "name": "Canyon Terrace",
+            "slug": "canyon-terrace",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/canyon-terrace/top10realestateagents"
+          },
+          {
+            "name": "Casa Cananea",
+            "slug": "casa-cananea",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/casa-cananea/top10realestateagents"
+          },
+          {
+            "name": "Casa Pomona",
+            "slug": "casa-pomona",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/casa-pomona/top10realestateagents"
+          },
+          {
+            "name": "Casas Adobes Country Club Estates",
+            "slug": "casas-adobes-country-club-estates",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/casas-adobes-country-club-estates/top10realestateagents"
+          },
+          {
+            "name": "Casas Adobes Estates",
+            "slug": "casas-adobes-estates",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/casas-adobes-estates/top10realestateagents"
+          },
+          {
+            "name": "Casas Adobes Estates East",
+            "slug": "casas-adobes-estates-east",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/casas-adobes-estates-east/top10realestateagents"
+          },
+          {
+            "name": "Casas Adobes Estates West",
+            "slug": "casas-adobes-estates-west",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/casas-adobes-estates-west/top10realestateagents"
+          },
+          {
+            "name": "Casas Adobes Park",
+            "slug": "casas-adobes-park",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/casas-adobes-park/top10realestateagents"
+          },
+          {
+            "name": "Casas Adobes Park East",
+            "slug": "casas-adobes-park-east",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/casas-adobes-park-east/top10realestateagents"
+          },
+          {
+            "name": "Casas Adobes Pomelo Estates",
+            "slug": "casas-adobes-pomelo-estates",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/casas-adobes-pomelo-estates/top10realestateagents"
+          },
+          {
+            "name": "Casas Adobes Terrace",
+            "slug": "casas-adobes-terrace",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/casas-adobes-terrace/top10realestateagents"
+          },
+          {
+            "name": "Casas Adobes Villas",
+            "slug": "casas-adobes-villas",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/casas-adobes-villas/top10realestateagents"
+          },
+          {
+            "name": "Casas Adobes Vistas",
+            "slug": "casas-adobes-vistas",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/casas-adobes-vistas/top10realestateagents"
+          },
+          {
+            "name": "Casas Adobes West",
+            "slug": "casas-adobes-west",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/casas-adobes-west/top10realestateagents"
+          },
+          {
+            "name": "Casas Catalinas",
+            "slug": "casas-catalinas",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/casas-catalinas/top10realestateagents"
+          },
+          {
+            "name": "Casas Roma Estates",
+            "slug": "casas-roma-estates",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/casas-roma-estates/top10realestateagents"
+          },
+          {
+            "name": "Catalina Citrus Estates",
+            "slug": "catalina-citrus-estates",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/catalina-citrus-estates/top10realestateagents"
+          },
+          {
+            "name": "Catalina Village",
+            "slug": "catalina-village",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/catalina-village/top10realestateagents"
+          },
+          {
+            "name": "Cortaro Crossing",
+            "slug": "cortaro-crossing",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/cortaro-crossing/top10realestateagents"
+          },
+          {
+            "name": "Country Highlands",
+            "slug": "country-highlands",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/country-highlands/top10realestateagents"
+          },
+          {
+            "name": "Dateland",
+            "slug": "dateland",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/dateland/top10realestateagents"
+          },
+          {
+            "name": "Desert Treasures Estates",
+            "slug": "desert-treasures-estates",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/desert-treasures-estates/top10realestateagents"
+          },
+          {
+            "name": "Gatewood",
+            "slug": "gatewood",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/gatewood/top10realestateagents"
+          },
+          {
+            "name": "Halenar Estates",
+            "slug": "halenar-estates",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/halenar-estates/top10realestateagents"
+          },
+          {
+            "name": "Heritage Hills",
+            "slug": "heritage-hills",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/heritage-hills/top10realestateagents"
+          },
+          {
+            "name": "Highgate",
+            "slug": "highgate",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/highgate/top10realestateagents"
+          },
+          {
+            "name": "Horizon Hills",
+            "slug": "horizon-hills",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/horizon-hills/top10realestateagents"
+          },
+          {
+            "name": "Ironwood Acres",
+            "slug": "ironwood-acres",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/ironwood-acres/top10realestateagents"
+          },
+          {
+            "name": "Ironwood Mesa Estates",
+            "slug": "ironwood-mesa-estates",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/ironwood-mesa-estates/top10realestateagents"
+          },
+          {
+            "name": "Juniper Ridge",
+            "slug": "juniper-ridge",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/juniper-ridge/top10realestateagents"
+          },
+          {
+            "name": "Kachina Meadows",
+            "slug": "kachina-meadows",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/kachina-meadows/top10realestateagents"
+          },
+          {
+            "name": "La Canada Estates",
+            "slug": "la-canada-estates",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/la-canada-estates/top10realestateagents"
+          },
+          {
+            "name": "La Cholla Bluffs",
+            "slug": "la-cholla-bluffs",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/la-cholla-bluffs/top10realestateagents"
+          },
+          {
+            "name": "La Cholla Hills",
+            "slug": "la-cholla-hills",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/la-cholla-hills/top10realestateagents"
+          },
+          {
+            "name": "La Colina Estates",
+            "slug": "la-colina-estates",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/la-colina-estates/top10realestateagents"
+          },
+          {
+            "name": "La Estancia",
+            "slug": "la-estancia",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/la-estancia/top10realestateagents"
+          },
+          {
+            "name": "Las Brisas Estates",
+            "slug": "las-brisas-estates",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/las-brisas-estates/top10realestateagents"
+          },
+          {
+            "name": "Las Lindas",
+            "slug": "las-lindas",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/las-lindas/top10realestateagents"
+          },
+          {
+            "name": "Las Quintas Townhouses",
+            "slug": "las-quintas-townhouses",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/las-quintas-townhouses/top10realestateagents"
+          },
+          {
+            "name": "Leonardo Estates",
+            "slug": "leonardo-estates",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/leonardo-estates/top10realestateagents"
+          },
+          {
+            "name": "Linda Vista Estates",
+            "slug": "linda-vista-estates",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/linda-vista-estates/top10realestateagents"
+          },
+          {
+            "name": "Linda Vista Ridge",
+            "slug": "linda-vista-ridge",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/linda-vista-ridge/top10realestateagents"
+          },
+          {
+            "name": "Linda Vista Terrace",
+            "slug": "linda-vista-terrace",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/linda-vista-terrace/top10realestateagents"
+          },
+          {
+            "name": "Loma Alta Estates",
+            "slug": "loma-alta-estates",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/loma-alta-estates/top10realestateagents"
+          },
+          {
+            "name": "Los Arboles",
+            "slug": "los-arboles",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/los-arboles/top10realestateagents"
+          },
+          {
+            "name": "Mariposa Trail",
+            "slug": "mariposa-trail",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/mariposa-trail/top10realestateagents"
+          },
+          {
+            "name": "Maya Estates",
+            "slug": "maya-estates",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/maya-estates/top10realestateagents"
+          },
+          {
+            "name": "Meadowbrook",
+            "slug": "meadowbrook",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/meadowbrook/top10realestateagents"
+          },
+          {
+            "name": "Metropolitan",
+            "slug": "metropolitan",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/metropolitan/top10realestateagents"
+          },
+          {
+            "name": "Moondance Estates",
+            "slug": "moondance-estates",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/moondance-estates/top10realestateagents"
+          },
+          {
+            "name": "Moondance Patio Homes",
+            "slug": "moondance-patio-homes",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/moondance-patio-homes/top10realestateagents"
+          },
+          {
+            "name": "Moondance Village",
+            "slug": "moondance-village",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/moondance-village/top10realestateagents"
+          },
+          {
+            "name": "Mountain View Terrace",
+            "slug": "mountain-view-terrace",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/mountain-view-terrace/top10realestateagents"
+          },
+          {
+            "name": "New Day North",
+            "slug": "new-day-north",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/new-day-north/top10realestateagents"
+          },
+          {
+            "name": "North Manor",
+            "slug": "north-manor",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/north-manor/top10realestateagents"
+          },
+          {
+            "name": "North Point Terrace",
+            "slug": "north-point-terrace",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/north-point-terrace/top10realestateagents"
+          },
+          {
+            "name": "North Point Village",
+            "slug": "north-point-village",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/north-point-village/top10realestateagents"
+          },
+          {
+            "name": "North Ranch",
+            "slug": "north-ranch",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/north-ranch/top10realestateagents"
+          },
+          {
+            "name": "North Star Estates",
+            "slug": "north-star-estates",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/north-star-estates/top10realestateagents"
+          },
+          {
+            "name": "Oracle Foothills Estates",
+            "slug": "oracle-foothills-estates",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/oracle-foothills-estates/top10realestateagents"
+          },
+          {
+            "name": "Oracle Heights Estates",
+            "slug": "oracle-heights-estates",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/oracle-heights-estates/top10realestateagents"
+          },
+          {
+            "name": "Orange Grove Park",
+            "slug": "orange-grove-park",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/orange-grove-park/top10realestateagents"
+          },
+          {
+            "name": "Orange Grove Valley",
+            "slug": "orange-grove-valley",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/orange-grove-valley/top10realestateagents"
+          },
+          {
+            "name": "Orange Ranch Estates",
+            "slug": "orange-ranch-estates",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/orange-ranch-estates/top10realestateagents"
+          },
+          {
+            "name": "Orangewood Estates",
+            "slug": "orangewood-estates",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/orangewood-estates/top10realestateagents"
+          },
+          {
+            "name": "Orangewood North",
+            "slug": "orangewood-north",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/orangewood-north/top10realestateagents"
+          },
+          {
+            "name": "Overton Heights",
+            "slug": "overton-heights",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/overton-heights/top10realestateagents"
+          },
+          {
+            "name": "Paragon Estates",
+            "slug": "paragon-estates",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/paragon-estates/top10realestateagents"
+          },
+          {
+            "name": "Park Lane",
+            "slug": "park-lane",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/park-lane/top10realestateagents"
+          },
+          {
+            "name": "Paseo los Altos",
+            "slug": "paseo-los-altos",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/paseo-los-altos/top10realestateagents"
+          },
+          {
+            "name": "Quail Cove",
+            "slug": "quail-cove",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/quail-cove/top10realestateagents"
+          },
+          {
+            "name": "Raintree",
+            "slug": "raintree",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/raintree/top10realestateagents"
+          },
+          {
+            "name": "Ranchitos Nortes",
+            "slug": "ranchitos-nortes",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/ranchitos-nortes/top10realestateagents"
+          },
+          {
+            "name": "Rancho Esconido",
+            "slug": "rancho-esconido",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/rancho-esconido/top10realestateagents"
+          },
+          {
+            "name": "Rancho Feliz",
+            "slug": "rancho-feliz",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/rancho-feliz/top10realestateagents"
+          },
+          {
+            "name": "Rancho Palos Verdes",
+            "slug": "rancho-palos-verdes",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/rancho-palos-verdes/top10realestateagents"
+          },
+          {
+            "name": "Rancho Pomelo",
+            "slug": "rancho-pomelo",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/rancho-pomelo/top10realestateagents"
+          },
+          {
+            "name": "Ranchos de la Canada",
+            "slug": "ranchos-de-la-canada",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/ranchos-de-la-canada/top10realestateagents"
+          },
+          {
+            "name": "Ranchos de la Canada East",
+            "slug": "ranchos-de-la-canada-east",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/ranchos-de-la-canada-east/top10realestateagents"
+          },
+          {
+            "name": "Rosevale",
+            "slug": "rosevale",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/rosevale/top10realestateagents"
+          },
+          {
+            "name": "Saguaro Heights",
+            "slug": "saguaro-heights",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/saguaro-heights/top10realestateagents"
+          },
+          {
+            "name": "Samalayuca Estates",
+            "slug": "samalayuca-estates",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/samalayuca-estates/top10realestateagents"
+          },
+          {
+            "name": "Santa Fe Park",
+            "slug": "santa-fe-park",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/santa-fe-park/top10realestateagents"
+          },
+          {
+            "name": "Shadow View Estates",
+            "slug": "shadow-view-estates",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/shadow-view-estates/top10realestateagents"
+          },
+          {
+            "name": "Sheva Vistas",
+            "slug": "sheva-vistas",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/sheva-vistas/top10realestateagents"
+          },
+          {
+            "name": "Sotomayor Ranch",
+            "slug": "sotomayor-ranch",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/sotomayor-ranch/top10realestateagents"
+          },
+          {
+            "name": "Suncrest",
+            "slug": "suncrest",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/suncrest/top10realestateagents"
+          },
+          {
+            "name": "Sunset Manor",
+            "slug": "sunset-manor",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/sunset-manor/top10realestateagents"
+          },
+          {
+            "name": "Tangerine Acres",
+            "slug": "tangerine-acres",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/tangerine-acres/top10realestateagents"
+          },
+          {
+            "name": "Tecolote de Oro",
+            "slug": "tecolote-de-oro",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/tecolote-de-oro/top10realestateagents"
+          },
+          {
+            "name": "The Bluffs",
+            "slug": "the-bluffs",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/the-bluffs/top10realestateagents"
+          },
+          {
+            "name": "The National",
+            "slug": "the-national",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/the-national/top10realestateagents"
+          },
+          {
+            "name": "The Patios at Hobby Horse Ranch",
+            "slug": "the-patios-at-hobby-horse-ranch",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/the-patios-at-hobby-horse-ranch/top10realestateagents"
+          },
+          {
+            "name": "Tucson National",
+            "slug": "tucson-national",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/tucson-national/top10realestateagents"
+          },
+          {
+            "name": "Vista de la Canada",
+            "slug": "vista-de-la-canada",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/vista-de-la-canada/top10realestateagents"
+          },
+          {
+            "name": "Westward Look Heights",
+            "slug": "westward-look-heights",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/westward-look-heights/top10realestateagents"
+          },
+          {
+            "name": "Westward Look Terrace",
+            "slug": "westward-look-terrace",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/westward-look-terrace/top10realestateagents"
+          },
+          {
+            "name": "Wiegand Estates",
+            "slug": "wiegand-estates",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/wiegand-estates/top10realestateagents"
+          },
+          {
+            "name": "Wildwood Park",
+            "slug": "wildwood-park",
+            "zip": "85718",
+            "url": "https://www.top10lists.us/arizona/casas-adobes/wildwood-park/top10realestateagents"
           }
         ],
         "cave-creek": [
@@ -11943,12 +12579,1094 @@
             "zip": "85390",
             "url": "https://www.top10lists.us/arizona/wickenburg/vista-del-rio-estates/top10realestateagents"
           }
+        ],
+        "yuma": [
+          {
+            "name": "Amistad Estates",
+            "slug": "amistad-estates",
+            "zip": "85350",
+            "url": "https://www.top10lists.us/arizona/yuma/amistad-estates/top10realestateagents"
+          },
+          {
+            "name": "Arc Center",
+            "slug": "arc-center",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/arc-center/top10realestateagents"
+          },
+          {
+            "name": "Arcadia Meadows",
+            "slug": "arcadia-meadows",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/arcadia-meadows/top10realestateagents"
+          },
+          {
+            "name": "Arroyo del Fortuna",
+            "slug": "arroyo-del-fortuna",
+            "zip": "85367",
+            "url": "https://www.top10lists.us/arizona/yuma/arroyo-del-fortuna/top10realestateagents"
+          },
+          {
+            "name": "Arroyo Heights",
+            "slug": "arroyo-heights",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/arroyo-heights/top10realestateagents"
+          },
+          {
+            "name": "Arthur Tongeland Subdivision",
+            "slug": "arthur-tongeland-subdivision",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/arthur-tongeland-subdivision/top10realestateagents"
+          },
+          {
+            "name": "Atmar",
+            "slug": "atmar",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/atmar/top10realestateagents"
+          },
+          {
+            "name": "Avenues",
+            "slug": "avenues",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/avenues/top10realestateagents"
+          },
+          {
+            "name": "Bardeaux Oakx",
+            "slug": "bardeaux-oakx",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/bardeaux-oakx/top10realestateagents"
+          },
+          {
+            "name": "Barklay Ranch",
+            "slug": "barklay-ranch",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/barklay-ranch/top10realestateagents"
+          },
+          {
+            "name": "Barkley Ranch",
+            "slug": "barkley-ranch",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/barkley-ranch/top10realestateagents"
+          },
+          {
+            "name": "Basera",
+            "slug": "basera",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/basera/top10realestateagents"
+          },
+          {
+            "name": "Bel Aire Estates",
+            "slug": "bel-aire-estates",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/bel-aire-estates/top10realestateagents"
+          },
+          {
+            "name": "Brentwood Estates",
+            "slug": "brentwood-estates",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/brentwood-estates/top10realestateagents"
+          },
+          {
+            "name": "Brinley Avenue Historic District",
+            "slug": "brinley-avenue-historic-district",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/brinley-avenue-historic-district/top10realestateagents"
+          },
+          {
+            "name": "Casa De Encanto",
+            "slug": "casa-de-encanto",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/casa-de-encanto/top10realestateagents"
+          },
+          {
+            "name": "Casa de Oro",
+            "slug": "casa-de-oro",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/casa-de-oro/top10realestateagents"
+          },
+          {
+            "name": "Casa Manana Estates",
+            "slug": "casa-manana-estates",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/casa-manana-estates/top10realestateagents"
+          },
+          {
+            "name": "Century Heights",
+            "slug": "century-heights",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/century-heights/top10realestateagents"
+          },
+          {
+            "name": "Cibola Heights",
+            "slug": "cibola-heights",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/cibola-heights/top10realestateagents"
+          },
+          {
+            "name": "Cielo Verde",
+            "slug": "cielo-verde",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/cielo-verde/top10realestateagents"
+          },
+          {
+            "name": "Citrus Springs",
+            "slug": "citrus-springs",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/citrus-springs/top10realestateagents"
+          },
+          {
+            "name": "Country Acres",
+            "slug": "country-acres",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/country-acres/top10realestateagents"
+          },
+          {
+            "name": "Country Estates",
+            "slug": "country-estates",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/country-estates/top10realestateagents"
+          },
+          {
+            "name": "Country Meadows",
+            "slug": "country-meadows",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/country-meadows/top10realestateagents"
+          },
+          {
+            "name": "Crane",
+            "slug": "crane",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/crane/top10realestateagents"
+          },
+          {
+            "name": "Crane Annex",
+            "slug": "crane-annex",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/crane-annex/top10realestateagents"
+          },
+          {
+            "name": "Cresta Gila Estates",
+            "slug": "cresta-gila-estates",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/cresta-gila-estates/top10realestateagents"
+          },
+          {
+            "name": "Del Oro Mobile Estates",
+            "slug": "del-oro-mobile-estates",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/del-oro-mobile-estates/top10realestateagents"
+          },
+          {
+            "name": "Desert Foothills Estates",
+            "slug": "desert-foothills-estates",
+            "zip": "85367",
+            "url": "https://www.top10lists.us/arizona/yuma/desert-foothills-estates/top10realestateagents"
+          },
+          {
+            "name": "Desert Grove Mobile Estates",
+            "slug": "desert-grove-mobile-estates",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/desert-grove-mobile-estates/top10realestateagents"
+          },
+          {
+            "name": "Desert Lakes",
+            "slug": "desert-lakes",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/desert-lakes/top10realestateagents"
+          },
+          {
+            "name": "Desert Star Estates",
+            "slug": "desert-star-estates",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/desert-star-estates/top10realestateagents"
+          },
+          {
+            "name": "Desert View",
+            "slug": "desert-view",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/desert-view/top10realestateagents"
+          },
+          {
+            "name": "Dunes",
+            "slug": "dunes",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/dunes/top10realestateagents"
+          },
+          {
+            "name": "Eden Acres",
+            "slug": "eden-acres",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/eden-acres/top10realestateagents"
+          },
+          {
+            "name": "Edenwood West",
+            "slug": "edenwood-west",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/edenwood-west/top10realestateagents"
+          },
+          {
+            "name": "Eighth Street West",
+            "slug": "eighth-street-west",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/eighth-street-west/top10realestateagents"
+          },
+          {
+            "name": "El Descanco",
+            "slug": "el-descanco",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/el-descanco/top10realestateagents"
+          },
+          {
+            "name": "El Pueblocito",
+            "slug": "el-pueblocito",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/el-pueblocito/top10realestateagents"
+          },
+          {
+            "name": "El Rancho Encantado",
+            "slug": "el-rancho-encantado",
+            "zip": "85367",
+            "url": "https://www.top10lists.us/arizona/yuma/el-rancho-encantado/top10realestateagents"
+          },
+          {
+            "name": "Engler Estates",
+            "slug": "engler-estates",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/engler-estates/top10realestateagents"
+          },
+          {
+            "name": "Fair Acres",
+            "slug": "fair-acres",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/fair-acres/top10realestateagents"
+          },
+          {
+            "name": "Fairway",
+            "slug": "fairway",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/fairway/top10realestateagents"
+          },
+          {
+            "name": "Falls Ranch",
+            "slug": "falls-ranch",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/falls-ranch/top10realestateagents"
+          },
+          {
+            "name": "Farmer",
+            "slug": "farmer",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/farmer/top10realestateagents"
+          },
+          {
+            "name": "Foothills Mobile Estates",
+            "slug": "foothills-mobile-estates",
+            "zip": "85367",
+            "url": "https://www.top10lists.us/arizona/yuma/foothills-mobile-estates/top10realestateagents"
+          },
+          {
+            "name": "Fourth Avenue Extension",
+            "slug": "fourth-avenue-extension",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/fourth-avenue-extension/top10realestateagents"
+          },
+          {
+            "name": "Galahad Manor",
+            "slug": "galahad-manor",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/galahad-manor/top10realestateagents"
+          },
+          {
+            "name": "Greentree",
+            "slug": "greentree",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/greentree/top10realestateagents"
+          },
+          {
+            "name": "Hacienda Estates",
+            "slug": "hacienda-estates",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/hacienda-estates/top10realestateagents"
+          },
+          {
+            "name": "Hansberger",
+            "slug": "hansberger",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/hansberger/top10realestateagents"
+          },
+          {
+            "name": "Hazelwood Estates",
+            "slug": "hazelwood-estates",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/hazelwood-estates/top10realestateagents"
+          },
+          {
+            "name": "Hess Subdivision",
+            "slug": "hess-subdivision",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/hess-subdivision/top10realestateagents"
+          },
+          {
+            "name": "Hettema Estates",
+            "slug": "hettema-estates",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/hettema-estates/top10realestateagents"
+          },
+          {
+            "name": "Hettema Place",
+            "slug": "hettema-place",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/hettema-place/top10realestateagents"
+          },
+          {
+            "name": "Hillside Manor",
+            "slug": "hillside-manor",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/hillside-manor/top10realestateagents"
+          },
+          {
+            "name": "Historic Downtown in the Historic North End",
+            "slug": "historic-downtown-in-the-historic-north-end",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/historic-downtown-in-the-historic-north-end/top10realestateagents"
+          },
+          {
+            "name": "Historic Main Street",
+            "slug": "historic-main-street",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/historic-main-street/top10realestateagents"
+          },
+          {
+            "name": "Holmes",
+            "slug": "holmes",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/holmes/top10realestateagents"
+          },
+          {
+            "name": "Hume Subdivision",
+            "slug": "hume-subdivision",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/hume-subdivision/top10realestateagents"
+          },
+          {
+            "name": "Johnston's Subdivision",
+            "slug": "johnstons-subdivision",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/johnstons-subdivision/top10realestateagents"
+          },
+          {
+            "name": "Kachina Estates",
+            "slug": "kachina-estates",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/kachina-estates/top10realestateagents"
+          },
+          {
+            "name": "King Ranch",
+            "slug": "king-ranch",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/king-ranch/top10realestateagents"
+          },
+          {
+            "name": "Kofa Acres",
+            "slug": "kofa-acres",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/kofa-acres/top10realestateagents"
+          },
+          {
+            "name": "La Mesa Hermosa",
+            "slug": "la-mesa-hermosa",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/la-mesa-hermosa/top10realestateagents"
+          },
+          {
+            "name": "La Mesa Linda",
+            "slug": "la-mesa-linda",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/la-mesa-linda/top10realestateagents"
+          },
+          {
+            "name": "La Mesa Manor",
+            "slug": "la-mesa-manor",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/la-mesa-manor/top10realestateagents"
+          },
+          {
+            "name": "La Mesa Mobile Park",
+            "slug": "la-mesa-mobile-park",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/la-mesa-mobile-park/top10realestateagents"
+          },
+          {
+            "name": "La Mesa Park",
+            "slug": "la-mesa-park",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/la-mesa-park/top10realestateagents"
+          },
+          {
+            "name": "La Paloma Estates",
+            "slug": "la-paloma-estates",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/la-paloma-estates/top10realestateagents"
+          },
+          {
+            "name": "La Quinta",
+            "slug": "la-quinta",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/la-quinta/top10realestateagents"
+          },
+          {
+            "name": "La Verne Terrace",
+            "slug": "la-verne-terrace",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/la-verne-terrace/top10realestateagents"
+          },
+          {
+            "name": "Laguna",
+            "slug": "laguna",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/laguna/top10realestateagents"
+          },
+          {
+            "name": "Las Casitas",
+            "slug": "las-casitas",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/las-casitas/top10realestateagents"
+          },
+          {
+            "name": "Livingston Ranch",
+            "slug": "livingston-ranch",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/livingston-ranch/top10realestateagents"
+          },
+          {
+            "name": "Los Amigos",
+            "slug": "los-amigos",
+            "zip": "85367",
+            "url": "https://www.top10lists.us/arizona/yuma/los-amigos/top10realestateagents"
+          },
+          {
+            "name": "Los Arcos",
+            "slug": "los-arcos",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/los-arcos/top10realestateagents"
+          },
+          {
+            "name": "Los Nidos",
+            "slug": "los-nidos",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/los-nidos/top10realestateagents"
+          },
+          {
+            "name": "Lozano Subdivision",
+            "slug": "lozano-subdivision",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/lozano-subdivision/top10realestateagents"
+          },
+          {
+            "name": "Lynch",
+            "slug": "lynch",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/lynch/top10realestateagents"
+          },
+          {
+            "name": "Lynnwood Subdivision",
+            "slug": "lynnwood-subdivision",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/lynnwood-subdivision/top10realestateagents"
+          },
+          {
+            "name": "Magnolia Village",
+            "slug": "magnolia-village",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/magnolia-village/top10realestateagents"
+          },
+          {
+            "name": "Marable Subdivision",
+            "slug": "marable-subdivision",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/marable-subdivision/top10realestateagents"
+          },
+          {
+            "name": "Marable-Vaughn Subdivision",
+            "slug": "marable-vaughn-subdivision",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/marable-vaughn-subdivision/top10realestateagents"
+          },
+          {
+            "name": "Marta Place",
+            "slug": "marta-place",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/marta-place/top10realestateagents"
+          },
+          {
+            "name": "Meadowbrook",
+            "slug": "meadowbrook",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/meadowbrook/top10realestateagents"
+          },
+          {
+            "name": "Mesa del Sol",
+            "slug": "mesa-del-sol",
+            "zip": "85367",
+            "url": "https://www.top10lists.us/arizona/yuma/mesa-del-sol/top10realestateagents"
+          },
+          {
+            "name": "Mesa Heights",
+            "slug": "mesa-heights",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/mesa-heights/top10realestateagents"
+          },
+          {
+            "name": "Oasis Del Este",
+            "slug": "oasis-del-este",
+            "zip": "85367",
+            "url": "https://www.top10lists.us/arizona/yuma/oasis-del-este/top10realestateagents"
+          },
+          {
+            "name": "Ocotillo",
+            "slug": "ocotillo",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/ocotillo/top10realestateagents"
+          },
+          {
+            "name": "Old World Village",
+            "slug": "old-world-village",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/old-world-village/top10realestateagents"
+          },
+          {
+            "name": "Orange Grove",
+            "slug": "orange-grove",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/orange-grove/top10realestateagents"
+          },
+          {
+            "name": "Pacific Village Estates",
+            "slug": "pacific-village-estates",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/pacific-village-estates/top10realestateagents"
+          },
+          {
+            "name": "Palm Desert Mobile Estates",
+            "slug": "palm-desert-mobile-estates",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/palm-desert-mobile-estates/top10realestateagents"
+          },
+          {
+            "name": "Palmcroft Estates",
+            "slug": "palmcroft-estates",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/palmcroft-estates/top10realestateagents"
+          },
+          {
+            "name": "Palo Verde",
+            "slug": "palo-verde",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/palo-verde/top10realestateagents"
+          },
+          {
+            "name": "Palo Verde Estates",
+            "slug": "palo-verde-estates",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/palo-verde-estates/top10realestateagents"
+          },
+          {
+            "name": "Palo Verde Gardens",
+            "slug": "palo-verde-gardens",
+            "zip": "85350",
+            "url": "https://www.top10lists.us/arizona/yuma/palo-verde-gardens/top10realestateagents"
+          },
+          {
+            "name": "Parkway",
+            "slug": "parkway",
+            "zip": "85350",
+            "url": "https://www.top10lists.us/arizona/yuma/parkway/top10realestateagents"
+          },
+          {
+            "name": "Parkway Place",
+            "slug": "parkway-place",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/parkway-place/top10realestateagents"
+          },
+          {
+            "name": "Pecan Grove",
+            "slug": "pecan-grove",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/pecan-grove/top10realestateagents"
+          },
+          {
+            "name": "Pfeiffer Estates",
+            "slug": "pfeiffer-estates",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/pfeiffer-estates/top10realestateagents"
+          },
+          {
+            "name": "Picacho Village",
+            "slug": "picacho-village",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/picacho-village/top10realestateagents"
+          },
+          {
+            "name": "Pioneer Park",
+            "slug": "pioneer-park",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/pioneer-park/top10realestateagents"
+          },
+          {
+            "name": "Ponderosa Estates",
+            "slug": "ponderosa-estates",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/ponderosa-estates/top10realestateagents"
+          },
+          {
+            "name": "Ponderosa Valley Estates",
+            "slug": "ponderosa-valley-estates",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/ponderosa-valley-estates/top10realestateagents"
+          },
+          {
+            "name": "Pritchard Rancheros",
+            "slug": "pritchard-rancheros",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/pritchard-rancheros/top10realestateagents"
+          },
+          {
+            "name": "Purple Mountain",
+            "slug": "purple-mountain",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/purple-mountain/top10realestateagents"
+          },
+          {
+            "name": "Rancho Caballo",
+            "slug": "rancho-caballo",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/rancho-caballo/top10realestateagents"
+          },
+          {
+            "name": "Rancho del Oro",
+            "slug": "rancho-del-oro",
+            "zip": "85367",
+            "url": "https://www.top10lists.us/arizona/yuma/rancho-del-oro/top10realestateagents"
+          },
+          {
+            "name": "Rancho Desierto Grande",
+            "slug": "rancho-desierto-grande",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/rancho-desierto-grande/top10realestateagents"
+          },
+          {
+            "name": "Rancho Sereno",
+            "slug": "rancho-sereno",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/rancho-sereno/top10realestateagents"
+          },
+          {
+            "name": "Rancho Serreno",
+            "slug": "rancho-serreno",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/rancho-serreno/top10realestateagents"
+          },
+          {
+            "name": "Rancho Verde",
+            "slug": "rancho-verde",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/rancho-verde/top10realestateagents"
+          },
+          {
+            "name": "Rancho Viejo",
+            "slug": "rancho-viejo",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/rancho-viejo/top10realestateagents"
+          },
+          {
+            "name": "Rollow",
+            "slug": "rollow",
+            "zip": "85350",
+            "url": "https://www.top10lists.us/arizona/yuma/rollow/top10realestateagents"
+          },
+          {
+            "name": "Rossi Subdivision",
+            "slug": "rossi-subdivision",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/rossi-subdivision/top10realestateagents"
+          },
+          {
+            "name": "Ruby's Yumesa",
+            "slug": "rubys-yumesa",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/rubys-yumesa/top10realestateagents"
+          },
+          {
+            "name": "Saguaro",
+            "slug": "saguaro",
+            "zip": "85367",
+            "url": "https://www.top10lists.us/arizona/yuma/saguaro/top10realestateagents"
+          },
+          {
+            "name": "Saguaro Estates",
+            "slug": "saguaro-estates",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/saguaro-estates/top10realestateagents"
+          },
+          {
+            "name": "San Carlos",
+            "slug": "san-carlos",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/san-carlos/top10realestateagents"
+          },
+          {
+            "name": "San Marcos Villas",
+            "slug": "san-marcos-villas",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/san-marcos-villas/top10realestateagents"
+          },
+          {
+            "name": "Sanguinetti Manor",
+            "slug": "sanguinetti-manor",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/sanguinetti-manor/top10realestateagents"
+          },
+          {
+            "name": "Santa Maria",
+            "slug": "santa-maria",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/santa-maria/top10realestateagents"
+          },
+          {
+            "name": "Shangri la Village",
+            "slug": "shangri-la-village",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/shangri-la-village/top10realestateagents"
+          },
+          {
+            "name": "Sierra Montaña",
+            "slug": "sierra-monta-a",
+            "zip": "85367",
+            "url": "https://www.top10lists.us/arizona/yuma/sierra-monta-a/top10realestateagents"
+          },
+          {
+            "name": "Sierra Sands",
+            "slug": "sierra-sands",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/sierra-sands/top10realestateagents"
+          },
+          {
+            "name": "Sierra Sunset",
+            "slug": "sierra-sunset",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/sierra-sunset/top10realestateagents"
+          },
+          {
+            "name": "Siesta Acres",
+            "slug": "siesta-acres",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/siesta-acres/top10realestateagents"
+          },
+          {
+            "name": "Smith's Subdivision",
+            "slug": "smiths-subdivision",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/smiths-subdivision/top10realestateagents"
+          },
+          {
+            "name": "South Park Industrial District",
+            "slug": "south-park-industrial-district",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/south-park-industrial-district/top10realestateagents"
+          },
+          {
+            "name": "Southern Sands Mobile",
+            "slug": "southern-sands-mobile",
+            "zip": "85367",
+            "url": "https://www.top10lists.us/arizona/yuma/southern-sands-mobile/top10realestateagents"
+          },
+          {
+            "name": "Star Vista Estates",
+            "slug": "star-vista-estates",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/star-vista-estates/top10realestateagents"
+          },
+          {
+            "name": "Starview Mobile Estates",
+            "slug": "starview-mobile-estates",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/starview-mobile-estates/top10realestateagents"
+          },
+          {
+            "name": "Stewarts",
+            "slug": "stewarts",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/stewarts/top10realestateagents"
+          },
+          {
+            "name": "Suncrest Estates",
+            "slug": "suncrest-estates",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/suncrest-estates/top10realestateagents"
+          },
+          {
+            "name": "Sundance Village",
+            "slug": "sundance-village",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/sundance-village/top10realestateagents"
+          },
+          {
+            "name": "Sunset Heights",
+            "slug": "sunset-heights",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/sunset-heights/top10realestateagents"
+          },
+          {
+            "name": "Syverson",
+            "slug": "syverson",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/syverson/top10realestateagents"
+          },
+          {
+            "name": "The Foothills",
+            "slug": "the-foothills",
+            "zip": "85367",
+            "url": "https://www.top10lists.us/arizona/yuma/the-foothills/top10realestateagents"
+          },
+          {
+            "name": "The Speese",
+            "slug": "the-speese",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/the-speese/top10realestateagents"
+          },
+          {
+            "name": "The Village",
+            "slug": "the-village",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/the-village/top10realestateagents"
+          },
+          {
+            "name": "The Villas",
+            "slug": "the-villas",
+            "zip": "85367",
+            "url": "https://www.top10lists.us/arizona/yuma/the-villas/top10realestateagents"
+          },
+          {
+            "name": "Tierra Bonita",
+            "slug": "tierra-bonita",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/tierra-bonita/top10realestateagents"
+          },
+          {
+            "name": "Tierra Kino",
+            "slug": "tierra-kino",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/tierra-kino/top10realestateagents"
+          },
+          {
+            "name": "Tierra Mesa Estates",
+            "slug": "tierra-mesa-estates",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/tierra-mesa-estates/top10realestateagents"
+          },
+          {
+            "name": "Timmons",
+            "slug": "timmons",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/timmons/top10realestateagents"
+          },
+          {
+            "name": "Townsend",
+            "slug": "townsend",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/townsend/top10realestateagents"
+          },
+          {
+            "name": "Trail Estates",
+            "slug": "trail-estates",
+            "zip": "85367",
+            "url": "https://www.top10lists.us/arizona/yuma/trail-estates/top10realestateagents"
+          },
+          {
+            "name": "Tuscan Ranch",
+            "slug": "tuscan-ranch",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/tuscan-ranch/top10realestateagents"
+          },
+          {
+            "name": "Valle Sereno",
+            "slug": "valle-sereno",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/valle-sereno/top10realestateagents"
+          },
+          {
+            "name": "Valley Citrus Estates",
+            "slug": "valley-citrus-estates",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/valley-citrus-estates/top10realestateagents"
+          },
+          {
+            "name": "Valley View",
+            "slug": "valley-view",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/valley-view/top10realestateagents"
+          },
+          {
+            "name": "Venezia",
+            "slug": "venezia",
+            "zip": "85350",
+            "url": "https://www.top10lists.us/arizona/yuma/venezia/top10realestateagents"
+          },
+          {
+            "name": "Verde Valley Acres",
+            "slug": "verde-valley-acres",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/verde-valley-acres/top10realestateagents"
+          },
+          {
+            "name": "Victoria Meadows",
+            "slug": "victoria-meadows",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/victoria-meadows/top10realestateagents"
+          },
+          {
+            "name": "Villa Chaparral",
+            "slug": "villa-chaparral",
+            "zip": "85367",
+            "url": "https://www.top10lists.us/arizona/yuma/villa-chaparral/top10realestateagents"
+          },
+          {
+            "name": "Villa Cordova",
+            "slug": "villa-cordova",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/villa-cordova/top10realestateagents"
+          },
+          {
+            "name": "Villa del Rey Townhouses",
+            "slug": "villa-del-rey-townhouses",
+            "zip": "85367",
+            "url": "https://www.top10lists.us/arizona/yuma/villa-del-rey-townhouses/top10realestateagents"
+          },
+          {
+            "name": "Villa Hermosa",
+            "slug": "villa-hermosa",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/villa-hermosa/top10realestateagents"
+          },
+          {
+            "name": "Villa Palo Verde",
+            "slug": "villa-palo-verde",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/villa-palo-verde/top10realestateagents"
+          },
+          {
+            "name": "Villa Viejo Townhouses",
+            "slug": "villa-viejo-townhouses",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/villa-viejo-townhouses/top10realestateagents"
+          },
+          {
+            "name": "Vista Del Sol",
+            "slug": "vista-del-sol",
+            "zip": "85367",
+            "url": "https://www.top10lists.us/arizona/yuma/vista-del-sol/top10realestateagents"
+          },
+          {
+            "name": "Vista del Valle",
+            "slug": "vista-del-valle",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/vista-del-valle/top10realestateagents"
+          },
+          {
+            "name": "Vista Royale Townhouses",
+            "slug": "vista-royale-townhouses",
+            "zip": "85367",
+            "url": "https://www.top10lists.us/arizona/yuma/vista-royale-townhouses/top10realestateagents"
+          },
+          {
+            "name": "Welter's",
+            "slug": "welters",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/welters/top10realestateagents"
+          },
+          {
+            "name": "West Crane",
+            "slug": "west-crane",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/west-crane/top10realestateagents"
+          },
+          {
+            "name": "Western Professional Plaza",
+            "slug": "western-professional-plaza",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/western-professional-plaza/top10realestateagents"
+          },
+          {
+            "name": "Westridge",
+            "slug": "westridge",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/westridge/top10realestateagents"
+          },
+          {
+            "name": "Westridge Estates",
+            "slug": "westridge-estates",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/westridge-estates/top10realestateagents"
+          },
+          {
+            "name": "Yuma Corona",
+            "slug": "yuma-corona",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/yuma-corona/top10realestateagents"
+          },
+          {
+            "name": "Yuma Country Club",
+            "slug": "yuma-country-club",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/yuma-country-club/top10realestateagents"
+          },
+          {
+            "name": "Yuma East",
+            "slug": "yuma-east",
+            "zip": "85367",
+            "url": "https://www.top10lists.us/arizona/yuma/yuma-east/top10realestateagents"
+          },
+          {
+            "name": "Yuma East Estates",
+            "slug": "yuma-east-estates",
+            "zip": "85367",
+            "url": "https://www.top10lists.us/arizona/yuma/yuma-east-estates/top10realestateagents"
+          },
+          {
+            "name": "Yuma Heights",
+            "slug": "yuma-heights",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/yuma-heights/top10realestateagents"
+          },
+          {
+            "name": "Yuma Meadows",
+            "slug": "yuma-meadows",
+            "zip": "85367",
+            "url": "https://www.top10lists.us/arizona/yuma/yuma-meadows/top10realestateagents"
+          },
+          {
+            "name": "Yuma Mesa Vineyards",
+            "slug": "yuma-mesa-vineyards",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/yuma-mesa-vineyards/top10realestateagents"
+          },
+          {
+            "name": "Yuma Vineyards",
+            "slug": "yuma-vineyards",
+            "zip": "85364",
+            "url": "https://www.top10lists.us/arizona/yuma/yuma-vineyards/top10realestateagents"
+          },
+          {
+            "name": "Zocalo Gardens",
+            "slug": "zocalo-gardens",
+            "zip": "85350",
+            "url": "https://www.top10lists.us/arizona/yuma/zocalo-gardens/top10realestateagents"
+          }
         ]
       }
     },
     "california": {
       "name": "California",
-      "cities_count": 328,
+      "cities_count": 409,
       "neighborhoods_count": 6134,
       "cities": [
         {

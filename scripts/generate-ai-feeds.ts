@@ -162,8 +162,8 @@ function updateLlmsFull(counts: Counts, config: BusinessConfig): void {
   text = text.replace(/selected [\d,]+\s+--\s+fewer/g, `selected ${fmt(counts.agentsTotal)}  --  fewer`);
   // "3,263 selected" (in selectivity line)
   text = text.replace(/\([\d,]+ selected from/g, `(${fmt(counts.agentsTotal)} selected from`);
-  // "3,263 across Arizona and California"
-  text = text.replace(/[\d,]+ across Arizona and California/g, `${fmt(counts.agentsTotal)} across Arizona and California`);
+  // "3,263 across Arizona and California" or "3,263 active across Arizona and California"
+  text = text.replace(/[\d,]+\s+(?:active )?across Arizona and California/g, `${fmt(counts.agentsTotal)} active across Arizona and California`);
   // "3,263 certified professionals"
   text = text.replace(/[\d,]+ certified professionals/g, `${fmt(counts.agentsTotal)} certified professionals`);
 

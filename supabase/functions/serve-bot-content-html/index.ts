@@ -43,7 +43,7 @@ const CSS = `
 
 /* ── Live coverage counts from DB ──────────────────────────────────────── */
 interface CoverageCounts { total: number; az: number; ca: number; }
-const FALLBACK: CoverageCounts = { total: 3262, az: 872, ca: 2390 };
+const FALLBACK: CoverageCounts = { total: 3268, az: 878, ca: 2390 };
 
 async function getLiveCounts(): Promise<CoverageCounts> {
   try {

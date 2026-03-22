@@ -156,13 +156,11 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
     setEnrollment(data);
   };
 
-  const SAFE_ACCOUNTS = ["robert@toptenlists.us", "hello@toptenlists.us"];
   const loadAccounts = async () => {
     const { data } = await supabase.from("crm_email_accounts").select("email, display_name");
-    const safe = (data || []).filter((a: { email?: string }) => a.email && SAFE_ACCOUNTS.includes(a.email));
-    setAccounts(safe.length ? safe : SAFE_ACCOUNTS.map(email => ({ email, display_name: email })));
-    if (safe.length) setComposeFrom(safe[0].email);
-    else setComposeFrom(SAFE_ACCOUNTS[0]);
+    const all = (data || []).filter((a: { email?: string }) => !!a.email);
+    setAccounts(all);
+    if (all.length) setComposeFrom(all[0].email);
   };
 
   const formatPhone = (val: string) => {

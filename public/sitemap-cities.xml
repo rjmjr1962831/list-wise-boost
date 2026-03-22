@@ -43,6 +43,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://www.top10lists.us/arizona/casas-adobes/top10realestateagents</loc>
+    <lastmod>2026-03-22</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://www.top10lists.us/arizona/cave-creek/top10realestateagents</loc>
     <lastmod>2026-03-22</lastmod>
     <changefreq>daily</changefreq>
@@ -212,6 +218,12 @@
   </url>
   <url>
     <loc>https://www.top10lists.us/arizona/wickenburg/top10realestateagents</loc>
+    <lastmod>2026-03-22</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.top10lists.us/arizona/yuma/top10realestateagents</loc>
     <lastmod>2026-03-22</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>

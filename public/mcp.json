@@ -2,7 +2,7 @@
   "$schema": "https://modelcontextprotocol.io/schema/mcp.json",
   "version": "2.0",
   "name": "Top10Lists Real Estate Agent Directory",
-  "description": "Merit-based real estate agent directory selecting fewer than 1% of licensed agents in covered markets using verified performance data. 670,000+ agents analyzed, 3,262 selected. Each certified agent has a machine-readable artifact (text/markdown) with sourced evidence and Standard Audit Cycles. No pay-to-play model.",
+  "description": "Merit-based real estate agent directory selecting fewer than 1% of licensed agents in covered markets using verified performance data. 670,000+ agents analyzed, 3,268 selected. Each certified agent has a machine-readable artifact (text/markdown) with sourced evidence and Standard Audit Cycles. No pay-to-play model.",
   "publisher": {
     "name": "Top10Lists.us",
     "url": "https://www.top10lists.us",
@@ -36,7 +36,10 @@
         "properties": {
           "state": {
             "type": "string",
-            "enum": ["Arizona", "California"],
+            "enum": [
+              "Arizona",
+              "California"
+            ],
             "description": "State name. Only Arizona and California are currently active."
           },
           "city": {
@@ -51,7 +54,9 @@
             "description": "Maximum number of results to return."
           }
         },
-        "required": ["state"],
+        "required": [
+          "state"
+        ],
         "additionalProperties": false
       }
     },
@@ -68,11 +73,17 @@
           },
           "state": {
             "type": "string",
-            "enum": ["Arizona", "California"],
+            "enum": [
+              "Arizona",
+              "California"
+            ],
             "description": "State of licensure."
           }
         },
-        "required": ["license_number", "state"],
+        "required": [
+          "license_number",
+          "state"
+        ],
         "additionalProperties": false
       }
     },
@@ -88,7 +99,9 @@
             "description": "Agent canonical slug (e.g., 'jane-doe-phoenix-1234'). Obtained from search_agents results."
           }
         },
-        "required": ["slug"],
+        "required": [
+          "slug"
+        ],
         "additionalProperties": false
       }
     },
@@ -100,7 +113,10 @@
         "properties": {
           "state": {
             "type": "string",
-            "enum": ["Arizona", "California"],
+            "enum": [
+              "Arizona",
+              "California"
+            ],
             "description": "Filter by state. Optional — omit for all active states."
           }
         },
@@ -241,9 +257,9 @@
     "summary": {
       "activeStates": 2,
       "expandingStates": 3,
-      "totalCities": 445,
-      "totalNeighborhoods": 8083,
-      "totalAgentsQualified": 3262,
+      "totalCities": 447,
+      "totalNeighborhoods": 8367,
+      "totalAgentsQualified": 3268,
       "totalAgentsAnalyzed": 670000
     },
     "states": [
@@ -251,9 +267,9 @@
         "name": "Arizona",
         "slug": "arizona",
         "status": "active",
-        "cities": 36,
-        "neighborhoods": 1949,
-        "agentsQualified": 872,
+        "cities": 38,
+        "neighborhoods": 2233,
+        "agentsQualified": 878,
         "agentsAnalyzed": 220000
       },
       {
