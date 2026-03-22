@@ -159,10 +159,10 @@ async function fetchAllData() {
 
   const [botResult, summaryResult, marketResult, intentResult, recentResult, returnResult, mcpToolResult, mcpCityResult, mcpSummaryResult] = await Promise.all([
     sb.rpc("run_sql", {
-      query: `SELECT bot_name, count(*)::int as visits, count(DISTINCT agent_id)::int as agents_covered, max(crawled_at)::text as last_seen FROM bot_crawl_logs WHERE crawled_at >= now() - interval '30 days' GROUP BY bot_name ORDER BY visits DESC`,
+      query: `SELECT bot_name, count(*)::int as visits, count(DISTINCT agent_id)::int as agents_covered, max(crawled_at)::text as last_seen FROM bot_crawl_logs WHERE crawled_at >= now() - interval '30 days' AND bot_name IS NOT NULL GROUP BY bot_name ORDER BY visits DESC`,
     }),
     sb.rpc("run_sql", {
-      query: `SELECT count(*)::int as total_crawls, count(DISTINCT agent_id)::int as unique_agents, count(DISTINCT bot_name)::int as unique_bots, min(crawled_at)::text as earliest, max(crawled_at)::text as latest FROM bot_crawl_logs WHERE crawled_at >= now() - interval '30 days'`,
+      query: `SELECT count(*)::int as total_crawls, count(DISTINCT agent_id)::int as unique_agents, count(DISTINCT bot_name)::int as unique_bots, min(crawled_at)::text as earliest, max(crawled_at)::text as latest FROM bot_crawl_logs WHERE crawled_at >= now() - interval '30 days' AND bot_name IS NOT NULL`,
     }),
     sb.rpc("run_sql", {
       query: `WITH city_totals AS (
@@ -209,10 +209,10 @@ async function fetchAllData() {
       query: `SELECT bot_name, count(*)::int as visits, count(DISTINCT agent_id)::int as agents, max(crawled_at)::text as last_seen FROM bot_crawl_logs WHERE crawled_at >= now() - interval '30 days' AND bot_name IN ('ChatGPT-User', 'chatgpt-user', 'OAI-SearchBot', 'PerplexityBot', 'YouBot') GROUP BY bot_name ORDER BY visits DESC`,
     }),
     sb.rpc("run_sql", {
-      query: `SELECT b.bot_name, b.page_path, b.crawled_at::text, p.name, CASE WHEN p.business_city IS NULL OR p.business_city ~ '^[0-9]' OR lower(p.business_city) = 'anytown' OR p.business_city ~ '\\n' THEN NULL ELSE initcap(p.business_city) END as business_city FROM bot_crawl_logs b LEFT JOIN professionals p ON p.id = b.agent_id ORDER BY b.crawled_at DESC LIMIT 50`,
+      query: `SELECT b.bot_name, b.page_path, b.crawled_at::text, p.name, CASE WHEN p.business_city IS NULL OR p.business_city ~ '^[0-9]' OR lower(p.business_city) = 'anytown' OR p.business_city ~ '\\n' THEN NULL ELSE initcap(p.business_city) END as business_city FROM bot_crawl_logs b LEFT JOIN professionals p ON p.id = b.agent_id WHERE b.bot_name IS NOT NULL ORDER BY b.crawled_at DESC LIMIT 50`,
     }),
     sb.rpc("run_sql", {
-      query: `SELECT bot_name, count(DISTINCT agent_id)::int as total_agents, count(DISTINCT agent_id) FILTER (WHERE visit_days >= 2)::int as returning_agents FROM (SELECT bot_name, agent_id, count(DISTINCT crawled_at::date) as visit_days FROM bot_crawl_logs WHERE crawled_at >= now() - interval '30 days' AND agent_id IS NOT NULL GROUP BY bot_name, agent_id) sub GROUP BY bot_name ORDER BY total_agents DESC`,
+      query: `SELECT bot_name, count(DISTINCT agent_id)::int as total_agents, count(DISTINCT agent_id) FILTER (WHERE visit_days >= 2)::int as returning_agents FROM (SELECT bot_name, agent_id, count(DISTINCT crawled_at::date) as visit_days FROM bot_crawl_logs WHERE crawled_at >= now() - interval '30 days' AND agent_id IS NOT NULL AND bot_name IS NOT NULL GROUP BY bot_name, agent_id) sub GROUP BY bot_name ORDER BY total_agents DESC`,
     }),
     sb.rpc("run_sql", {
       query: `SELECT tool_name, count(*)::int as total_calls, count(DISTINCT city)::int as distinct_cities, max(created_at)::text as last_seen FROM mcp_request_logs WHERE created_at >= now() - interval '30 days' GROUP BY tool_name ORDER BY total_calls DESC`,
@@ -261,6 +261,7 @@ function formatTimeAbsolute(iso: string): string {
 function mergeBots(bots: BotRow[]): BotRow[] {
   const merged = new Map<string, BotRow>();
   for (const b of bots) {
+    if (!b.bot_name) continue;
     const key = b.bot_name.toLowerCase();
     const existing = merged.get(key);
     if (existing) {
@@ -277,6 +278,7 @@ function mergeBots(bots: BotRow[]): BotRow[] {
 function mergeReturns(returns: ReturnRow[]): ReturnRow[] {
   const merged = new Map<string, ReturnRow>();
   for (const r of returns) {
+    if (!r.bot_name) continue;
     const key = r.bot_name.toLowerCase();
     const existing = merged.get(key);
     if (existing) {
@@ -292,6 +294,7 @@ function mergeReturns(returns: ReturnRow[]): ReturnRow[] {
 function mergeIntent(intent: IntentRow[]): IntentRow[] {
   const merged = new Map<string, IntentRow>();
   for (const i of intent) {
+    if (!i.bot_name) continue;
     const key = i.bot_name.toLowerCase();
     const existing = merged.get(key);
     if (existing) {
