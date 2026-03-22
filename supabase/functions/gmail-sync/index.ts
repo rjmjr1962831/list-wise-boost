@@ -410,28 +410,40 @@ async function syncAccount(account: any) {
   return { synced };
 }
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+};
+
 serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { status: 204, headers: corsHeaders });
+  }
+
   const { data: accounts, error } = await supabase
     .from("crm_email_accounts")
     .select("*");
 
   if (error || !accounts?.length) {
     return new Response(JSON.stringify({ error: "No accounts connected" }), {
-      status: 200, headers: { "Content-Type": "application/json" }
+      status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" }
     });
   }
 
-  const results = [];
-  for (const account of accounts) {
-    try {
-      const result = await syncAccount(account);
-      results.push({ email: account.email, ...result });
-    } catch (e: any) {
-      results.push({ email: account.email, error: (e as Error).message });
-    }
-  }
+  // Sync all accounts in parallel to avoid 27s+ sequential timeout
+  const results = await Promise.all(
+    accounts.map(async (account: any) => {
+      try {
+        const result = await syncAccount(account);
+        return { email: account.email, ...result };
+      } catch (e: any) {
+        return { email: account.email, error: (e as Error).message };
+      }
+    })
+  );
 
   return new Response(JSON.stringify({ results }), {
-    headers: { "Content-Type": "application/json" }
+    headers: { ...corsHeaders, "Content-Type": "application/json" }
   });
 });
