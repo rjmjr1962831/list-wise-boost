@@ -33,6 +33,7 @@ serve(async (req) => {
       'sidebar_video_url',
       'company',
       'phone',
+      'cell_phone',
       'email',
       'website',
       'description',
@@ -44,7 +45,11 @@ serve(async (req) => {
       'social_instagram',
       'social_tiktok',
       'social_linkedin',
-      'city_id'
+      'city_id',
+      'nickname',
+      'phone_visible',
+      'email_visible',
+      'cell_phone_visible',
     ];
 
     if (!allowedFields.includes(field)) {

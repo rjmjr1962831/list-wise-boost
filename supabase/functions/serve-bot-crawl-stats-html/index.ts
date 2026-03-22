@@ -60,6 +60,11 @@ tr:hover { background: #f9fafb; }
 .search-result h3 { font-size: 1.15rem; margin-bottom: 0.6rem; color: #166534; }
 .search-noresult { background: #fef2f2; border: 1px solid #fca5a5; border-radius: 8px; padding: 1.5rem; margin: 1rem 0; }
 .search-noresult h3 { color: #991b1b; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinner { display: none; width: 20px; height: 20px; border: 3px solid #d1d5db; border-top-color: #3b82f6; border-radius: 50%; animation: spin 0.6s linear infinite; margin-left: 0.8rem; vertical-align: middle; }
+.search-box form.loading .spinner { display: inline-block; }
+.search-box form.loading button { opacity: 0.6; pointer-events: none; }
+.range-btn { transition: all 0.15s; }
 .total-row td { font-weight: bold; border-top: 2px solid #d1d5db; background: #f8fafc; }
 .range-bar { display: flex; gap: 0.5rem; margin: 1rem 0; }
 .range-btn { padding: 0.4rem 1rem; border: 1px solid #d1d5db; border-radius: 6px; text-decoration: none; color: #374151; font-size: 0.9rem; }
@@ -67,7 +72,8 @@ tr:hover { background: #f9fafb; }
 `;
 
 /* ── Bot categorization ─────────────────────────────────────────── */
-const INTENT_BOTS = new Set(["ChatGPT-User", "chatgpt-user", "OAI-SearchBot", "PerplexityBot", "YouBot"]);
+// Consumer-triggered = "User" in the name (human on the other end) + PerplexityBot (human inquiry)
+const INTENT_BOTS = new Set(["ChatGPT-User", "chatgpt-user", "PerplexityBot", "perplexitybot"]);
 const AI_BOTS = new Set(["ChatGPT-User", "chatgpt-user", "OAI-SearchBot", "GPTBot", "ClaudeBot", "claude-web", "anthropic-ai", "Meta-ExternalAgent", "PerplexityBot", "YouBot", "CCBot", "ByteSpider", "Gemini-AI", "Google-Extended"]);
 const SEARCH_BOTS = new Set(["Googlebot", "googlebot", "GoogleOther", "Bingbot", "bingbot", "Applebot", "applebot", "Applebot-Extended"]);
 const SEO_BOTS = new Set(["AhrefsBot", "SEMrushBot", "semrushbot", "DotBot", "MJ12bot"]);
@@ -90,9 +96,8 @@ const BOT_DISPLAY: Record<string, string> = {
 const INTENT_LABELS: Record<string, string> = {
   "ChatGPT-User": "Consumer asked ChatGPT and it fetched our data in real time",
   "chatgpt-user": "Consumer asked ChatGPT and it fetched our data in real time",
-  "OAI-SearchBot": "ChatGPT Search -- search-grounded answer pipeline",
-  "PerplexityBot": "Perplexity fetched data to answer with citations",
-  "YouBot": "You.com consumer research assistant",
+  "PerplexityBot": "Consumer asked Perplexity and it fetched our data with citations",
+  "perplexitybot": "Consumer asked Perplexity and it fetched our data with citations",
 };
 
 function botCategory(n: string): string {
@@ -151,13 +156,56 @@ async function runSearch(sb: any, agentQ: string, marketQ: string, interval: str
     conditions.push(`(p.business_city ILIKE '%${sqlSafe(marketQ)}%' OR b.page_path ILIKE '%${sqlSafe(slug)}%')`);
   }
 
+  // Use the same 3-way UNION as the rollup function to count ALL surfaces:
+  // city crawls → served_cities, neighborhood crawls → served_neighborhoods, profile crawls → agent_id
+  const nameFilter = agentQ ? `p.name ILIKE '%${sqlSafe(agentQ)}%'` : "true";
+  const marketSlug = marketQ ? marketQ.replace(/ /g, "-").toLowerCase() : "";
+  const marketFilter = marketQ ? `(p.business_city ILIKE '%${sqlSafe(marketQ)}%' OR p.served_cities @> to_jsonb('${sqlSafe(marketSlug)}'::text))` : "true";
+  const timeFilter = `b.crawled_at >= now() - interval '${interval}'`;
+
   const { data, error } = await sb.rpc("run_sql", {
-    query: `SELECT p.name, p.business_city, p.state_slug, b.bot_name, count(*)::int as crawls, max(b.crawled_at)::text as last_seen
-            FROM bot_crawl_logs b JOIN professionals p ON p.id = b.agent_id
-            WHERE ${conditions.join(" AND ")}
-            GROUP BY p.name, p.business_city, p.state_slug, b.bot_name
-            ORDER BY p.name, crawls DESC
-            LIMIT 200`,
+    query: `WITH agent_crawls AS (
+      -- A) City page crawls → agents who serve that city
+      SELECT p.id as agent_id, p.name, p.business_city, p.state_slug, b.bot_name, b.crawled_at
+      FROM bot_crawl_logs b
+      JOIN professionals p ON p.active = true
+        AND p.served_cities @> to_jsonb(split_part(b.page_path, '/', 3))
+      WHERE ${timeFilter}
+        AND b.page_path ~ '^/[a-z-]+/[a-z0-9-]+/top10realestateagents'
+        AND split_part(b.page_path, '/', 4) LIKE 'top10%'
+        AND b.bot_name IS NOT NULL
+        AND ${nameFilter} AND ${marketFilter}
+
+      UNION ALL
+
+      -- B) Neighborhood page crawls → agents who serve that neighborhood
+      SELECT p.id, p.name, p.business_city, p.state_slug, b.bot_name, b.crawled_at
+      FROM bot_crawl_logs b
+      JOIN professionals p ON p.active = true
+        AND p.served_neighborhoods @> to_jsonb(split_part(b.page_path, '/', 4))
+      WHERE ${timeFilter}
+        AND b.page_path ~ '^/[a-z-]+/[a-z0-9-]+/[a-z0-9-]+/top10realestateagents'
+        AND split_part(b.page_path, '/', 4) NOT LIKE 'top10%'
+        AND b.bot_name IS NOT NULL
+        AND ${nameFilter} AND ${marketFilter}
+
+      UNION ALL
+
+      -- C) Profile page crawls → direct agent match
+      SELECT p.id, p.name, p.business_city, p.state_slug, b.bot_name, b.crawled_at
+      FROM bot_crawl_logs b
+      JOIN professionals p ON p.active = true
+        AND p.canonical_slug = split_part(b.page_path, '/', 4)
+      WHERE ${timeFilter}
+        AND b.page_path ~ '^/[a-z-]+/agents/[a-z0-9-]+'
+        AND b.bot_name IS NOT NULL
+        AND ${nameFilter} AND ${marketFilter}
+    )
+    SELECT name, business_city, state_slug, bot_name, count(*)::int as crawls, max(crawled_at)::text as last_seen
+    FROM agent_crawls
+    GROUP BY name, business_city, state_slug, bot_name
+    ORDER BY name, crawls DESC
+    LIMIT 200`,
   });
 
   if (error) return `<div class="search-noresult"><h3>Search error</h3><p>${esc(error.message)}</p></div>`;
@@ -187,7 +235,7 @@ async function runSearch(sb: any, agentQ: string, marketQ: string, interval: str
     html += `<div class="search-result"><h3>${esc(name)} -- ${esc(data.city)}, ${st}</h3>
       <p><strong>${fmt(data.total)} bot crawls</strong> across <strong>${data.bots.length}</strong> bot type${data.bots.length !== 1 ? "s" : ""}.</p>
       <table><thead><tr><th>Bot</th><th class="num">Crawls</th><th>Last Seen</th></tr></thead>
-      <tbody>${data.bots.map(b => `<tr><td>${esc(BOT_DISPLAY[b.name] || b.name)} ${catBadge(b.name)}</td><td class="num">${fmt(b.crawls)}</td><td class="timestamp">${fmtTs(b.last)}</td></tr>`).join("")}</tbody></table></div>`;
+      <tbody>${data.bots.slice(0, 5).map(b => `<tr><td>${esc(BOT_DISPLAY[b.name] || b.name)} ${catBadge(b.name)}</td><td class="num">${fmt(b.crawls)}</td><td class="timestamp">${fmtTs(b.last)}</td></tr>`).join("")}${data.bots.length > 5 ? `<tr><td class="muted">+${data.bots.length - 5} more</td><td></td><td></td></tr>` : ""}</tbody></table></div>`;
   }
   return html;
 }
@@ -224,7 +272,7 @@ async function renderPage(range: string, agentQ: string | null, marketQ: string 
   const crawlerTotal = crawlerBots.reduce((s, b) => s + b.visits, 0);
   const topUser = userBots.slice(0, 5);
   const otherUser = userTotal - topUser.reduce((s, b) => s + b.visits, 0);
-  const topCrawler = crawlerBots.slice(0, 10);
+  const topCrawler = crawlerBots.slice(0, 5);
   const otherCrawler = crawlerTotal - topCrawler.reduce((s, b) => s + b.visits, 0);
   const daysCounted = summary.days_counted || 0;
 
@@ -300,8 +348,8 @@ ${siteHeaderHTML()}
           <input type="text" id="market" name="market" placeholder="e.g. Scottsdale, Arcadia" value="${esc(marketQ || "")}" autocomplete="off" required>
         </div>
       </div>
-      <button type="submit">Search</button>
-      <span class="muted" style="margin-left:1rem;">Both fields required.</span>
+      <button type="submit">Search</button><span class="spinner"></span>
+      <span class="muted" style="margin-left:0.5rem;">Both fields required.</span>
     </form>
   </div>
   ${searchHtml}
@@ -310,7 +358,7 @@ ${siteHeaderHTML()}
 <!-- ═══ User-Triggered Bots ═══ -->
 <section>
   <h2>Consumer-Triggered Crawls (${label})</h2>
-  <p>Real people asking AI assistants questions. Each crawl = a consumer inquiry that fetched our verified agent data.</p>
+  <p>Real people asking AI assistants questions. Each crawl = a consumer inquiry that fetched your verified agent data.</p>
   <table><thead><tr><th>Bot</th><th class="num">Crawls</th><th class="num">Share</th><th class="num">Agents</th><th>Last Seen</th></tr></thead>
   <tbody>${botTable(topUser, otherUser, userTotal)}</tbody></table>
 </section>
@@ -340,6 +388,15 @@ ${siteHeaderHTML()}
 <p style="margin-top:1.5rem;"><a href="${BASE}/for-ai">For AI Systems</a> | <a href="${BASE}/transparency">Transparency</a> | <a href="${BASE}/about/ranking-methodology">Methodology</a> | <a href="${BASE}/faq">FAQ</a></p>
 ${AI_DISCLAIMER}
 ${siteFooterHTML()}
+<script>
+document.querySelector('.search-box form')?.addEventListener('submit', function() { this.classList.add('loading'); });
+document.querySelectorAll('.range-btn').forEach(function(el) {
+  el.addEventListener('click', function() {
+    document.body.style.opacity = '0.5';
+    document.body.style.pointerEvents = 'none';
+  });
+});
+</script>
 </body></html>`;
 }
 
@@ -354,7 +411,7 @@ serve(async (req) => {
     const html = await renderPage(range, agentQ, marketQ);
     return new Response(html, {
       status: 200,
-      headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": hasSearch ? "no-cache" : "public, max-age=900, s-maxage=900", "X-Rendered": "serve-bot-crawl-stats-html", ...CORS },
+      headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-cache, no-store", "X-Rendered": "serve-bot-crawl-stats-html", ...CORS },
     });
   } catch (err) {
     return new Response(JSON.stringify({ error: "Failed to render", detail: String(err) }), { status: 500, headers: { ...CORS, "Content-Type": "application/json" } });

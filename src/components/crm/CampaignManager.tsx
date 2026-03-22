@@ -191,6 +191,7 @@ function CampaignWizard({
   const [loadingCount, setLoadingCount] = useState(false);
   const [savedLists] = useState<SavedListTemplate[]>(getSavedListTemplates);
   const [outputFields, setOutputFields] = useState<string[]>(["first_name", "last_name", "email", "magic_link", "city_name", "current_tier"]);
+  const [showMoreFields, setShowMoreFields] = useState(false);
 
   // Step 1: Create Email
   const [campaignName, setCampaignName] = useState("");
@@ -785,6 +786,13 @@ function CampaignWizard({
                 </div>
               </div>
 
+              {!showMoreFields && (
+                <button type="button" className="text-sm text-blue-500 hover:text-blue-700 underline font-medium"
+                  onClick={() => setShowMoreFields(true)}
+                >More fields (AIFS Score, AI Surfaces...)</button>
+              )}
+
+              {showMoreFields && (<>
               <div>
                 <div className="flex items-center gap-3 mb-1">
                   <Label className="text-xs text-muted-foreground">AIFS Score Fields</Label>
@@ -832,6 +840,7 @@ function CampaignWizard({
                   ))}
                 </div>
               </div>
+              </>)}
             </div>
 
             <div className="flex justify-between">

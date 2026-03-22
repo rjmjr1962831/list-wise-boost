@@ -367,7 +367,7 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
     return <div className="flex items-center justify-center p-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
   }
 
-  const profileUrl = pro.profile_link || (pro.canonical_slug ? `https://www.top10lists.us/professional/${pro.state_slug}/${pro.canonical_slug}` : null);
+  const profileUrl = pro.profile_link || (pro.canonical_slug ? `https://www.top10lists.us/${pro.state_slug}/agents/${pro.canonical_slug}` : null);
 
   const tabs = [
     { key: "overview" as const, label: "Overview", icon: User },

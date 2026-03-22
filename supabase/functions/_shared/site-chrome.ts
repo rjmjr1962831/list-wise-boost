@@ -80,6 +80,7 @@ export function siteHeaderHTML(): string {
       <a href="${BASE}/about">About</a>
       <a href="${BASE}/about/ranking-methodology">Methodology</a>
       <a href="${BASE}/faq">FAQ</a>
+      <a href="${BASE}/crawl-stats">Stats</a>
     </nav>
   </div>
 </header>`;

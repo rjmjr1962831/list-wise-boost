@@ -182,7 +182,12 @@ export default function AgentList() {
         {loading ? (
           <div className="p-8 text-center text-gray-500">Loading...</div>
         ) : agents.length === 0 ? (
-          <div className="p-8 text-center text-gray-500">No agents found</div>
+          <div className="p-8 text-center text-gray-500">
+            <p className="font-medium">No agents found</p>
+            {search && (
+              <p className="mt-2 text-sm">Try searching by agent name, partial name, or email domain (e.g. "beauvais" or "beauvaisrealestate.com")</p>
+            )}
+          </div>
         ) : (
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
