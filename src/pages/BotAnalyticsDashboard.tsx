@@ -1,560 +1,104 @@
-import React, { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Bot, TrendingUp, Eye, Activity, Zap } from "lucide-react";
-import { format } from "date-fns";
+import React, { useState } from "react";
 
-interface BotStat {
-  bot_name: string;
-  total_visits: number;
-}
-
-interface AgentView {
-  agent_slug: string;
-  total_crawls: number;
-  human_crawls: number;
-  bot_crawls: number;
-  bots: string[];
-  last_seen: string;
-}
-
-interface ListCrawl {
-  page_path: string;
-  location_label: string;
-  page_type: "city" | "neighborhood";
-  bot_name: string;
-  crawl_count: number;
-  agents_covered: number;
-  last_crawled: string;
-}
-
-interface McpStat {
-  tool_name: string;
-  total_calls: number;
-  distinct_agents: number;
-  distinct_cities: number;
-  last_seen: string;
-}
-
-interface SummaryStats {
-  total_bot_visits: number;
-  unique_bots: number;
-  unique_agents_covered: number;
-  list_page_crawls: number;
-  mcp_tool_calls: number;
-}
-
+/**
+ * Bot Analytics Dashboard — mirrors the serve-bot-crawl-stats-html edge function.
+ * Uses an iframe to render the authoritative crawl-stats page, avoiding data
+ * divergence between two implementations. The edge function has the correct
+ * 3-way UNION for agent attribution (city/neighborhood/profile crawls).
+ */
 export default function BotAnalyticsDashboard() {
-  const [summary, setSummary] = useState<SummaryStats | null>(null);
-  const [botStats, setBotStats] = useState<BotStat[]>([]);
-  const [agentViews, setAgentViews] = useState<AgentView[]>([]);
-  const [listCrawls, setListCrawls] = useState<ListCrawl[]>([]);
-  const [mcpStats, setMcpStats] = useState<McpStat[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [dateRange, setDateRange] = useState("7d");
+  const [range, setRange] = useState("30d");
+  const [agent, setAgent] = useState("");
+  const [market, setMarket] = useState("");
+  const [searchAgent, setSearchAgent] = useState("");
+  const [searchMarket, setSearchMarket] = useState("");
 
-  useEffect(() => {
-    loadAnalytics();
-  }, [dateRange]);
-
-  const loadAnalytics = async () => {
-    setLoading(true);
-
-    const daysAgo = dateRange === "24h" ? 1 : dateRange === "7d" ? 7 : 30;
-    const startDate = new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000).toISOString();
-
-    // All aggregation server-side via run_sql -- no PostgREST row-cap risk
-
-    // 1. Summary
-    const { data: summaryRaw } = await supabase.rpc("run_sql", { query: `
-      SELECT
-        COUNT(*)::int                       AS total_visits,
-        COUNT(DISTINCT bot_name)::int       AS unique_bots,
-        COUNT(DISTINCT agent_id)::int       AS unique_agents_covered,
-        COUNT(*)
-          FILTER (WHERE page_path NOT LIKE '%/agents/%')::int AS list_page_crawls
-      FROM bot_crawl_logs
-      WHERE crawled_at >= '${startDate}'
-    ` });
-    const s = Array.isArray(summaryRaw) ? summaryRaw[0] : null;
-    // 5. MCP tool call count
-    const { data: mcpCountRaw } = await supabase.rpc("run_sql", { query: `
-      SELECT COUNT(*)::int AS mcp_total
-      FROM mcp_request_logs
-      WHERE created_at >= '${startDate}'
-    ` });
-    const mcpTotal = Array.isArray(mcpCountRaw) ? mcpCountRaw[0]?.mcp_total ?? 0 : 0;
-
-    setSummary({
-      total_bot_visits:      s?.total_visits         ?? 0,
-      unique_bots:           s?.unique_bots          ?? 0,
-      unique_agents_covered: s?.unique_agents_covered ?? 0,
-      list_page_crawls:      s?.list_page_crawls     ?? 0,
-      mcp_tool_calls:        mcpTotal,
-    });
-
-    // 2. Bot breakdown
-    const { data: botBreakdown } = await supabase.rpc("run_sql", { query: `
-      SELECT bot_name, COUNT(*)::int AS total_visits
-      FROM bot_crawl_logs
-      WHERE crawled_at >= '${startDate}'
-      GROUP BY bot_name
-      ORDER BY total_visits DESC
-    ` });
-    setBotStats(
-      (Array.isArray(botBreakdown) ? botBreakdown : []).map((r: any) => ({
-        bot_name: r.bot_name || "Unknown",
-        total_visits: r.total_visits,
-      }))
-    );
-
-    // 3. Agent coverage -- from pre-computed agent_ai_surfaces + by_bot tables
-    const { data: recentRaw } = await supabase.rpc("run_sql", { query: `
-      SELECT
-        p.canonical_slug AS agent_slug,
-        s.total_surfaces AS total_crawls,
-        COALESCE((
-          SELECT SUM(bb.crawls)::int FROM agent_ai_surfaces_by_bot bb
-          WHERE bb.agent_id = s.agent_id
-            AND bb.bot_name IN ('ChatGPT-User', 'OAI-SearchBot', 'PerplexityBot')
-        ), 0) AS human_crawls,
-        COALESCE((
-          SELECT SUM(bb.crawls)::int FROM agent_ai_surfaces_by_bot bb
-          WHERE bb.agent_id = s.agent_id
-            AND bb.bot_name NOT IN ('ChatGPT-User', 'OAI-SearchBot', 'PerplexityBot')
-        ), 0) AS bot_crawls,
-        (SELECT array_agg(DISTINCT bb.bot_name ORDER BY bb.bot_name)
-         FROM agent_ai_surfaces_by_bot bb WHERE bb.agent_id = s.agent_id) AS bots,
-        s.computed_at AS last_seen
-      FROM agent_ai_surfaces s
-      JOIN professionals p ON p.id = s.agent_id AND p.active = true
-      ORDER BY s.total_surfaces DESC
-      LIMIT 300
-    ` });
-    setAgentViews(
-      (Array.isArray(recentRaw) ? recentRaw : []).map((r: any) => ({
-        agent_slug:   r.agent_slug || "unknown",
-        total_crawls: r.total_crawls,
-        human_crawls: r.human_crawls,
-        bot_crawls:   r.bot_crawls,
-        bots:         Array.isArray(r.bots) ? r.bots.filter(Boolean) : [],
-        last_seen:    r.last_seen,
-      }))
-    );
-
-    // 4. List page crawls -- one row per distinct (page_path, bot_name) event window
-    const { data: listRaw } = await supabase.rpc("run_sql", { query: `
-      SELECT
-        b.page_path,
-        b.bot_name,
-        COUNT(*)::int AS crawl_count,
-        MAX(b.crawled_at) AS last_crawled,
-        (SELECT count(*)::int FROM professionals p2
-         WHERE p2.active = true
-           AND p2.state_slug = split_part(b.page_path, '/', 2)
-           AND LOWER(p2.business_city) = LOWER(replace(split_part(b.page_path, '/', 3), '-', ' '))
-        ) AS agents_covered
-      FROM bot_crawl_logs b
-      WHERE b.crawled_at >= '${startDate}'
-        AND b.page_path NOT LIKE '%/agents/%'
-      GROUP BY b.page_path, b.bot_name
-      ORDER BY last_crawled DESC
-      LIMIT 100
-    ` });
-    setListCrawls(
-      (Array.isArray(listRaw) ? listRaw : []).map((r: any) => {
-        const parts = r.page_path?.split("/").filter(Boolean) || [];
-        const isNh = parts.length >= 4;
-        const location_label = isNh
-          ? `${parts[3].replace(/-/g, " ")}, ${parts[1].replace(/-/g, " ")}`
-          : `${parts[1]?.replace(/-/g, " ") || r.page_path}, ${parts[0] || ""}`;
-        return {
-          page_path:      r.page_path,
-          location_label,
-          page_type:      isNh ? "neighborhood" : "city",
-          bot_name:       r.bot_name || "Unknown",
-          crawl_count:    r.crawl_count,
-          agents_covered: r.agents_covered || 0,
-          last_crawled:   r.last_crawled,
-        } as ListCrawl;
-      })
-    );
-
-    // 6. MCP stats by tool
-    const { data: mcpRaw } = await supabase.rpc("run_sql", { query: `
-      SELECT tool_name, COUNT(*)::int AS total_calls,
-             COUNT(DISTINCT city)::int AS distinct_cities,
-             MAX(created_at)::text AS last_seen
-      FROM mcp_request_logs
-      WHERE created_at >= '${startDate}'
-      GROUP BY tool_name
-      ORDER BY total_calls DESC
-    ` });
-    setMcpStats(
-      (Array.isArray(mcpRaw) ? mcpRaw : []).map((r: any) => ({
-        tool_name: r.tool_name,
-        total_calls: r.total_calls,
-        distinct_agents: 0,
-        distinct_cities: r.distinct_cities,
-        last_seen: r.last_seen,
-      }))
-    );
-
-    setLoading(false);
+  const buildUrl = () => {
+    const base = "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/serve-bot-crawl-stats-html";
+    const params = new URLSearchParams({ range });
+    if (searchAgent) params.set("agent", searchAgent);
+    if (searchMarket) params.set("market", searchMarket);
+    return `${base}?${params.toString()}`;
   };
 
-  // Hex colors for bot badges -- avoids Tailwind purge and custom color override issues
-  const BOT_COLORS: Record<string, string> = {
-    "Googlebot":          "#3B82F6", // blue
-    "Google-Extended":    "#60A5FA", // blue-light
-    "GoogleOther":        "#93C5FD", // blue-lighter
-    "ClaudeBot":          "#8B5CF6", // purple
-    "Anthropic-AI":       "#7C3AED", // violet
-    "Claude-Web":         "#A78BFA", // violet-light
-    "GPTBot":             "#10B981", // emerald
-    "ChatGPT-User":       "#34D399", // emerald-light
-    "OAI-SearchBot":      "#059669", // emerald-dark
-    "Bingbot":            "#F97316", // orange
-    "BingPreview":        "#FB923C", // orange-light
-    "PerplexityBot":      "#EC4899", // pink
-    "Twitterbot":         "#0EA5E9", // sky
-    "LinkedInBot":        "#1D4ED8", // blue-dark
-    "Meta-ExternalAgent": "#6366F1", // indigo (hex, bypasses override)
-    "FacebookExternalHit":"#4F46E5", // indigo-dark
-    "AhrefsBot":          "#EAB308", // yellow
-    "SEMrushBot":         "#F59E0B", // amber
-    "ByteSpider":         "#14B8A6", // teal
-    "Applebot":           "#9CA3AF", // gray
-    "Applebot-Extended":  "#D1D5DB", // gray-light
-    "YandexBot":          "#EF4444", // red
-    "BaiduSpider":        "#DC2626", // red-dark
-    "DuckDuckBot":        "#F87171", // red-light
-    "CCBot":              "#6B7280", // gray-medium
-    "AI2Bot":             "#0D9488", // teal-dark
-    "Gemini":             "#4285F4", // google-blue
-    "Mistral":            "#FF6B35", // coral
+  const handleSearch = () => {
+    setSearchAgent(agent);
+    setSearchMarket(market);
   };
-
-  const getBotBadgeStyle = (botName: string): React.CSSProperties => ({
-    backgroundColor: BOT_COLORS[botName] || "#6B7280",
-    color: "#fff",
-    border: "none",
-  });
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin">
-          <Bot className="h-8 w-8" />
-        </div>
-      </div>
-    );
-  }
 
   return (
-    <div className="container mx-auto py-8 space-y-8">
-      <div className="flex items-center justify-between">
+    <div className="container mx-auto py-6 space-y-4">
+      <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Bot Analytics Dashboard</h1>
-          <p className="text-muted-foreground mt-2">
-            AI and search bot crawl activity across top10lists.us
-          </p>
+          <h1 className="text-2xl font-bold">Bot Analytics Dashboard</h1>
+          <p className="text-sm text-muted-foreground">Live crawl statistics from serve-bot-crawl-stats-html</p>
         </div>
 
         <div className="flex gap-2">
-          {["24h", "7d", "30d"].map((range) => (
+          {(["24h", "7d", "30d"] as const).map((r) => (
             <button
-              key={range}
-              onClick={() => setDateRange(range)}
-              className={`px-4 py-2 rounded-lg ${
-                dateRange === range
+              key={r}
+              onClick={() => { setRange(r); setSearchAgent(agent); setSearchMarket(market); }}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                range === r
                   ? "bg-primary text-primary-foreground"
                   : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
               }`}
             >
-              {range === "24h" ? "24 Hours" : range === "7d" ? "7 Days" : "30 Days"}
+              {r === "24h" ? "24 Hours" : r === "7d" ? "7 Days" : "30 Days"}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Bot Visits</CardTitle>
-            <Activity className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{(summary?.total_bot_visits || 0).toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground">Across all pages</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Unique Bot Types</CardTitle>
-            <Bot className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{summary?.unique_bots || 0}</div>
-            <p className="text-xs text-muted-foreground">Distinct crawlers seen</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Agents Seen by AI</CardTitle>
-            <Eye className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{(summary?.unique_agents_covered || 0).toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground">Unique agents crawled</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">List Page Crawls</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{(summary?.list_page_crawls || 0).toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground">City & neighborhood page hits</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">MCP Tool Calls</CardTitle>
-            <Zap className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{(summary?.mcp_tool_calls || 0).toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground">Direct AI queries via MCP</p>
-          </CardContent>
-        </Card>
+      {/* Agent search bar */}
+      <div className="flex gap-2 items-end flex-wrap">
+        <div>
+          <label className="text-xs text-muted-foreground block mb-1">Agent Name</label>
+          <input
+            type="text"
+            value={agent}
+            onChange={(e) => setAgent(e.target.value)}
+            placeholder="e.g. Dina Beauvais"
+            className="border rounded px-3 py-2 text-sm w-48 bg-background"
+            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+          />
+        </div>
+        <div>
+          <label className="text-xs text-muted-foreground block mb-1">City / Neighborhood</label>
+          <input
+            type="text"
+            value={market}
+            onChange={(e) => setMarket(e.target.value)}
+            placeholder="e.g. Scottsdale"
+            className="border rounded px-3 py-2 text-sm w-48 bg-background"
+            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+          />
+        </div>
+        <button
+          onClick={handleSearch}
+          className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium"
+        >
+          Search
+        </button>
+        {(searchAgent || searchMarket) && (
+          <button
+            onClick={() => { setAgent(""); setMarket(""); setSearchAgent(""); setSearchMarket(""); }}
+            className="px-3 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground"
+          >
+            Clear
+          </button>
+        )}
       </div>
 
-      {/* Tabs */}
-      <Tabs defaultValue="bots" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="bots">Bot Breakdown</TabsTrigger>
-          <TabsTrigger value="agents">Agent Coverage</TabsTrigger>
-          <TabsTrigger value="list-pages">List Page Crawls</TabsTrigger>
-          <TabsTrigger value="mcp">MCP Tool Calls</TabsTrigger>
-        </TabsList>
-
-        {/* Bot Breakdown */}
-        <TabsContent value="bots" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Bot Activity by Type</CardTitle>
-              <CardDescription>Total crawl events per bot, across all page types</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Bot</TableHead>
-                    <TableHead className="text-right">Total Visits</TableHead>
-                    <TableHead className="text-right">Share</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {botStats.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={3} className="text-center text-muted-foreground py-8">
-                        No bot activity in this period.
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    botStats.map((stat) => {
-                      const total = summary?.total_bot_visits || 1;
-                      const pct = ((stat.total_visits / total) * 100).toFixed(1);
-                      return (
-                        <TableRow key={stat.bot_name}>
-                          <TableCell>
-                            <Badge style={getBotBadgeStyle(stat.bot_name)}>
-                              {stat.bot_name}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-right font-mono">
-                            {stat.total_visits.toLocaleString()}
-                          </TableCell>
-                          <TableCell className="text-right text-muted-foreground">
-                            {pct}%
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })
-                  )}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Agent Coverage */}
-        <TabsContent value="agents" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Agent AI Surfaces (7-day)</CardTitle>
-              <CardDescription>
-                Every crawl of a page where an agent appears counts as a surface. Human = user-initiated AI queries (ChatGPT, Perplexity). Bot = automated crawlers.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Agent</TableHead>
-                    <TableHead className="text-right">Total</TableHead>
-                    <TableHead className="text-right">Human</TableHead>
-                    <TableHead className="text-right">Bot</TableHead>
-                    <TableHead>Bots</TableHead>
-                    <TableHead>Last Computed</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {agentViews.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
-                        No agent coverage recorded in this period.
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    agentViews.map((view) => (
-                      <TableRow key={view.agent_slug}>
-                        <TableCell className="font-medium text-sm">{view.agent_slug}</TableCell>
-                        <TableCell className="text-right font-mono font-semibold">{view.total_crawls.toLocaleString()}</TableCell>
-                        <TableCell className="text-right text-muted-foreground text-sm">{view.human_crawls.toLocaleString()}</TableCell>
-                        <TableCell className="text-right text-muted-foreground text-sm">{view.bot_crawls.toLocaleString()}</TableCell>
-                        <TableCell>
-                          <div className="flex flex-wrap gap-1">
-                            {view.bots.map((bot) => (
-                              <Badge key={bot} style={getBotBadgeStyle(bot)} className="text-[10px] px-1.5 py-0">
-                                {bot}
-                              </Badge>
-                            ))}
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
-                          {format(new Date(view.last_seen), "MMM d, HH:mm")}
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* List Page Crawls */}
-        <TabsContent value="list-pages" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>City and Neighborhood List Crawls</CardTitle>
-              <CardDescription>
-                Each row is a distinct (page, bot) combination. Agent count shows how many listed agents received coverage from each crawl.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Location</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Bot</TableHead>
-                    <TableHead className="text-right">Page Crawls</TableHead>
-                    <TableHead className="text-right">Agents Covered</TableHead>
-                    <TableHead>Last Crawled</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {listCrawls.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
-                        No list page crawls in this period.
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    listCrawls.map((crawl, idx) => (
-                      <TableRow key={idx}>
-                        <TableCell className="font-medium capitalize">{crawl.location_label}</TableCell>
-                        <TableCell>
-                          <Badge variant={crawl.page_type === "neighborhood" ? "default" : "secondary"}>
-                            {crawl.page_type}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <Badge style={getBotBadgeStyle(crawl.bot_name)}>
-                            {crawl.bot_name}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-right font-mono">{crawl.crawl_count}</TableCell>
-                        <TableCell className="text-right font-mono">{crawl.agents_covered.toLocaleString()}</TableCell>
-                        <TableCell className="text-sm text-muted-foreground">
-                          {format(new Date(crawl.last_crawled), "MMM d, yyyy HH:mm")}
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* MCP Tool Calls */}
-        <TabsContent value="mcp" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>MCP Tool Call Activity</CardTitle>
-              <CardDescription>
-                Direct JSON-RPC tool calls from AI systems via the MCP server. These represent real-time AI queries for agent data -- the highest-intent signal.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Tool</TableHead>
-                    <TableHead className="text-right">Calls</TableHead>
-                    <TableHead className="text-right">Distinct Cities</TableHead>
-                    <TableHead>Last Called</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {mcpStats.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
-                        No MCP tool calls in this period.
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    mcpStats.map((stat) => (
-                      <TableRow key={stat.tool_name}>
-                        <TableCell className="font-medium font-mono text-sm">{stat.tool_name}</TableCell>
-                        <TableCell className="text-right font-mono font-semibold">{stat.total_calls.toLocaleString()}</TableCell>
-                        <TableCell className="text-right font-mono">{stat.distinct_cities}</TableCell>
-                        <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
-                          {stat.last_seen ? format(new Date(stat.last_seen), "MMM d, HH:mm") : "N/A"}
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+      {/* Crawl stats iframe */}
+      <iframe
+        key={`${range}-${searchAgent}-${searchMarket}`}
+        src={buildUrl()}
+        className="w-full border rounded-lg bg-white"
+        style={{ minHeight: "calc(100vh - 200px)", height: "1600px" }}
+        title="Bot Crawl Statistics"
+      />
     </div>
   );
 }
-
