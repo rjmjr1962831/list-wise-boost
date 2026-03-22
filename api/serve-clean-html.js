@@ -176,9 +176,9 @@ export default async function handler(req, res) {
     if (req.query.preview_tier) {
       url += `&preview_tier=${encodeURIComponent(req.query.preview_tier)}`;
     }
-    // Forward search query for crawl-stats agent/city search
-    if (req.query.q) {
-      url += `&q=${encodeURIComponent(req.query.q)}`;
+    // Forward crawl-stats search params
+    for (const p of ['q', 'agent', 'market', 'range']) {
+      if (req.query[p]) url += `&${p}=${encodeURIComponent(req.query[p])}`;
     }
     const upstream = await fetch(url, {
       headers: {
