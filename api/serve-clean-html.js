@@ -6,12 +6,122 @@
  * and re-serves it with correct content-type: text/html headers.
  *
  * Used by vercel.json rewrites for state, city, neighborhood, and agent profile clean-room pages.
+ *
+ * Also logs bot crawls directly to bot_crawl_logs (replaces unreliable Vercel log drain).
  */
 
 const SUPABASE_URL = 'https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1';
+const SUPABASE_REST = 'https://wiotrvoirdgzfacuuiem.supabase.co/rest/v1';
 
 const CONTENT_PATHS = ['/for-ai', '/transparency', '/faq'];
 
+/* ── Bot detection (matches vercel-log-drain + serve-bot-crawl-stats-html) ── */
+const BOT_PATTERNS = [
+  ["ChatGPT-User", /chatgpt-user/i],
+  ["OAI-SearchBot", /oai-searchbot/i],
+  ["GPTBot", /gptbot/i],
+  ["ClaudeBot", /claudebot/i],
+  ["claude-web", /claude-web|anthropic-ai/i],
+  ["PerplexityBot", /perplexitybot/i],
+  ["YouBot", /youbot/i],
+  ["Meta-ExternalAgent", /meta-externalagent/i],
+  ["Googlebot", /googlebot(?!-image)/i],
+  ["GoogleOther", /googleother/i],
+  ["Google-Extended", /google-extended/i],
+  ["Bingbot", /bingbot/i],
+  ["Applebot", /applebot/i],
+  ["AhrefsBot", /ahrefsbot/i],
+  ["SEMrushBot", /semrushbot/i],
+  ["DotBot", /dotbot/i],
+  ["MJ12bot", /mj12bot/i],
+  ["ByteSpider", /bytespider/i],
+  ["CCBot", /ccbot/i],
+  ["FacebookExternalHit", /facebookexternalhit/i],
+  ["Twitterbot", /twitterbot/i],
+  ["LinkedInBot", /linkedinbot/i],
+  ["YandexBot", /yandexbot/i],
+  ["Baiduspider", /baiduspider/i],
+  ["DuckDuckBot", /duckduckbot/i],
+];
+
+function detectBot(ua) {
+  if (!ua) return null;
+  for (const [name, pattern] of BOT_PATTERNS) {
+    if (pattern.test(ua)) return name;
+  }
+  const lower = ua.toLowerCase();
+  if (lower.includes("bot") || lower.includes("crawler") || lower.includes("spider")) {
+    return "unknown_bot";
+  }
+  return null;
+}
+
+/* ── Path patterns worth logging ─────────────────────────────────────── */
+const AGENT_PATH_RE = /^\/([a-z-]+)\/agents\/([a-z0-9-]+)\/?$/;
+const CITY_PATH_RE = /^\/([a-z-]+)\/([a-z0-9-]+)\/top10realestateagents\/?$/;
+const NEIGHBORHOOD_PATH_RE = /^\/([a-z-]+)\/([a-z0-9-]+)\/([a-z0-9-]+)\/top10realestateagents\/?$/;
+const ARTIFACT_PATH_RE = /^\/artifact\/([0-9a-f-]{36})/;
+const STATE_PATH_RE = /^\/([a-z-]+)\/top10realestateagents\/?$/;
+
+function isLoggablePath(p) {
+  return AGENT_PATH_RE.test(p) || CITY_PATH_RE.test(p) ||
+    NEIGHBORHOOD_PATH_RE.test(p) || ARTIFACT_PATH_RE.test(p) ||
+    STATE_PATH_RE.test(p);
+}
+
+/**
+ * Fire-and-forget: log bot crawl to bot_crawl_logs via Supabase REST API.
+ * Does not await — never blocks the response. Errors are silently logged.
+ */
+function logBotCrawl(path, ua, botName, key) {
+  const row = {
+    page_path: path,
+    user_agent: ua.slice(0, 500),
+    bot_name: botName,
+    crawled_at: new Date().toISOString(),
+    agent_id: null,
+  };
+
+  // Resolve agent_id from artifact UUID
+  const artifactMatch = path.match(ARTIFACT_PATH_RE);
+  if (artifactMatch) row.agent_id = artifactMatch[1];
+
+  // For agent profile pages, resolve slug → id inline
+  const agentMatch = path.match(AGENT_PATH_RE);
+  if (agentMatch) {
+    const slug = agentMatch[2];
+    // Fire slug resolution + insert as a chain; don't block caller
+    fetch(`${SUPABASE_REST}/professionals?canonical_slug=eq.${encodeURIComponent(slug)}&select=id&limit=1`, {
+      headers: { Authorization: `Bearer ${key}`, apikey: key },
+    })
+      .then(r => r.json())
+      .then(data => {
+        if (data && data.length > 0) row.agent_id = data[0].id;
+        return insertRow(row, key);
+      })
+      .catch(() => insertRow(row, key)); // insert even if slug resolution fails
+    return;
+  }
+
+  insertRow(row, key);
+}
+
+function insertRow(row, key) {
+  fetch(`${SUPABASE_REST}/bot_crawl_logs`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${key}`,
+      apikey: key,
+      'Content-Type': 'application/json',
+      Prefer: 'return=minimal',
+    },
+    body: JSON.stringify(row),
+  }).catch(err => {
+    console.error('[crawl-log] insert failed:', err.message);
+  });
+}
+
+/* ── Main handler ────────────────────────────────────────────────────── */
 export default async function handler(req, res) {
   let { fn, path } = req.query;
   // Reject malformed path (e.g. "undefined" or "undefinedfor-ai" from bad rewrite param interpolation)
@@ -53,6 +163,13 @@ export default async function handler(req, res) {
     return;
   }
 
+  // ── Bot crawl logging (fire-and-forget, never blocks response) ──
+  const ua = req.headers['user-agent'] || '';
+  const botName = detectBot(ua);
+  if (botName && isLoggablePath(path)) {
+    logBotCrawl(path, ua, botName, key);
+  }
+
   try {
     const token = req.query.token || '';
     const tokenParam = token ? `&token=${encodeURIComponent(token)}` : '';
@@ -66,7 +183,7 @@ export default async function handler(req, res) {
         Authorization: `Bearer ${key}`,
         apikey: key,
         // Forward original user-agent so edge functions can identify bot crawlers
-        "x-forwarded-user-agent": req.headers["user-agent"] || "",
+        "x-forwarded-user-agent": ua,
       },
     });
     const html = await upstream.text();
@@ -108,4 +225,3 @@ export default async function handler(req, res) {
     res.status(502).json({ error: 'Upstream fetch failed', detail: err.message });
   }
 }
-
