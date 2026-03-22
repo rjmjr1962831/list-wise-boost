@@ -1,7 +1,7 @@
 # Top10Lists.us — Comprehensive Knowledge Document
 
 **Purpose:** Single consolidated reference for agent2, Claude, and Cursor. Use latest updates as source of truth.  
-**Last consolidated:** 2026-03-21
+**Last consolidated:** 2026-03-22
 **Conflict rule:** When sources conflict, this document wins. Deprecate earlier statements.
 
 ---
@@ -336,6 +336,72 @@ From `src/data/master-ssot.md`:
 
 **Key Outcomes**
 
+- **Stripe Checkout Wired End-to-End**:
+  - **stripe-webhook**: Fixed tier detection -- now reads `badgeTier` from subscription metadata instead of broken amount thresholds. SDK upgraded from v14.21.0 to v18.5.0, API version aligned to `2025-08-27.basil`.
+  - **complete-agent-subscription**: Now sets `badge_tier` and `badge_status` from checkout session metadata on payment success.
+  - **AgentDashboard**: "Upgrade Package" button navigates to `/funnel/:token/pricing` instead of dead `/visibility/coverage`.
+  - **Route fix**: `/funnel/:token/payment-success` now routes to `AgentPaymentSuccess` (new dark-themed page) instead of old `PaymentSuccess`.
+  - **Agent dashboard**: Added `?section=` deep-link support for tabs (e.g., `?section=badge` opens Web of Truth tab).
+  - Both edge functions deployed to Supabase.
+
+- **Payment Success Page Redesigned**:
+  - Full rewrite with dark theme matching funnel aesthetic.
+  - Shows tier badge, AIFS score (from `aifs_scores` table), and band label.
+  - Web of Truth CTA with pulsing tier orb -- links to badge instructions page.
+  - "What just changed" section: verification active, data refresh cadence, AIFS uplift, richer AI payload.
+  - Inline question form (replaces mailto) -- submits to `field_change_requests` as CRM task.
+  - Certified tier added to `TIER_META` (was missing -- Certified agents saw "Audited tier is active").
+
+- **Founder → Cofounder Rename (9 files)**:
+  - Footer, FAQ, Founder.tsx, About.tsx, Index.tsx, PaymentsSecurity.tsx, PaymentSuccess.tsx, Press.tsx, AgentLanding.tsx.
+  - Schema.org `founder` arrays now include both Robert Maynard and Mark Garland.
+  - Display text changed; URL paths (`/about/founder`) kept to avoid broken links.
+
+- **Transparent Orb Badge PNGs**:
+  - Regenerated all 3 badge PNGs (`certified.png`, `audited.png`, `underwritten.png`) as SVG-rendered HAL 9000 orbs.
+  - Transparent backgrounds -- no black box. Centered symmetrical lighting, no shadow.
+  - Pulsing animation on badge instructions page and payment success page.
+
+- **Pricing Page Redesigned (TierPricingCalculator)**:
+  - Simplified cards: Orb → Tier name → Net revenue hero number → AIFS score with inline band descriptions → Features → Expandable math → Price → CTA.
+  - Band descriptions shown inline (not tooltips): Invisible, Discoverable, Citable, Citable (local), Authoritative -- each with plain-English description.
+  - Close rate changed from hardcoded 30% to default 10%, adjustable by agent.
+  - "Community (IRS 990 verified)" → "Community service".
+  - Font weights bumped to 500+ minimum, Playfair Display for tier names.
+  - CTA text: "Upgrade to Audited" → "Choose Audited -- $300/mo".
+
+- **Source Count Language Removed Site-Wide (27 files, ~70 replacements)**:
+  - All references to "1,000+ sources", "10+ sources", "4 sources", "up to 20 sources" replaced with:
+    - Listed/Certified: "Core credential verification"
+    - Audited: "Expanded background research"
+    - Underwritten: "Exhaustive background research"
+    - Marketing: "exhaustive research into the agent's background, community service, career trajectory and history"
+  - Updated across React pages, edge functions, FAQ, AI feeds, public docs, llms.txt, llms-full.txt.
+
+- **Funnel Bug Fixes**:
+  - StepSuccess: `markets_covered` pulls from agent's `served_cities` instead of hardcoded `['Phoenix']`.
+  - Step3: Title placeholder "DDS, DMD" → "REALTOR, Broker, CRS".
+  - Step3: Back button goes to Step2b (credentials) instead of skipping it.
+  - Step7Pricing: AIFS default changed from 42 to 24 (true baseline without tier uplift).
+  - Step1 CTA: "Let's Verify Your Profile" → "See What AI Knows About You".
+  - Step5: "Please add at least one bundle" → "Please select at least one city area."
+  - Step6: "We verify these selections against public transaction records" → "Choose the neighborhoods where you've closed the most deals."
+  - Step4ReviewFinal: All fields now show always (not conditionally hidden).
+
+- **GEO Audit Remediation**:
+  - **C1**: coverage-stats now counts only cities/neighborhoods with qualifying agents (matching sitemaps). Dynamic counts script updated.
+  - **H1**: FAQ hardcoded city/neighborhood counts replaced with dynamic language.
+  - **H2**: `/why-ai-trusts-us` → 301 redirect to `/for-ai` in vercel.json.
+  - **H3**: `/login` → 301 redirect to `/agent-login`, footer link fixed.
+  - **H4**: Homepage OG image tag added.
+  - **H5**: `get_founder_profiles` added to mcp.json documentation.
+  - **M1**: All 10 ai-feed dates bumped to 2026-03-21.
+
+- **Email Bounce Handling**:
+  - 9 post-delivery bounces flagged: all agents set to `lead_status = 'email_bounced'`.
+  - CRM tasks created in `field_change_requests` for each bounced agent to find correct emails.
+  - Agents: Arsen Sarapinian, Brad Rawlins, Brenda Hayes, Brenda Reynolds, Brian Laughlin, Dianne Barrett, Farideh Farinpour, Frank Crandall, Freddy Cabral.
+
 - **GEO Audit Response & Protocol Updates**:
   - **Agent counts standardized**: 3,262 total agents (872 AZ + 2,390 CA) updated across all protocol files (mcp.json, ai-content-index.json x2, llms.txt, llms-full.txt), FAQ, React pages, edge functions, and admin demos.
   - **Certified tier contradictions fixed**: Certified is active. "Invitation-only" language replaced with merit-based selection across 14 files. Certified refresh corrected to "quarterly" everywhere. SSoT Section 3 updated to 4-tier model.
@@ -419,7 +485,10 @@ From `src/data/master-ssot.md`:
 
 **Config / Infrastructure**
 
-- **Edge functions deployed**: serve-stats-json, serve-bot-agent-html, serve-bot-content-html, serve-bot-crawl-stats-html, serve-bot-founder-html, serve-bot-home-html, serve-bot-list-html, serve-bot-pages-html, serve-bot-qa-html, serve-bot-state-html, vercel-log-drain, list-maker-export, enrichment-api, sequencer-v2-tick.
+- **Edge functions deployed**: stripe-webhook, complete-agent-subscription, serve-stats-json, serve-bot-agent-html, serve-bot-content-html, serve-bot-crawl-stats-html, serve-bot-founder-html, serve-bot-home-html, serve-bot-list-html, serve-bot-pages-html, serve-bot-qa-html, serve-bot-state-html, vercel-log-drain, list-maker-export, enrichment-api, sequencer-v2-tick.
+- **Stripe secrets confirmed**: STRIPE_SECRET_KEY and STRIPE_WEBHOOK_SECRET set in Supabase.
+- **Badge PNGs regenerated**: 3 files in `public/badges/` (transparent background, centered orbs).
+- **vercel.json**: Added redirects for `/why-ai-trusts-us` → `/for-ai`, `/login` → `/agent-login`.
 - **New file**: `api/mcp.js` (Vercel serverless proxy for MCP endpoint).
 - **New scripts**: `scripts/backfill-crawl-logs.ts`, `scripts/backfill-crawl-logs-multi.ts`, `scripts/recalc-ai-surfaces.ts`.
 - **prebuild updated**: Now runs `generate:counts` + `generate:sitemaps` on every build.
@@ -428,17 +497,30 @@ From `src/data/master-ssot.md`:
 - **RLS policies**: email_campaigns (5 policies), email_queue (5 policies).
 - **NPM packages added**: @tiptap/react, @tiptap/starter-kit, @tiptap/extension-link, @tiptap/extension-underline, @tiptap/pm.
 - **Database updates**: 12 selection_rationale records, 45 new emails, 22 corrected emails, 161 pending_email_verification, 34 team flags, 31 team leader headlines.
-- **Vercel cache purged** after edge function deployments.
+- **CLAUDE.md**: Added `--dangerously-skip-permissions` launch instruction at top.
 
 **New Rules or Docs**
 
-- **DO NOT PUSH without Robert's express permission** -- consolidated 3 redundant memory files into one. ALL dev on localhost. Vercel build minutes are too expensive.
+- **DO NOT PUSH without Robert's express permission** -- ALL dev on localhost. Vercel build minutes are too expensive.
+- **Founder → Cofounder**: All public-facing references to "Founder" changed to "Cofounder". Schema.org arrays include both cofounders. URL paths kept unchanged.
+- **No source counts**: Never reference specific source counts (1,000+, 10+, 4, 20). Use tier-appropriate depth language instead.
+- **Close rate default is 10%**: Not 30%. Agent can adjust. Revenue projections must be defensible.
+- **Coverage counts must match sitemaps**: coverage-stats, FAQ, /for-ai must all use the same filtered query (Sitemap Rule A).
+- **AIFS default is 24** (baseline without tier uplift), not 42.
 - **Certified tier is ACTIVE** -- 4 tiers: Listed/Certified/Audited/Underwritten.
 - **Agent selection model**: Merit-based selection by Top10Lists, not "invitation-only" and not "open signup."
 - **`@tailwindcss/typography` plugin** is installed but NOT in tailwind.config.ts plugins. The `prose` class does nothing -- use explicit child selectors like `[&_p]:mb-3` instead.
-- **AI Surfaces canonical definition updated**: Every crawl of a page where an agent is listed counts as one surface for that agent. City + neighborhood crawls are attributed to all agents on that page.
+- **AI Surfaces canonical definition**: Every crawl of a page where an agent is listed counts as one surface for that agent. City + neighborhood crawls are attributed to all agents on that page.
 - **Human vs Bot classification**: ChatGPT-User, OAI-SearchBot, PerplexityBot = human-initiated. Everything else = automated bot.
 - **Sitemap refresh cadence**: Pages/states/cities/neighborhoods = daily. Agent pages = tier-based (Underwritten daily, Audited monthly, Certified monthly, Listed yearly).
+
+**Funnel Conversion Audit Findings (Pending Implementation)**
+
+1. **Collapse Steps 2+2b+3+4 into single accordion page** -- cuts 3 page transitions, est. 20-30% drop-off reduction.
+2. **Show AIFS uplift + revenue projection on Step 1** -- agent sees the prize before doing the work.
+3. **Add "email me this link" + auto-save + DB persistence** -- close tab = lose everything is #1 structural risk.
+4. **Add testimonial + competitor comparison + product preview** before pricing -- zero social proof currently.
+5. **StepSuccess is a dead end** -- needs Web of Truth badge setup as primary CTA, not "Go to Homepage."
 
 **New Functions / Scripts**
 
@@ -446,9 +528,19 @@ From `src/data/master-ssot.md`:
 - `api/mcp.js` Vercel proxy.
 - `scripts/backfill-crawl-logs.ts`, `scripts/backfill-crawl-logs-multi.ts`, `scripts/recalc-ai-surfaces.ts`.
 - Shared `breadcrumbJsonLd()` and `ogTags()` helpers in `_shared/site-chrome.ts`.
+- Shared `TierPricingCalculator` component.
 
 **Deprecated or Removed**
 
+- **Old PaymentSuccess page** (light theme, "You're on the list!" copy) -- replaced by `AgentPaymentSuccess` at funnel payment-success route.
+- **"1,000+ sources" language** everywhere -- replaced with tier-appropriate depth language.
+- **"Founder" title** -- now "Cofounder".
+- **30% close rate assumption** -- replaced with 10% default.
+- **Hardcoded coverage counts in FAQ** -- replaced with dynamic language.
+- **Original badge PNGs with black backgrounds** -- replaced with transparent orbs.
+- **Complete button** from campaign monitor (manual instruction only).
+- **Old daily limit formula** (per-domain tiers) -- replaced with universal `40 × 1.10^days`.
+- **OUR_DOMAIN link exclusion** in tracking -- removed (was preventing funnel click tracking).
 - **Legacy AIFS Fields section** removed from List Maker UI.
 - **List Maker tab** removed from Campaign Manager (accessible from CRM sidebar).
 - **Old event-based Create Email flow** (localStorage + CustomEvent) removed.
@@ -473,7 +565,6 @@ From `src/data/master-ssot.md`:
   - Verifiable claims upgraded to `{ text, sourceUrl }` objects with verification URLs (SEC EDGAR, FTC, Delaware corp search, etc.).
   - `get_founder_profiles` MCP tool deployed: queries `marketing_content` live, falls back to hardcoded defaults. Returns both founders in one call.
   - `serve-bot-founder-html` now fetches live profiles, enriches JSON-LD Person schemas, renders claims with verification links.
-  - Schema.org Person markup with `data-ai-verifiable="true"` attributes planned for clean room HTML.
 
 - **Pipeline Diagrams Deployed to Staging**:
   - Demo hub at `/admin/demo/` with three cards: pipeline, enrichment, founder intake.
@@ -518,9 +609,7 @@ From `src/data/master-ssot.md`:
   - Score projections show Certified/Audited/Underwritten with citation meaning.
   - New `WebOfTruthSection.tsx` dashboard tab.
 
-- **CRM List Maker — AI Surfaces Merge Fields**: Added 12 new merge tags (`{{ai_surfaces_total}}`, `{{ai_surfaces_human}}`, per-bot fields) pulling from pre-computed `agent_ai_surfaces_by_bot` table.
-
-- **Founder Page Verifiable Claims**: Added "Verifiable Claims" section for Robert Maynard (localhost only, not pushed).
+- **CRM List Maker -- AI Surfaces Merge Fields**: Added 12 new merge tags (`{{ai_surfaces_total}}`, `{{ai_surfaces_human}}`, per-bot fields) pulling from pre-computed `agent_ai_surfaces_by_bot` table.
 
 - **Email Sending Confirmed**: `gmail-send` edge function works for sending from robert@top10lists.us.
 
@@ -543,95 +632,4 @@ From `src/data/master-ssot.md`:
 **New Rules or Docs**
 
 - **Correct enrichment costs (canonical, overrides all prior)**: Serper $0.003/search, Memo23 $0.03/agent, Exa $0.003/search, DeepSeek $0.0002/agent. Google Places/Maps NOT used. Prequalification pass rate ~2%.
-- **AI Surfaces canonical definition**: Every crawl of a page where an agent is listed counts as one surface for that agent.
-- **Numbers must foot**: Any number on crawl-stats, dashboards, or emails must use same methodology and 7-day window.
-- **MCP payload tier gating enforced**: Listed (7 fields), Certified (20), Audited (28), Underwritten (35). Each tier unlocks specific data fields for AI systems.
-- **`run_sql` is SELECT-only**: Cannot INSERT/UPDATE/DELETE. Use `supabase.from().insert()` for writes.
-- **Fire-and-forget doesn't work in Deno Deploy**: Use `await` inside try/catch.
-- **SSoT Section 1 still says "top 0.5%"**: Needs surgical fix to "fewer than 1% of licensed agents in covered markets."
-- **⚠️ NO PUSHES TO STAGING OR PROD WITHOUT ROBERT'S EXPRESS PERMISSION**: All dev goes on localhost. Build minutes are expensive.
-- **Clean-room architecture**: ALL public pages must serve clean-room HTML from edge functions. React SPA only for authenticated pages.
-- **Web of Truth available to all tiers** -- no tier gating.
-- **Badge instructions page is instructional only** -- no sales CTAs.
-
-**New Functions / Scripts**
-
-- `_shared/site-chrome.ts` (shared header/footer for all clean-room edge functions).
-- MCP server logging block (inserts to `mcp_request_logs` after each tool call).
-- Bot Analytics Dashboard MCP tab (5th card + dedicated tab).
-- `crawl-stats` Section F: "Direct AI Tool Calls (MCP)".
-- `serve-bot-home-html`, `serve-bot-pages-html`, `serve-bot-qa-html` edge functions.
-- `WebOfTruthSection.tsx` dashboard component.
-- Proposed (not yet built): `enrichment_jobs` table, `enrichment_progress` view, `enrichment-worker` edge function, `scripts/run-enrichment-parallel.ts`, stale claim recovery cron.
-
-**Deprecated or Removed**
-
-- DataForSEO, Google Places, $0.50/agent Zillow pricing in cost estimates -- all wrong. Use Serper/Memo23/Exa/DeepSeek at correct costs above.
-- Identical Listed/Certified MCP payloads -- Listed now gets minimal data.
-- "community involvement" (long form) -- replaced with "community" codebase-wide.
-- Old crawl-stats market query (JOIN-based agent_id counting) -- replaced with page-path-based counting.
-- Hardcoded "Last verified" dates -- now dynamic.
-- All "ten agents per city" language.
-- Cloudflare email obfuscation from agent page.
-- Pre-rendered SPA shell HTML files from public/ (about, ranking-methodology, etc.) -- replaced by edge functions.
-- Phantom sitemap URLs (how-it-works, compare, developers, etc.).
-
----
-
-### CLAUDE — 2026-03-19 (multiple sessions)
-
-**Key Outcomes**
-
-- **SSoT and CWPK Aligned with CLAUDE.md**: Fixed stale data in Sections 1, 3, 14, 16, 17, 19. Agent counts corrected. 4-tier model confirmed. Frontend stack corrected. "NEVER publish internal documents" rule added. "top 0.5%" removed from methodology. Conflict resolution table expanded.
-
-- **Deep GEO Audit (Production Score: 89/100)**: All 6 clean room pages confirmed serving edge function HTML. Merit gate and coverage language correct everywhere. Issues found: FAQ JSON-LD says Certified refresh is "monthly" (should be "quarterly"); agent profile footer uses "approximately the top 1%" (should be "fewer than 1%..."); agent counts stale at ~3,262.
-
-- **Agent Page Redesign v4 Audited**: 6 issues fixed on staging (removed "ten agents" language, replaced Cloudflare email obfuscation). Flagged unresolved: "Apply for Certification" vs FAQ "invitation-only" contradiction, placeholder testimonials, `[BOOKING_LINK]` placeholders, non-existent `/submit-for-review` endpoint.
-
-- **MCP Logging and Tier Gating Shipped**: `mcp_request_logs` table and dashboard card. Payloads tier-gated: Listed (7 fields), Certified (20), Audited (28), Underwritten (35).
-
-- **Vercel Log Drain Permanently Fixed**: Edge Runtime with `context.waitUntil()`. Invalid timestamp error handling. Skip static source entries. Estimated 39,375 missing entries backfilled during error window.
-
-- **5-Email Sequence for Certified Agents**: Targeting Zillow Premier Agent level. Data basis: 526,954 crawls over 5.7 days. Honest framing: Zillow wins on raw surfacing, but quality differs. Final version under 200 words/email, no jargon, dashboard-driven.
-
-- **AI Diligence Guide PDFs Created**: Two branded PDFs for sales collateral (diligence guide + expected AI responses).
-
-- **GitGuardian Remediation**: Hardcoded Vercel verify token moved to Supabase secret. Incident #28953499 can be resolved.
-
-- **Bot Analytics Fix**: `rollup_ai_surfaces_monthly()` fixed to properly attribute list page crawls. Agent surfaces jumped from ~261/mo to ~811/mo.
-
-**Config / Infrastructure**
-
-- `mcp_request_logs` table, `mcp_request_stats` view created.
-- `run_sql` recreated with `SET statement_timeout = '30s'`.
-- `purge-bot-crawl-logs` pg_cron job (30-day retention).
-- `run-migration` edge function fixed (now accepts SQL from request body).
-- Three commits pushed to staging for SSoT alignment, CWPK alignment, agent page redesign.
-
----
-
-### CURSOR — 2026-03-08
-
-**Key Outcomes**
-- Consolidated docs/COMPREHENSIVE_KNOWLEDGE_DOCUMENT.md with .knowledge/CORE_RULES, TECH_STACK, SOT_VETTING.
-- Deprecated "top 0.2%" coverage language; canonical: "fewer than 1% of licensed agents in covered markets".
-- Business model: 4-tier only (Listed/Certified free, Audited $300/mo, Underwritten $500/mo); removed Main/Prime/Luxury.
-
-**Config / Infrastructure**
-- Supabase: wiotrvoirdgzfacuuiem only. Dead project bgdtekbhelormzbymkhh -- never use.
-- Added DEAD INFRASTRUCTURE note to COMPREHENSIVE and .knowledge/TECH_STACK.
-
----
-
-### CURSOR — 2026-03-03
-
-**Key Outcomes**
-- Removed Certified tier from acquisition path; 58 existing Certified agents grandfathered.
-- New pricing: Audited $300/mo (was $100), Underwritten $500/mo (was $150).
-- All upgrade hints in 60+ static HTML files, llms-full.txt, and Edge Functions updated.
-- FAQ regenerated: 3-tier acquisition model, Certified described as legacy.
-- Jerome, AZ added as a city.
-
-**Config / Infrastructure**
-- `certification_pricing_config` updated: audited -> 300, underwritten -> 500.
-- DeepSeek key rotated. OpenAI and Exa keys added to `.env`.
+- **Numbers must foot**: Any number on crawl-stats, dashboards, or emails must use same methodology and 7-day window
