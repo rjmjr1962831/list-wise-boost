@@ -185,6 +185,7 @@ function CampaignWizard({
     min_rating: 0,
     email_verified: false,
     has_license: false,
+    exclude_teams: true,
   });
   const [listCount, setListCount] = useState<number | null>(null);
   const [loadingCount, setLoadingCount] = useState(false);
