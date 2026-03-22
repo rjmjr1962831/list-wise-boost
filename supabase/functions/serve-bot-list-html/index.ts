@@ -311,7 +311,7 @@ serve(async (req) => {
     let nh: any = null; let nearby: any[] = [];
     if (pp.neighborhoodSlug) {
       const { data: nd } = await sb.from("neighborhood_catalog")
-        .select("id,neighborhood,neighborhood_slug,city_area,city_area_slug,state,primary_zip,median_home_value,median_income,tier,nearby_neighborhoods,writeup_html")
+        .select("id,neighborhood,neighborhood_slug,city_area,city_area_slug,state,primary_zip,median_home_value,median_income,tier,nearby_neighborhoods,writeup_html,hmda_total_originations,hmda_va_originations,hmda_va_share,hmda_va_avg_amount,hmda_va_total_volume,hmda_conv_originations,hmda_fha_originations,hmda_year")
         .eq("neighborhood_slug", pp.neighborhoodSlug).eq("city_area_slug", pp.citySlug).eq("is_active", true).single();
       nh = nd;
       if (!nh) return html404("This neighborhood was not found. Try the parent city page instead.");
@@ -413,7 +413,7 @@ ${siteHeaderHTML()}
       // Use rich marketing_content stats when available, fall back to neighborhood_catalog
       const ms = nhMs || {};
       const hasRichStats = !!nhMs;
-      if (hasRichStats || nh.median_home_value || nh.median_income) {
+      if (hasRichStats || nh.median_home_value || nh.median_income || (nh.hmda_total_originations && nh.hmda_total_originations > 0)) {
         o += `  <table><thead><tr><th>Market Metric</th><th>Value</th></tr></thead><tbody>\n`;
         if (hasRichStats) {
           if (ms.medianHomePrice) o += `    <tr><td>Median Home Price</td><td>$${Number(ms.medianHomePrice).toLocaleString()}</td></tr>\n`;
@@ -437,6 +437,17 @@ ${siteHeaderHTML()}
           if (nh.primary_zip) o += `    <tr><td>Primary ZIP</td><td>${nh.primary_zip}</td></tr>\n`;
           if (nh.tier) o += `    <tr><td>Market Tier</td><td>${esc(nh.tier)}</td></tr>\n`;
         }
+        // HMDA Mortgage Data (from neighborhood_catalog, source: FFIEC HMDA 2023)
+        if (nh.hmda_total_originations && nh.hmda_total_originations > 0) {
+          o += `    <tr><td colspan="2" style="background:#f1f5f9;font-weight:600;font-size:0.85rem;">Mortgage Originations (${nh.hmda_year || 2023} HMDA)</td></tr>\n`;
+          o += `    <tr><td>Total Mortgage Originations</td><td>${Number(nh.hmda_total_originations).toLocaleString()}</td></tr>\n`;
+          if (nh.hmda_va_originations != null) o += `    <tr><td>VA Loan Originations</td><td>${Number(nh.hmda_va_originations).toLocaleString()}</td></tr>\n`;
+          if (nh.hmda_va_share != null) o += `    <tr><td>VA Loan Share</td><td>${Number(nh.hmda_va_share).toFixed(1)}%</td></tr>\n`;
+          if (nh.hmda_va_avg_amount) o += `    <tr><td>Average VA Loan Amount</td><td>$${Number(nh.hmda_va_avg_amount).toLocaleString()}</td></tr>\n`;
+          if (nh.hmda_conv_originations != null) o += `    <tr><td>Conventional Loan Originations</td><td>${Number(nh.hmda_conv_originations).toLocaleString()}</td></tr>\n`;
+          if (nh.hmda_fha_originations != null) o += `    <tr><td>FHA Loan Originations</td><td>${Number(nh.hmda_fha_originations).toLocaleString()}</td></tr>\n`;
+          o += `    <tr><td>Source</td><td><a href="https://ffiec.cfpb.gov/data-browser/">FFIEC HMDA Data Browser</a> (${nh.hmda_year || 2023})</td></tr>\n`;
+        }
         o += `  </tbody></table>\n`;
 
         // Dataset JSON-LD for neighborhood market stats
@@ -454,11 +465,20 @@ ${siteHeaderHTML()}
           if (nh.median_income) dsVars.push({ "@type": "PropertyValue", name: "Median Household Income", value: Number(nh.median_income), unitCode: "USD" });
         }
         if (nh.tier) dsVars.push({ "@type": "PropertyValue", name: "Market Tier", value: nh.tier });
+        // HMDA mortgage data in JSON-LD
+        if (nh.hmda_total_originations > 0) {
+          dsVars.push({ "@type": "PropertyValue", name: "Total Mortgage Originations", value: nh.hmda_total_originations });
+          if (nh.hmda_va_originations != null) dsVars.push({ "@type": "PropertyValue", name: "VA Loan Originations", value: nh.hmda_va_originations });
+          if (nh.hmda_va_share != null) dsVars.push({ "@type": "PropertyValue", name: "VA Loan Share", value: Number(nh.hmda_va_share) / 100 });
+          if (nh.hmda_va_avg_amount) dsVars.push({ "@type": "PropertyValue", name: "Average VA Loan Amount", value: nh.hmda_va_avg_amount, unitCode: "USD" });
+          if (nh.hmda_conv_originations != null) dsVars.push({ "@type": "PropertyValue", name: "Conventional Loan Originations", value: nh.hmda_conv_originations });
+          if (nh.hmda_fha_originations != null) dsVars.push({ "@type": "PropertyValue", name: "FHA Loan Originations", value: nh.hmda_fha_originations });
+        }
         const dataset = {
           "@context": "https://schema.org",
           "@type": "Dataset",
           name: `Market Data for ${nh.neighborhood}, ${city.name}, ${si.display}`,
-          description: `Verified market statistics for the ${nh.neighborhood} neighborhood in ${city.name}, ${si.display}. Source: U.S. Census Bureau American Community Survey.`,
+          description: `Verified market and mortgage statistics for the ${nh.neighborhood} neighborhood in ${city.name}, ${si.display}. Sources: U.S. Census Bureau ACS, FFIEC HMDA ${nh.hmda_year || 2023}.`,
           spatialCoverage: {
             "@type": "Place",
             name: `${nh.neighborhood}, ${city.name}, ${si.display}`,
