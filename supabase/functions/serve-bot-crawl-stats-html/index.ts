@@ -60,6 +60,11 @@ tr:hover { background: #f9fafb; }
 .search-result h3 { font-size: 1.15rem; margin-bottom: 0.6rem; color: #166534; }
 .search-noresult { background: #fef2f2; border: 1px solid #fca5a5; border-radius: 8px; padding: 1.5rem; margin: 1rem 0; }
 .search-noresult h3 { color: #991b1b; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinner { display: none; width: 20px; height: 20px; border: 3px solid #d1d5db; border-top-color: #3b82f6; border-radius: 50%; animation: spin 0.6s linear infinite; margin-left: 0.8rem; vertical-align: middle; }
+.search-box form.loading .spinner { display: inline-block; }
+.search-box form.loading button { opacity: 0.6; pointer-events: none; }
+.range-btn { transition: all 0.15s; }
 .total-row td { font-weight: bold; border-top: 2px solid #d1d5db; background: #f8fafc; }
 .range-bar { display: flex; gap: 0.5rem; margin: 1rem 0; }
 .range-btn { padding: 0.4rem 1rem; border: 1px solid #d1d5db; border-radius: 6px; text-decoration: none; color: #374151; font-size: 0.9rem; }
@@ -230,7 +235,7 @@ async function runSearch(sb: any, agentQ: string, marketQ: string, interval: str
     html += `<div class="search-result"><h3>${esc(name)} -- ${esc(data.city)}, ${st}</h3>
       <p><strong>${fmt(data.total)} bot crawls</strong> across <strong>${data.bots.length}</strong> bot type${data.bots.length !== 1 ? "s" : ""}.</p>
       <table><thead><tr><th>Bot</th><th class="num">Crawls</th><th>Last Seen</th></tr></thead>
-      <tbody>${data.bots.map(b => `<tr><td>${esc(BOT_DISPLAY[b.name] || b.name)} ${catBadge(b.name)}</td><td class="num">${fmt(b.crawls)}</td><td class="timestamp">${fmtTs(b.last)}</td></tr>`).join("")}</tbody></table></div>`;
+      <tbody>${data.bots.slice(0, 5).map(b => `<tr><td>${esc(BOT_DISPLAY[b.name] || b.name)} ${catBadge(b.name)}</td><td class="num">${fmt(b.crawls)}</td><td class="timestamp">${fmtTs(b.last)}</td></tr>`).join("")}${data.bots.length > 5 ? `<tr><td class="muted">+${data.bots.length - 5} more</td><td></td><td></td></tr>` : ""}</tbody></table></div>`;
   }
   return html;
 }
@@ -267,7 +272,7 @@ async function renderPage(range: string, agentQ: string | null, marketQ: string 
   const crawlerTotal = crawlerBots.reduce((s, b) => s + b.visits, 0);
   const topUser = userBots.slice(0, 5);
   const otherUser = userTotal - topUser.reduce((s, b) => s + b.visits, 0);
-  const topCrawler = crawlerBots.slice(0, 10);
+  const topCrawler = crawlerBots.slice(0, 5);
   const otherCrawler = crawlerTotal - topCrawler.reduce((s, b) => s + b.visits, 0);
   const daysCounted = summary.days_counted || 0;
 
@@ -343,8 +348,8 @@ ${siteHeaderHTML()}
           <input type="text" id="market" name="market" placeholder="e.g. Scottsdale, Arcadia" value="${esc(marketQ || "")}" autocomplete="off" required>
         </div>
       </div>
-      <button type="submit">Search</button>
-      <span class="muted" style="margin-left:1rem;">Both fields required.</span>
+      <button type="submit">Search</button><span class="spinner"></span>
+      <span class="muted" style="margin-left:0.5rem;">Both fields required.</span>
     </form>
   </div>
   ${searchHtml}
@@ -383,6 +388,15 @@ ${siteHeaderHTML()}
 <p style="margin-top:1.5rem;"><a href="${BASE}/for-ai">For AI Systems</a> | <a href="${BASE}/transparency">Transparency</a> | <a href="${BASE}/about/ranking-methodology">Methodology</a> | <a href="${BASE}/faq">FAQ</a></p>
 ${AI_DISCLAIMER}
 ${siteFooterHTML()}
+<script>
+document.querySelector('.search-box form')?.addEventListener('submit', function() { this.classList.add('loading'); });
+document.querySelectorAll('.range-btn').forEach(function(el) {
+  el.addEventListener('click', function() {
+    document.body.style.opacity = '0.5';
+    document.body.style.pointerEvents = 'none';
+  });
+});
+</script>
 </body></html>`;
 }
 
