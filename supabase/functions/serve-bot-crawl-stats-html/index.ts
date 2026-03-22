@@ -353,7 +353,7 @@ ${siteHeaderHTML()}
 <!-- ═══ User-Triggered Bots ═══ -->
 <section>
   <h2>Consumer-Triggered Crawls (${label})</h2>
-  <p>Real people asking AI assistants questions. Each crawl = a consumer inquiry that fetched our verified agent data.</p>
+  <p>Real people asking AI assistants questions. Each crawl = a consumer inquiry that fetched your verified agent data.</p>
   <table><thead><tr><th>Bot</th><th class="num">Crawls</th><th class="num">Share</th><th class="num">Agents</th><th>Last Seen</th></tr></thead>
   <tbody>${botTable(topUser, otherUser, userTotal)}</tbody></table>
 </section>
