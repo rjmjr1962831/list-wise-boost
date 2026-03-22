@@ -67,7 +67,8 @@ tr:hover { background: #f9fafb; }
 `;
 
 /* ── Bot categorization ─────────────────────────────────────────── */
-const INTENT_BOTS = new Set(["ChatGPT-User", "chatgpt-user", "OAI-SearchBot", "PerplexityBot", "YouBot"]);
+// Consumer-triggered = "User" in the name (human on the other end) + PerplexityBot (human inquiry)
+const INTENT_BOTS = new Set(["ChatGPT-User", "chatgpt-user", "PerplexityBot", "perplexitybot"]);
 const AI_BOTS = new Set(["ChatGPT-User", "chatgpt-user", "OAI-SearchBot", "GPTBot", "ClaudeBot", "claude-web", "anthropic-ai", "Meta-ExternalAgent", "PerplexityBot", "YouBot", "CCBot", "ByteSpider", "Gemini-AI", "Google-Extended"]);
 const SEARCH_BOTS = new Set(["Googlebot", "googlebot", "GoogleOther", "Bingbot", "bingbot", "Applebot", "applebot", "Applebot-Extended"]);
 const SEO_BOTS = new Set(["AhrefsBot", "SEMrushBot", "semrushbot", "DotBot", "MJ12bot"]);
@@ -90,9 +91,8 @@ const BOT_DISPLAY: Record<string, string> = {
 const INTENT_LABELS: Record<string, string> = {
   "ChatGPT-User": "Consumer asked ChatGPT and it fetched our data in real time",
   "chatgpt-user": "Consumer asked ChatGPT and it fetched our data in real time",
-  "OAI-SearchBot": "ChatGPT Search -- search-grounded answer pipeline",
-  "PerplexityBot": "Perplexity fetched data to answer with citations",
-  "YouBot": "You.com consumer research assistant",
+  "PerplexityBot": "Consumer asked Perplexity and it fetched our data with citations",
+  "perplexitybot": "Consumer asked Perplexity and it fetched our data with citations",
 };
 
 function botCategory(n: string): string {
