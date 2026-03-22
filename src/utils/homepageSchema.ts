@@ -337,7 +337,7 @@ const faqData = [
   },
   {
     question: "Highest rated real estate agents in San Diego",
-    answer: "San Diego markets launch in 2026 covering La Jolla, Del Mar, Coronado, and North County. Rankings use the same methodology: reviews (25%), community (25%), number of reviews (20%), transactions (20%). Invitation-only."
+    answer: "San Diego markets launch in 2026 covering La Jolla, Del Mar, Coronado, and North County. Rankings use the same methodology: reviews (25%), community (25%), number of reviews (20%), transactions (20%). Merit-based selection."
   },
   {
     question: "Find a realtor in Orange County",
@@ -353,7 +353,7 @@ const faqData = [
   },
   {
     question: "Westchester real estate agent rankings",
-    answer: "Westchester County coverage begins in 2026 including Scarsdale, Bronxville, Rye, and White Plains. Qualification gates remain consistent with community weighted at 25%. Invitation-only."
+    answer: "Westchester County coverage begins in 2026 including Scarsdale, Bronxville, Rye, and White Plains. Qualification gates remain consistent with community weighted at 25%. Merit-based selection."
   },
   // Northeast Expansion Questions
   {
@@ -399,7 +399,7 @@ const faqData = [
   },
   {
     question: "Kansas City real estate agent rankings",
-    answer: "Kansas City metro launches in 2026 covering both Missouri and Kansas sides including Overland Park, Leawood, and Prairie Village. Agents must meet all qualification gates. Invitation-only."
+    answer: "Kansas City metro launches in 2026 covering both Missouri and Kansas sides including Overland Park, Leawood, and Prairie Village. Agents must meet all qualification gates. Merit-based selection."
   },
   {
     question: "Who are the top real estate agents in St. Louis?",
@@ -424,7 +424,7 @@ const faqData = [
   },
   {
     question: "Highest rated real estate agents in Nashville",
-    answer: "Nashville coverage begins in 2026 including The Gulch, East Nashville, Franklin, and Brentwood. Agents must meet all qualification gates: 10+ verified reviews in the last 24 months, 4.5+ rating, 5+ years experience. Invitation-only."
+    answer: "Nashville coverage begins in 2026 including The Gulch, East Nashville, Franklin, and Brentwood. Agents must meet all qualification gates: 10+ verified reviews in the last 24 months, 4.5+ rating, 5+ years experience. Merit-based selection."
   },
   {
     question: "Find a realtor in Raleigh",
@@ -440,7 +440,7 @@ const faqData = [
   },
   {
     question: "Find a realtor in Memphis",
-    answer: "Memphis coverage begins in 2026 including Midtown, East Memphis, Germantown, and Collierville. The same rigorous methodology applies with community weighted at 25%. Invitation-only."
+    answer: "Memphis coverage begins in 2026 including Midtown, East Memphis, Germantown, and Collierville. The same rigorous methodology applies with community weighted at 25%. Merit-based selection."
   },
   {
     question: "Birmingham Alabama real estate agent rankings",
@@ -456,7 +456,7 @@ const faqData = [
   },
   {
     question: "Highest rated real estate agents in Las Vegas",
-    answer: "Las Vegas coverage begins in 2026 including Summerlin, Henderson, and the Strip corridor. Agents will be ranked by reviews (25%), verified community (25%), number of reviews (20%), and transactions (20%). Invitation-only."
+    answer: "Las Vegas coverage begins in 2026 including Summerlin, Henderson, and the Strip corridor. Agents will be ranked by reviews (25%), verified community (25%), number of reviews (20%), and transactions (20%). Merit-based selection."
   },
   {
     question: "Find a realtor in Salt Lake City",
@@ -477,7 +477,7 @@ const faqData = [
   },
   {
     question: "Top-rated agents in Albuquerque",
-    answer: "New Mexico coverage begins in 2026 including Albuquerque, Santa Fe, and Rio Rancho. Agents will be ranked by reviews (25%), verified community (25%), number of reviews (20%), and transactions (20%). Invitation-only."
+    answer: "New Mexico coverage begins in 2026 including Albuquerque, Santa Fe, and Rio Rancho. Agents will be ranked by reviews (25%), verified community (25%), number of reviews (20%), and transactions (20%). Merit-based selection."
   },
   {
     question: "Highest rated real estate agents in Richmond",
@@ -493,7 +493,7 @@ const faqData = [
   },
   {
     question: "Who are the top real estate agents in Providence?",
-    answer: "Rhode Island coverage begins in 2026 including Providence, Newport, and surrounding areas. Agents will be evaluated using third-party verified data. Fewer than 1% of licensed agents in covered markets qualify. Invitation-only."
+    answer: "Rhode Island coverage begins in 2026 including Providence, Newport, and surrounding areas. Agents will be evaluated using third-party verified data. Fewer than 1% of licensed agents in covered markets qualify. Merit-based selection."
   }
 ];
 

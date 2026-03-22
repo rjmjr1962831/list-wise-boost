@@ -51,8 +51,7 @@ serve(async (req) => {
           .from("professionals")
           .select("*", { count: "exact", head: true })
           .eq("active", true)
-          .eq("state_slug", state)
-          .not("canonical_slug", "is", null),
+          .eq("state_slug", state),
         supabase
           .from("cities")
           .select("*", { count: "exact", head: true })

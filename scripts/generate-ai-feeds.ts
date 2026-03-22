@@ -73,13 +73,13 @@ async function runSql(query: string): Promise<any[]> {
 
 // ── Fetch live counts (Sitemap Rule A: only cities/neighborhoods with qualifying agents) ──
 async function fetchCounts(): Promise<Counts> {
-  // Agent counts (active agents)
+  // Agent counts (active agents in covered states only — excludes null state_slug)
   const agentRows = await runSql(`
     SELECT
-      count(*) FILTER (WHERE active = true) AS total,
-      count(*) FILTER (WHERE active = true AND state_slug = 'arizona') AS az,
-      count(*) FILTER (WHERE active = true AND state_slug = 'california') AS ca
+      count(*) FILTER (WHERE state_slug = 'arizona') AS az,
+      count(*) FILTER (WHERE state_slug = 'california') AS ca
     FROM professionals
+    WHERE active = true AND state_slug IN ('arizona', 'california')
   `);
   const agents = agentRows[0];
 
@@ -131,10 +131,13 @@ async function fetchCounts(): Promise<Counts> {
   const neighborhoodsAZ = nhByState['arizona'] || 0;
   const neighborhoodsCA = nhByState['california'] || 0;
 
+  const agentsAZ = Number(agents.az);
+  const agentsCA = Number(agents.ca);
+
   return {
-    agentsTotal: Number(agents.total),
-    agentsAZ: Number(agents.az),
-    agentsCA: Number(agents.ca),
+    agentsTotal: agentsAZ + agentsCA,
+    agentsAZ,
+    agentsCA,
     citiesAZ,
     citiesCA,
     citiesTotal: citiesAZ + citiesCA,

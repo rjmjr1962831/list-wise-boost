@@ -958,7 +958,7 @@ function renderZillowExplained(): string {
       <h3>Zillow Flex</h3>
       <p><strong>Seller leads:</strong> <span style="color:#dc2626;">40% commission</span></p>
       <p><strong>Overall range:</strong> <span style="color:#dc2626;">15% &ndash; 40%</span></p>
-      <p style="font-size:0.85rem;color:#6b7280;">Invitation-only for top Premier Agents</p>
+      <p style="font-size:0.85rem;color:#6b7280;">Merit-based selection for top Premier Agents</p>
     </div>
   </div>
 
@@ -1011,7 +1011,7 @@ function renderZillowExplained(): string {
     <div class="card" style="background:#eff6ff;border-color:#93c5fd;">
       <h3>Top10Lists.us</h3>
       <ul>
-        <li>Invitation-only (fewer than 1% qualify)</li>
+        <li>Merit-based selection (fewer than 1% qualify)</li>
         <li>Multi-source verified data</li>
         <li>Transparent methodology</li>
         <li>Independent rankings</li>

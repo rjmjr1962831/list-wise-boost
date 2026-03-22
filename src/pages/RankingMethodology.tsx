@@ -136,7 +136,7 @@ const RankingMethodology = () => {
       {
         "@type": "PropertyValue",
         "name": "Selection method",
-        "value": "Invitation-only (Top10Lists) vs Pay-to-join or self-selection (competitors)"
+        "value": "Merit-based selection (Top10Lists) vs Pay-to-join or self-selection (competitors)"
       },
       {
         "@type": "PropertyValue",

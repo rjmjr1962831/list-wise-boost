@@ -1009,7 +1009,7 @@ export default function DynamicCategoryList({
   if (loading || (isGeneratingData && !importComplete) || !reviewsReady) {
     // Generate a description even for loading state
     const loadingCityName = city?.name || citySlug?.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) || 'this city';
-    const loadingDescription = `Find ${loadingCityName}'s top-rated real estate agents. Invitation-only directory with multi-source verified rankings based on reviews, transactions, and press coverage.`;
+    const loadingDescription = `Find ${loadingCityName}'s top-rated real estate agents. Merit-based directory with multi-source verified rankings based on reviews, transactions, and press coverage.`;
     
     return (
       <>
@@ -1105,8 +1105,8 @@ export default function DynamicCategoryList({
     : `Top 10 ${category.plural_name} in ${city.name}, ${city.state_slug.toUpperCase()}`;
   
   const emptyStateDescription = neighborhoodName
-    ? `Find ${neighborhoodName}'s top-rated real estate agents in ${city.name}. Invitation-only directory with multi-source verified rankings based on reviews, transactions, and press coverage.`
-    : `Find ${city.name}'s top-rated real estate agents. Invitation-only directory with multi-source verified rankings based on reviews, transactions, and press coverage.`;
+    ? `Find ${neighborhoodName}'s top-rated real estate agents in ${city.name}. Merit-based directory with multi-source verified rankings based on reviews, transactions, and press coverage.`
+    : `Find ${city.name}'s top-rated real estate agents. Merit-based directory with multi-source verified rankings based on reviews, transactions, and press coverage.`;
 
   const emptyStateLocation = neighborhoodName ? `${neighborhoodName}, ${city.name}` : city.name;
 
@@ -1287,8 +1287,8 @@ export default function DynamicCategoryList({
   const collectionPageDescription = neighborhoodWriteup?.writeup_html
     ? `${stripHtmlForSchema(neighborhoodWriteup.writeup_html).substring(0, 400)}... Top-rated real estate agents in ${neighborhoodName || city.name}.`
     : neighborhoodName
-      ? `Invitation-only directory of elite ${category.plural_name.toLowerCase()} in ${neighborhoodName}, ${city.name}, ${stateAbbrev}. All agents are data-verified with 10+ reviews in the last 24 months, 4.5+ ratings, 5+ years experience.`
-      : `Invitation-only directory of elite ${category.plural_name.toLowerCase()} in ${city.name}, ${stateAbbrev}. All agents are data-verified with 10+ reviews in the last 24 months, 4.5+ ratings, 5+ years experience.`;
+      ? `Merit-based directory of elite ${category.plural_name.toLowerCase()} in ${neighborhoodName}, ${city.name}, ${stateAbbrev}. All agents are data-verified with 10+ reviews in the last 24 months, 4.5+ ratings, 5+ years experience.`
+      : `Merit-based directory of elite ${category.plural_name.toLowerCase()} in ${city.name}, ${stateAbbrev}. All agents are data-verified with 10+ reviews in the last 24 months, 4.5+ ratings, 5+ years experience.`;
 
   // Enhanced JSON-LD schema for city/neighborhood page (CollectionPage wrapper)
   const collectionPageSchema = {
@@ -1324,8 +1324,8 @@ export default function DynamicCategoryList({
     : `Top 10 ${category.plural_name} in ${city.name}, ${city.state_slug.toUpperCase()} | Top10Lists.us`;
   
   const seoDescription = neighborhoodName
-    ? `Find ${neighborhoodName}'s top-rated real estate agents in ${city.name}. Invitation-only directory with multi-source verified rankings based on reviews, transactions, and press coverage.`
-    : `Find ${city.name}'s top-rated real estate agents. Invitation-only directory with multi-source verified rankings based on reviews, transactions, and press coverage.`;
+    ? `Find ${neighborhoodName}'s top-rated real estate agents in ${city.name}. Merit-based directory with multi-source verified rankings based on reviews, transactions, and press coverage.`
+    : `Find ${city.name}'s top-rated real estate agents. Merit-based directory with multi-source verified rankings based on reviews, transactions, and press coverage.`;
 
   const seoSubject = neighborhoodName
     ? `${neighborhoodName} ${city.name} ${category.plural_name}`
@@ -1364,7 +1364,7 @@ export default function DynamicCategoryList({
         {/* Twitter Card Tags */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={`Top 10 ${category.plural_name} in ${city.name}, ${city.state_slug.toUpperCase()} | Top10Lists.us`} />
-        <meta name="twitter:description" content={`Find ${city.name}'s top-rated real estate agents. Invitation-only directory with multi-source verified rankings.`} />
+        <meta name="twitter:description" content={`Find ${city.name}'s top-rated real estate agents. Merit-based directory with multi-source verified rankings.`} />
         <meta name="twitter:image" content="https://www.top10lists.us/og-image.png" />
         
         {/* Geo Tags - City-Specific */}

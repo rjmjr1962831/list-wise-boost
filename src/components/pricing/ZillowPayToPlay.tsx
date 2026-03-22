@@ -73,7 +73,7 @@ export function ZillowPayToPlay() {
                   <span className="font-semibold text-destructive">15% - 40%</span>
                 </div>
                 <p className="text-xs text-muted-foreground mt-2">
-                  Invitation-only for top Premier Agents
+                  Merit-based selection for top Premier Agents
                 </p>
               </div>
             </div>
@@ -227,7 +227,7 @@ export function ZillowPayToPlay() {
             </div>
             <div className="space-y-2">
               {[
-                'Invitation-only (fewer than 1% qualify)',
+                'Merit-based selection (fewer than 1% qualify)',
                 'Multi-source verified data',
                 'Transparent methodology',
                 'Independent rankings',
