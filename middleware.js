@@ -5,10 +5,9 @@
  * 1. Staging: redirect bots to production (301)
  * 2. Production: log bot hits to bot_crawl_logs for accurate crawl counting
  *
- * Uses waitUntil() to keep the Supabase insert alive after the response
- * is sent, so logging never adds latency.
+ * Uses event.waitUntil() to keep the Supabase insert alive after the
+ * response is sent, so logging never adds latency.
  */
-import { NextResponse } from 'next/server';
 
 const PRODUCTION_ORIGIN = 'https://www.top10lists.us';
 const SUPABASE_REST = 'https://wiotrvoirdgzfacuuiem.supabase.co/rest/v1';
@@ -73,8 +72,32 @@ function isStaging(host) {
   return h === 'staging.top10lists.us' || h === 'staging.toptenlists.us' || h.endsWith('.vercel.app');
 }
 
+/* ── Log bot crawl to Supabase ───────────────────────────────────── */
+function logCrawl(pathname, ua, botName, key) {
+  const row = {
+    page_path: pathname,
+    user_agent: ua.slice(0, 500),
+    bot_name: botName,
+    crawled_at: new Date().toISOString(),
+    agent_id: null,
+  };
+  const artifactMatch = pathname.match(ARTIFACT_PATH_RE);
+  if (artifactMatch) row.agent_id = artifactMatch[1];
+
+  return fetch(`${SUPABASE_REST}/bot_crawl_logs`, {
+    method: 'POST',
+    headers: {
+      apikey: key,
+      Authorization: `Bearer ${key}`,
+      'Content-Type': 'application/json',
+      Prefer: 'return=minimal',
+    },
+    body: JSON.stringify(row),
+  }).catch(() => {}); // Silent on error
+}
+
 /* ── Middleware ───────────────────────────────────────────────────── */
-export default function middleware(request) {
+export default async function middleware(request, event) {
   const url = new URL(request.url);
   const host = request.headers.get('host') || url.hostname;
   const ua = request.headers.get('user-agent') || '';
@@ -90,48 +113,15 @@ export default function middleware(request) {
   if (!isStaging(host) && botName && isLoggablePath(url.pathname)) {
     const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || '';
     if (key) {
-      const row = {
-        page_path: url.pathname,
-        user_agent: ua.slice(0, 500),
-        bot_name: botName,
-        crawled_at: new Date().toISOString(),
-        agent_id: null,
-      };
-      // Extract agent_id from artifact UUID
-      const artifactMatch = url.pathname.match(ARTIFACT_PATH_RE);
-      if (artifactMatch) row.agent_id = artifactMatch[1];
-
-      const logPromise = fetch(`${SUPABASE_REST}/bot_crawl_logs`, {
-        method: 'POST',
-        headers: {
-          apikey: key,
-          Authorization: `Bearer ${key}`,
-          'Content-Type': 'application/json',
-          Prefer: 'return=minimal',
-        },
-        body: JSON.stringify(row),
-      }).catch(() => {}); // Silent on error
-
-      // waitUntil keeps the fetch alive after response is sent
-      request.nextUrl; // ensure NextResponse context
-      const response = NextResponse.next();
-      response.waitUntil?.(logPromise);
-      // Fallback: if waitUntil not available, the fetch is still fire-and-forget
-      return response;
+      const logPromise = logCrawl(url.pathname, ua, botName, key);
+      // waitUntil keeps the fetch alive after the response is sent
+      if (event?.waitUntil) {
+        event.waitUntil(logPromise);
+      }
+      // If no waitUntil, the fetch is still fire-and-forget
     }
   }
 
-  return NextResponse.next();
+  // Continue to the next handler (pass-through)
+  return undefined;
 }
-
-// Only run on GEO-relevant paths + root (for staging redirect)
-export const config = {
-  matcher: [
-    '/:state/agents/:slug*',
-    '/:state/:city/top10realestateagents',
-    '/:state/:city/:neighborhood/top10realestateagents',
-    '/:state/top10realestateagents',
-    '/artifact/:token*',
-    '/',
-  ],
-};
