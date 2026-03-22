@@ -86,6 +86,7 @@ export const EmailManager = () => {
   const [professional, setProfessional] = useState<any | null>(null);
   const [filter, setFilter] = useState<"all" | "inbound" | "outbound">("inbound");
   const [search, setSearch] = useState("");
+  const [activeAccounts, setActiveAccounts] = useState<Set<string>>(new Set());
 
   // Compose state
   const [composing, setComposing] = useState(false);
@@ -126,6 +127,10 @@ export const EmailManager = () => {
     setTemplates(templatesRes.data || []);
     setAccounts(accountsRes.data || []);
     if (accountsRes.data?.length) setFromAccount(accountsRes.data[0].email);
+    // Initialize active account filter with all connected accounts
+    if (accountsRes.data?.length && activeAccounts.size === 0) {
+      setActiveAccounts(new Set(accountsRes.data.map((a: any) => a.email)));
+    }
     setLoading(false);
   };
 
@@ -269,6 +274,12 @@ export const EmailManager = () => {
   const filtered = threads.filter(e => {
     if (filter === "inbound" && e.direction !== "inbound") return false;
     if (filter === "outbound" && e.direction !== "outbound") return false;
+    // Filter by active accounts
+    if (activeAccounts.size > 0) {
+      const matchesAccount = activeAccounts.has(e.account_email) ||
+        activeAccounts.has(e.from_address) || activeAccounts.has(e.to_address);
+      if (!matchesAccount) return false;
+    }
     const q = search.toLowerCase();
     if (q && !e.subject?.toLowerCase().includes(q) && !e.from_address.toLowerCase().includes(q) && !e.to_address.toLowerCase().includes(q)) return false;
     return true;
@@ -365,10 +376,20 @@ export const EmailManager = () => {
         <div className="flex flex-wrap gap-1">
           {MANAGED_ACCOUNTS.map(acct => {
             const connected = accounts.some(a => a.email === acct);
+            const active = activeAccounts.has(acct);
             return (
-              <button key={acct} onClick={() => !connected && handleConnectAccount(acct)}
-                className={`text-xs px-2 py-1 rounded-full border transition-colors ${connected ? "bg-green-50 border-green-300 text-green-700 cursor-default" : "bg-muted hover:bg-muted/80 cursor-pointer"}`}>
-                {connected ? "✓" : "+"} {acct.split("@")[0]}@{acct.split("@")[1]}
+              <button key={acct} onClick={() => {
+                if (!connected) { handleConnectAccount(acct); return; }
+                const next = new Set(activeAccounts);
+                if (active) next.delete(acct); else next.add(acct);
+                setActiveAccounts(next);
+              }}
+                className={`text-xs px-2 py-1 rounded-full border transition-colors cursor-pointer ${
+                  !connected ? "bg-muted hover:bg-muted/80" :
+                  active ? "bg-green-50 border-green-300 text-green-700 hover:bg-green-100" :
+                  "bg-muted border-muted-foreground/30 text-muted-foreground hover:bg-muted/80 line-through"
+                }`}>
+                {!connected ? "+" : active ? "✓" : "○"} {acct}
               </button>
             );
           })}
