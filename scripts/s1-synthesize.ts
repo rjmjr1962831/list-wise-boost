@@ -72,8 +72,8 @@ function splitComprehensive(doc: string): { sections1to20: string; section21: st
 }
 
 async function synthesizeWithLLM(takeawaysText: string, currentSection21: string): Promise<string> {
-  const apiKey = process.env.DEEPSEEK_API_KEY;
-  if (!apiKey) throw new Error('DEEPSEEK_API_KEY not set in .env');
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) throw new Error('ANTHROPIC_API_KEY not set in .env');
 
   const today = new Date().toISOString().slice(0, 10);
 
@@ -84,14 +84,17 @@ async function synthesizeWithLLM(takeawaysText: string, currentSection21: string
 
 Rules:
 - You will receive the EXISTING Section 21 and NEW takeaways only
-- Merge new information into the existing topic groups where it fits
-- Add new topic groups (### headers) only if new info doesn't fit existing ones
+- CRITICAL: Group by TOPIC, not by session or date. Use ### headers for topic groups (e.g., "### Email Infrastructure", "### GEO & Content Consistency", "### Stripe & Payments", "### Monitoring & Observability")
+- If the existing section is organized by date (e.g., "### CLAUDE -- 2026-03-22"), you MUST reorganize it by topic
+- Merge new information into the appropriate topic groups
+- Add new topic groups only if new info doesn't fit existing ones
 - If new info supersedes something in the existing section, REPLACE the old info
 - Remove redundancy -- don't add what's already covered
 - Drop ephemeral session details (file lists, "what we did today" narratives)
 - Keep ONLY: decisions made, things deployed/live, things deprecated/removed, current state, standing rules, config changes, new edge functions/scripts
 - Use -- instead of em dashes
-- Keep dates only where they matter
+- Keep dates only where they matter (e.g., campaign start date, not "today we did X")
+- Target 150-300 lines total. Compress aggressively.
 - Output the complete updated Section 21
 - Start with exactly: ## 21. Recent Updates (from t1)\\n\\n*Last synthesized: ${today}*\\n\\n---`
     : `You are a technical editor synthesizing software project session logs into a compact knowledge document section.
@@ -113,38 +116,39 @@ Rules:
     ? `Here is the EXISTING Section 21:\n\n${currentSection21}\n\nHere are the NEW session takeaways to merge in:\n\n${takeawaysText}\n\nProduce the updated Section 21. Output ONLY the markdown content, starting with the ## 21 header.`
     : `Here are all the raw session takeaways to synthesize:\n\n${takeawaysText}\n\nProduce the synthesized Section 21. Output ONLY the markdown content, starting with the ## 21 header.`;
 
-  const response = await fetch('https://api.deepseek.com/chat/completions', {
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`,
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
     },
     body: JSON.stringify({
-      model: 'deepseek-chat',
+      model: 'claude-sonnet-4-6',
+      max_tokens: 8192,
+      system: systemPrompt,
       messages: [
-        { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt },
       ],
       temperature: 0.3,
-      max_tokens: 8192,
     }),
   });
 
   if (!response.ok) {
     const errorBody = await response.text();
-    throw new Error(`DeepSeek API error ${response.status}: ${errorBody}`);
+    throw new Error(`Anthropic API error ${response.status}: ${errorBody}`);
   }
 
   const data = await response.json() as {
-    choices: Array<{ message: { content: string } }>;
-    usage?: { prompt_tokens: number; completion_tokens: number; total_tokens: number };
+    content: Array<{ type: string; text: string }>;
+    usage?: { input_tokens: number; output_tokens: number };
   };
-  const content = data.choices?.[0]?.message?.content;
-  if (!content) throw new Error('DeepSeek returned empty response');
+  const content = data.content?.[0]?.text;
+  if (!content) throw new Error('Anthropic returned empty response');
 
   const usage = data.usage;
   if (usage) {
-    console.log(`s1: DeepSeek usage -- ${usage.prompt_tokens} prompt + ${usage.completion_tokens} completion = ${usage.total_tokens} total tokens`);
+    console.log(`s1: Sonnet 4.6 usage -- ${usage.input_tokens} input + ${usage.output_tokens} output tokens`);
   }
 
   // Ensure it starts with the right header
@@ -239,7 +243,7 @@ async function main() {
   if (status.length === 0) {
     console.log('No changes to commit; COMPREHENSIVE already up to date.');
   } else {
-    execSync('git commit -m "s1: synthesize Section 21 via DeepSeek"', { stdio: 'inherit' });
+    execSync('git commit -m "s1: synthesize Section 21 via Sonnet 4.6"', { stdio: 'inherit' });
     execSync('git push origin staging', { stdio: 'inherit' });
     console.log('s1: committed and pushed to staging.');
   }

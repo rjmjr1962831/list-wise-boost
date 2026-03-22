@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-03-22T15:04:19.965Z",
+  "generated_at": "2026-03-22T15:10:45.341Z",
   "base_url": "https://www.top10lists.us",
   "stats": {
-    "total_cities": 445,
+    "total_cities": 364,
     "total_neighborhoods": 8083,
     "states": 2
   },
@@ -11948,7 +11948,7 @@
     },
     "california": {
       "name": "California",
-      "cities_count": 409,
+      "cities_count": 328,
       "neighborhoods_count": 6134,
       "cities": [
         {

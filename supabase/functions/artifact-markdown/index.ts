@@ -432,6 +432,19 @@ serve(async(req)=>{
     if(!pro){const{data:bySlugCa}=await sb.from("professionals").select(PRO_FIELDS).eq("state_slug","california").eq("canonical_slug",token).maybeSingle();pro=bySlugCa;}
   }
   if(!pro)return new Response("Agent not found.",{status:404,headers:{"Content-Type":"text/plain"}});
+
+  // Log artifact view to bot_crawl_logs (Vercel log drain can't see external rewrites)
+  try {
+    const ua = req.headers.get("user-agent") || "";
+    await sb.from("bot_crawl_logs").insert({
+      agent_id: pro.id,
+      page_path: `/artifact/${token}`,
+      user_agent: ua.slice(0, 500),
+      bot_name: ua.match(/ChatGPT-User|PerplexityBot|ClaudeBot|Googlebot|Bingbot|Applebot|AhrefsBot|GPTBot|OAI-SearchBot|Meta-ExternalAgent/i)?.[0] || (ua.match(/bot|crawler|spider/i) ? "unknown_bot" : null),
+      crawled_at: new Date().toISOString(),
+    });
+  } catch (_) { /* non-critical */ }
+
   const previewTier=url.searchParams.get("preview_tier")?.toLowerCase();
   const ss=pro.state_slug||"arizona";
   const state=STATES[ss]||ss;

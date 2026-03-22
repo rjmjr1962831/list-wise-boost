@@ -1357,18 +1357,22 @@ serve(async (req) => {
           // Non-critical -- do not break the tool response
         }
 
-        // Log MCP request to mcp_request_logs
-        try {
-          await supabase.from("mcp_request_logs").insert({
-            tool_name: toolName,
-            city: (toolArgs.city as string) || null,
-            state: (toolArgs.state as string) || null,
-            request_params: toolArgs,
-            user_agent: req.headers.get("user-agent") || null,
-            ip: req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || null,
-          });
-        } catch (_logErr) {
-          // Never break the response
+        // Log MCP request to mcp_request_logs (skip internal/test calls)
+        const _logUa = (req.headers.get("user-agent") || "").toLowerCase();
+        const _isInternal = _logUa.startsWith("curl/") || _logUa === "node" || _logUa.startsWith("node/") || _logUa.includes("undici");
+        if (!_isInternal) {
+          try {
+            await supabase.from("mcp_request_logs").insert({
+              tool_name: toolName,
+              city: (toolArgs.city as string) || null,
+              state: (toolArgs.state as string) || null,
+              request_params: toolArgs,
+              user_agent: req.headers.get("user-agent") || null,
+              ip: req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || null,
+            });
+          } catch (_logErr) {
+            // Never break the response
+          }
         }
 
         result = {
