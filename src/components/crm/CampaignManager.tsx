@@ -47,6 +47,7 @@ const SENDER_ACCOUNTS = [
   "mark@toptenlists.us",
   "hello@top10lists.us",
   "robert@top10lists.us",
+  "mark@top10lists.us",
 ];
 
 const SAMPLE_DATA: Record<string, string> = {
@@ -201,6 +202,7 @@ function CampaignWizard({
   const [body, setBody] = useState("");
   const [senders, setSenders] = useState<string[]>([SENDER_ACCOUNTS[0]]);
   const [templates, setTemplates] = useState<SequenceTemplate[]>([]);
+  const [emailTemplates, setEmailTemplates] = useState<{ id: string; name: string; subject: string; body: string }[]>([]);
   const [loadingTemplates, setLoadingTemplates] = useState(false);
   const [existingCampaignId, setExistingCampaignId] = useState<string>("");
 
@@ -264,18 +266,33 @@ function CampaignWizard({
     (async () => {
       setLoadingTemplates(true);
       try {
-        const { data, error } = await supabase
-          .from("crm_sequence_steps" as any)
-          .select("sequence_id, step_number, subject, body, crm_sequences(name)")
-          .order("step_number", { ascending: true });
-        if (error) throw error;
-        setTemplates(
-          ((data as any[]) ?? []).map((d: any) => ({
-            sequence_id: d.sequence_id,
-            sequence_name: (d.crm_sequences as any)?.name ?? "Unknown",
-            step_number: d.step_number,
-            subject: d.subject ?? "",
-            body: d.body ?? "",
+        const [seqRes, tplRes] = await Promise.all([
+          supabase
+            .from("crm_sequence_steps" as any)
+            .select("sequence_id, step_number, subject, body, crm_sequences(name)")
+            .order("step_number", { ascending: true }),
+          supabase
+            .from("crm_email_templates")
+            .select("id, name, subject, body")
+            .order("name"),
+        ]);
+        if (!seqRes.error) {
+          setTemplates(
+            ((seqRes.data as any[]) ?? []).map((d: any) => ({
+              sequence_id: d.sequence_id,
+              sequence_name: (d.crm_sequences as any)?.name ?? "Unknown",
+              step_number: d.step_number,
+              subject: d.subject ?? "",
+              body: d.body ?? "",
+            }))
+          );
+        }
+        setEmailTemplates(
+          ((tplRes.data as any[]) ?? []).map((t: any) => ({
+            id: t.id,
+            name: t.name ?? t.subject ?? "Template",
+            subject: t.subject ?? "",
+            body: t.body ?? "",
           }))
         );
       } catch {
@@ -873,7 +890,33 @@ function CampaignWizard({
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Template loader */}
+            {/* Email template loader */}
+            {emailTemplates.length > 0 && (
+              <div className="space-y-1">
+                <Label>Load from Email Template</Label>
+                <select
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  defaultValue=""
+                  onChange={(e) => {
+                    const tpl = emailTemplates.find(t => t.id === e.target.value);
+                    if (tpl) {
+                      setSubject(tpl.subject);
+                      setBody(tpl.body);
+                      if (!campaignName.trim()) setCampaignName(tpl.name);
+                      toast.info(`Loaded template: ${tpl.name}`);
+                    }
+                  }}
+                  disabled={loadingTemplates}
+                >
+                  <option value="">— Select template —</option>
+                  {emailTemplates.map(t => (
+                    <option key={t.id} value={t.id}>{t.name}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {/* Sequence template loader */}
             <div className="space-y-1">
               <Label>Load from Existing Sequence</Label>
               <select
