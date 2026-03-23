@@ -17,6 +17,10 @@ interface SmokeTest {
   expectedStatus: number;
   bodyContains?: string;
   bodyNotContains?: string[];
+  /** Minimum response body size in bytes */
+  minBodySize?: number;
+  /** Require at least one application/ld+json script block */
+  requireJsonLd?: boolean;
 }
 
 const tests: SmokeTest[] = [
@@ -33,6 +37,8 @@ const tests: SmokeTest[] = [
     url: BASE,
     expectedStatus: 200,
     bodyContains: "Top10Lists",
+    minBodySize: 5000,
+    requireJsonLd: true,
   },
   {
     name: "For-AI page",
@@ -48,6 +54,8 @@ const tests: SmokeTest[] = [
     name: "State page (Arizona)",
     url: `${BASE}/arizona`,
     expectedStatus: 200,
+    minBodySize: 5000,
+    requireJsonLd: true,
   },
   {
     name: "City page (Phoenix)",
@@ -58,12 +66,16 @@ const tests: SmokeTest[] = [
     name: "City rankings (Phoenix)",
     url: `${BASE}/arizona/phoenix/top10realestateagents`,
     expectedStatus: 200,
+    minBodySize: 5000,
+    requireJsonLd: true,
   },
   {
     name: "Agent profile page",
     url: `${BASE}/arizona/agents/a-tom-wood-team-1221`,
     expectedStatus: 200,
     bodyContains: "Top10Lists",
+    minBodySize: 10000,
+    requireJsonLd: true,
   },
   {
     name: "Artifact (UUID)",
@@ -122,6 +134,29 @@ async function runTests(): Promise<void> {
           if (body.includes(bad)) {
             errors.push(`Body contains forbidden: "${bad}"`);
           }
+        }
+      }
+
+      // Silent error detection: catch "Service Unavailable" pages returned as 200
+      if (body.includes("<h1>Service Unavailable</h1>")) {
+        errors.push(`Page returned "Service Unavailable" body (silent error)`);
+      }
+      if (/<title>\s*Service Unavailable\s*<\/title>/i.test(body)) {
+        errors.push(`Page title is "Service Unavailable" (silent error)`);
+      }
+
+      // Minimum body size check
+      if (test.minBodySize && body.length < test.minBodySize) {
+        errors.push(
+          `Body too small: ${body.length} bytes (minimum ${test.minBodySize})`
+        );
+      }
+
+      // JSON-LD structured data check
+      if (test.requireJsonLd) {
+        const jsonLdCount = (body.match(/application\/ld\+json/g) || []).length;
+        if (jsonLdCount < 1) {
+          errors.push(`No application/ld+json blocks found (expected at least 1)`);
         }
       }
 

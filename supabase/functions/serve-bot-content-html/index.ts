@@ -519,35 +519,43 @@ serve(async (req) => {
     return new Response(null, { status: 204, headers: CORS });
   }
 
-  const url = new URL(req.url);
-  const path = (url.searchParams.get("path") ?? "").replace(/^\/+|\/+$/g, "") || "/";
-  const norm = path === "" ? "/" : `/${path}`;
+  try {
+    const url = new URL(req.url);
+    const path = (url.searchParams.get("path") ?? "").replace(/^\/+|\/+$/g, "") || "/";
+    const norm = path === "" ? "/" : `/${path}`;
 
-  let html: string;
-  if (norm === "/transparency" || norm === "/transparency/") {
-    html = await renderTransparency();
-  } else if (norm === "/faq" || norm === "/faq/") {
-    html = await renderFaq();
-  } else if (norm === "/for-ai" || norm === "/for-ai/") {
-    html = await renderForAi();
-  } else if (norm === "/methodology" || norm === "/methodology/") {
-    html = await renderMethodology();
-  } else {
+    let html: string;
+    if (norm === "/transparency" || norm === "/transparency/") {
+      html = await renderTransparency();
+    } else if (norm === "/faq" || norm === "/faq/") {
+      html = await renderFaq();
+    } else if (norm === "/for-ai" || norm === "/for-ai/") {
+      html = await renderForAi();
+    } else if (norm === "/methodology" || norm === "/methodology/") {
+      html = await renderMethodology();
+    } else {
+      return new Response(
+        JSON.stringify({ error: "Path not supported", path: norm }),
+        { status: 400, headers: { ...CORS, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Bot crawl logging handled by Vercel proxy (api/serve-clean-html.js)
+
+    return new Response(html, {
+      status: 200,
+      headers: {
+        "Content-Type": "text/html; charset=utf-8",
+        "Cache-Control": "public, max-age=3600, s-maxage=3600",
+        "X-Rendered": "serve-bot-content-html",
+        ...CORS,
+      },
+    });
+  } catch (e) {
+    console.error("serve-bot-content-html error:", e);
     return new Response(
-      JSON.stringify({ error: "Path not supported", path: norm }),
-      { status: 400, headers: { ...CORS, "Content-Type": "application/json" } }
+      JSON.stringify({ error: "Failed to render content page", detail: String(e) }),
+      { status: 500, headers: { ...CORS, "Content-Type": "application/json" } }
     );
   }
-
-  // Bot crawl logging handled by Vercel proxy (api/serve-clean-html.js)
-
-  return new Response(html, {
-    status: 200,
-    headers: {
-      "Content-Type": "text/html; charset=utf-8",
-      "Cache-Control": "public, max-age=3600, s-maxage=3600",
-      "X-Rendered": "serve-bot-content-html",
-      ...CORS,
-    },
-  });
 });

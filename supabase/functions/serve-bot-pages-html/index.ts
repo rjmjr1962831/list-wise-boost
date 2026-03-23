@@ -1068,56 +1068,64 @@ serve(async (req) => {
     );
   }
 
-  const url = new URL(req.url);
-  const path = (url.searchParams.get("path") ?? "").replace(/^\/+|\/+$/g, "") || "/";
-  const norm = path === "" ? "/" : `/${path}`;
+  try {
+    const url = new URL(req.url);
+    const path = (url.searchParams.get("path") ?? "").replace(/^\/+|\/+$/g, "") || "/";
+    const norm = path === "" ? "/" : `/${path}`;
 
-  let html: string;
-  switch (true) {
-    case norm === "/privacy" || norm === "/privacy/":
-      html = renderPrivacy(); break;
-    case norm === "/terms" || norm === "/terms/":
-      html = renderTerms(); break;
-    case norm === "/sms-terms" || norm === "/sms-terms/":
-      html = renderSmsTerms(); break;
-    case norm === "/opt-in" || norm === "/opt-in/":
-      html = renderOptIn(); break;
-    case norm === "/payments-security" || norm === "/payments-security/":
-      html = renderPaymentsSecurity(); break;
-    case norm === "/about" || norm === "/about/":
-      html = renderAbout(); break;
-    case norm === "/about/ranking-methodology" || norm === "/about/ranking-methodology/":
-      html = renderMethodology(); break;
-    case norm === "/press" || norm === "/press/":
-      html = renderPress(); break;
-    case norm === "/for-ai-systems" || norm === "/for-ai-systems/":
-      html = await renderForAiSystems(); break;
-    case norm === "/join" || norm === "/join/" || norm === "/for-agents" || norm === "/for-agents/":
-      html = renderJoin(); break;
-    case norm === "/ai-citation-whitepaper" || norm === "/ai-citation-whitepaper/":
-      html = renderAiCitationWhitepaper(); break;
-    case norm === "/ai-liability" || norm === "/ai-liability/":
-      html = renderAiLiability(); break;
-    case norm === "/protocol-services" || norm === "/protocol-services/":
-      html = renderProtocolServices(); break;
-    case norm === "/zillow-explained" || norm === "/zillow-explained/":
-      html = renderZillowExplained(); break;
-    case /^\/(colorado|florida|texas|new-york)\/?$/.test(norm):
-      html = renderComingSoon(norm.replace(/^\/|\/$/g, "")); break;
-    default:
-      return new Response(
-        JSON.stringify({ error: "Path not supported", path: norm }),
-        { status: 400, headers: { ...CORS, "Content-Type": "application/json" } }
-      );
+    let html: string;
+    switch (true) {
+      case norm === "/privacy" || norm === "/privacy/":
+        html = renderPrivacy(); break;
+      case norm === "/terms" || norm === "/terms/":
+        html = renderTerms(); break;
+      case norm === "/sms-terms" || norm === "/sms-terms/":
+        html = renderSmsTerms(); break;
+      case norm === "/opt-in" || norm === "/opt-in/":
+        html = renderOptIn(); break;
+      case norm === "/payments-security" || norm === "/payments-security/":
+        html = renderPaymentsSecurity(); break;
+      case norm === "/about" || norm === "/about/":
+        html = renderAbout(); break;
+      case norm === "/about/ranking-methodology" || norm === "/about/ranking-methodology/":
+        html = renderMethodology(); break;
+      case norm === "/press" || norm === "/press/":
+        html = renderPress(); break;
+      case norm === "/for-ai-systems" || norm === "/for-ai-systems/":
+        html = await renderForAiSystems(); break;
+      case norm === "/join" || norm === "/join/" || norm === "/for-agents" || norm === "/for-agents/":
+        html = renderJoin(); break;
+      case norm === "/ai-citation-whitepaper" || norm === "/ai-citation-whitepaper/":
+        html = renderAiCitationWhitepaper(); break;
+      case norm === "/ai-liability" || norm === "/ai-liability/":
+        html = renderAiLiability(); break;
+      case norm === "/protocol-services" || norm === "/protocol-services/":
+        html = renderProtocolServices(); break;
+      case norm === "/zillow-explained" || norm === "/zillow-explained/":
+        html = renderZillowExplained(); break;
+      case /^\/(colorado|florida|texas|new-york)\/?$/.test(norm):
+        html = renderComingSoon(norm.replace(/^\/|\/$/g, "")); break;
+      default:
+        return new Response(
+          JSON.stringify({ error: "Path not supported", path: norm }),
+          { status: 400, headers: { ...CORS, "Content-Type": "application/json" } }
+        );
+    }
+
+    return new Response(html, {
+      status: 200,
+      headers: {
+        "Content-Type": "text/html; charset=utf-8",
+        "Cache-Control": "public, max-age=3600, s-maxage=3600",
+        "X-Rendered": "serve-bot-pages-html",
+        ...CORS,
+      },
+    });
+  } catch (e) {
+    console.error("serve-bot-pages-html error:", e);
+    return new Response(
+      JSON.stringify({ error: "Failed to render page", detail: String(e) }),
+      { status: 500, headers: { ...CORS, "Content-Type": "application/json" } }
+    );
   }
-
-  return new Response(html, {
-    status: 200,
-    headers: {
-      "Content-Type": "text/html; charset=utf-8",
-      "Cache-Control": "public, max-age=3600, s-maxage=3600",
-      "X-Rendered": "serve-bot-pages-html",
-      ...CORS,
-    },
-  });
 });

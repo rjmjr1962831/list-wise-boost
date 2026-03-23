@@ -35,7 +35,9 @@
     "geo-audit": "tsx scripts/geo-audit.ts",
     "merge-to-main": "powershell -ExecutionPolicy Bypass -File scripts/merge-to-main.ps1",
     "register-sequencer-cron": "tsx scripts/register-sequencer-cron.ts",
-    "geo:check": "node scripts/geo-consistency-check.cjs"
+    "geo:check": "node scripts/geo-consistency-check.cjs",
+    "check:edge": "bash scripts/check-edge-functions.sh",
+    "deploy:edge": "bash scripts/deploy-edge-function.sh"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

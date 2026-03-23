@@ -349,17 +349,25 @@ serve(async (req) => {
     return new Response(null, { status: 204, headers: CORS });
   }
 
-  const html = await renderHome();
+  try {
+    const html = await renderHome();
 
-  // Bot crawl logging handled by Vercel proxy (api/serve-clean-html.js)
+    // Bot crawl logging handled by Vercel proxy (api/serve-clean-html.js)
 
-  return new Response(html, {
-    status: 200,
-    headers: {
-      "Content-Type": "text/html; charset=utf-8",
-      "Cache-Control": "public, max-age=3600, s-maxage=3600",
-      "X-Rendered": "serve-bot-home-html",
-      ...CORS,
-    },
-  });
+    return new Response(html, {
+      status: 200,
+      headers: {
+        "Content-Type": "text/html; charset=utf-8",
+        "Cache-Control": "public, max-age=3600, s-maxage=3600",
+        "X-Rendered": "serve-bot-home-html",
+        ...CORS,
+      },
+    });
+  } catch (e) {
+    console.error("serve-bot-home-html error:", e);
+    return new Response(
+      JSON.stringify({ error: "Failed to render homepage", detail: String(e) }),
+      { status: 500, headers: { ...CORS, "Content-Type": "application/json" } }
+    );
+  }
 });
