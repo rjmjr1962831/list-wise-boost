@@ -146,10 +146,6 @@ export default function SandboxStep1() {
       </SafeHead>
 
       <div className="max-w-xl mx-auto px-4 py-10 sm:py-16">
-        <h1 className="text-2xl sm:text-3xl font-bold text-center mb-6">
-          Congratulations, {firstName}! You've been selected.
-        </h1>
-
         <SandboxNugget>
           <p className="mb-2">The National Association of Realtors found that leads from AI convert at roughly 30%, comparable to a referral from a friend.</p>
           <p className="mb-2">Certifying your data will make you much safer for AI recommendation. This will result in a material increase in the probability that you will be named and endorsed by AI.</p>
