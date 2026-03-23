@@ -62,6 +62,94 @@ function normalizeTier(t: string | null): string {
   return "certified";
 }
 
+const HUMAN_BOTS = new Set(["ChatGPT-User", "chatgpt-user", "PerplexityBot", "perplexitybot", "OAI-SearchBot"]);
+
+const HUMAN_BOT_LABELS: Record<string, string> = {
+  "ChatGPT-User": "A real person asked ChatGPT and it pulled your data live",
+  "chatgpt-user": "A real person asked ChatGPT and it pulled your data live",
+  "PerplexityBot": "A real person asked Perplexity and it cited your profile",
+  "perplexitybot": "A real person asked Perplexity and it cited your profile",
+  "OAI-SearchBot": "ChatGPT Search fetched your profile for a consumer query",
+};
+
+function SurfacesDetailModal({ open, onClose, data }: { open: boolean; onClose: () => void; data: SurfacesData | null }) {
+  if (!open || !data) return null;
+
+  const humanBots = data.bots.filter(b => HUMAN_BOTS.has(b.bot_name));
+  const otherBots = data.bots.filter(b => !HUMAN_BOTS.has(b.bot_name));
+  const humanTotal = humanBots.reduce((s, b) => s + b.crawls, 0);
+  const otherTotal = otherBots.reduce((s, b) => s + b.crawls, 0);
+
+  const fmt = (n: number) => n.toLocaleString();
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={onClose}>
+      <div className="bg-background rounded-xl border shadow-lg max-w-lg w-full mx-4 p-6 max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-bold">AI Surface Breakdown (7 days)</h3>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        <p className="text-sm text-muted-foreground mb-4">
+          Every time an AI system crawls a page where you're listed, that's one surface. Total: <strong className="text-foreground">{fmt(data.total)}</strong>
+        </p>
+
+        {/* Human-initiated */}
+        {humanBots.length > 0 && (
+          <div className="mb-5">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="h-2 w-2 rounded-full bg-emerald-500" />
+              <h4 className="text-sm font-semibold">Consumer Queries ({fmt(humanTotal)})</h4>
+            </div>
+            <p className="text-xs text-muted-foreground mb-2">Real people asking AI for agent recommendations — your data was fetched live.</p>
+            <p className="text-xs text-muted-foreground mb-2">This is not an indicator that you were named by AI. It means you have trained an AI that many times. Multiple crawls compound the AI's comfort naming and endorsing you. Every hit increases your likelihood of being named or endorsed.</p>
+            <div className="space-y-1.5">
+              {humanBots.map(b => (
+                <div key={b.bot_name} className="flex items-center justify-between px-3 py-2 rounded bg-emerald-50 border border-emerald-200">
+                  <div>
+                    <span className="text-sm font-medium">{BOT_DISPLAY[b.bot_name] || b.bot_name}</span>
+                    {HUMAN_BOT_LABELS[b.bot_name] && (
+                      <p className="text-[10px] text-muted-foreground">{HUMAN_BOT_LABELS[b.bot_name]}</p>
+                    )}
+                  </div>
+                  <span className="text-sm font-bold tabular-nums">{fmt(b.crawls)}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Indexing & Training */}
+        {otherBots.length > 0 && (
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <div className="h-2 w-2 rounded-full bg-blue-500" />
+              <h4 className="text-sm font-semibold">Indexing & Training ({fmt(otherTotal)})</h4>
+            </div>
+            <p className="text-xs text-muted-foreground mb-2">Bots building the knowledge base for future recommendations.</p>
+            <div className="space-y-1">
+              {otherBots.map(b => (
+                <div key={b.bot_name} className="flex items-center justify-between px-3 py-1.5 rounded hover:bg-muted">
+                  <span className="text-sm">{BOT_DISPLAY[b.bot_name] || b.bot_name}</span>
+                  <span className="text-sm tabular-nums text-muted-foreground">{fmt(b.crawls)}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {data.computed_at && (
+          <p className="text-[10px] text-muted-foreground mt-4 pt-3 border-t">
+            Last computed: {new Date(data.computed_at).toLocaleDateString()} {new Date(data.computed_at).toLocaleTimeString()}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 const TIER_LABELS: Record<string, string> = {
   certified: "Certified (Free)",
   audited: "Audited ($300/mo)",
@@ -109,6 +197,7 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
   const [scores, setScores] = useState<AuditScores | null>(null);
   const [surfacesData, setSurfacesData] = useState<SurfacesData | null>(null);
   const [aifsModalOpen, setAifsModalOpen] = useState(false);
+  const [surfacesModalOpen, setSurfacesModalOpen] = useState(false);
 
   useEffect(() => {
     if (!professional?.id) return;
@@ -184,17 +273,18 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
             times surfaced to AI systems in the past 7 days
           </p>
 
-          {/* Top bot pills from pre-computed data */}
+          {/* Detail link */}
           {surfacesData && surfacesData.bots.length > 0 && (
-            <div className="mt-3 flex flex-wrap gap-1">
-              {surfacesData.bots.slice(0, 5).map((b) => (
-                <span key={b.bot_name} className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                  {BOT_DISPLAY[b.bot_name] || b.bot_name}
-                </span>
-              ))}
-            </div>
+            <button
+              onClick={() => setSurfacesModalOpen(true)}
+              className="mt-3 inline-flex items-center gap-1 text-xs text-emerald-300 hover:text-emerald-100 transition-colors"
+            >
+              Detail <ChevronRight className="h-3 w-3" />
+            </button>
           )}
         </div>
+
+        <SurfacesDetailModal open={surfacesModalOpen} onClose={() => setSurfacesModalOpen(false)} data={surfacesData} />
 
         {/* Card 2: AIFS Score */}
         <div className="rounded-xl border p-5">

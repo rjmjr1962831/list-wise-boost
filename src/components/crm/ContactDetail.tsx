@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { RichEmailEditor } from "./RichEmailEditor";
 import { Badge } from "@/components/ui/badge";
 import {
   Mail, Phone, Star, ArrowLeft, Plus, Check, Clock, CreditCard, Send,
@@ -55,6 +56,7 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
   const [composeSubject, setComposeSubject] = useState("");
   const [composeBody, setComposeBody] = useState("");
   const [composeFrom, setComposeFrom] = useState("hello@toptenlists.us");
+  const editorRef = useRef<any>(null);
   const [sending, setSending] = useState(false);
   const [accounts, setAccounts] = useState<any[]>([]);
   const [templates, setTemplates] = useState<{ id: string; subject: string; body: string; label: string }[]>([]);
@@ -240,16 +242,35 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
     { key: "{{aifs_score}}", label: "AIFS Score" },
   ];
 
+  /** Resolve merge variables against the current professional */
+  const interpolate = (text: string): string => {
+    if (!pro) return text;
+    const firstName = (pro.name || "").split(" ")[0];
+    const tier = pro.current_tier || pro.badge_tier || "listed";
+    const city = pro.business_city || "";
+    const profileUrl = `https://www.top10lists.us/funnel/${professional.id}`;
+    const aifsScore = pro.signal_score ?? pro.ai_surfaces_monthly_est ?? "";
+    return text
+      .replace(/\{\{first_name\}\}/g, firstName)
+      .replace(/\{\{agent_name\}\}/g, pro.name || "")
+      .replace(/\{\{tier\}\}/g, tier)
+      .replace(/\{\{city\}\}/g, city)
+      .replace(/\{\{profile_url\}\}/g, profileUrl)
+      .replace(/\{\{aifs_score\}\}/g, String(aifsScore));
+  };
+
   const sendEmail = async () => {
     if (!composeSubject || !composeBody) { toast.error("Subject and body required"); return; }
     setSending(true);
     try {
+      const resolvedSubject = interpolate(composeSubject);
+      const resolvedBody = interpolate(composeBody);
       await supabase.functions.invoke("gmail-send", {
         body: {
           from_account: composeFrom,
           to: pro?.email,
-          subject: composeSubject,
-          message_body: composeBody,
+          subject: resolvedSubject,
+          message_body: resolvedBody,
           professional_id: professional.id,
         },
       });
@@ -443,14 +464,19 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
               <div className="flex flex-wrap items-center gap-1 mb-1">
                 <span className="text-xs text-muted-foreground mr-1">Insert:</span>
                 {COMPOSE_PLACEHOLDERS.map(v => (
-                  <button key={v.key} type="button" onClick={() => setComposeBody(b => b + v.key)}
+                  <button key={v.key} type="button" onClick={() => {
+                    if (editorRef.current) {
+                      editorRef.current.chain().focus().insertContent(v.key).run();
+                    } else {
+                      setComposeBody(b => b + v.key);
+                    }
+                  }}
                     className="text-[10px] px-1.5 py-0.5 rounded border border-input hover:bg-muted transition-colors">
                     {v.label}
                   </button>
                 ))}
               </div>
-              <label htmlFor="contact-compose-body" className="sr-only">Message</label>
-              <Textarea id="contact-compose-body" name="message" placeholder="Write your message..." className="text-sm min-h-[100px]" value={composeBody} onChange={e => setComposeBody(e.target.value)} />
+              <RichEmailEditor value={composeBody} onChange={setComposeBody} editorRef={editorRef} />
             </div>
             <div className="flex gap-2 justify-end">
               <Button size="sm" variant="outline" onClick={() => { setShowCompose(false); setSelectedTemplateId(""); }}>Cancel</Button>

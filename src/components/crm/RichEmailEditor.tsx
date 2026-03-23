@@ -23,9 +23,10 @@ import {
 interface RichEmailEditorProps {
   value: string;
   onChange: (html: string) => void;
+  editorRef?: React.MutableRefObject<any>;
 }
 
-export function RichEmailEditor({ value, onChange }: RichEmailEditorProps) {
+export function RichEmailEditor({ value, onChange, editorRef }: RichEmailEditorProps) {
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -42,6 +43,11 @@ export function RichEmailEditor({ value, onChange }: RichEmailEditorProps) {
       onChange(editor.getHTML());
     },
   });
+
+  // Expose editor instance to parent via ref
+  useEffect(() => {
+    if (editorRef && editor) editorRef.current = editor;
+  }, [editor, editorRef]);
 
   // Sync external value changes (e.g. loading a template)
   useEffect(() => {
