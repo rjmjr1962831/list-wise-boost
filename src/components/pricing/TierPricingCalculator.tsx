@@ -254,7 +254,9 @@ export function TierPricingCalculator({
                   <p className="text-2xl font-black text-emerald-400">
                     {fmtDollar(calc.netAnnual)}
                   </p>
-                  <p className="text-[11px] font-semibold text-emerald-400/70">est. net revenue / year</p>
+                  <p className="text-xs font-bold text-white">1st Year Rev Uplift</p>
+                  <p className="text-[10px] font-medium text-slate-400">(Ttl Rev Uplift - Top10 investment)</p>
+                  <p className="text-[10px] font-medium text-slate-500">Estimated</p>
                 </div>
               </div>
 

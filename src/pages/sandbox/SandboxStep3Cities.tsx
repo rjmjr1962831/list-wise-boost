@@ -48,16 +48,24 @@ export default function SandboxStep3Cities() {
     }
 
     try {
-      const { data: citiesData, error } = await supabase
-        .from('cities')
-        .select('id, name, slug, state_slug')
-        .eq('active', true)
-        .eq('state_slug', stateSlug)
-        .order('name');
-
-      if (error) throw error;
-
-      const cityOptions = citiesData || [];
+      // Paginate — CA has 1,650+ cities, exceeds Supabase 1,000-row default
+      let cityOptions: any[] = [];
+      let offset = 0;
+      const pageSize = 1000;
+      while (true) {
+        const { data: page, error: pageErr } = await supabase
+          .from('cities')
+          .select('id, name, slug, state_slug')
+          .eq('active', true)
+          .eq('state_slug', stateSlug)
+          .order('name')
+          .range(offset, offset + pageSize - 1);
+        if (pageErr) throw pageErr;
+        if (!page || page.length === 0) break;
+        cityOptions = cityOptions.concat(page);
+        if (page.length < pageSize) break;
+        offset += pageSize;
+      }
       const cityBySlug = new Map(cityOptions.map((c: any) => [c.slug, c.id]));
       const cityNameBySlug = new Map(cityOptions.map((c: any) => [c.slug, c.name]));
 
@@ -104,6 +112,14 @@ export default function SandboxStep3Cities() {
     setSelectedCityIds(prev => {
       const next = new Set(prev);
       cityIds.forEach(id => next.add(id));
+      return next;
+    });
+  };
+
+  const handleToggleCity = (cityId: string) => {
+    setSelectedCityIds(prev => {
+      const next = new Set(prev);
+      next.has(cityId) ? next.delete(cityId) : next.add(cityId);
       return next;
     });
   };
@@ -157,13 +173,13 @@ export default function SandboxStep3Cities() {
           <SandboxProgress currentStep={3} />
 
           <SandboxNugget>
-            AI recommendations are geographic. It won't name you in a city unless it can verify you work there. Please list locations where you have verified recent transactions. When selecting a bundle, just have recent transactions in at least one of them.
+            AI recommendations are geographic. It won't name you in a city unless it can verify you work there. Please list locations where you have verified recent transactions.
           </SandboxNugget>
 
           <div className="space-y-2">
             <h1 className="text-2xl font-bold">Where do you work?</h1>
             <p className="text-muted-foreground text-sm">
-              Add as many cities as you like. We need to be able to confirm two transactions in the last 12 months in at least one of the cities in the group. There is no charge for this.
+              Add as many cities as you like. We need to be able to confirm two transactions in the last 12 months in the cities you select. There is no charge for this.
             </p>
           </div>
 
@@ -171,6 +187,7 @@ export default function SandboxStep3Cities() {
             bundles={bundles}
             selectedCities={selectedCityIds}
             onAddBundle={handleAddBundle}
+            onToggleCity={handleToggleCity}
             categoryLabels={catLabels}
             categoryOrder={catOrder}
           />
