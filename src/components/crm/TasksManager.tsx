@@ -198,6 +198,15 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
         toast.error("Failed to mark done: " + (updateErr.message ?? "unknown"));
         return;
       }
+
+      // If this was a bounce task, clear the bounced lead_status so agent is eligible for campaigns
+      if (task.task_type === "email_bounced" && task.professional_id) {
+        await supabase.from("professionals")
+          .update({ lead_status: "warm" })
+          .eq("id", task.professional_id)
+          .eq("lead_status", "email_bounced");
+      }
+
       const n = parseInt(followUpDays.trim(), 10);
       if (n > 0) {
         const dueAt = new Date();
@@ -336,7 +345,22 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
     return <Badge variant="outline" className="text-red-600 border-red-400"><XCircle className="h-3 w-3 mr-1" />Rejected</Badge>;
   };
 
-  const totalPending = engagementTasks.filter(t => t.status === "pending").length + tasks.filter(t => t.status === "pending").length;
+  // Sales = link clicks, funnel activity, tier selection, checkout, purchase
+  const SALES_TYPES = new Set([
+    "email_clicked", "funnel_landed", "funnel_engaged",
+    "funnel_pricing_viewed", "funnel_tier_selected",
+    "funnel_checkout", "funnel_completed",
+  ]);
+
+  const [category, setCategory] = useState<"sales" | "ops">("sales");
+
+  const salesTasks = engagementTasks.filter(t => SALES_TYPES.has(t.task_type));
+  const opsTasks = engagementTasks.filter(t => !SALES_TYPES.has(t.task_type));
+  const activeTasks = category === "sales" ? salesTasks : opsTasks;
+
+  const salesPending = salesTasks.filter(t => t.status === "pending").length;
+  const opsPending = opsTasks.filter(t => t.status === "pending").length + tasks.filter(t => t.status === "pending").length;
+  const totalPending = salesPending + opsPending;
 
   return (
     <div className="space-y-6">
@@ -460,16 +484,28 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
         </div>
       )}
 
-      {/* Filter tabs */}
-      <div className="flex items-center gap-3">
-        <button onClick={() => setFilter("pending")}
-          className={`text-sm px-3 py-1.5 rounded-md font-medium transition-colors ${filter === "pending" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"}`}>
-          Pending {filter === "pending" && totalPending > 0 ? `(${totalPending})` : ""}
-        </button>
-        <button onClick={() => setFilter("all")}
-          className={`text-sm px-3 py-1.5 rounded-md font-medium transition-colors ${filter === "all" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"}`}>
-          All
-        </button>
+      {/* Category tabs: Sales / Ops + status filter */}
+      <div className="flex items-center gap-3 flex-wrap">
+        <div className="flex rounded-lg border overflow-hidden">
+          <button onClick={() => setCategory("sales")}
+            className={`text-sm px-4 py-1.5 font-medium transition-colors ${category === "sales" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"}`}>
+            Sales {salesPending > 0 ? `(${salesPending})` : ""}
+          </button>
+          <button onClick={() => setCategory("ops")}
+            className={`text-sm px-4 py-1.5 font-medium transition-colors border-l ${category === "ops" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"}`}>
+            Ops {opsPending > 0 ? `(${opsPending})` : ""}
+          </button>
+        </div>
+        <div className="flex items-center gap-1.5 ml-2">
+          <button onClick={() => setFilter("pending")}
+            className={`text-xs px-2.5 py-1 rounded font-medium transition-colors ${filter === "pending" ? "bg-muted text-foreground" : "text-muted-foreground hover:bg-muted"}`}>
+            Pending
+          </button>
+          <button onClick={() => setFilter("all")}
+            className={`text-xs px-2.5 py-1 rounded font-medium transition-colors ${filter === "all" ? "bg-muted text-foreground" : "text-muted-foreground hover:bg-muted"}`}>
+            All
+          </button>
+        </div>
       </div>
 
       {isLoading && (
@@ -478,12 +514,12 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
         </div>
       )}
 
-      {!isLoading && engagementTasks.length > 0 && (
+      {!isLoading && activeTasks.length > 0 && (
         <div className="space-y-3">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-            <Flame className="h-4 w-4 text-red-500" /> Agent Engagement
+            <Flame className="h-4 w-4 text-red-500" /> {category === "sales" ? "Sales Pipeline" : "Operations"}
           </h2>
-          {engagementTasks.map(task => {
+          {activeTasks.map(task => {
             const isClick = task.task_type === "email_clicked";
             return (
               <Card key={task.id} className={isClick ? "border-red-200 bg-red-50/30" : "border-yellow-200 bg-yellow-50/20"}>
@@ -660,7 +696,7 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
         </div>
       )}
 
-      {!isLoading && tasks.length > 0 && (
+      {!isLoading && category === "ops" && tasks.length > 0 && (
         <div className="space-y-3">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Field Change Requests</h2>
           {tasks.map(task => (
@@ -704,8 +740,8 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
         </div>
       )}
 
-      {!isLoading && engagementTasks.length === 0 && tasks.length === 0 && (
-        <Card><CardContent className="py-12 text-center text-muted-foreground">No {filter === "pending" ? "pending " : ""}tasks.</CardContent></Card>
+      {!isLoading && activeTasks.length === 0 && (category === "sales" || tasks.length === 0) && (
+        <Card><CardContent className="py-12 text-center text-muted-foreground">No {filter === "pending" ? "pending " : ""}{category} tasks.</CardContent></Card>
       )}
       </>)}
     </div>

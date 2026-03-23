@@ -183,6 +183,9 @@ serve(async (req) => {
 
   // HTML: use as-is if already HTML, otherwise convert plain text to HTML
   let innerHtml = isHtml ? message_body : textToHtml(message_body);
+  // Catch stray \n that survived in HTML-mode input (e.g. template edited in
+  // a plain textarea). textToHtml already handles this for plain-text input.
+  if (isHtml) innerHtml = innerHtml.replace(/\n/g, "<br>");
   // Add inline margin to <p> tags — email clients reset paragraph margins to 0
   innerHtml = innerHtml.replace(/<p>/g, '<p style="margin:0 0 1em 0;">');
   const unsubHtml = unsubUrl ? `<br><br><hr style="border:none;border-top:1px solid #ccc;margin-top:20px;"><p style="font-size:13px;color:#555;margin-top:12px;"><a href="${unsubUrl}" style="color:#555;text-decoration:underline;">Unsubscribe</a></p>` : "";
