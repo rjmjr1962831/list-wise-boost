@@ -196,18 +196,6 @@ export function TierPricingCalculator({
         </div>
       </div>
 
-      {/* ── Billing toggle ── */}
-      <div className="flex flex-col items-center gap-1">
-        <div className="flex items-center gap-3">
-          <span className="text-sm font-medium text-slate-400">Monthly</span>
-          <Switch checked={isAnnual} onCheckedChange={setIsAnnual} />
-          <span className="text-sm font-medium text-slate-400">Annual</span>
-        </div>
-        {isAnnual && (
-          <span className="text-xs font-medium text-primary">2 months free</span>
-        )}
-      </div>
-
       {/* ── Three cards ── */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-stretch">
         {TIERS.map((tier) => {
@@ -363,8 +351,20 @@ export function TierPricingCalculator({
                 )}
               </div>
 
-              {/* Price + CTA — pinned to bottom */}
+              {/* Billing toggle + Price + CTA — pinned to bottom */}
               <div className="mt-auto px-4 pb-4 pt-4">
+                {isPaid && (
+                  <div className="flex flex-col items-center gap-1 mb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-medium text-slate-400">Monthly</span>
+                      <Switch checked={isAnnual} onCheckedChange={setIsAnnual} />
+                      <span className="text-xs font-medium text-slate-400">Annual</span>
+                    </div>
+                    {isAnnual && (
+                      <span className="text-[10px] font-medium text-primary">2 months free</span>
+                    )}
+                  </div>
+                )}
                 <p className="text-center text-2xl font-bold text-white mb-3">{priceDisplay}</p>
                 {isCurrent ? (
                   <div className="flex items-center justify-center min-h-[44px] rounded-lg bg-slate-800 text-sm text-slate-400">
@@ -382,7 +382,7 @@ export function TierPricingCalculator({
                           : 'bg-amber-600 hover:bg-amber-700'
                     }`}
                   >
-                    {savingTier === tier ? 'Processing...' : tier === 'certified' ? 'Activate Certified (Free)' : `Choose ${cfg.name} — ${priceDisplay}`}
+                    {savingTier === tier ? 'Processing...' : tier === 'certified' ? 'Stay with Free' : `Choose ${cfg.name}`}
                   </button>
                 )}
               </div>
