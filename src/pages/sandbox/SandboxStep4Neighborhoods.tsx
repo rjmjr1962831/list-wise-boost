@@ -220,16 +220,17 @@ export default function SandboxStep4Neighborhoods() {
       <div className="min-h-screen bg-background py-10 px-4">
         <div className="max-w-4xl mx-auto space-y-6">
           <SandboxProgress currentStep={4} />
+
+          <SandboxNugget>
+            AI searches our neighborhood pages about 20 TIMES more than cities. Make sure you name all neighborhoods where you have at least 2 transactions in the last 2 years.
+          </SandboxNugget>
+
           <div className="space-y-2">
             <h1 className="text-2xl font-bold">Select your neighborhoods.</h1>
             <p className="text-muted-foreground text-sm">
               Neighborhood-level presence is where AI citation gets specific.
             </p>
           </div>
-
-          <SandboxNugget>
-            AI searches our neighborhood pages about 20 TIMES more than cities. Make sure you name all neighborhoods where you have at least 2 transactions in the last 2 years.
-          </SandboxNugget>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 min-h-[380px]">
             {/* Left: Search + Nearby */}
