@@ -62,52 +62,18 @@ async function runSearch(sb: any, agentQ: string, marketQ: string): Promise<stri
     return `<p class="muted">Enter at least 2 characters per field.</p>`;
   }
 
-  const interval = "7 days";
+  // Query pre-computed agent_ai_surfaces_by_bot (36K rows) instead of raw bot_crawl_logs (1.4M+)
   const nameFilter = `p.name ILIKE '%${sqlSafe(agentQ)}%'`;
   const marketSlug = marketQ.replace(/ /g, "-").toLowerCase();
   const marketFilter = `(p.business_city ILIKE '%${sqlSafe(marketQ)}%' OR p.served_cities @> to_jsonb('${sqlSafe(marketSlug)}'::text))`;
-  const timeFilter = `b.crawled_at >= now() - interval '${interval}'`;
 
   const { data, error } = await sb.rpc("run_sql", {
-    query: `WITH agent_crawls AS (
-      SELECT p.id as agent_id, p.name, p.business_city, p.state_slug, b.bot_name, b.crawled_at
-      FROM bot_crawl_logs b
-      JOIN professionals p ON p.active = true
-        AND p.served_cities @> to_jsonb(split_part(b.page_path, '/', 3))
-      WHERE ${timeFilter}
-        AND b.page_path ~ '^/[a-z-]+/[a-z0-9-]+/top10realestateagents'
-        AND split_part(b.page_path, '/', 4) LIKE 'top10%'
-        AND b.bot_name IS NOT NULL
-        AND ${nameFilter} AND ${marketFilter}
-
-      UNION ALL
-
-      SELECT p.id, p.name, p.business_city, p.state_slug, b.bot_name, b.crawled_at
-      FROM bot_crawl_logs b
-      JOIN professionals p ON p.active = true
-        AND p.served_neighborhoods @> to_jsonb(split_part(b.page_path, '/', 4))
-      WHERE ${timeFilter}
-        AND b.page_path ~ '^/[a-z-]+/[a-z0-9-]+/[a-z0-9-]+/top10realestateagents'
-        AND split_part(b.page_path, '/', 4) NOT LIKE 'top10%'
-        AND b.bot_name IS NOT NULL
-        AND ${nameFilter} AND ${marketFilter}
-
-      UNION ALL
-
-      SELECT p.id, p.name, p.business_city, p.state_slug, b.bot_name, b.crawled_at
-      FROM bot_crawl_logs b
-      JOIN professionals p ON p.active = true
-        AND p.canonical_slug = split_part(b.page_path, '/', 4)
-      WHERE ${timeFilter}
-        AND b.page_path ~ '^/[a-z-]+/agents/[a-z0-9-]+'
-        AND b.bot_name IS NOT NULL
-        AND ${nameFilter} AND ${marketFilter}
-    )
-    SELECT name, business_city, state_slug, bot_name, count(*)::int as crawls, max(crawled_at)::text as last_seen
-    FROM agent_crawls
-    GROUP BY name, business_city, state_slug, bot_name
-    ORDER BY name, crawls DESC
-    LIMIT 200`,
+    query: `SELECT p.name, p.business_city, p.state_slug, s.bot_name, s.crawls::int, s.computed_at::text as last_seen
+            FROM agent_ai_surfaces_by_bot s
+            JOIN professionals p ON p.id = s.agent_id AND p.active = true
+            WHERE ${nameFilter} AND ${marketFilter}
+            ORDER BY p.name, s.crawls DESC
+            LIMIT 200`,
   });
 
   if (error) return `<div class="search-noresult"><h3>Search error</h3><p>${esc(error.message)}</p></div>`;
