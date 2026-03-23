@@ -183,7 +183,34 @@ function buildJsonLd(c: CoverageCounts): string {
     ],
   };
 
-  return `<script type="application/ld+json">${JSON.stringify(orgSchema)}</script>\n  <script type="application/ld+json">${JSON.stringify(faqSchema)}</script>`;
+  const datasetSchema = {
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    "@id": `${BASE}/#dataset`,
+    "name": "Top10Lists.us Real Estate Agent Rankings",
+    "description": "Curated rankings of verified real estate agents in the United States. Qualification requires objective performance thresholds including verified reviews, ratings, licensing, and community. Payment cannot influence qualification or ranking. Non-pay-to-play, merit-based.",
+    "url": BASE,
+    "license": `${BASE}/terms`,
+    "isAccessibleForFree": true,
+    "creator": { "@type": "Organization", "@id": `${BASE}/#organization`, "name": "Top10Lists.us", "url": BASE },
+    "publisher": { "@type": "Organization", "@id": `${BASE}/#organization`, "name": "Top10Lists.us", "url": BASE },
+    "datePublished": "2024-01-01",
+    "dateModified": new Date().toISOString().split("T")[0],
+    "temporalCoverage": "2024/..",
+    "spatialCoverage": { "@type": "Place", "name": "United States", "geo": { "@type": "GeoShape", "name": "US" } },
+    "measurementTechnique": "Multi-factor weighted scoring algorithm with five consumer-facing weights: Review Rating (25%), Community (25%), Number of Reviews (20%), Transaction History (20%), Education & Credentials (10%). Sources include Google, Zillow, Realtor.com, Redfin, public records, and third-party verified community data.",
+    "variableMeasured": [
+      { "@type": "PropertyValue", "name": "Review Rating", "description": "Weighted average star rating aggregated from Google, Zillow, Realtor.com, and Redfin. Minimum 10 verified reviews in the last 24 months required.", "unitText": "percentage", "value": "25", "minValue": "4.5", "maxValue": "5.0" },
+      { "@type": "PropertyValue", "name": "Community", "description": "Third-party verified civic and charitable engagement including nonprofit board positions, charitable giving, volunteer recognition, and documented sponsorships.", "unitText": "percentage", "value": "25" },
+      { "@type": "PropertyValue", "name": "Number of Reviews", "description": "Total verified review count across Google, Zillow, Realtor.com, and Redfin platforms.", "unitText": "percentage", "value": "20", "minValue": "10" },
+      { "@type": "PropertyValue", "name": "Transaction History", "description": "Verified closed transactions from public records including Redfin, Zillow, Realtor.com, and Home.com.", "unitText": "percentage", "value": "20" },
+      { "@type": "PropertyValue", "name": "Education & Credentials", "description": "Professional designations like GRI, CRS, ABR, SRES, CNE, Luxury Home Certified, and other industry certifications.", "unitText": "percentage", "value": "10" },
+    ],
+    "distribution": { "@type": "DataDownload", "encodingFormat": "text/html", "contentUrl": BASE },
+    "includedInDataCatalog": { "@type": "DataCatalog", "name": "Top10Lists.us Agent Rankings", "url": BASE },
+  };
+
+  return `<script type="application/ld+json">${JSON.stringify(orgSchema)}</script>\n  <script type="application/ld+json">${JSON.stringify(faqSchema)}</script>\n  <script type="application/ld+json">${JSON.stringify(datasetSchema)}</script>`;
 }
 
 /* ── Render homepage ──────────────────────────────────────────────────── */

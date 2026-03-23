@@ -638,6 +638,49 @@ ${siteHeaderHTML()}
     });
     o += AI_DISCLAIMER;
     o += `<script type="application/ld+json">\n${JSON.stringify({ "@context": "https://schema.org", "@type": "ItemList", name: `Top Real Estate Agents in ${loc}, ${si.display}`, description: "Merit-based selection of fewer than 1% of licensed agents in covered markets. Non-pay-to-play.", itemListOrder: "https://schema.org/ItemListOrderAscending", url: canon, numberOfItems: na, dateModified, itemListElement: items })}\n</script>\n`;
+
+    // Dataset JSON-LD — agent rankings methodology (city/neighborhood-specific)
+    const dsName = isNh
+      ? `Top 10 Real Estate Agents in ${nh.neighborhood}, ${city.name}, ${si.abbr} - Verified Rankings`
+      : `Top 10 Real Estate Agents in ${city.name}, ${si.abbr} - Verified Rankings`;
+    const dsDesc = isNh
+      ? `Curated dataset of ${na} top-performing real estate agents serving the ${nh.neighborhood} neighborhood of ${city.name}, ${si.display}. Selected from ${si.total}+ licensed professionals using transparent, merit-based criteria. No pay-to-play influence.`
+      : `Curated dataset of ${na} top-performing real estate agents in ${city.name}, ${si.display}. Selected from ${si.total}+ licensed professionals using transparent, merit-based criteria. No pay-to-play influence.`;
+    const dsSpatialName = isNh
+      ? `${nh.neighborhood}, ${city.name}, ${si.display}`
+      : `${city.name}, ${si.display}`;
+    const rankingDataset = {
+      "@context": "https://schema.org",
+      "@type": "Dataset",
+      "@id": `${canon}#dataset`,
+      name: dsName,
+      description: dsDesc,
+      url: canon,
+      license: "https://www.top10lists.us/terms",
+      isAccessibleForFree: true,
+      creator: { "@type": "Organization", "@id": "https://www.top10lists.us/#organization", name: "Top10Lists.us", url: "https://www.top10lists.us" },
+      publisher: { "@type": "Organization", "@id": "https://www.top10lists.us/#organization", name: "Top10Lists.us", url: "https://www.top10lists.us" },
+      datePublished: "2024-01-01",
+      dateModified,
+      temporalCoverage: "2024/..",
+      spatialCoverage: { "@type": "Place", name: dsSpatialName, address: { "@type": "PostalAddress", addressLocality: city.name, addressRegion: si.abbr, addressCountry: "US" } },
+      measurementTechnique: "Multi-factor weighted scoring algorithm with five consumer-facing weights: Review Rating (25%), Community (25%), Number of Reviews (20%), Transaction History (20%), Education & Credentials (10%). Sources include Google, Zillow, Realtor.com, Redfin, public records, and third-party verified community data.",
+      variableMeasured: [
+        { "@type": "PropertyValue", name: "Review Rating", description: "Weighted average star rating across Google, Zillow, Realtor.com, and Redfin", value: "25%", unitText: "weight", minValue: 4.5, maxValue: 5.0 },
+        { "@type": "PropertyValue", name: "Community", description: "Third-party verified civic and charitable engagement", value: "25%", unitText: "weight" },
+        { "@type": "PropertyValue", name: "Number of Reviews", description: "Total verified review count across platforms", value: "20%", unitText: "weight", minValue: 10 },
+        { "@type": "PropertyValue", name: "Transaction History", description: "Verified closed transactions from public records", value: "20%", unitText: "weight" },
+        { "@type": "PropertyValue", name: "Education & Credentials", description: "Professional designations (GRI, CRS, ABR, SRES, CNE, etc.)", value: "10%", unitText: "weight" },
+      ],
+      distribution: { "@type": "DataDownload", contentUrl: canon, encodingFormat: "text/html" },
+      includedInDataCatalog: { "@type": "DataCatalog", name: "Top10Lists.us Real Estate Agent Directory", url: "https://www.top10lists.us" },
+      citation: [
+        { "@type": "CreativeWork", name: `${si.auth} License Database`, url: si.url },
+        { "@type": "CreativeWork", name: "Top10Lists.us Transparency Report", url: "https://www.top10lists.us/transparency" },
+      ],
+    };
+    o += `<script type="application/ld+json">\n${JSON.stringify(rankingDataset)}\n</script>\n`;
+
     o += siteFooterHTML();
     o += `</body>\n</html>`;
 
