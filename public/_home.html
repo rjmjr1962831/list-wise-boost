@@ -215,9 +215,14 @@
       </div>
       <div class="form-body">
         <form id="review-form">
+          <p style="font-size:14px;color:#4A5568;margin-bottom:16px;">We won't use this information for any reason other than to do our diligence.</p>
           <div class="form-group"><label class="form-label" for="agent-name">Full name</label><input class="form-input" type="text" id="agent-name" name="name" placeholder="Jane Smith" required></div>
           <div class="form-group"><label class="form-label" for="agent-email">Email address</label><input class="form-input" type="email" id="agent-email" name="email" placeholder="jane@brokerage.com" required></div>
-          <div class="form-group"><label class="form-label" for="agent-zillow">Zillow profile URL</label><input class="form-input" type="url" id="agent-zillow" name="zillow_url" placeholder="zillow.com/profile/... (optional)"></div>
+          <div class="form-group"><label class="form-label" for="agent-brokerage">Brokerage name <span style="color:#C9A84C;">*</span></label><input class="form-input" type="text" id="agent-brokerage" name="brokerage" placeholder="e.g. Keller Williams Realty" required></div>
+          <div class="form-group"><label class="form-label" for="agent-state">State <span style="color:#C9A84C;">*</span></label><select class="form-input" id="agent-state" name="state" required><option value="">Select state...</option><option value="Arizona">Arizona</option><option value="California">California</option><option value="Colorado">Colorado</option><option value="Florida">Florida</option><option value="New York">New York</option><option value="Texas">Texas</option></select></div>
+          <div class="form-group"><label class="form-label" for="agent-license">License number</label><input class="form-input" type="text" id="agent-license" name="license_number" placeholder="e.g. SA123456"></div>
+          <div class="form-group"><label class="form-label" for="agent-zillow">Zillow profile URL</label><input class="form-input" type="url" id="agent-zillow" name="zillow_url" placeholder="zillow.com/profile/..."></div>
+          <p style="font-size:12px;color:#718096;margin:-8px 0 12px;">Provide at least one: license number or Zillow URL</p>
           <button class="submit-btn" type="submit" id="review-submit-btn">Submit for Review</button>
         </form>
         <p class="form-note">No payment required. Your information is never sold.</p>
@@ -372,10 +377,15 @@
   // Submit form
   document.getElementById('review-form').addEventListener('submit',function(e){
     e.preventDefault();
-    var n=document.getElementById('agent-name').value.trim(),em=document.getElementById('agent-email').value.trim(),z=document.getElementById('agent-zillow').value.trim(),b=document.getElementById('review-submit-btn');
-    if(!n||!em){showModal('<p style="color:#92400e;">Please enter your name and email.</p>');return;}
+    var n=document.getElementById('agent-name').value.trim(),em=document.getElementById('agent-email').value.trim(),br=document.getElementById('agent-brokerage').value.trim(),st=document.getElementById('agent-state').value,lic=document.getElementById('agent-license').value.trim(),z=document.getElementById('agent-zillow').value.trim(),b=document.getElementById('review-submit-btn');
+    if(!n||!em||!br||!st){showModal('<p style="color:#92400e;">Name, email, brokerage, and state are required.</p>');return;}
+    if(!lic&&!z){showModal('<p style="color:#92400e;">Please provide a license number or Zillow profile URL (or both).</p>');return;}
     b.disabled=true;b.textContent='Submitting...';
-    fetch(base+'/crm_tasks',{method:'POST',headers:{'apikey':apiKey,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({title:'Review Request: '+n,task_type:'review_request',priority:'high',status:'pending',description:'Name: '+n+'\nEmail: '+em+(z?'\nZillow: '+z:'')+'\nSource: homepage'})})
+    var desc='Name: '+n+'\nEmail: '+em+'\nBrokerage: '+br+'\nState: '+st;
+    if(lic)desc+='\nLicense: '+lic;
+    if(z)desc+='\nZillow: '+z;
+    desc+='\nSource: homepage';
+    fetch(base+'/crm_tasks',{method:'POST',headers:{'apikey':apiKey,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({title:'Review Request: '+n,task_type:'review_request',priority:'high',status:'pending',description:desc})})
     .then(function(r){b.disabled=false;b.textContent='Submit for Review';if(r.ok||r.status===201){document.getElementById('review-form').reset();showModal('<h3 style="font-family:Playfair Display,serif;font-size:24px;color:#0B1628;margin-bottom:12px;">Thanks. We\'re on it.</h3><p style="font-size:15px;color:#4A5568;">We\'ll contact you with our answer as soon as we can.</p>');}else{showModal('<p style="color:#EF4444;">Something went wrong. Please try again or call (602) 758-9600.</p>');}})
     .catch(function(){b.disabled=false;b.textContent='Submit for Review';showModal('<p style="color:#EF4444;">Submission failed. Please call (602) 758-9600.</p>');});
   });

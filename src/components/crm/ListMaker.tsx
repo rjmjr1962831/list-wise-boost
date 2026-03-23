@@ -21,6 +21,7 @@ export interface ListMakerCriteria {
   email_verified?: boolean;
   has_license?: boolean;
   exclude_teams?: boolean;
+  exclude_bounced?: boolean;
 }
 
 export interface SavedListTemplate {
@@ -65,6 +66,7 @@ export const OUTPUT_FIELDS: { key: string; label: string }[] = [
   { key: "city_name", label: "City Name" },
   { key: "created_at", label: "Created At" },
   { key: "updated_at", label: "Updated At" },
+  { key: "ai_surfaces_total_7d", label: "Total Bot Crawls (7d)" },
 ];
 
 const LEGACY_AIFS_FIELDS: { key: string; label: string }[] = [];
@@ -144,6 +146,7 @@ export function ListMaker() {
     email_verified: false,
     has_license: false,
     exclude_teams: true,
+    exclude_bounced: true,
   });
   const [outputFields, setOutputFields] = useState<string[]>(["id", "name", "email", "magic_link", "date_first_listed", "current_tier"]);
   const [count, setCount] = useState<number | null>(null);
@@ -186,6 +189,8 @@ export function ListMaker() {
       q = q.not("license_number", "is", null).neq("license_number", "");
     if (criteria.exclude_teams)
       q = q.neq("lead_status", "team");
+    if (criteria.exclude_bounced)
+      q = q.neq("lead_status", "email_bounced");
     return q;
   }, [criteria]);
 
@@ -331,6 +336,8 @@ export function ListMaker() {
           q = q.not("license_number", "is", null).neq("license_number", "");
         if (criteria.exclude_teams)
           q = q.neq("lead_status", "team");
+        if (criteria.exclude_bounced)
+          q = q.neq("lead_status", "email_bounced");
 
         const { data, error } = await q;
         if (error) throw error;
@@ -752,6 +759,16 @@ export function ListMaker() {
                 }
               />
               <span className="text-sm">Exclude teams</span>
+            </label>
+
+            <label className="flex items-center gap-2">
+              <Checkbox
+                checked={!!criteria.exclude_bounced}
+                onCheckedChange={(c) =>
+                  setCriteria((prev) => ({ ...prev, exclude_bounced: !!c }))
+                }
+              />
+              <span className="text-sm">Exclude bounced</span>
             </label>
           </div>
         </CardContent>
