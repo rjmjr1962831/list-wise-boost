@@ -183,16 +183,6 @@ export default function SandboxStep5Tier() {
             Payment affects verification depth and refresh frequency. It never affects your ranking or inclusion.
           </p>
 
-          {/* Free tier exit */}
-          <div className="text-center pt-2">
-            <button
-              onClick={() => navigate(`${basePath}/${token}/success`, { state: { tier: 'certified' } })}
-              className="text-sm text-muted-foreground hover:text-foreground underline transition-colors"
-            >
-              Stay with your free listing
-            </button>
-          </div>
-
           {/* Back navigation */}
           <div className="flex pt-2">
             <Button variant="ghost" onClick={() => navigate(`${basePath}/${token}/neighborhoods`)}>
