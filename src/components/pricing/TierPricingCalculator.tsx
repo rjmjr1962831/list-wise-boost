@@ -117,9 +117,9 @@ export function TierPricingCalculator({
   onSelectTier,
   savingTier,
 }: TierPricingCalculatorProps) {
-  const [dealSize, setDealSize] = useState(500000);
+  const [dealSize, setDealSize] = useState(750000);
   const [commRate, setCommRate] = useState(3);
-  const [closeRate, setCloseRate] = useState(DEFAULT_CLOSE_RATE * 100);
+  const [closeRate, setCloseRate] = useState(20);
   const [isAnnual, setIsAnnual] = useState(false);
   const [expandedTier, setExpandedTier] = useState<TierName | null>(null);
   const effectiveCloseRate = closeRate / 100;
