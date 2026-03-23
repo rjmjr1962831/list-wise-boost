@@ -6,6 +6,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { siteHeaderCSS, siteHeaderHTML, siteFooterHTML, breadcrumbJsonLd, ogTags } from "../_shared/site-chrome.ts";
+import { logBotVisit } from "../_shared/log-bot-visit.ts";
 
 const SUPABASE_URL = "https://wiotrvoirdgzfacuuiem.supabase.co";
 const SUPABASE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
@@ -640,8 +641,8 @@ ${siteHeaderHTML()}
     o += siteFooterHTML();
     o += `</body>\n</html>`;
 
-    // Bot crawl logging removed -- now handled by Vercel log drain (vercel-log-drain edge function)
-    // which captures ALL requests including CDN cache hits
+    // Bot crawl logging handled by Vercel proxy (api/serve-clean-html.js)
+    // which has the original user-agent and runs on every request including CDN cache hits.
 
     return new Response(o, { status: zeroAgents ? 404 : 200, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": zeroAgents ? "no-store" : "public, max-age=0, s-maxage=3600, stale-while-revalidate=300", "X-Agents-Count": String(na), "X-Page-Type": isNh ? "neighborhood" : "city", ...CORS } });
   } catch (_e: unknown) {

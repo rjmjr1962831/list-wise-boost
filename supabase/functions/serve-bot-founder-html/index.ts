@@ -11,6 +11,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { siteHeaderCSS, siteHeaderHTML, siteFooterHTML, breadcrumbJsonLd, ogTags } from "../_shared/site-chrome.ts";
+import { logBotVisit } from "../_shared/log-bot-visit.ts";
 
 const BASE = "https://www.top10lists.us";
 const CORS = {
@@ -827,6 +828,9 @@ serve(async (req) => {
   try {
     const profiles = await fetchFounderProfiles();
     const html = renderFounderPage(profiles);
+
+    // Bot crawl logging handled by Vercel proxy (api/serve-clean-html.js)
+
     return new Response(html, {
       status: 200,
       headers: {
