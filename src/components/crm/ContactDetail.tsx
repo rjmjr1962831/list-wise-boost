@@ -55,6 +55,7 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
   const [showCompose, setShowCompose] = useState(false);
   const [composeSubject, setComposeSubject] = useState("");
   const [composeBody, setComposeBody] = useState("");
+  const bodyRef = useRef<HTMLTextAreaElement>(null);
   const [composeFrom, setComposeFrom] = useState("hello@toptenlists.us");
   const editorRef = useRef<any>(null);
   const [sending, setSending] = useState(false);
@@ -211,6 +212,7 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
     if (!templateId) {
       setComposeSubject("");
       setComposeBody("");
+      if (bodyRef.current) bodyRef.current.value = "";
       return;
     }
     const tpl = templates.find(t => t.id === templateId);
@@ -231,6 +233,7 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
       .replace(/\{\{aifs_score\}\}/g, String(aifs));
     setComposeSubject(sub(tpl.subject));
     setComposeBody(sub(tpl.body));
+    if (bodyRef.current) bodyRef.current.value = sub(tpl.body);
   };
 
   const COMPOSE_PLACEHOLDERS = [
@@ -238,7 +241,7 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
     { key: "{{agent_name}}", label: "Full Name" },
     { key: "{{tier}}", label: "Tier" },
     { key: "{{city}}", label: "City" },
-    { key: "{{profile_url}}", label: "Magic Link" },
+    { key: "{{magic_link}}", label: "Dashboard" },
     { key: "{{aifs_score}}", label: "AIFS Score" },
   ];
 
@@ -248,23 +251,25 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
     const firstName = (pro.name || "").split(" ")[0];
     const tier = pro.current_tier || pro.badge_tier || "listed";
     const city = pro.business_city || "";
-    const profileUrl = `https://www.top10lists.us/funnel/${professional.id}`;
+    const magicLink = profileUrlForPro();
     const aifsScore = pro.signal_score ?? pro.ai_surfaces_monthly_est ?? "";
     return text
       .replace(/\{\{first_name\}\}/g, firstName)
       .replace(/\{\{agent_name\}\}/g, pro.name || "")
       .replace(/\{\{tier\}\}/g, tier)
       .replace(/\{\{city\}\}/g, city)
-      .replace(/\{\{profile_url\}\}/g, profileUrl)
+      .replace(/\{\{magic_link\}\}/g, magicLink)
+      .replace(/\{\{profile_url\}\}/g, magicLink)
       .replace(/\{\{aifs_score\}\}/g, String(aifsScore));
   };
 
   const sendEmail = async () => {
-    if (!composeSubject || !composeBody) { toast.error("Subject and body required"); return; }
+    const bodyText = bodyRef.current?.value || "";
+    if (!composeSubject || !bodyText) { toast.error("Subject and body required"); return; }
     setSending(true);
     try {
       const resolvedSubject = interpolate(composeSubject);
-      const resolvedBody = interpolate(composeBody);
+      const resolvedBody = interpolate(bodyText);
       await supabase.functions.invoke("gmail-send", {
         body: {
           from_account: composeFrom,
@@ -278,6 +283,7 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
       setShowCompose(false);
       setComposeSubject("");
       setComposeBody("");
+      if (bodyRef.current) bodyRef.current.value = "";
       setSelectedTemplateId("");
       loadEmails();
     } catch { toast.error("Failed to send"); }
@@ -465,18 +471,28 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
                 <span className="text-xs text-muted-foreground mr-1">Insert:</span>
                 {COMPOSE_PLACEHOLDERS.map(v => (
                   <button key={v.key} type="button" onClick={() => {
-                    if (editorRef.current) {
-                      editorRef.current.chain().focus().insertContent(v.key).run();
-                    } else {
-                      setComposeBody(b => b + v.key);
-                    }
+                    const ta = bodyRef.current;
+                    if (!ta) return;
+                    const start = ta.selectionStart;
+                    const end = ta.selectionEnd;
+                    const before = ta.value.substring(0, start);
+                    const after = ta.value.substring(end);
+                    const insert = v.key === "{{magic_link}}"
+                      ? '<a href="{{magic_link}}">your dashboard</a>'
+                      : v.key;
+                    ta.value = before + insert + after;
+                    const newPos = start + insert.length;
+                    ta.focus();
+                    ta.selectionStart = ta.selectionEnd = newPos;
                   }}
-                    className="text-[10px] px-1.5 py-0.5 rounded border border-input hover:bg-muted transition-colors">
+                    className={`text-[10px] px-1.5 py-0.5 rounded border transition-colors ${v.key === "{{magic_link}}" ? "border-primary text-primary hover:bg-primary/10" : "border-input hover:bg-muted"}`}>
                     {v.label}
                   </button>
                 ))}
               </div>
-              <RichEmailEditor value={composeBody} onChange={setComposeBody} editorRef={editorRef} />
+              <label htmlFor="contact-compose-body" className="sr-only">Message</label>
+              <Textarea id="contact-compose-body" ref={bodyRef} name="message" placeholder="Write your message..." className="text-sm min-h-[200px] font-mono" defaultValue={composeBody} />
+              <p className="text-[10px] text-muted-foreground mt-1">Email sends as HTML. Use the toolbar to format. Variables like {"{{first_name}}"} resolve on send.</p>
             </div>
             <div className="flex gap-2 justify-end">
               <Button size="sm" variant="outline" onClick={() => { setShowCompose(false); setSelectedTemplateId(""); }}>Cancel</Button>
