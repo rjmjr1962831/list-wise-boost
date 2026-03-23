@@ -1460,7 +1460,7 @@
   </url>
   <url>
     <loc>https://www.top10lists.us/arizona/agents/dina-and-mark-beauvais-4595</loc>
-    <lastmod>2026-03-22</lastmod>
+    <lastmod>2026-03-23</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
@@ -3451,6 +3451,12 @@
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://www.top10lists.us/arizona/agents/meaghann-valencia</loc>
+    <lastmod>2026-02-01</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://www.top10lists.us/arizona/agents/melanie-nemetz-3034</loc>
     <lastmod>2026-01-28</lastmod>
     <changefreq>yearly</changefreq>
@@ -3883,6 +3889,12 @@
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://www.top10lists.us/arizona/agents/paul-cunningham</loc>
+    <lastmod>2026-02-01</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://www.top10lists.us/arizona/agents/paul-schneider-1008</loc>
     <lastmod>2026-01-28</lastmod>
     <changefreq>monthly</changefreq>
@@ -4076,8 +4088,8 @@
   </url>
   <url>
     <loc>https://www.top10lists.us/arizona/agents/robert-maynard-1234</loc>
-    <lastmod>2026-02-01</lastmod>
-    <changefreq>monthly</changefreq>
+    <lastmod>2026-03-23</lastmod>
+    <changefreq>yearly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
@@ -4100,6 +4112,12 @@
   </url>
   <url>
     <loc>https://www.top10lists.us/arizona/agents/rod-schwalb-4198</loc>
+    <lastmod>2026-01-28</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.top10lists.us/arizona/agents/rodney-barnes</loc>
     <lastmod>2026-01-28</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.6</priority>
@@ -4945,6 +4963,12 @@
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://www.top10lists.us/arizona/agents/tim-stempkowski</loc>
+    <lastmod>2026-01-28</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://www.top10lists.us/arizona/agents/tim-toth-4718</loc>
     <lastmod>2026-01-28</lastmod>
     <changefreq>yearly</changefreq>
@@ -4971,6 +4995,12 @@
   <url>
     <loc>https://www.top10lists.us/arizona/agents/tobi-hawley-0028</loc>
     <lastmod>2026-01-28</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.top10lists.us/arizona/agents/todd-danicek</loc>
+    <lastmod>2026-02-01</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -5102,6 +5132,12 @@
   </url>
   <url>
     <loc>https://www.top10lists.us/arizona/agents/vanessa-shephard-8951</loc>
+    <lastmod>2026-02-01</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.top10lists.us/arizona/agents/vanessa-zuern</loc>
     <lastmod>2026-02-01</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.6</priority>
@@ -15332,7 +15368,7 @@
   </url>
   <url>
     <loc>https://www.top10lists.us/california/agents/brianna-nicole-isaacs-3210</loc>
-    <lastmod>2026-01-13</lastmod>
+    <lastmod>2026-03-23</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.6</priority>
   </url>
