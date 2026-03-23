@@ -65,6 +65,7 @@ export default function SandboxStep4Neighborhoods() {
   const [loading, setLoading] = useState(true);
   const [professional, setProfessional] = useState<any>(null);
   const [agentState, setAgentState] = useState<string | null>(null);
+  const [allowedCityNames, setAllowedCityNames] = useState<string[]>([]);
 
   const [query, setQuery] = useState('');
   const [suggestions, setSuggestions] = useState<Neighborhood[]>([]);
@@ -77,7 +78,7 @@ export default function SandboxStep4Neighborhoods() {
   useEffect(() => {
     window.scrollTo(0, 0);
     if (!token) return;
-    validateToken(token).then((result) => {
+    validateToken(token).then(async (result) => {
       if (result.status !== 'valid' || !result.professional) {
         navigate(`${basePath}/${token}`);
         return;
@@ -86,17 +87,30 @@ export default function SandboxStep4Neighborhoods() {
       setProfessional(prof);
       const { stateName } = getStateFromProfessional(prof);
       setAgentState(stateName);
+
+      // Resolve selected city IDs to city names for filtering neighborhoods
+      const selectedCityIds: string[] = navState?.selectedCityIds || [];
+      if (selectedCityIds.length > 0) {
+        const { data: cityRows } = await supabase
+          .from('cities')
+          .select('name')
+          .in('id', selectedCityIds);
+        if (cityRows) {
+          setAllowedCityNames(cityRows.map((c: any) => c.name));
+        }
+      }
+
       setLoading(false);
     });
   }, [token]);
 
-  // Debounced search
+  // Debounced search — only neighborhoods in selected cities
   useEffect(() => {
     if (query.length < 2 || !agentState) { setSuggestions([]); return; }
     const timer = setTimeout(async () => {
       setIsSearching(true);
       try {
-        const { data } = await supabase
+        let q = supabase
           .from('neighborhood_catalog')
           .select('id, neighborhood, neighborhood_slug, city_area, city_area_slug, state, nearby_neighborhoods')
           .eq('state', agentState)
@@ -104,12 +118,16 @@ export default function SandboxStep4Neighborhoods() {
           .ilike('neighborhood', `%${query}%`)
           .order('neighborhood')
           .limit(15);
+        if (allowedCityNames.length > 0) {
+          q = q.in('city_area', allowedCityNames);
+        }
+        const { data } = await q;
         setSuggestions(data || []);
       } catch { setSuggestions([]); }
       finally { setIsSearching(false); }
     }, 300);
     return () => clearTimeout(timer);
-  }, [query, agentState]);
+  }, [query, agentState, allowedCityNames]);
 
   const resolveNearbyFromText = useCallback(async (
     textPairs: { name: string; city: string }[],
@@ -133,7 +151,8 @@ export default function SandboxStep4Neighborhoods() {
           const match = data.find(d =>
             d.neighborhood === pair.name &&
             d.city_area === pair.city &&
-            !excludeIds.includes(d.id)
+            !excludeIds.includes(d.id) &&
+            (allowedCityNames.length === 0 || allowedCityNames.includes(d.city_area))
           );
           if (match) {
             matched.push({
@@ -148,7 +167,7 @@ export default function SandboxStep4Neighborhoods() {
       }
     } catch { /* best effort */ }
     finally { setNearbyLoading(false); }
-  }, [agentState]);
+  }, [agentState, allowedCityNames]);
 
   const addNeighborhood = useCallback((n: Neighborhood) => {
     if (selectedList.some(s => s.id === n.id)) return;
@@ -160,7 +179,10 @@ export default function SandboxStep4Neighborhoods() {
     setAnchorName(n.neighborhood);
 
     if (parsed.isJson) {
-      setNearbyItems(parsed.items.filter(nb => !excludeIds.includes(nb.id)));
+      setNearbyItems(parsed.items.filter(nb =>
+        !excludeIds.includes(nb.id) &&
+        (allowedCityNames.length === 0 || allowedCityNames.includes(nb.city))
+      ));
     } else if (parsed.textPairs.length > 0) {
       resolveNearbyFromText(parsed.textPairs, excludeIds);
     } else {
