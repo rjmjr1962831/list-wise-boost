@@ -73,7 +73,11 @@ function isLoggablePath(p) {
  * Fire-and-forget: log bot crawl to bot_crawl_logs via Supabase REST API.
  * Does not await — never blocks the response. Errors are silently logged.
  */
-function logBotCrawl(path, ua, botName, key) {
+/**
+ * Awaitable bot crawl logger. Returns a promise that resolves when the insert completes.
+ * Must be awaited before res.send() — Vercel kills serverless functions after response.
+ */
+async function logBotCrawl(path, ua, botName, key) {
   const row = {
     page_path: path,
     user_agent: ua.slice(0, 500),
@@ -86,39 +90,37 @@ function logBotCrawl(path, ua, botName, key) {
   const artifactMatch = path.match(ARTIFACT_PATH_RE);
   if (artifactMatch) row.agent_id = artifactMatch[1];
 
-  // For agent profile pages, resolve slug → id inline
+  // For agent profile pages, resolve slug → id
   const agentMatch = path.match(AGENT_PATH_RE);
   if (agentMatch) {
-    const slug = agentMatch[2];
-    // Fire slug resolution + insert as a chain; don't block caller
-    fetch(`${SUPABASE_REST}/professionals?canonical_slug=eq.${encodeURIComponent(slug)}&select=id&limit=1`, {
-      headers: { Authorization: `Bearer ${key}`, apikey: key },
-    })
-      .then(r => r.json())
-      .then(data => {
-        if (data && data.length > 0) row.agent_id = data[0].id;
-        return insertRow(row, key);
-      })
-      .catch(() => insertRow(row, key)); // insert even if slug resolution fails
-    return;
+    try {
+      const slug = agentMatch[2];
+      const r = await fetch(`${SUPABASE_REST}/professionals?canonical_slug=eq.${encodeURIComponent(slug)}&select=id&limit=1`, {
+        headers: { Authorization: `Bearer ${key}`, apikey: key },
+      });
+      const data = await r.json();
+      if (data && data.length > 0) row.agent_id = data[0].id;
+    } catch (_) {}
   }
 
-  insertRow(row, key);
+  return insertRow(row, key);
 }
 
-function insertRow(row, key) {
-  fetch(`${SUPABASE_REST}/bot_crawl_logs`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${key}`,
-      apikey: key,
-      'Content-Type': 'application/json',
-      Prefer: 'return=minimal',
-    },
-    body: JSON.stringify(row),
-  }).catch(err => {
+async function insertRow(row, key) {
+  try {
+    await fetch(`${SUPABASE_REST}/bot_crawl_logs`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${key}`,
+        apikey: key,
+        'Content-Type': 'application/json',
+        Prefer: 'return=minimal',
+      },
+      body: JSON.stringify(row),
+    });
+  } catch (err) {
     console.error('[crawl-log] insert failed:', err.message);
-  });
+  }
 }
 
 /* ── Main handler ────────────────────────────────────────────────────── */
@@ -163,14 +165,7 @@ export default async function handler(req, res) {
     return;
   }
 
-  // Bot crawl logging — inline at the Vercel proxy level where we have the original UA.
-  // Edge functions also log via logBotVisit (using x-forwarded-user-agent), but CDN cache
-  // hits bypass the edge function entirely. This catches those too.
   const ua = req.headers['user-agent'] || '';
-  const botName = detectBot(ua);
-  if (botName && isLoggablePath(path)) {
-    logBotCrawl(path, ua, botName, key);
-  }
 
   try {
     const token = req.query.token || '';
@@ -223,6 +218,13 @@ export default async function handler(req, res) {
       res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=3600');
       res.setHeader('Vercel-CDN-Cache-Control', 's-maxage=0');
     }
+    // Bot crawl logging — awaited so it completes before Vercel kills the function.
+    // Runs after upstream fetch so it doesn't add latency to the critical path.
+    const botName = detectBot(ua);
+    if (botName && isLoggablePath(path)) {
+      await logBotCrawl(path, ua, botName, key);
+    }
+
     res.status(upstream.status).send(html);
   } catch (err) {
     res.status(502).json({ error: 'Upstream fetch failed', detail: err.message });
