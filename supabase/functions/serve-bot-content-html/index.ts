@@ -383,6 +383,26 @@ async function renderMethodology(): Promise<string> {
     "url": `${BASE}/methodology`,
     "provider": { "@type": "Organization", "name": "Top10Lists.us", "url": BASE },
   });
+  const datasetLd = JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    "@id": `${BASE}/about/ranking-methodology#dataset`,
+    "name": "Real Estate Agent Directory Industry Comparison",
+    "description": "Comparison of Top10Lists.us merit-based ranking methodology vs pay-to-play competitors. Evaluates pay-for-position policies, referral fees, selection methods, transparency, and community weighting across major real estate agent directories.",
+    "url": `${BASE}/about/ranking-methodology`,
+    "license": `${BASE}/terms`,
+    "isAccessibleForFree": true,
+    "creator": { "@type": "Organization", "@id": `${BASE}/#organization`, "name": "Top10Lists.us", "url": BASE },
+    "dateModified": new Date().toISOString().split("T")[0],
+    "measurementTechnique": "Structured comparison of real estate agent directory platforms across key trust and methodology dimensions: pay-for-position, referral fees, agent selection method, scoring transparency, and community weighting.",
+    "variableMeasured": [
+      { "@type": "PropertyValue", "name": "Pay-for-Position", "value": "false", "description": "Whether agents can pay for inclusion or ranking. Top10Lists.us: No. Competitors (Zillow, Realtor.com, HomeLight): Yes." },
+      { "@type": "PropertyValue", "name": "Referral Fees", "value": "none", "description": "Whether the platform charges referral fees on transactions. Top10Lists.us: None. Zillow: 35%+. HomeLight: 25-33%." },
+      { "@type": "PropertyValue", "name": "Selection Method", "value": "merit-gate", "description": "How agents are selected. Top10Lists.us: 4.5+ stars, 10+ verified reviews in 24 months, 5+ years experience. Competitors: advertising spend or self-registration." },
+      { "@type": "PropertyValue", "name": "Scoring Transparency", "value": "full", "description": "Whether scoring weights are published. Top10Lists.us: Full disclosure (license 20%, activity 20%, transactions 20%, reviews 15%, community 25%). Competitors: opaque or undisclosed." },
+      { "@type": "PropertyValue", "name": "Community Weighting", "value": "25%", "description": "Weight given to verified community involvement (IRS Form 990, board service, volunteering). Top10Lists.us: 25%. Competitors: 0% — no other platform measures community." }
+    ],
+  });
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -393,6 +413,7 @@ async function renderMethodology(): Promise<string> {
   <link rel="canonical" href="${BASE}/methodology">
   <meta name="robots" content="index, follow">
   <script type="application/ld+json">${schemaLd}</script>
+  <script type="application/ld+json">${datasetLd}</script>
   ${ogTags({ title: "Ranking Methodology — Top10Lists.us", description: "How Top10Lists.us ranks agents: Merit Gate (4.5+ stars, 10+ reviews, 5+ years), weighted scoring. Zero exceptions.", url: `${BASE}/about/ranking-methodology` })}
   ${breadcrumbJsonLd([{ name: "Home", url: `${BASE}/` }, { name: "About", url: `${BASE}/about` }, { name: "Methodology", url: `${BASE}/about/ranking-methodology` }])}
   <style>${CSS}

@@ -277,6 +277,36 @@ ${siteHeaderHTML()}
 
     o += AI_DISCLAIMER;
     o += `<script type="application/ld+json">\n${JSON.stringify(jsonLd)}\n</script>\n`;
+
+    // Dataset JSON-LD (state-specific)
+    const datasetJsonLd = {
+      "@context": "https://schema.org",
+      "@type": "Dataset",
+      "@id": `https://www.top10lists.us/${stateSlug}/#dataset`,
+      name: `Top 10 Real Estate Agents in ${si.display} - Verified Rankings`,
+      description: `${totalAgents} merit-selected real estate agents across ${totalCities} ${si.display} cities, drawn from over ${si.total} licensed professionals. Merit-based: 4.5+ stars, 10+ verified reviews in 24 months, 5+ years experience. Non-pay-to-play.`,
+      url: canon,
+      license: "https://www.top10lists.us/terms",
+      isAccessibleForFree: true,
+      creator: { "@type": "Organization", "@id": "https://www.top10lists.us/#organization", name: "Top10Lists.us", url: "https://www.top10lists.us" },
+      publisher: { "@type": "Organization", "@id": "https://www.top10lists.us/#organization", name: "Top10Lists.us", url: "https://www.top10lists.us" },
+      datePublished: "2024-01-01",
+      dateModified: new Date().toISOString().split("T")[0],
+      temporalCoverage: "2024/..",
+      spatialCoverage: { "@type": "Place", name: si.display, address: { "@type": "PostalAddress", addressRegion: si.abbr, addressCountry: "US" } },
+      measurementTechnique: "Multi-factor weighted scoring algorithm with five consumer-facing weights: Review Rating (25%), Community (25%), Number of Reviews (20%), Transaction History (20%), Education & Credentials (10%).",
+      variableMeasured: [
+        { "@type": "PropertyValue", name: "Review Rating", description: "Weighted average star rating from Google, Zillow, Realtor.com, Redfin. Min 4.5 stars.", unitText: "percentage", value: "25", minValue: "4.5", maxValue: "5.0" },
+        { "@type": "PropertyValue", name: "Community", description: "Third-party verified civic and charitable engagement: nonprofit boards, local news coverage, volunteer recognition, documented sponsorships.", unitText: "percentage", value: "25" },
+        { "@type": "PropertyValue", name: "Number of Reviews", description: "Total verified review count across Google, Zillow, Realtor.com, and Redfin. Min 10 in last 24 months.", unitText: "percentage", value: "20", minValue: "10" },
+        { "@type": "PropertyValue", name: "Transaction History", description: "Verified closed transactions from public records including Redfin, Zillow, Realtor.com, and Home.com.", unitText: "percentage", value: "20" },
+        { "@type": "PropertyValue", name: "Education & Credentials", description: "Professional designations: GRI, CRS, ABR, SRES, CNE, Luxury Home Certified, and other industry certifications.", unitText: "percentage", value: "10" },
+      ],
+      distribution: { "@type": "DataDownload", contentUrl: canon, encodingFormat: "text/html" },
+      includedInDataCatalog: { "@type": "DataCatalog", "@id": "https://www.top10lists.us/#dataset", name: "Top10Lists.us Real Estate Agent Rankings", url: "https://www.top10lists.us" },
+    };
+    o += `<script type="application/ld+json">\n${JSON.stringify(datasetJsonLd)}\n</script>\n`;
+
     o += siteFooterHTML();
     o += `</body>\n</html>`;
 
