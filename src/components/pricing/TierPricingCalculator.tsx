@@ -117,9 +117,9 @@ export function TierPricingCalculator({
   onSelectTier,
   savingTier,
 }: TierPricingCalculatorProps) {
-  const [dealSize, setDealSize] = useState(500000);
+  const [dealSize, setDealSize] = useState(750000);
   const [commRate, setCommRate] = useState(3);
-  const [closeRate, setCloseRate] = useState(DEFAULT_CLOSE_RATE * 100);
+  const [closeRate, setCloseRate] = useState(20);
   const [isAnnual, setIsAnnual] = useState(false);
   const [expandedTier, setExpandedTier] = useState<TierName | null>(null);
   const effectiveCloseRate = closeRate / 100;
@@ -159,7 +159,7 @@ export function TierPricingCalculator({
     <div className="space-y-6" style={{ fontFamily: "'Inter', system-ui, sans-serif", fontWeight: 500 }}>
       {/* ── Personalize ── */}
       <div className="max-w-md mx-auto rounded-xl border border-slate-700 bg-slate-900/80 p-4">
-        <p className="text-sm font-semibold text-white mb-3">Adjust to your market</p>
+        <p className="text-sm font-semibold text-white mb-3">Calculate your first year revenue uplift</p>
         <div className="grid grid-cols-3 gap-3">
           <div>
             <label className="block text-xs font-semibold text-slate-400 mb-1">Avg. deal size</label>
@@ -194,18 +194,6 @@ export function TierPricingCalculator({
             />
           </div>
         </div>
-      </div>
-
-      {/* ── Billing toggle ── */}
-      <div className="flex flex-col items-center gap-1">
-        <div className="flex items-center gap-3">
-          <span className="text-sm font-medium text-slate-400">Monthly</span>
-          <Switch checked={isAnnual} onCheckedChange={setIsAnnual} />
-          <span className="text-sm font-medium text-slate-400">Annual</span>
-        </div>
-        {isAnnual && (
-          <span className="text-xs font-medium text-primary">2 months free</span>
-        )}
       </div>
 
       {/* ── Three cards ── */}
@@ -363,8 +351,20 @@ export function TierPricingCalculator({
                 )}
               </div>
 
-              {/* Price + CTA — pinned to bottom */}
+              {/* Billing toggle + Price + CTA — pinned to bottom */}
               <div className="mt-auto px-4 pb-4 pt-4">
+                {isPaid && (
+                  <div className="flex flex-col items-center gap-1 mb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-medium text-slate-400">Monthly</span>
+                      <Switch checked={isAnnual} onCheckedChange={setIsAnnual} />
+                      <span className="text-xs font-medium text-slate-400">Annual</span>
+                    </div>
+                    {isAnnual && (
+                      <span className="text-[10px] font-medium text-primary">2 months free</span>
+                    )}
+                  </div>
+                )}
                 <p className="text-center text-2xl font-bold text-white mb-3">{priceDisplay}</p>
                 {isCurrent ? (
                   <div className="flex items-center justify-center min-h-[44px] rounded-lg bg-slate-800 text-sm text-slate-400">
@@ -382,7 +382,7 @@ export function TierPricingCalculator({
                           : 'bg-amber-600 hover:bg-amber-700'
                     }`}
                   >
-                    {savingTier === tier ? 'Processing...' : tier === 'certified' ? 'Activate Certified (Free)' : `Choose ${cfg.name} — ${priceDisplay}`}
+                    {savingTier === tier ? 'Processing...' : tier === 'certified' ? 'Stay with Free' : `Choose ${cfg.name}`}
                   </button>
                 )}
               </div>

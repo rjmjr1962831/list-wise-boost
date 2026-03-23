@@ -50,6 +50,8 @@ serve(async (req) => {
       'phone_visible',
       'email_visible',
       'cell_phone_visible',
+      'phone_numbers',
+      'website_visible',
     ];
 
     if (!allowedFields.includes(field)) {

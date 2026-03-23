@@ -122,6 +122,14 @@ const AdminDashboard = () => {
               Test Funnel (Sarah Park)
             </Button>
             <Button
+              onClick={() => navigate('/sandbox/20e0b7f2-5652-424a-9d46-ba74a19cd9a8')}
+              variant="outline"
+              className="h-auto py-3 border-amber-500 text-amber-600 hover:bg-amber-50"
+            >
+              <TestTube2 className="mr-2 h-4 w-4" />
+              Dev Funnel (auto-revert)
+            </Button>
+            <Button
               onClick={() => navigate('/dashboard/d2641c6b-ba41-447e-9b7b-2fa5c4203364')}
               variant="outline"
               className="h-auto py-3 border-emerald-500 text-emerald-600 hover:bg-emerald-50"

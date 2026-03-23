@@ -1,4 +1,5 @@
-import { Check } from 'lucide-react';
+import { useState } from 'react';
+import { Check, ChevronDown, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -26,6 +27,16 @@ export function BundlesPanel({
   categoryLabels,
   categoryOrder,
 }: BundlesPanelProps) {
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+
+  const toggleExpand = (id: string) => {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
   const isBundleAdded = (bundle: CityBundle) => {
     return bundle.cityIds.every((id) => selectedCities.has(id));
   };
@@ -43,78 +54,78 @@ export function BundlesPanel({
     return acc;
   }, [] as { category: string; bundles: CityBundle[] }[]);
 
-  const BundleCard = ({ bundle }: { bundle: CityBundle }) => {
+  const renderBundleRows = (bundle: CityBundle) => {
     const isAdded = isBundleAdded(bundle);
+    const isOpen = expanded.has(bundle.id);
+    const hasCities = bundle.cityNames && bundle.cityNames.length > 0;
+
     return (
-      <div
-        className={cn(
-          'rounded-lg border p-4 transition-colors',
-          isAdded ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-white/5 border-white/10'
+      <>
+        <tr key={bundle.id} className={cn('border-b border-white/5', isAdded && 'bg-emerald-500/10')}>
+          <td className="px-4 py-2">
+            <button
+              type="button"
+              onClick={() => hasCities && toggleExpand(bundle.id)}
+              className={cn('flex items-center gap-1.5 font-medium', hasCities && 'cursor-pointer hover:text-primary')}
+            >
+              {hasCities && (
+                isOpen
+                  ? <ChevronDown className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                  : <ChevronRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+              )}
+              {bundle.name}
+            </button>
+          </td>
+          <td className="px-4 py-2 text-center text-muted-foreground">{bundle.cityIds.length}</td>
+          <td className="px-4 py-2 text-center">
+            <Button
+              variant={isAdded ? 'outline' : 'default'}
+              size="sm"
+              disabled={isAdded}
+              onClick={() => onAddBundle(bundle.id, bundle.cityIds)}
+              className={cn(isAdded && 'border-emerald-500/30 text-emerald-400')}
+            >
+              {isAdded ? <><Check className="w-4 h-4 mr-1" /> Added</> : 'Add'}
+            </Button>
+          </td>
+        </tr>
+        {isOpen && hasCities && (
+          <tr key={`${bundle.id}-cities`} className="border-b border-white/5">
+            <td colSpan={3} className="px-4 pb-2 pt-0">
+              <p className="text-xs text-muted-foreground pl-5">
+                {bundle.cityNames!.join(', ')}
+              </p>
+            </td>
+          </tr>
         )}
-      >
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center justify-between">
-            <h4 className="font-medium text-white">{bundle.name}</h4>
-            <span className="text-xs text-slate-500">
-              {bundle.cityIds.length} {bundle.cityIds.length === 1 ? 'city' : 'cities'}
-            </span>
-          </div>
-          <p className="text-sm text-slate-400 leading-relaxed">
-            {bundle.cityNames?.join(', ') || bundle.description}
-          </p>
-          <Button
-            variant={isAdded ? 'outline' : 'default'}
-            size="sm"
-            disabled={isAdded}
-            onClick={() => onAddBundle(bundle.id, bundle.cityIds)}
-            className={cn("mt-2", isAdded && "border-emerald-500/30 text-emerald-400")}
-          >
-            {isAdded ? (
-              <>
-                <Check className="w-4 h-4 mr-1" />
-                Added
-              </>
-            ) : (
-              'Add Bundle'
-            )}
-          </Button>
-        </div>
-      </div>
+      </>
     );
   };
 
   return (
-    <div className="rounded-lg border border-white/10 bg-white/[0.02]">
-      {/* Header */}
-      <div className="flex items-center gap-2 p-4 border-b border-white/10">
-        <h3 className="font-semibold text-white">Quick Add Bundles</h3>
-        <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 font-medium">
-          Free
-        </span>
-      </div>
-
-      {hasCategories ? (
-        <div className="divide-y divide-white/10">
-          {groupedBundles.map(({ category, bundles: categoryBundles }) => (
-            <div key={category} className="p-4">
-              <h4 className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-3">
-                {labels[category] || category}
-              </h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {categoryBundles.map((bundle) => (
-                  <BundleCard key={bundle.id} bundle={bundle} />
-                ))}
-              </div>
-            </div>
+    <div className="flex justify-center">
+      <table className="border-collapse text-sm">
+        <thead>
+          <tr className="border-b border-white/10">
+            <th className="text-left px-4 py-2 text-xs font-medium text-slate-500 uppercase tracking-wide">Bundle</th>
+            <th className="text-center px-4 py-2 text-xs font-medium text-slate-500 uppercase tracking-wide">Cities</th>
+            <th className="text-center px-4 py-2"></th>
+          </tr>
+        </thead>
+        <tbody>
+          {hasCategories && groupedBundles.map(({ category, bundles: categoryBundles }) => (
+            <>
+              <tr key={`cat-${category}`}>
+                <td colSpan={3} className="px-4 pt-4 pb-1 text-xs font-medium text-slate-500 uppercase tracking-wide">
+                  {labels[category] || category}
+                </td>
+              </tr>
+              {categoryBundles.map((bundle) => renderBundleRows(bundle))}
+            </>
           ))}
-        </div>
-      ) : (
-        <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-3">
-          {bundles.map((bundle) => (
-            <BundleCard key={bundle.id} bundle={bundle} />
-          ))}
-        </div>
-      )}
+          {!hasCategories && bundles.map((bundle) => renderBundleRows(bundle))}
+        </tbody>
+      </table>
 
       {bundles.length === 0 && (
         <div className="p-4 text-center text-sm text-slate-500">
