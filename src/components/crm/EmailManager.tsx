@@ -47,7 +47,7 @@ const TEMPLATE_VARS = [
   { key: "{{agent_name}}", label: "Full Name" },
   { key: "{{tier}}", label: "Tier" },
   { key: "{{city}}", label: "City" },
-  { key: "{{profile_url}}", label: "Magic Link" },
+  { key: "{{profile_url}}", label: "Dashboard" },
   { key: "{{aifs_score}}", label: "AIFS Score" },
   { key: "{{ai_surfaces_total_7d}}", label: "Crawl Stats 7d" },
 ];

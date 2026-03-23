@@ -420,7 +420,10 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
                 {[
                   { key: "{{first_name}}", label: "First Name" },
                   { key: "{{agent_name}}", label: "Full Name" },
-                  { key: "{{profile_url}}", label: "Magic Link" },
+                  { key: "{{tier}}", label: "Tier" },
+                  { key: "{{city}}", label: "City" },
+                  { key: "{{profile_url}}", label: "Dashboard" },
+                  { key: "{{aifs_score}}", label: "AIFS Score" },
                   { key: "{{ai_surfaces_total_7d}}", label: "Crawl Stats 7d" },
                 ].map(v => (
                   <button key={v.key} type="button" onClick={() => setComposeBody(b => b + v.key)}

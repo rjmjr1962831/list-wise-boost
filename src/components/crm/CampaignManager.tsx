@@ -92,9 +92,10 @@ const BASE_TEMPLATE_VARIABLES = [
   { key: "city", label: "City" },
   { key: "state", label: "State" },
   { key: "company", label: "Company" },
-  { key: "magicLink", label: "Magic Link" },
+  { key: "magicLink", label: "Dashboard" },
   { key: "email", label: "Email" },
   { key: "tier", label: "Tier" },
+  { key: "ai_surfaces_total_7d", label: "Crawl Stats 7d" },
 ];
 
 const WIZARD_STEPS = ["Create or Select Campaign", "Build List", "Create Email", "Send Gates", "Review", "Test", "Launch"];

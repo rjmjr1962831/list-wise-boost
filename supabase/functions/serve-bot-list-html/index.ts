@@ -312,7 +312,7 @@ serve(async (req) => {
     let nh: any = null; let nearby: any[] = [];
     if (pp.neighborhoodSlug) {
       const { data: nd } = await sb.from("neighborhood_catalog")
-        .select("id,neighborhood,neighborhood_slug,city_area,city_area_slug,state,primary_zip,median_home_value,median_income,tier,nearby_neighborhoods,writeup_html,hmda_total_originations,hmda_va_originations,hmda_va_share,hmda_va_avg_amount,hmda_va_total_volume,hmda_conv_originations,hmda_fha_originations,hmda_year")
+        .select("id,neighborhood,neighborhood_slug,city_area,city_area_slug,state,primary_zip,median_home_value,median_income,tier,nearby_neighborhoods,writeup_html,hmda_total_originations,hmda_va_originations,hmda_va_share,hmda_va_avg_amount,hmda_va_total_volume,hmda_conv_originations,hmda_fha_originations,hmda_year,lat,lon")
         .eq("neighborhood_slug", pp.neighborhoodSlug).eq("city_area_slug", pp.citySlug).eq("is_active", true).single();
       nh = nd;
       if (!nh) return html404("This neighborhood was not found. Try the parent city page instead.");
@@ -376,6 +376,63 @@ serve(async (req) => {
         { name: city.name, url: canon },
       ])
   }
+  ${isNh ? (() => {
+    const SB_MAP: Record<string,string> = { AZ:"AZDRE", CA:"CalDRE", TX:"TREC", FL:"FDBPR", NY:"NYDOS", CO:"CDRE" };
+    const TA_MAP: Record<string,string> = { AZ:"220,000+", CA:"450,000+" };
+    const stateBoard = SB_MAP[si.abbr] || `${si.display} Department of Real Estate`;
+    const totalAnalyzed = TA_MAP[si.abbr] || `${si.total}+`;
+    const perfDataset: any = {
+      "@context": "https://schema.org",
+      "@type": "Dataset",
+      "@id": `${canon}#dataset-performance`,
+      name: `${nh.neighborhood} Professional Performance Audit & Certification Registry`,
+      description: `A verified registry of professional real estate agent performance, licensing status, and consumer sentiment benchmarks within the ${nh.neighborhood} neighborhood of ${city.name}, ${si.abbr}.`,
+      url: canon,
+      license: "https://creativecommons.org/licenses/by/4.0/",
+      isAccessibleForFree: true,
+      creator: {
+        "@type": "Organization",
+        name: "Top10Lists.us",
+        url: "https://www.top10lists.us",
+        parentOrganization: { "@type": "Organization", name: "Aryah, Inc." },
+      },
+      variableMeasured: [
+        {
+          "@type": "PropertyValue",
+          name: "Professional Qualification Rate",
+          description: `Pass/Fail percentage of neighborhood agents meeting the 4.5+ star and 10+ review merit gate, from a pool of ${totalAnalyzed} licensed agents in covered markets.`,
+        },
+        {
+          "@type": "PropertyValue",
+          name: "State Licensing Integrity",
+          description: `Cross-reference verification against ${stateBoard} state regulatory licensing database.`,
+        },
+        {
+          "@type": "PropertyValue",
+          name: "AI Discovery Surface Frequency",
+          description: "Telemetry tracking of AI crawler engagement and data-extraction frequency across major AI platforms.",
+        },
+      ],
+      spatialCoverage: {
+        "@type": "Place",
+        name: `${nh.neighborhood}, ${city.name}, ${si.abbr}`,
+        address: {
+          "@type": "PostalAddress",
+          addressLocality: city.name,
+          addressRegion: si.abbr,
+          addressCountry: "US",
+        },
+        ...(nh.lat && nh.lon ? { geo: { "@type": "GeoCoordinates", latitude: nh.lat, longitude: nh.lon } } : {}),
+      },
+      measurementTechnique: "Algorithmic audit of state-level licensing databases, third-party consumer sentiment platforms, and machine-readable AI crawler telemetry.",
+      includedInDataCatalog: {
+        "@type": "DataCatalog",
+        name: "Top10Lists Professional Performance Registry",
+        url: "https://www.top10lists.us",
+      },
+    };
+    return `<script type="application/ld+json">\n${JSON.stringify(perfDataset)}\n  </script>`;
+  })() : ''}
   <style>${CSS}
   ${siteHeaderCSS()}
   </style>
