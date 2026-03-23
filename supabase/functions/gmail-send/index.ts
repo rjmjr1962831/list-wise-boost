@@ -182,7 +182,9 @@ serve(async (req) => {
     : plainText).replace(/\[\[BLOCK\]\]\n?/g, "---\n").replace(/\n?\[\[\/BLOCK\]\]/g, "\n---");
 
   // HTML: use as-is if already HTML, otherwise convert plain text to HTML
-  const innerHtml = isHtml ? message_body : textToHtml(message_body);
+  let innerHtml = isHtml ? message_body : textToHtml(message_body);
+  // Add inline margin to <p> tags — email clients reset paragraph margins to 0
+  innerHtml = innerHtml.replace(/<p>/g, '<p style="margin:0 0 1em 0;">');
   const unsubHtml = unsubUrl ? `<br><br><hr style="border:none;border-top:1px solid #ccc;margin-top:20px;"><p style="font-size:13px;color:#555;margin-top:12px;"><a href="${unsubUrl}" style="color:#555;text-decoration:underline;">Unsubscribe</a></p>` : "";
   const baseHtml = `<!DOCTYPE html><html><head><meta charset="utf-8"></head><body style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.6;color:#333;">${innerHtml}${unsubHtml}</body></html>`;
   const trackedHtml = injectTracking(baseHtml, trackingId);
@@ -212,6 +214,33 @@ serve(async (req) => {
   const sent = await sendRes.json();
   if (sent.error) {
     return errResp(sent.error.message || "Gmail API error", 500);
+  }
+
+  // Track volume so ad-hoc sends count against sequencer daily limits.
+  // Uses read-then-write (not CAS) — acceptable here since gmail-send is
+  // low-volume and the sequencer's own CAS prevents actual over-sends.
+  try {
+    const mstNow = new Date(Date.now() - 7 * 3600000); // UTC-7 Arizona
+    const sendDate = mstNow.toISOString().slice(0, 10);
+    // Ensure row exists
+    await supabase.from("email_send_volume").upsert(
+      { sender_account: from_account, send_date: sendDate, emails_sent: 0, daily_limit: 0 },
+      { onConflict: "sender_account,send_date", ignoreDuplicates: true }
+    );
+    // Read current, then write incremented value
+    const { data: vol } = await supabase.from("email_send_volume")
+      .select("emails_sent")
+      .eq("sender_account", from_account)
+      .eq("send_date", sendDate)
+      .maybeSingle();
+    const current = vol?.emails_sent ?? 0;
+    await supabase.from("email_send_volume")
+      .update({ emails_sent: current + 1 })
+      .eq("sender_account", from_account)
+      .eq("send_date", sendDate);
+  } catch (_volErr) {
+    // Non-fatal — don't block the send response over volume tracking
+    console.error("Volume tracking failed:", _volErr);
   }
 
   // Store with tracking ID for event correlation

@@ -140,7 +140,12 @@ serve(async (req) => {
 
     for (const row of rows) {
       const cells = outputFields.map((f) => {
-        if (f === "magic_link") return escape(row.verification_token ? `${baseUrl}/funnel/${row.verification_token}` : "");
+        if (f === "magic_link") {
+          if (!row.verification_token) return escape("");
+          const tier = (row.current_tier || row.badge_tier || "listed").toLowerCase();
+          const path = ["certified", "audited", "underwritten"].includes(tier) ? "dashboard" : "funnel";
+          return escape(`${baseUrl}/${path}/${row.verification_token}`);
+        }
         if (f === "first_name" && row[f] == null) {
           const parts = String(row.name || "").trim().split(/\s+/);
           return escape(parts[0] || "");

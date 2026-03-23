@@ -1,5 +1,15 @@
-// DEPRECATED — This edge function is no longer in active use. See docs/takeaways for context.
+// DEPRECATED — This edge function is no longer in active use.
+// Replaced by sequencer-v2-tick. DO NOT re-enable — uses wrong limit formula.
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+
+serve(async () => {
+  return new Response(
+    JSON.stringify({ error: "DEPRECATED: Use sequencer-v2-tick instead. This function uses wrong daily limit formula." }),
+    { status: 410, headers: { "Content-Type": "application/json" } }
+  );
+});
+
+/* DEAD CODE — preserved for reference only
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
@@ -377,3 +387,4 @@ serve(async (req) => {
     accounts: accountResults,
   }), { headers: { "Content-Type": "application/json" } });
 });
+*/

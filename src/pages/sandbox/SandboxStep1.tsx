@@ -43,6 +43,12 @@ export default function SandboxStep1() {
     validateToken(token).then(async (result) => {
       if (result.status === 'valid') {
         const p = result.professional;
+        // Redirect paid/certified agents to their dashboard — they shouldn't re-enter the funnel
+        const agentTier = (p.current_tier || p.badge_tier || 'listed').toLowerCase();
+        if (['certified', 'audited', 'underwritten'].includes(agentTier)) {
+          navigate(`/dashboard/${p.verification_token || p.id}`, { replace: true });
+          return;
+        }
         setProfessional(p);
         setPageState('valid');
 

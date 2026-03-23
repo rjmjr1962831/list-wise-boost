@@ -284,13 +284,17 @@ async function processAccount(senderAccount: string): Promise<AccountResult> {
 
       // Enforce campaign-level max_per_day if set
       if (campaign?.max_per_day && campaign.max_per_day > 0) {
+        // Convert MST day boundaries to UTC for correct sent_at filtering
+        const mstDayStartUTC = new Date(todayStr + "T00:00:00Z");
+        mstDayStartUTC.setUTCHours(mstDayStartUTC.getUTCHours() + 7); // MST midnight = UTC+7h
+        const mstDayEndUTC = new Date(mstDayStartUTC.getTime() + 24 * 3600000);
         const { count: campaignSentToday } = await supabase
           .from("email_queue")
           .select("id", { count: "exact", head: true })
           .eq("campaign_id", queueItem.campaign_id)
           .eq("status", "sent")
-          .gte("sent_at", todayStr + "T00:00:00-07:00")
-          .lt("sent_at", todayStr + "T23:59:59-07:00");
+          .gte("sent_at", mstDayStartUTC.toISOString())
+          .lt("sent_at", mstDayEndUTC.toISOString());
 
         if ((campaignSentToday ?? 0) >= campaign.max_per_day) {
           result.error = `Campaign daily limit reached (${campaignSentToday}/${campaign.max_per_day})`;
@@ -398,7 +402,11 @@ async function processAccount(senderAccount: string): Promise<AccountResult> {
 
     // --- Build email content with tracking ---
     const unsubFooter = buildUnsubFooter(unsubUrl);
-    const wrappedHtml = `<!DOCTYPE html><html><head><meta charset="utf-8"></head><body style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.6;color:#333;">${queueItem.html_body}${unsubFooter.html}</body></html>`;
+    // Add inline margin to <p> tags — email clients (Gmail, Outlook) reset
+    // paragraph margins to 0, which collapses all TipTap line breaks.
+    const styledBody = (queueItem.html_body || "")
+      .replace(/<p>/g, '<p style="margin:0 0 1em 0;">');
+    const wrappedHtml = `<!DOCTYPE html><html><head><meta charset="utf-8"></head><body style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.6;color:#333;">${styledBody}${unsubFooter.html}</body></html>`;
     const trackedHtml = injectTracking(
       wrappedHtml,
       queueItem.tracking_pixel_id,
