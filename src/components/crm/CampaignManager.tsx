@@ -62,7 +62,7 @@ const SAMPLE_DATA: Record<string, string> = {
   city_name: "Phoenix",
   state_slug: "arizona",
   current_tier: "Listed",
-  magic_link: "https://www.top10lists.us/funnel/sample-token",
+  magic_link: "https://www.top10lists.us/dashboard/sample-token",
   date_first_listed: "December 18, 2025",
   date_last_updated: "March 20, 2026",
   review_stars_rating: "4.9",
@@ -73,7 +73,7 @@ const SAMPLE_DATA: Record<string, string> = {
   lastName: "Smith",
   city: "Phoenix",
   state: "Arizona",
-  magicLink: "https://www.top10lists.us/funnel/sample-token",
+  magicLink: "https://www.top10lists.us/dashboard/sample-token",
   tier: "Listed",
 };
 

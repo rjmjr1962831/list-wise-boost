@@ -90,6 +90,10 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
 
   const loadFullPro = async () => {
     const { data } = await supabase.from("professionals").select("*").eq("id", professional.id).single();
+    if (data) {
+      const { data: surf } = await supabase.from("agent_ai_surfaces").select("total_surfaces").eq("agent_id", data.id).eq("period", "7d").maybeSingle();
+      data._ai_surfaces_total_7d = surf?.total_surfaces ?? 0;
+    }
     setPro(data);
   };
 
@@ -243,6 +247,7 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
     { key: "{{city}}", label: "City" },
     { key: "{{magic_link}}", label: "Dashboard" },
     { key: "{{aifs_score}}", label: "AIFS Score" },
+    { key: "{{ai_surfaces_total_7d}}", label: "Crawl Stats 7d" },
   ];
 
   /** Resolve merge variables against the current professional */
@@ -253,6 +258,8 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
     const city = pro.business_city || "";
     const magicLink = profileUrlForPro();
     const aifsScore = pro.signal_score ?? pro.ai_surfaces_monthly_est ?? "";
+    const surfaces = pro._ai_surfaces_total_7d;
+    const surfacesStr = surfaces ? Number(surfaces).toLocaleString() : "";
     return text
       .replace(/\{\{first_name\}\}/g, firstName)
       .replace(/\{\{agent_name\}\}/g, pro.name || "")
@@ -260,7 +267,8 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
       .replace(/\{\{city\}\}/g, city)
       .replace(/\{\{magic_link\}\}/g, magicLink)
       .replace(/\{\{profile_url\}\}/g, magicLink)
-      .replace(/\{\{aifs_score\}\}/g, String(aifsScore));
+      .replace(/\{\{aifs_score\}\}/g, String(aifsScore))
+      .replace(/\{\{ai_surfaces_total_7d\}\}/g, surfacesStr);
   };
 
   const sendEmail = async () => {
@@ -301,11 +309,22 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
     loadTasks();
   };
 
-  const toggleTask = async (taskId: string, currentStatus: string) => {
+  const toggleTask = async (taskId: string, currentStatus: string, taskType?: string, professionalId?: string) => {
     const newStatus = currentStatus === "completed" ? "pending" : "completed";
     await supabase.from("crm_tasks" as any).update({
       status: newStatus, completed_at: newStatus === "completed" ? new Date().toISOString() : null,
     }).eq("id", taskId);
+
+    // When a bounce task is resolved/unresolved, update lead_status accordingly
+    if (taskType === "email_bounced" && professionalId) {
+      if (newStatus === "completed") {
+        // Bounce resolved — clear the bounced status so agent is eligible for campaigns again
+        await supabase.from("professionals").update({ lead_status: "warm" }).eq("id", professionalId).eq("lead_status", "email_bounced");
+      } else {
+        // Bounce re-opened — mark as bounced again
+        await supabase.from("professionals").update({ lead_status: "email_bounced" }).eq("id", professionalId);
+      }
+    }
     loadTasks();
   };
 
@@ -946,7 +965,7 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
                   <Card key={task.id} className={task.status === "completed" ? "opacity-60" : ""}>
                     <CardContent className="py-3 px-4">
                       <div className="flex items-center gap-3">
-                        <button onClick={() => toggleTask(task.id, task.status)} className="shrink-0">
+                        <button onClick={() => toggleTask(task.id, task.status, task.task_type, task.professional_id)} className="shrink-0">
                           {task.status === "completed" ? <Check className="h-4 w-4 text-green-600" /> : <Clock className="h-4 w-4 text-muted-foreground" />}
                         </button>
                         <div className="flex-1 min-w-0">

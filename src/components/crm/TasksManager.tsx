@@ -421,6 +421,7 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
                   { key: "{{first_name}}", label: "First Name" },
                   { key: "{{agent_name}}", label: "Full Name" },
                   { key: "{{profile_url}}", label: "Magic Link" },
+                  { key: "{{ai_surfaces_total_7d}}", label: "Crawl Stats 7d" },
                 ].map(v => (
                   <button key={v.key} type="button" onClick={() => setComposeBody(b => b + v.key)}
                     className="text-[10px] px-2 py-1 rounded border border-input hover:bg-muted transition-colors">
@@ -669,6 +670,7 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
                         <Mail className="h-3.5 w-3.5" /> Email
                       </Button>
                     )}
+                    {task.professional_id && (
                     <button onClick={() => setSelectedContact({
                         id: task.professional_id,
                         name: task.professional_name ?? "",
@@ -681,6 +683,7 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
                       className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-800 text-white text-sm rounded-md font-medium hover:bg-gray-900">
                       Contact
                     </button>
+                    )}
                     {task.status !== "done" && task.status !== "completed" && (
                       <Button size="sm" variant="outline" disabled={processing === task.id}
                         onClick={() => openMarkDoneModal(task)}

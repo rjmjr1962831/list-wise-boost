@@ -49,6 +49,7 @@ const TEMPLATE_VARS = [
   { key: "{{city}}", label: "City" },
   { key: "{{profile_url}}", label: "Magic Link" },
   { key: "{{aifs_score}}", label: "AIFS Score" },
+  { key: "{{ai_surfaces_total_7d}}", label: "Crawl Stats 7d" },
 ];
 
 const BASE_URL = "https://www.top10lists.us";
@@ -65,13 +66,16 @@ function profileUrlForTier(professional: any | null): string {
 function applyTemplate(text: string, contact: Contact | null, professional: any | null): string {
   const firstName = contact?.full_name?.split(" ")[0] || "";
   const profileUrl = profileUrlForTier(professional);
+  const surfaces = professional?._ai_surfaces_total_7d;
+  const surfacesStr = surfaces ? Number(surfaces).toLocaleString() : "";
   return text
     .replace(/{{first_name}}/g, firstName)
     .replace(/{{agent_name}}/g, contact?.full_name || "")
     .replace(/{{tier}}/g, professional?.current_tier || professional?.badge_tier || "")
     .replace(/{{city}}/g, professional?.business_city || "")
     .replace(/{{profile_url}}/g, profileUrl)
-    .replace(/{{aifs_score}}/g, professional?.certified_projected_signal || professional?.signal_score || "");
+    .replace(/{{aifs_score}}/g, professional?.certified_projected_signal || professional?.signal_score || "")
+    .replace(/{{ai_surfaces_total_7d}}/g, surfacesStr);
 }
 
 export const EmailManager = () => {
@@ -111,7 +115,11 @@ export const EmailManager = () => {
     if (!composing || !toAddress || !toAddress.includes("@")) return;
     const email = toAddress.trim().toLowerCase();
     if (!email) return;
-    supabase.from("professionals").select("*").ilike("email", email).limit(1).maybeSingle().then(({ data }) => {
+    supabase.from("professionals").select("*").ilike("email", email).limit(1).maybeSingle().then(async ({ data }) => {
+      if (data) {
+        const { data: surf } = await supabase.from("agent_ai_surfaces").select("total_surfaces").eq("agent_id", data.id).eq("period", "7d").maybeSingle();
+        data._ai_surfaces_total_7d = surf?.total_surfaces ?? 0;
+      }
       setProfessional(data || null);
     });
   }, [composing, toAddress]);
@@ -169,6 +177,10 @@ export const EmailManager = () => {
       setContact(data);
       if (data) {
         const { data: pro } = await supabase.from("professionals").select("*").ilike("name", `%${data.full_name}%`).limit(1).single();
+        if (pro) {
+          const { data: surf } = await supabase.from("agent_ai_surfaces").select("total_surfaces").eq("agent_id", pro.id).eq("period", "7d").maybeSingle();
+          pro._ai_surfaces_total_7d = surf?.total_surfaces ?? 0;
+        }
         setProfessional(pro || null);
       }
     } else {
