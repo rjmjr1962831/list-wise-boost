@@ -1,4 +1,9 @@
 /**
+ * DEPRECATED 2026-03-23: Vercel log drain replaced by inline logging in
+ * api/serve-clean-html.js. The drain was unreliable (auto-disabled every 8 hours).
+ * Bot crawl logging now happens at the proxy level in serve-clean-html.js.
+ *
+ * Original description:
  * Vercel Edge Function proxy for the Supabase vercel-log-drain edge function.
  *
  * Uses Edge Runtime so context.waitUntil() is available. The response is

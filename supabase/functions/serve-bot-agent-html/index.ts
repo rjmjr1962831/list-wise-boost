@@ -13,6 +13,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { bioToPlainText } from "../_shared/formatParagraphs.ts";
+import { logBotVisit } from "../_shared/log-bot-visit.ts";
 import { siteHeaderCSS, siteHeaderHTML, siteFooterHTML, breadcrumbJsonLd, ogTags } from "../_shared/site-chrome.ts";
 
 const SUPABASE_URL = "https://wiotrvoirdgzfacuuiem.supabase.co";
@@ -739,6 +740,8 @@ ${siteHeaderHTML()}
     o += AI_DISCLAIMER;
     o += siteFooterHTML();
     o += `</body>\n</html>`;
+
+    // Bot crawl logging handled by Vercel proxy (api/serve-clean-html.js)
 
     return new Response(o, {
       status: 200,

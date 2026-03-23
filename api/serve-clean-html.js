@@ -163,10 +163,14 @@ export default async function handler(req, res) {
     return;
   }
 
-  // Bot crawl logging moved to Edge Middleware (middleware.js) which captures
-  // ALL requests including CDN cache hits. Logging here would create duplicates.
-
+  // Bot crawl logging — inline at the Vercel proxy level where we have the original UA.
+  // Edge functions also log via logBotVisit (using x-forwarded-user-agent), but CDN cache
+  // hits bypass the edge function entirely. This catches those too.
   const ua = req.headers['user-agent'] || '';
+  const botName = detectBot(ua);
+  if (botName && isLoggablePath(path)) {
+    logBotCrawl(path, ua, botName, key);
+  }
 
   try {
     const token = req.query.token || '';
@@ -177,7 +181,7 @@ export default async function handler(req, res) {
       url += `&preview_tier=${encodeURIComponent(req.query.preview_tier)}`;
     }
     // Forward crawl-stats search params
-    for (const p of ['q', 'agent', 'market', 'range']) {
+    for (const p of ['q', 'agent', 'market', 'range', 'search_only']) {
       if (req.query[p]) url += `&${p}=${encodeURIComponent(req.query[p])}`;
     }
     const upstream = await fetch(url, {

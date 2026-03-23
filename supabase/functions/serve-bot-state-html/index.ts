@@ -10,6 +10,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { siteHeaderCSS, siteHeaderHTML, siteFooterHTML, breadcrumbJsonLd, ogTags } from "../_shared/site-chrome.ts";
+import { logBotVisit } from "../_shared/log-bot-visit.ts";
 
 const SUPABASE_URL = "https://wiotrvoirdgzfacuuiem.supabase.co";
 const SUPABASE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
@@ -278,6 +279,8 @@ ${siteHeaderHTML()}
     o += `<script type="application/ld+json">\n${JSON.stringify(jsonLd)}\n</script>\n`;
     o += siteFooterHTML();
     o += `</body>\n</html>`;
+
+    // Bot crawl logging handled by Vercel proxy (api/serve-clean-html.js)
 
     return new Response(o, {
       status: 200,
