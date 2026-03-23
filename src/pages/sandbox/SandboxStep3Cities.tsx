@@ -11,11 +11,12 @@ import { REGIONAL_PACKAGES } from '@/data/arizonaPackages';
 import { CALIFORNIA_PACKAGES, CA_CATEGORY_LABELS, CA_CATEGORY_ORDER } from '@/data/californiaPackages';
 import { SandboxNugget } from './SandboxNugget';
 import { SandboxProgress } from './SandboxProgress';
-import { validateToken, getStateFromProfessional } from './utils';
+import { validateToken, getStateFromProfessional, useBasePath } from './utils';
 
 export default function SandboxStep3Cities() {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
+  const basePath = useBasePath();
   const { trackEvent } = useGA4Tracking();
   const [loading, setLoading] = useState(true);
   const [professional, setProfessional] = useState<any>(null);
@@ -33,7 +34,7 @@ export default function SandboxStep3Cities() {
     if (!token) return;
     const result = await validateToken(token);
     if (result.status !== 'valid' || !result.professional) {
-      navigate(`/sandbox/${token}`);
+      navigate(`${basePath}/${token}`);
       return;
     }
     const prof = result.professional;
@@ -127,7 +128,7 @@ export default function SandboxStep3Cities() {
       body: { professionalId: professional.id, cityId: primaryCityId },
     }).catch(() => { /* best effort */ });
 
-    navigate(`/sandbox/${token}/neighborhoods`, {
+    navigate(`${basePath}/${token}/neighborhoods`, {
       state: {
         selectedCityIds: Array.from(selectedCityIds),
         professionalId: professional.id,
@@ -182,7 +183,7 @@ export default function SandboxStep3Cities() {
           </p>
 
           <div className="flex justify-between pt-2">
-            <Button variant="ghost" onClick={() => navigate(`/sandbox/${token}/contact`)}>
+            <Button variant="ghost" onClick={() => navigate(`${basePath}/${token}/contact`)}>
               Back
             </Button>
             <Button onClick={handleContinue} disabled={selectedCityIds.size === 0}>

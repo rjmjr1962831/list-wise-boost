@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { CheckCircle2 } from 'lucide-react';
+import { useBasePath } from './utils';
 
 const STEPS = [
   { step: 1, label: 'Your Listing', segment: '' },
@@ -16,6 +17,7 @@ interface SandboxProgressProps {
 export function SandboxProgress({ currentStep }: SandboxProgressProps) {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
+  const basePath = useBasePath();
 
   return (
     <div className="w-full overflow-x-auto pb-1 mb-6">
@@ -24,7 +26,7 @@ export function SandboxProgress({ currentStep }: SandboxProgressProps) {
           const isCompleted = s.step < currentStep;
           const isCurrent = s.step === currentStep;
           const isFuture = s.step > currentStep;
-          const path = s.segment ? `/sandbox/${token}/${s.segment}` : `/sandbox/${token}`;
+          const path = s.segment ? `${basePath}/${token}/${s.segment}` : `${basePath}/${token}`;
 
           return (
             <div key={s.step} className="flex items-center">

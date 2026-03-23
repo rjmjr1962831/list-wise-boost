@@ -20,7 +20,7 @@ import { toast } from 'sonner';
 import { useGA4Tracking } from '@/hooks/useGA4Tracking';
 import { SandboxNugget } from './SandboxNugget';
 import { SandboxProgress } from './SandboxProgress';
-import { validateToken } from './utils';
+import { validateToken, useBasePath } from './utils';
 
 /** Format a phone string to US standard: (xxx) xxx-xxxx */
 function formatUSPhone(raw: string): string {
@@ -65,6 +65,7 @@ function SavedIndicator({ show }: { show: boolean }) {
 export default function SandboxStep2() {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
+  const basePath = useBasePath();
   const { trackEvent } = useGA4Tracking();
   const [loading, setLoading] = useState(true);
   const [professional, setProfessional] = useState<any>(null);
@@ -95,10 +96,10 @@ export default function SandboxStep2() {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    if (!token) { navigate(`/sandbox/${token}`); return; }
+    if (!token) { navigate(`${basePath}/${token}`); return; }
     validateToken(token).then((result) => {
       if (result.status !== 'valid' || !result.professional) {
-        navigate(`/sandbox/${token}`);
+        navigate(`${basePath}/${token}`);
         return;
       }
       const p = result.professional;
@@ -272,7 +273,7 @@ export default function SandboxStep2() {
         professional_id: professional.id,
       });
 
-      navigate(`/sandbox/${token}/cities`);
+      navigate(`${basePath}/${token}/cities`);
     } catch (err: any) {
       toast.error('Something went wrong: ' + (err.message || 'Please try again.'));
       console.error(err);
@@ -436,7 +437,7 @@ export default function SandboxStep2() {
           <div className="flex justify-between pt-2">
             <Button
               variant="ghost"
-              onClick={() => navigate(`/sandbox/${token}`)}
+              onClick={() => navigate(`${basePath}/${token}`)}
             >
               Back
             </Button>

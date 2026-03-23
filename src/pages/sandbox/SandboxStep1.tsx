@@ -7,7 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Loader2, AlertCircle, Star, MapPin, Shield, Eye } from 'lucide-react';
 import { useGA4Tracking } from '@/hooks/useGA4Tracking';
 import { SandboxNugget } from './SandboxNugget';
-import { validateToken } from './utils';
+import { validateToken, useBasePath } from './utils';
 
 const HUMAN_BOTS = ['ChatGPT-User', 'chatgpt-user', 'OAI-SearchBot', 'PerplexityBot', 'YouBot'];
 
@@ -29,6 +29,7 @@ type PageState = 'loading' | 'valid' | 'expired' | 'invalid';
 export default function SandboxStep1() {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
+  const basePath = useBasePath();
   const { trackEvent } = useGA4Tracking();
   const [pageState, setPageState] = useState<PageState>('loading');
   const [professional, setProfessional] = useState<any>(null);
@@ -270,7 +271,7 @@ export default function SandboxStep1() {
             className="w-full sm:w-auto sm:min-w-[280px] bg-primary hover:bg-primary/90 text-lg py-6"
             onClick={() => {
               trackEvent('sandbox_step1_claim_click', { professional_id: professional.id });
-              navigate(`/sandbox/${token}/contact`);
+              navigate(`${basePath}/${token}/contact`);
             }}
           >
             Certify Your Listing

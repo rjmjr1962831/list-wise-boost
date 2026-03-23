@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { CheckCircle2, Loader2, RotateCcw } from 'lucide-react';
 import { useGA4Tracking } from '@/hooks/useGA4Tracking';
 import { SandboxNugget } from './SandboxNugget';
-import { validateToken } from './utils';
+import { validateToken, useBasePath } from './utils';
 
 /** Revert a professional back to Listed tier via the edge function */
 async function revertToListed(token: string, snapshot: Record<string, any> | null) {
@@ -47,6 +47,7 @@ export default function SandboxSuccess() {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
   const location = useLocation();
+  const basePath = useBasePath();
   const { trackEvent } = useGA4Tracking();
   const navState = location.state as { tier?: string } | null;
   const [loading, setLoading] = useState(true);
@@ -122,7 +123,7 @@ export default function SandboxSuccess() {
                 <Button asChild>
                   <a href={profileUrl}>Go to Dashboard</a>
                 </Button>
-                <Button variant="outline" onClick={() => navigate(`/sandbox/${token}/tier`)}>
+                <Button variant="outline" onClick={() => navigate(`${basePath}/${token}/tier`)}>
                   Explore Upgrade Options
                 </Button>
               </div>
@@ -167,7 +168,7 @@ export default function SandboxSuccess() {
             <div>
               <Button
                 variant="outline"
-                onClick={() => navigate(`/sandbox/${token}`)}
+                onClick={() => navigate(`${basePath}/${token}`)}
                 disabled={reverting}
                 className="gap-2"
               >

@@ -1,4 +1,11 @@
+import { useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+
+/** Returns '/sandbox' or '/funnel' based on current URL */
+export function useBasePath(): string {
+  const { pathname } = useLocation();
+  return pathname.startsWith('/funnel') ? '/funnel' : '/sandbox';
+}
 
 const PROFESSIONAL_SELECT = `*, cities:city_id (id, name, state, state_slug, slug), categories:category_id (id, name, slug)`;
 

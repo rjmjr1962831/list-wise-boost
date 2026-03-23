@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils';
 import { useGA4Tracking } from '@/hooks/useGA4Tracking';
 import { SandboxNugget } from './SandboxNugget';
 import { SandboxProgress } from './SandboxProgress';
-import { validateToken, getStateFromProfessional } from './utils';
+import { validateToken, getStateFromProfessional, useBasePath } from './utils';
 
 interface Neighborhood {
   id: string;
@@ -60,6 +60,7 @@ export default function SandboxStep4Neighborhoods() {
   const location = useLocation();
   const navState = location.state as any;
 
+  const basePath = useBasePath();
   const { trackEvent } = useGA4Tracking();
   const [loading, setLoading] = useState(true);
   const [professional, setProfessional] = useState<any>(null);
@@ -78,7 +79,7 @@ export default function SandboxStep4Neighborhoods() {
     if (!token) return;
     validateToken(token).then((result) => {
       if (result.status !== 'valid' || !result.professional) {
-        navigate(`/sandbox/${token}`);
+        navigate(`${basePath}/${token}`);
         return;
       }
       const prof = result.professional;
@@ -192,7 +193,7 @@ export default function SandboxStep4Neighborhoods() {
       professional_id: professional?.id,
       neighborhood_count: selectedList.length,
     });
-    navigate(`/sandbox/${token}/tier`, {
+    navigate(`${basePath}/${token}/tier`, {
       state: {
         selectedCityIds: navState?.selectedCityIds,
         selectedNeighborhoods: selectedList,
@@ -375,7 +376,7 @@ export default function SandboxStep4Neighborhoods() {
           </p>
 
           <div className="flex justify-between pt-2">
-            <Button variant="ghost" onClick={() => navigate(`/sandbox/${token}/cities`)}>
+            <Button variant="ghost" onClick={() => navigate(`${basePath}/${token}/cities`)}>
               Back
             </Button>
             <Button onClick={handleContinue} disabled={selectedList.length === 0}>

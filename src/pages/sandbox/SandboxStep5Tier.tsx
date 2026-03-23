@@ -9,7 +9,7 @@ import { useGA4Tracking } from '@/hooks/useGA4Tracking';
 import { TierPricingCalculator } from '@/components/pricing/TierPricingCalculator';
 import { SandboxNugget } from './SandboxNugget';
 import { SandboxProgress } from './SandboxProgress';
-import { validateToken } from './utils';
+import { validateToken, useBasePath } from './utils';
 
 type CertificationTier = 'certified' | 'audited' | 'underwritten';
 
@@ -41,6 +41,7 @@ const TIER_UPLIFTS: Record<CertificationTier, number> = {
 export default function SandboxStep5Tier() {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
+  const basePath = useBasePath();
   const { trackEvent } = useGA4Tracking();
   const [loading, setLoading] = useState(true);
   const [professional, setProfessional] = useState<any>(null);
@@ -51,7 +52,7 @@ export default function SandboxStep5Tier() {
     if (!token) return;
     validateToken(token).then(async (result) => {
       if (result.status !== 'valid' || !result.professional) {
-        navigate(`/sandbox/${token}`);
+        navigate(`${basePath}/${token}`);
         return;
       }
       // Fetch fresh signal_score and tier
@@ -102,7 +103,7 @@ export default function SandboxStep5Tier() {
         });
         if (error) throw error;
         if (data?.error) throw new Error(data.error);
-        navigate(`/sandbox/${token}/success`, { state: { tier: 'certified' } });
+        navigate(`${basePath}/${token}/success`, { state: { tier: 'certified' } });
       } else {
         const email = professional.email;
         if (!email) {
@@ -118,8 +119,8 @@ export default function SandboxStep5Tier() {
             badgeTier: tier,
             badgeBillingPeriod: 'monthly',
             monthlyTotal: tier === 'audited' ? 300 : 500,
-            successUrl: `${baseUrl}/sandbox/${token}/success`,
-            cancelUrl: `${baseUrl}/sandbox/${token}/tier`,
+            successUrl: `${baseUrl}${basePath}/${token}/success`,
+            cancelUrl: `${baseUrl}${basePath}/${token}/tier`,
           },
         });
         if (error) { console.error('create-agent-checkout error:', error); throw error; }
@@ -185,7 +186,7 @@ export default function SandboxStep5Tier() {
           {/* Free tier exit */}
           <div className="text-center pt-2">
             <button
-              onClick={() => navigate(`/sandbox/${token}/success`, { state: { tier: 'certified' } })}
+              onClick={() => navigate(`${basePath}/${token}/success`, { state: { tier: 'certified' } })}
               className="text-sm text-muted-foreground hover:text-foreground underline transition-colors"
             >
               Stay with your free listing
@@ -194,7 +195,7 @@ export default function SandboxStep5Tier() {
 
           {/* Back navigation */}
           <div className="flex pt-2">
-            <Button variant="ghost" onClick={() => navigate(`/sandbox/${token}/neighborhoods`)}>
+            <Button variant="ghost" onClick={() => navigate(`${basePath}/${token}/neighborhoods`)}>
               Back
             </Button>
           </div>
