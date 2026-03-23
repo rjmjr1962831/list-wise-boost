@@ -232,6 +232,7 @@ serve(async (req) => {
     const lo  = t.toLowerCase();
     const isHigh   = ["underwritten", "audited", "accredited"].includes(lo);
     const isListed = lo === "listed";
+    const isUnderwrittenOnly = lo === "underwritten";
     const cycle = ac(t);
 
     // Core fields
@@ -756,7 +757,9 @@ ${siteHeaderHTML()}
       },
     });
   } catch (_e: unknown) {
-    const html = `<!DOCTYPE html><html><head><title>Service Unavailable</title><style>${siteHeaderCSS()}</style></head><body>${siteHeaderHTML()}<h1>Service Unavailable</h1><p>Please try again later.</p>${siteFooterHTML()}</body></html>`;
+    console.error("serve-bot-agent-html error:", _e);
+    const errMsg = _e instanceof Error ? _e.message : String(_e);
+    const html = `<!DOCTYPE html><html><head><title>Service Unavailable</title><style>${siteHeaderCSS()}</style></head><body>${siteHeaderHTML()}<h1>Service Unavailable</h1><p>Please try again later.</p><!-- err: ${errMsg.replace(/</g,"&lt;").slice(0,200)} -->${siteFooterHTML()}</body></html>`;
     return new Response(html, {
       status: 503,
       headers: {
