@@ -156,16 +156,17 @@ export default function SandboxStep5Tier() {
       <div className="min-h-screen bg-background py-10 px-4">
         <div className="max-w-4xl mx-auto space-y-6">
           <SandboxProgress currentStep={5} />
+
+          <SandboxNugget>
+            AI recommendation is all about trust. The more they trust you, the more likely they are to name or endorse you. Trust is based on independent third-party citations that follow a specific methodology and provide audited data refreshed as often as possible. Each tier below provides more data points, more citations, and more frequent refreshes.
+          </SandboxNugget>
+
           <div className="space-y-2">
             <h1 className="text-2xl font-bold">Choose your verification tier.</h1>
             <p className="text-muted-foreground text-sm">
               Every tier includes the same merit-based ranking. Higher tiers give AI systems more reasons to name you.
             </p>
           </div>
-
-          <SandboxNugget>
-            AI recommendation is all about trust. The more they trust you, the more likely they are to name or endorse you. Trust is based on independent third-party citations that follow a specific methodology and provide audited data refreshed as often as possible. Each tier below provides more data points, more citations, and more frequent refreshes.
-          </SandboxNugget>
 
 
           {/* TierPricingCalculator */}
