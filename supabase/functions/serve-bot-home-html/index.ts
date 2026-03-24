@@ -381,7 +381,8 @@ serve(async (req) => {
   try {
     const html = await renderHome();
 
-    // Bot crawl logging handled by Vercel proxy (api/serve-clean-html.js)
+    const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+    logBotVisit(sb, req, "/", null);
 
     return new Response(html, {
       status: 200,
