@@ -751,8 +751,7 @@ ${siteHeaderHTML()}
     o = o.replace(/<a\s+href="(https?:\/\/(?!www\.top10lists\.us)[^"]+)"/g,
       '<a rel="nofollow noopener" href="$1"');
 
-    // Bot crawl logging handled by Vercel proxy (api/serve-clean-html.js)
-    // which has the original user-agent and runs on every request including CDN cache hits.
+    logBotVisit(sb, req, path, null);
 
     return new Response(o, { status: zeroAgents ? 404 : 200, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": zeroAgents ? "no-store" : "public, max-age=0, s-maxage=3600, stale-while-revalidate=300", "X-Agents-Count": String(na), "X-Page-Type": isNh ? "neighborhood" : "city", ...CORS } });
   } catch (_e: unknown) {

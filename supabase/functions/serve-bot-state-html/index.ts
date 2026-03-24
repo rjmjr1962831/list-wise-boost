@@ -310,7 +310,7 @@ ${siteHeaderHTML()}
     o += siteFooterHTML();
     o += `</body>\n</html>`;
 
-    // Bot crawl logging handled by Vercel proxy (api/serve-clean-html.js)
+    logBotVisit(sb, req, path, null);
 
     return new Response(o, {
       status: 200,

@@ -757,7 +757,7 @@ ${siteHeaderHTML()}
     o = o.replace(/<a\s+href="(https?:\/\/(?!www\.top10lists\.us)[^"]+)"/g,
       '<a rel="nofollow noopener" href="$1"');
 
-    // Bot crawl logging handled by Vercel proxy (api/serve-clean-html.js)
+    logBotVisit(sb, req, path, a.id);
 
     return new Response(o, {
       status: 200,

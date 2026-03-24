@@ -829,7 +829,8 @@ serve(async (req) => {
     const profiles = await fetchFounderProfiles();
     const html = renderFounderPage(profiles);
 
-    // Bot crawl logging handled by Vercel proxy (api/serve-clean-html.js)
+    const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+    logBotVisit(sb, req, "/founders", null);
 
     return new Response(html, {
       status: 200,
