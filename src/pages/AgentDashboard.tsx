@@ -446,10 +446,10 @@ export default function AgentDashboard() {
   };
 
   const handleUpgradePackage = () => {
-    // Navigate to funnel pricing page with token or professional ID
+    // Navigate to funnel tier/pricing page with token or professional ID
     const token = verificationToken || professionalId;
     if (token) {
-      navigate(`/funnel/${token}/pricing`);
+      navigate(`/funnel/${token}/tier`);
     } else {
       toast.error('Could not determine your profile. Please contact support.');
     }
