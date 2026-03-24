@@ -79,7 +79,7 @@ serve(async (req) => {
     const recipientEmail = emailRow.to_address;
     const { data: proData } = await supabase
       .from("professionals")
-      .select("id, name")
+      .select("id, name, email_unsubscribed")
       .ilike("email", recipientEmail)
       .maybeSingle();
     pro = proData;
@@ -129,8 +129,8 @@ serve(async (req) => {
       }
     }
 
-    // ── Create follow-up task ─────────────────────────────────────────────────
-    if (pro?.id) {
+    // ── Create follow-up task (skip if unsubscribed) ───────────────────────────
+    if (pro?.id && !pro.email_unsubscribed) {
       if (isClick) {
         const sentAt = emailRow.sent_at ? new Date(emailRow.sent_at).getTime() : 0;
         const elapsed = sentAt ? (Date.now() - sentAt) / 1000 : 9999;
@@ -242,12 +242,13 @@ serve(async (req) => {
         metadata: { source: "sequencer_v2", ip: ip.split(",")[0].trim(), user_agent: ua.substring(0, 200) },
       }).then(() => {});
 
-      // Create follow-up task for opens and clicks
+      // Create follow-up task for opens and clicks (skip if unsubscribed)
       const { data: agentData } = await supabase
-        .from("professionals").select("name").eq("id", queueRow.agent_id).maybeSingle();
+        .from("professionals").select("name, email_unsubscribed").eq("id", queueRow.agent_id).maybeSingle();
       const agentName = agentData?.name || queueRow.recipient_email;
+      const agentUnsub = agentData?.email_unsubscribed === true;
 
-      if (isClick) {
+      if (isClick && !agentUnsub) {
         const sentAt = queueRow.sent_at ? new Date(queueRow.sent_at).getTime() : 0;
         const elapsed = sentAt ? (Date.now() - sentAt) / 1000 : 9999;
         const isHuman = elapsed > 60;
@@ -285,7 +286,9 @@ serve(async (req) => {
             priority: "normal",
           }, { onConflict: "professional_id,task_type", ignoreDuplicates: true });
         }
-      } else if (isOpen && !queueRow.opened_at) {
+      } else if (isClick && agentUnsub) {
+        console.log(`[email-track] Skipping task for unsubscribed agent ${agentName}`);
+      } else if (isOpen && !queueRow.opened_at && !agentUnsub) {
         await supabase.from("crm_tasks").insert({
           professional_id: queueRow.agent_id,
           task_type: "email_opened",
