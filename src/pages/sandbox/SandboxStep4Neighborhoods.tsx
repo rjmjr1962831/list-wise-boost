@@ -136,23 +136,30 @@ export default function SandboxStep4Neighborhoods() {
     if (textPairs.length === 0) return;
     setNearbyLoading(true);
     try {
+      // Build OR filter for fuzzy matching — nearby text names may not exactly match DB names
       const names = textPairs.map(p => p.name);
+      const orFilter = names.map(n => `neighborhood.ilike.%${n.replace(/[\/\-]/g, '%')}%`).join(',');
       const { data } = await supabase
         .from('neighborhood_catalog')
         .select('id, neighborhood, neighborhood_slug, city_area, city_area_slug')
         .eq('state', agentState!)
         .eq('is_active', true)
-        .in('neighborhood', names)
+        .or(orFilter)
         .limit(50);
 
       if (data) {
         const matched: NearbyItem[] = [];
+        const norm = (s: string) => s.toLowerCase().replace(/[\/\-_]/g, ' ').replace(/\s+/g, ' ').trim();
         for (const pair of textPairs) {
+          const pairNorm = norm(pair.name);
+          const pairCity = norm(pair.city);
           const match = data.find(d =>
-            d.neighborhood === pair.name &&
-            d.city_area === pair.city &&
             !excludeIds.includes(d.id) &&
-            (allowedCityNames.length === 0 || allowedCityNames.includes(d.city_area))
+            (allowedCityNames.length === 0 || allowedCityNames.includes(d.city_area)) &&
+            (norm(d.neighborhood) === pairNorm ||
+             norm(d.neighborhood).includes(pairNorm) ||
+             pairNorm.includes(norm(d.neighborhood))) &&
+            (!pair.city || norm(d.city_area).includes(pairCity) || pairCity.includes(norm(d.city_area)))
           );
           if (match) {
             matched.push({
