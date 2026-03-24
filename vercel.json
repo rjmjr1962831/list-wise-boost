@@ -523,6 +523,14 @@
       "destination": "/api/serve-clean-html?fn=serve-bot-pages-html&path=%2Fai-citation-whitepaper"
     },
     {
+      "source": "/about/zlip-whitepaper",
+      "destination": "/api/serve-clean-html?fn=serve-bot-pages-html&path=%2Fabout%2Fzlip-whitepaper"
+    },
+    {
+      "source": "/about/zlip-whitepaper/",
+      "destination": "/api/serve-clean-html?fn=serve-bot-pages-html&path=%2Fabout%2Fzlip-whitepaper"
+    },
+    {
       "source": "/ai-liability",
       "destination": "/api/serve-clean-html?fn=serve-bot-pages-html&path=%2Fai-liability"
     },
