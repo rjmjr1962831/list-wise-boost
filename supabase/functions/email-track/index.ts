@@ -143,7 +143,7 @@ serve(async (req) => {
         } else if (isUnsub) {
           console.log(`[email-track] Unsubscribe click for ${pro.name}`);
         } else {
-          // Human clicked a real link (funnel, homepage, etc.) — create follow-up task
+          // Human clicked a real link — create Sales task and retire the Ops open task
           await supabase.from("crm_tasks").upsert({
             professional_id: pro.id,
             task_type: "email_clicked",
@@ -152,6 +152,12 @@ serve(async (req) => {
             status: "pending",
             priority: "high",
           }, { onConflict: "professional_id,task_type", ignoreDuplicates: true });
+          // Auto-complete the Ops "opened" task — click supersedes open
+          await supabase.from("crm_tasks")
+            .update({ status: "completed", completed_at: new Date().toISOString(), notes: "Auto-closed: agent clicked (promoted to Sales)" })
+            .eq("professional_id", pro.id)
+            .eq("task_type", "email_opened")
+            .eq("status", "pending");
         }
 
         // Funnel link + human = funnel_landed task
@@ -260,15 +266,21 @@ serve(async (req) => {
         } else if (isUnsub) {
           console.log(`[email-track] Unsubscribe click for ${agentName}`);
         } else {
-          // Human clicked a real link — create follow-up task and alert
-          await supabase.from("crm_tasks").insert({
+          // Human clicked a real link — create Sales task, retire Ops open task, and alert
+          await supabase.from("crm_tasks").upsert({
             professional_id: queueRow.agent_id,
             task_type: "email_clicked",
             title: `Follow up: ${agentName} clicked your email`,
             description: `Clicked link in campaign "${queueRow.campaign_id}" (${Math.round(elapsed / 60)}m after send). Call them while hot.`,
             status: "pending",
             priority: "high",
-          });
+          }, { onConflict: "professional_id,task_type", ignoreDuplicates: true });
+          // Auto-complete the Ops "opened" task — click supersedes open
+          await supabase.from("crm_tasks")
+            .update({ status: "completed", completed_at: new Date().toISOString(), notes: "Auto-closed: agent clicked (promoted to Sales)" })
+            .eq("professional_id", queueRow.agent_id)
+            .eq("task_type", "email_opened")
+            .eq("status", "pending");
           sendAlert(
             `CLICK: ${agentName}`,
             `${agentName} (${queueRow.recipient_email}) clicked a link in your campaign email.\n\nLink: ${linkUrl || "unknown"}\nCampaign: ${queueRow.campaign_id}\nTime after send: ${Math.round(elapsed / 60)}m\n\nThis is a hot lead — call them now.`
