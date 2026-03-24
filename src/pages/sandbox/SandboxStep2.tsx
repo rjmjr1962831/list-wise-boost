@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { SafeHead } from '@/components/SafeHead';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -65,6 +65,8 @@ function SavedIndicator({ show }: { show: boolean }) {
 export default function SandboxStep2() {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const modeParam = searchParams.get('mode') === 'sales' ? '?mode=sales' : '';
   const basePath = useBasePath();
   const { trackEvent } = useGA4Tracking();
   const [loading, setLoading] = useState(true);
@@ -273,7 +275,7 @@ export default function SandboxStep2() {
         professional_id: professional.id,
       });
 
-      navigate(`${basePath}/${token}/cities`);
+      navigate(`${basePath}/${token}/cities${modeParam}`);
     } catch (err: any) {
       toast.error('Something went wrong: ' + (err.message || 'Please try again.'));
       console.error(err);
@@ -437,7 +439,7 @@ export default function SandboxStep2() {
           <div className="flex justify-between pt-2">
             <Button
               variant="ghost"
-              onClick={() => navigate(`${basePath}/${token}`)}
+              onClick={() => navigate(`${basePath}/${token}${modeParam}`)}
             >
               Back
             </Button>

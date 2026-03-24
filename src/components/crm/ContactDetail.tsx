@@ -1,14 +1,15 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { RichEmailEditor } from "./RichEmailEditor";
 import { Badge } from "@/components/ui/badge";
 import {
   Mail, Phone, Star, ArrowLeft, Plus, Check, Clock, CreditCard, Send,
   Activity, ListTodo, X, AlertCircle, ExternalLink, Copy, Link, Edit2,
-  Save, StickyNote, User, Shield, BarChart3, Power, Eye
+  Save, StickyNote, User, Shield, BarChart3, Power, Eye, PhoneCall
 } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -54,7 +55,9 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
   const [showCompose, setShowCompose] = useState(false);
   const [composeSubject, setComposeSubject] = useState("");
   const [composeBody, setComposeBody] = useState("");
+  const bodyRef = useRef<HTMLTextAreaElement>(null);
   const [composeFrom, setComposeFrom] = useState("hello@toptenlists.us");
+  const editorRef = useRef<any>(null);
   const [sending, setSending] = useState(false);
   const [accounts, setAccounts] = useState<any[]>([]);
   const [templates, setTemplates] = useState<{ id: string; subject: string; body: string; label: string }[]>([]);
@@ -87,6 +90,10 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
 
   const loadFullPro = async () => {
     const { data } = await supabase.from("professionals").select("*").eq("id", professional.id).single();
+    if (data) {
+      const { data: surf } = await supabase.from("agent_ai_surfaces").select("total_surfaces").eq("agent_id", data.id).eq("period", "7d").maybeSingle();
+      data._ai_surfaces_total_7d = surf?.total_surfaces ?? 0;
+    }
     setPro(data);
   };
 
@@ -209,6 +216,7 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
     if (!templateId) {
       setComposeSubject("");
       setComposeBody("");
+      if (bodyRef.current) bodyRef.current.value = "";
       return;
     }
     const tpl = templates.find(t => t.id === templateId);
@@ -229,6 +237,7 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
       .replace(/\{\{aifs_score\}\}/g, String(aifs));
     setComposeSubject(sub(tpl.subject));
     setComposeBody(sub(tpl.body));
+    if (bodyRef.current) bodyRef.current.value = sub(tpl.body);
   };
 
   const COMPOSE_PLACEHOLDERS = [
@@ -236,20 +245,45 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
     { key: "{{agent_name}}", label: "Full Name" },
     { key: "{{tier}}", label: "Tier" },
     { key: "{{city}}", label: "City" },
-    { key: "{{profile_url}}", label: "Magic Link" },
+    { key: "{{magic_link}}", label: "Dashboard" },
     { key: "{{aifs_score}}", label: "AIFS Score" },
+    { key: "{{ai_surfaces_total_7d}}", label: "Crawl Stats 7d" },
   ];
 
+  /** Resolve merge variables against the current professional */
+  const interpolate = (text: string): string => {
+    if (!pro) return text;
+    const firstName = (pro.name || "").split(" ")[0];
+    const tier = pro.current_tier || pro.badge_tier || "listed";
+    const city = pro.business_city || "";
+    const magicLink = profileUrlForPro();
+    const aifsScore = pro.signal_score ?? pro.ai_surfaces_monthly_est ?? "";
+    const surfaces = pro._ai_surfaces_total_7d;
+    const surfacesStr = surfaces ? Number(surfaces).toLocaleString() : "";
+    return text
+      .replace(/\{\{first_name\}\}/g, firstName)
+      .replace(/\{\{agent_name\}\}/g, pro.name || "")
+      .replace(/\{\{tier\}\}/g, tier)
+      .replace(/\{\{city\}\}/g, city)
+      .replace(/\{\{magic_link\}\}/g, magicLink)
+      .replace(/\{\{profile_url\}\}/g, magicLink)
+      .replace(/\{\{aifs_score\}\}/g, String(aifsScore))
+      .replace(/\{\{ai_surfaces_total_7d\}\}/g, surfacesStr);
+  };
+
   const sendEmail = async () => {
-    if (!composeSubject || !composeBody) { toast.error("Subject and body required"); return; }
+    const bodyText = bodyRef.current?.value || "";
+    if (!composeSubject || !bodyText) { toast.error("Subject and body required"); return; }
     setSending(true);
     try {
+      const resolvedSubject = interpolate(composeSubject);
+      const resolvedBody = interpolate(bodyText);
       await supabase.functions.invoke("gmail-send", {
         body: {
           from_account: composeFrom,
           to: pro?.email,
-          subject: composeSubject,
-          message_body: composeBody,
+          subject: resolvedSubject,
+          message_body: resolvedBody,
           professional_id: professional.id,
         },
       });
@@ -257,6 +291,7 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
       setShowCompose(false);
       setComposeSubject("");
       setComposeBody("");
+      if (bodyRef.current) bodyRef.current.value = "";
       setSelectedTemplateId("");
       loadEmails();
     } catch { toast.error("Failed to send"); }
@@ -274,11 +309,22 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
     loadTasks();
   };
 
-  const toggleTask = async (taskId: string, currentStatus: string) => {
+  const toggleTask = async (taskId: string, currentStatus: string, taskType?: string, professionalId?: string) => {
     const newStatus = currentStatus === "completed" ? "pending" : "completed";
     await supabase.from("crm_tasks" as any).update({
       status: newStatus, completed_at: newStatus === "completed" ? new Date().toISOString() : null,
     }).eq("id", taskId);
+
+    // When a bounce task is resolved/unresolved, update lead_status accordingly
+    if (taskType === "email_bounced" && professionalId) {
+      if (newStatus === "completed") {
+        // Bounce resolved — clear the bounced status so agent is eligible for campaigns again
+        await supabase.from("professionals").update({ lead_status: "warm" }).eq("id", professionalId).eq("lead_status", "email_bounced");
+      } else {
+        // Bounce re-opened — mark as bounced again
+        await supabase.from("professionals").update({ lead_status: "email_bounced" }).eq("id", professionalId);
+      }
+    }
     loadTasks();
   };
 
@@ -396,6 +442,21 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
             <Button size="sm" variant="outline" onClick={() => window.open(profileUrl, "_blank")}><Eye className="h-3.5 w-3.5 mr-1" />Profile</Button>
           )}
           <Button size="sm" variant="outline" onClick={() => setShowCompose(!showCompose)}><Send className="h-3.5 w-3.5 mr-1" />Email</Button>
+          {pro?.verification_token && (
+            <Button size="sm" variant="outline"
+              className="border-green-300 text-green-700 hover:bg-green-50"
+              onClick={() => {
+                const tier = (pro?.current_tier || pro?.badge_tier || 'listed').toLowerCase();
+                const vt = pro.verification_token;
+                const url = (tier === 'listed')
+                  ? `/funnel/${vt}/contact?mode=sales`
+                  : `/dashboard/${vt}?mode=sales`;
+                window.open(url, '_blank');
+              }}
+            >
+              <PhoneCall className="h-3.5 w-3.5 mr-1" />Phone Sale
+            </Button>
+          )}
           <Button size="sm" variant={pro.active ? "destructive" : "default"} onClick={toggleActive}>
             <Power className="h-3.5 w-3.5 mr-1" />{pro.active ? "Deactivate" : "Activate"}
           </Button>
@@ -443,14 +504,29 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
               <div className="flex flex-wrap items-center gap-1 mb-1">
                 <span className="text-xs text-muted-foreground mr-1">Insert:</span>
                 {COMPOSE_PLACEHOLDERS.map(v => (
-                  <button key={v.key} type="button" onClick={() => setComposeBody(b => b + v.key)}
-                    className="text-[10px] px-1.5 py-0.5 rounded border border-input hover:bg-muted transition-colors">
+                  <button key={v.key} type="button" onClick={() => {
+                    const ta = bodyRef.current;
+                    if (!ta) return;
+                    const start = ta.selectionStart;
+                    const end = ta.selectionEnd;
+                    const before = ta.value.substring(0, start);
+                    const after = ta.value.substring(end);
+                    const insert = v.key === "{{magic_link}}"
+                      ? '<a href="{{magic_link}}">your dashboard</a>'
+                      : v.key;
+                    ta.value = before + insert + after;
+                    const newPos = start + insert.length;
+                    ta.focus();
+                    ta.selectionStart = ta.selectionEnd = newPos;
+                  }}
+                    className={`text-[10px] px-1.5 py-0.5 rounded border transition-colors ${v.key === "{{magic_link}}" ? "border-primary text-primary hover:bg-primary/10" : "border-input hover:bg-muted"}`}>
                     {v.label}
                   </button>
                 ))}
               </div>
               <label htmlFor="contact-compose-body" className="sr-only">Message</label>
-              <Textarea id="contact-compose-body" name="message" placeholder="Write your message..." className="text-sm min-h-[100px]" value={composeBody} onChange={e => setComposeBody(e.target.value)} />
+              <Textarea id="contact-compose-body" ref={bodyRef} name="message" placeholder="Write your message..." className="text-sm min-h-[200px] font-mono" defaultValue={composeBody} />
+              <p className="text-[10px] text-muted-foreground mt-1">Email sends as HTML. Use the toolbar to format. Variables like {"{{first_name}}"} resolve on send.</p>
             </div>
             <div className="flex gap-2 justify-end">
               <Button size="sm" variant="outline" onClick={() => { setShowCompose(false); setSelectedTemplateId(""); }}>Cancel</Button>
@@ -904,7 +980,7 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
                   <Card key={task.id} className={task.status === "completed" ? "opacity-60" : ""}>
                     <CardContent className="py-3 px-4">
                       <div className="flex items-center gap-3">
-                        <button onClick={() => toggleTask(task.id, task.status)} className="shrink-0">
+                        <button onClick={() => toggleTask(task.id, task.status, task.task_type, task.professional_id)} className="shrink-0">
                           {task.status === "completed" ? <Check className="h-4 w-4 text-green-600" /> : <Clock className="h-4 w-4 text-muted-foreground" />}
                         </button>
                         <div className="flex-1 min-w-0">

@@ -215,6 +215,11 @@ async function handleBounce(bodyText: string, bodyHtml: string, toAddress: strin
       priority: "high",
     }, { onConflict: "professional_id,task_type", ignoreDuplicates: true });
 
+    // Mark agent so list-maker / campaign wizard excludes them until resolved
+    await supabase.from("professionals")
+      .update({ lead_status: "email_bounced" })
+      .eq("id", pro.id);
+
     // Exa search for suggested replacement email (fire-and-forget; we update task if we find any)
     const exaKey = Deno.env.get("EXA_API_KEY");
     if (exaKey && pro.name) {

@@ -47,6 +47,7 @@ const SENDER_ACCOUNTS = [
   "mark@toptenlists.us",
   "hello@top10lists.us",
   "robert@top10lists.us",
+  "mark@top10lists.us",
 ];
 
 const SAMPLE_DATA: Record<string, string> = {
@@ -62,7 +63,7 @@ const SAMPLE_DATA: Record<string, string> = {
   city_name: "Phoenix",
   state_slug: "arizona",
   current_tier: "Listed",
-  magic_link: "https://www.top10lists.us/funnel/sample-token",
+  magic_link: "https://www.top10lists.us/dashboard/sample-token",
   date_first_listed: "December 18, 2025",
   date_last_updated: "March 20, 2026",
   review_stars_rating: "4.9",
@@ -73,7 +74,7 @@ const SAMPLE_DATA: Record<string, string> = {
   lastName: "Smith",
   city: "Phoenix",
   state: "Arizona",
-  magicLink: "https://www.top10lists.us/funnel/sample-token",
+  magicLink: "https://www.top10lists.us/dashboard/sample-token",
   tier: "Listed",
 };
 
@@ -92,9 +93,10 @@ const BASE_TEMPLATE_VARIABLES = [
   { key: "city", label: "City" },
   { key: "state", label: "State" },
   { key: "company", label: "Company" },
-  { key: "magicLink", label: "Magic Link" },
+  { key: "magicLink", label: "Dashboard" },
   { key: "email", label: "Email" },
   { key: "tier", label: "Tier" },
+  { key: "ai_surfaces_total_7d", label: "Crawl Stats 7d" },
 ];
 
 const WIZARD_STEPS = ["Create or Select Campaign", "Build List", "Create Email", "Send Gates", "Review", "Test", "Launch"];
@@ -186,6 +188,7 @@ function CampaignWizard({
     email_verified: false,
     has_license: false,
     exclude_teams: true,
+    exclude_bounced: true,
   });
   const [listCount, setListCount] = useState<number | null>(null);
   const [loadingCount, setLoadingCount] = useState(false);
@@ -199,6 +202,7 @@ function CampaignWizard({
   const [body, setBody] = useState("");
   const [senders, setSenders] = useState<string[]>([SENDER_ACCOUNTS[0]]);
   const [templates, setTemplates] = useState<SequenceTemplate[]>([]);
+  const [emailTemplates, setEmailTemplates] = useState<{ id: string; name: string; subject: string; body: string }[]>([]);
   const [loadingTemplates, setLoadingTemplates] = useState(false);
   const [existingCampaignId, setExistingCampaignId] = useState<string>("");
 
@@ -239,6 +243,10 @@ function CampaignWizard({
       if (criteria.email_verified) q = q.not("email_verified_at", "is", null);
       if (criteria.has_license)
         q = q.not("license_number", "is", null).neq("license_number", "");
+      if (criteria.exclude_teams)
+        q = q.neq("lead_status", "team");
+      if (criteria.exclude_bounced)
+        q = q.neq("lead_status", "email_bounced");
       const { count, error } = await q;
       if (error) throw error;
       setListCount(count ?? 0);
@@ -258,18 +266,33 @@ function CampaignWizard({
     (async () => {
       setLoadingTemplates(true);
       try {
-        const { data, error } = await supabase
-          .from("crm_sequence_steps" as any)
-          .select("sequence_id, step_number, subject, body, crm_sequences(name)")
-          .order("step_number", { ascending: true });
-        if (error) throw error;
-        setTemplates(
-          ((data as any[]) ?? []).map((d: any) => ({
-            sequence_id: d.sequence_id,
-            sequence_name: (d.crm_sequences as any)?.name ?? "Unknown",
-            step_number: d.step_number,
-            subject: d.subject ?? "",
-            body: d.body ?? "",
+        const [seqRes, tplRes] = await Promise.all([
+          supabase
+            .from("crm_sequence_steps" as any)
+            .select("sequence_id, step_number, subject, body, crm_sequences(name)")
+            .order("step_number", { ascending: true }),
+          supabase
+            .from("crm_email_templates")
+            .select("id, name, subject, body")
+            .order("name"),
+        ]);
+        if (!seqRes.error) {
+          setTemplates(
+            ((seqRes.data as any[]) ?? []).map((d: any) => ({
+              sequence_id: d.sequence_id,
+              sequence_name: (d.crm_sequences as any)?.name ?? "Unknown",
+              step_number: d.step_number,
+              subject: d.subject ?? "",
+              body: d.body ?? "",
+            }))
+          );
+        }
+        setEmailTemplates(
+          ((tplRes.data as any[]) ?? []).map((t: any) => ({
+            id: t.id,
+            name: t.name ?? t.subject ?? "Template",
+            subject: t.subject ?? "",
+            body: t.body ?? "",
           }))
         );
       } catch {
@@ -754,6 +777,11 @@ function CampaignWizard({
                 <Checkbox checked={!!criteria.has_license} onCheckedChange={(c) => setCriteria((prev) => ({ ...prev, has_license: !!c }))} />
                 <span className="text-sm">Has license</span>
               </label>
+
+              <label className="flex items-center gap-2">
+                <Checkbox checked={!!criteria.exclude_bounced} onCheckedChange={(c) => setCriteria((prev) => ({ ...prev, exclude_bounced: !!c }))} />
+                <span className="text-sm">Exclude bounced</span>
+              </label>
             </div>
 
             <div className="flex items-center gap-4">
@@ -862,7 +890,33 @@ function CampaignWizard({
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Template loader */}
+            {/* Email template loader */}
+            {emailTemplates.length > 0 && (
+              <div className="space-y-1">
+                <Label>Load from Email Template</Label>
+                <select
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  defaultValue=""
+                  onChange={(e) => {
+                    const tpl = emailTemplates.find(t => t.id === e.target.value);
+                    if (tpl) {
+                      setSubject(tpl.subject);
+                      setBody(tpl.body);
+                      if (!campaignName.trim()) setCampaignName(tpl.name);
+                      toast.info(`Loaded template: ${tpl.name}`);
+                    }
+                  }}
+                  disabled={loadingTemplates}
+                >
+                  <option value="">— Select template —</option>
+                  {emailTemplates.map(t => (
+                    <option key={t.id} value={t.id}>{t.name}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {/* Sequence template loader */}
             <div className="space-y-1">
               <Label>Load from Existing Sequence</Label>
               <select
@@ -2001,7 +2055,6 @@ function CampaignMonitor({
   const visible = campaigns.filter((c) => c.status !== "draft");
   const [acting, setActing] = useState<string | null>(null);
   const [queueStats, setQueueStats] = useState<Record<string, QueueStats>>({});
-  const [activityFeed, setActivityFeed] = useState<Record<string, { name: string; email: string; event: string; time: string }[]>>({});
 
   const loadQueueStats = useCallback(async () => {
     if (visible.length === 0) return;
@@ -2022,44 +2075,6 @@ function CampaignMonitor({
       stats[c.id] = base;
     }
     setQueueStats(stats);
-
-    // Load recent activity per campaign (opens, clicks, funnel events)
-    const feed: Record<string, { name: string; email: string; event: string; time: string }[]> = {};
-    for (const c of visible) {
-      // Recent opens and clicks from queue
-      const { data: recentQueue } = await supabase
-        .from("email_queue" as any)
-        .select("recipient_name, recipient_email, opened_at, clicked_at")
-        .eq("campaign_id", c.id)
-        .or("opened_at.not.is.null,clicked_at.not.is.null")
-        .order("updated_at", { ascending: false })
-        .limit(20);
-
-      const events: { name: string; email: string; event: string; time: string }[] = [];
-      if (recentQueue) {
-        for (const q of recentQueue as any[]) {
-          if (q.clicked_at) events.push({ name: q.recipient_name || "", email: q.recipient_email, event: "clicked", time: q.clicked_at });
-          else if (q.opened_at) events.push({ name: q.recipient_name || "", email: q.recipient_email, event: "opened", time: q.opened_at });
-        }
-      }
-
-      // Funnel events from crm_tasks for agents in this campaign
-      const { data: tasks } = await supabase
-        .from("crm_tasks" as any)
-        .select("title, task_type, created_at")
-        .in("task_type", ["funnel_landed", "funnel_pricing_viewed", "funnel_tier_selected", "funnel_checkout", "funnel_completed"])
-        .order("created_at", { ascending: false })
-        .limit(10);
-      if (tasks) {
-        for (const t of tasks as any[]) {
-          events.push({ name: t.title, email: "", event: t.task_type, time: t.created_at });
-        }
-      }
-
-      events.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
-      feed[c.id] = events.slice(0, 15);
-    }
-    setActivityFeed(feed);
   }, [visible.map((c) => c.id).join(",")]);
 
   useEffect(() => {
@@ -2172,37 +2187,6 @@ function CampaignMonitor({
                 {remaining > 0 && (
                   <div className="text-xs text-muted-foreground bg-muted/50 rounded-md px-3 py-2">
                     Estimated completion: <span className="font-medium text-foreground">{estimateEta(remaining)}</span>
-                  </div>
-                )}
-
-                {/* Live Activity Feed */}
-                {activityFeed[c.id] && activityFeed[c.id].length > 0 && (
-                  <div className="border rounded-md overflow-hidden">
-                    <div className="bg-muted/50 px-3 py-1.5 text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                      Live Activity
-                    </div>
-                    <div className="max-h-[240px] overflow-y-auto divide-y divide-border">
-                      {activityFeed[c.id].map((ev, i) => {
-                        const ago = (() => {
-                          const mins = Math.floor((Date.now() - new Date(ev.time).getTime()) / 60000);
-                          if (mins < 1) return "just now";
-                          if (mins < 60) return `${mins}m ago`;
-                          const hrs = Math.floor(mins / 60);
-                          if (hrs < 24) return `${hrs}h ago`;
-                          return `${Math.floor(hrs / 24)}d ago`;
-                        })();
-                        const icon = ev.event === "clicked" ? "🔥" : ev.event === "opened" ? "👀" : ev.event === "funnel_landed" ? "🚀" : ev.event === "funnel_pricing_viewed" ? "💰" : ev.event === "funnel_tier_selected" ? "✅" : ev.event === "funnel_completed" ? "🎉" : "📌";
-                        const label = ev.event === "clicked" ? "Clicked" : ev.event === "opened" ? "Opened" : ev.event.replace("funnel_", "").replace(/_/g, " ");
-                        return (
-                          <div key={i} className="flex items-center gap-2 px-3 py-2 text-xs">
-                            <span>{icon}</span>
-                            <span className="font-medium truncate flex-1">{ev.name || ev.email}</span>
-                            <span className="text-muted-foreground shrink-0">{label}</span>
-                            <span className="text-muted-foreground shrink-0">{ago}</span>
-                          </div>
-                        );
-                      })}
-                    </div>
                   </div>
                 )}
 

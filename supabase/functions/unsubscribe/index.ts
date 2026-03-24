@@ -34,11 +34,17 @@ serve(async (req) => {
         .eq("id", prof.id);
     }
 
-    // Mark any pending email_queue items as unsubscribed
+    // Mark any pending/sent email_queue items as unsubscribed and update campaign counter
+    const { data: queueRows } = await supabase.from("email_queue")
+      .select("id, campaign_id, status")
+      .eq("recipient_email", directEmail.toLowerCase())
+      .in("status", ["pending_review", "approved", "scheduled", "sent"]);
+
+    // Mark all matching queue items (pending AND sent) as unsubscribed
     await supabase.from("email_queue")
       .update({ status: "unsubscribed" })
       .eq("recipient_email", directEmail.toLowerCase())
-      .in("status", ["pending_review", "approved", "scheduled"]);
+      .in("status", ["pending_review", "approved", "scheduled", "sent"]);
 
     // Also handle old crm_sequence_enrollments
     await supabase.from("crm_sequence_enrollments")

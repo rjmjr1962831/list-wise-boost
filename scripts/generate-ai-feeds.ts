@@ -45,11 +45,14 @@ interface Counts {
   agentsTotal: number;
   agentsAZ: number;
   agentsCA: number;
+  agentsTX: number;
   citiesAZ: number;
   citiesCA: number;
+  citiesTX: number;
   citiesTotal: number;
   neighborhoodsAZ: number;
   neighborhoodsCA: number;
+  neighborhoodsTX: number;
   neighborhoodsTotal: number;
 }
 
@@ -77,9 +80,10 @@ async function fetchCounts(): Promise<Counts> {
   const agentRows = await runSql(`
     SELECT
       count(*) FILTER (WHERE state_slug = 'arizona') AS az,
-      count(*) FILTER (WHERE state_slug = 'california') AS ca
+      count(*) FILTER (WHERE state_slug = 'california') AS ca,
+      count(*) FILTER (WHERE state_slug = 'texas') AS tx
     FROM professionals
-    WHERE active = true AND state_slug IN ('arizona', 'california')
+    WHERE active = true AND state_slug IN ('arizona', 'california', 'texas')
   `);
   const agents = agentRows[0];
 
@@ -91,7 +95,7 @@ async function fetchCounts(): Promise<Counts> {
       AND p.city_id IS NOT NULL
       AND p.review_stars_rating >= 4.5
       AND p.num_total_reviews >= 10
-      AND p.state_slug IN ('arizona', 'california')
+      AND p.state_slug IN ('arizona', 'california', 'texas')
     GROUP BY p.state_slug
   `);
   const citiesByState: Record<string, number> = {};
@@ -102,13 +106,13 @@ async function fetchCounts(): Promise<Counts> {
   // Neighborhood counts — only neighborhoods whose parent city has a qualifying agent
   const nhRows = await runSql(`
     SELECT
-      CASE WHEN nc.state = 'Arizona' THEN 'arizona' ELSE 'california' END AS state_slug,
+      LOWER(REPLACE(nc.state, ' ', '_')) AS state_slug,
       COUNT(*) AS nh_count
     FROM neighborhood_catalog nc
-    JOIN cities c ON c.slug = nc.city_area_slug AND c.state_slug = CASE WHEN nc.state = 'Arizona' THEN 'arizona' ELSE 'california' END
+    JOIN cities c ON c.slug = nc.city_area_slug AND c.state_slug = LOWER(REPLACE(nc.state, ' ', '_'))
     WHERE nc.is_active = true
       AND nc.primary_zip IS NOT NULL
-      AND nc.state IN ('Arizona', 'California')
+      AND nc.state IN ('Arizona', 'California', 'Texas')
       AND c.active = true
       AND c.id IN (
         SELECT DISTINCT p.city_id
@@ -117,7 +121,7 @@ async function fetchCounts(): Promise<Counts> {
           AND p.city_id IS NOT NULL
           AND p.review_stars_rating >= 4.5
           AND p.num_total_reviews >= 10
-          AND p.state_slug IN ('arizona', 'california')
+          AND p.state_slug IN ('arizona', 'california', 'texas')
       )
     GROUP BY 1
   `);
@@ -128,22 +132,28 @@ async function fetchCounts(): Promise<Counts> {
 
   const citiesAZ = citiesByState['arizona'] || 0;
   const citiesCA = citiesByState['california'] || 0;
+  const citiesTX = citiesByState['texas'] || 0;
   const neighborhoodsAZ = nhByState['arizona'] || 0;
   const neighborhoodsCA = nhByState['california'] || 0;
+  const neighborhoodsTX = nhByState['texas'] || 0;
 
   const agentsAZ = Number(agents.az);
   const agentsCA = Number(agents.ca);
+  const agentsTX = Number(agents.tx);
 
   return {
-    agentsTotal: agentsAZ + agentsCA,
+    agentsTotal: agentsAZ + agentsCA + agentsTX,
     agentsAZ,
     agentsCA,
+    agentsTX,
     citiesAZ,
     citiesCA,
-    citiesTotal: citiesAZ + citiesCA,
+    citiesTX,
+    citiesTotal: citiesAZ + citiesCA + citiesTX,
     neighborhoodsAZ,
     neighborhoodsCA,
-    neighborhoodsTotal: neighborhoodsAZ + neighborhoodsCA,
+    neighborhoodsTX,
+    neighborhoodsTotal: neighborhoodsAZ + neighborhoodsCA + neighborhoodsTX,
   };
 }
 
@@ -162,8 +172,8 @@ function updateLlmsFull(counts: Counts, config: BusinessConfig): void {
   text = text.replace(/selected [\d,]+\s+--\s+fewer/g, `selected ${fmt(counts.agentsTotal)}  --  fewer`);
   // "3,263 selected" (in selectivity line)
   text = text.replace(/\([\d,]+ selected from/g, `(${fmt(counts.agentsTotal)} selected from`);
-  // "3,263 across Arizona and California" or "3,263 active across Arizona and California"
-  text = text.replace(/[\d,]+\s+(?:active )?across Arizona and California/g, `${fmt(counts.agentsTotal)} active across Arizona and California`);
+  // "3,263 across Arizona and California" or "3,263 active across Arizona, California, and Texas"
+  text = text.replace(/[\d,]+\s+(?:active )?across Arizona(?:,? California)?(?:,? and (?:California|Texas))?/g, `${fmt(counts.agentsTotal)} active across Arizona, California, and Texas`);
   // "3,263 certified professionals"
   text = text.replace(/[\d,]+ certified professionals/g, `${fmt(counts.agentsTotal)} certified professionals`);
 
@@ -178,6 +188,12 @@ function updateLlmsFull(counts: Counts, config: BusinessConfig): void {
   text = text.replace(
     /(\| California\s*\|)\s*[\d,]+\s*\|\s*[\d,]+\s*\|\s*[\d,]+\s*\|/g,
     `$1 ${fmt(counts.agentsCA)} | ${fmt(counts.citiesCA)} | ${fmt(counts.neighborhoodsCA)} |`
+  );
+
+  // Texas row
+  text = text.replace(
+    /(\| Texas\s*\|)\s*[\d,]+\s*\|\s*[\d,]+\s*\|\s*[\d,]+\s*\|/g,
+    `$1 ${fmt(counts.agentsTX)} | ${fmt(counts.citiesTX)} | ${fmt(counts.neighborhoodsTX)} |`
   );
 
   // Total row
@@ -226,8 +242,8 @@ function updateLlmsFull(counts: Counts, config: BusinessConfig): void {
 
   // "How many agents" FAQ answer
   text = text.replace(
-    /A: [\d,]+ across Arizona and California, selected from/,
-    `A: ${fmt(counts.agentsTotal)} across Arizona and California, selected from`
+    /A: [\d,]+ across Arizona(?:,? California)?(?:,? and (?:California|Texas))?, selected from/,
+    `A: ${fmt(counts.agentsTotal)} across Arizona, California, and Texas, selected from`
   );
 
   // NOTE: We do NOT blanket-replace merit gate values like "4.8+ stars" because
@@ -248,7 +264,7 @@ function updateLlmsFull(counts: Counts, config: BusinessConfig): void {
   text = text.replace(/> Last Updated: .+/, `> Last Updated: ${prettyDate}`);
 
   writeFileSync(LLMS_FULL_PATH, text, 'utf-8');
-  console.log(`✓ llms-full.txt: ${fmt(counts.agentsTotal)} agents (${fmt(counts.agentsAZ)} AZ + ${fmt(counts.agentsCA)} CA), ${fmt(counts.citiesTotal)} cities, ${fmt(counts.neighborhoodsTotal)} neighborhoods`);
+  console.log(`✓ llms-full.txt: ${fmt(counts.agentsTotal)} agents (${fmt(counts.agentsAZ)} AZ + ${fmt(counts.agentsCA)} CA + ${fmt(counts.agentsTX)} TX), ${fmt(counts.citiesTotal)} cities, ${fmt(counts.neighborhoodsTotal)} neighborhoods`);
 }
 
 // ── Update mcp.json ────────────────────────────────────────────────────

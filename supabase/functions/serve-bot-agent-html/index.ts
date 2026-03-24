@@ -194,7 +194,7 @@ serve(async (req) => {
         SELECT
           p.id, p.name, p.review_stars_rating, p.num_total_reviews,
           p.license_number, p.license_type, p.license_status,
-          p.license_issued_at, p.license_expires_at,
+          p.license_issued_at, p.license_expires_at, p.license_verified_at,
           p.company, p.phone, p.phone_numbers, p.email, p.website,
           p.zillow_profile_url, p.years_experience,
           p.current_tier, p.badge_tier, p.image_url,
@@ -232,6 +232,7 @@ serve(async (req) => {
     const lo  = t.toLowerCase();
     const isHigh   = ["underwritten", "audited", "accredited"].includes(lo);
     const isListed = lo === "listed";
+    const isUnderwrittenOnly = lo === "underwritten";
     const cycle = ac(t);
 
     // Core fields
@@ -297,7 +298,11 @@ serve(async (req) => {
         name: a.name,
         url: canon,
         description: desc,
-        dateModified: a.updated_at ? String(a.updated_at).split("T")[0] : TODAY_ISO,
+        dateModified: [a.updated_at, a.license_verified_at]
+          .filter(Boolean)
+          .map((d: string) => new Date(d).toISOString().slice(0, 10))
+          .sort()
+          .pop() || TODAY_ISO,
         address: {
           "@type": "PostalAddress",
           addressLocality: city.name,
@@ -318,11 +323,14 @@ serve(async (req) => {
 
       // hasCredential: structured license credential (replaces plain identifier)
       if (a.license_number) {
+        const licStatus = (a.license_status || "Active").toLowerCase();
+        const isActive = licStatus === "active";
         schema.hasCredential = [{
           "@type": "EducationalOccupationalCredential",
           credentialCategory: "Real Estate License",
           name: `${si.display} Real Estate License`,
           identifier: a.license_number,
+          credentialStatus: isActive ? "Active" : `Verified ${a.license_status || "Inactive"}`,
           recognizedBy: {
             "@type": "GovernmentOrganization",
             name: si.auth,
@@ -330,6 +338,7 @@ serve(async (req) => {
           },
           ...(a.license_issued_at && { validFrom: String(a.license_issued_at).slice(0, 10) }),
           ...(a.license_expires_at && { validUntil: String(a.license_expires_at).slice(0, 10) }),
+          ...(a.license_verified_at && { dateVerified: new Date(a.license_verified_at).toISOString().slice(0, 10) }),
         }];
       }
 
@@ -650,7 +659,10 @@ ${siteHeaderHTML()}
     // ---- License information ----
     o += `<section>\n  <h2>License Information</h2>\n`;
     o += `  <table><thead><tr><th>Field</th><th>Value</th></tr></thead><tbody>\n`;
-    o += `    <tr><td>License Number</td><td>${lic}</td></tr>\n`;
+    const licVerified = a.license_verified_at
+      ? ` — Confirmed ${new Date(a.license_verified_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`
+      : "";
+    o += `    <tr><td>License Number</td><td>${lic}${esc(licVerified)}</td></tr>\n`;
     o += `    <tr><td>Issuing Authority</td><td><a href="${si.url}">${si.auth}</a></td></tr>\n`;
     if (a.license_type)   o += `    <tr><td>License Type</td><td>${esc(a.license_type)}</td></tr>\n`;
     if (a.license_status) o += `    <tr><td>Status</td><td>${esc(a.license_status)}</td></tr>\n`;
@@ -741,6 +753,10 @@ ${siteHeaderHTML()}
     o += siteFooterHTML();
     o += `</body>\n</html>`;
 
+    // Add nofollow to all external links (not top10lists.us)
+    o = o.replace(/<a\s+href="(https?:\/\/(?!www\.top10lists\.us)[^"]+)"/g,
+      '<a rel="nofollow noopener" href="$1"');
+
     // Bot crawl logging handled by Vercel proxy (api/serve-clean-html.js)
 
     return new Response(o, {
@@ -756,7 +772,9 @@ ${siteHeaderHTML()}
       },
     });
   } catch (_e: unknown) {
-    const html = `<!DOCTYPE html><html><head><title>Service Unavailable</title><style>${siteHeaderCSS()}</style></head><body>${siteHeaderHTML()}<h1>Service Unavailable</h1><p>Please try again later.</p>${siteFooterHTML()}</body></html>`;
+    console.error("serve-bot-agent-html error:", _e);
+    const errMsg = _e instanceof Error ? _e.message : String(_e);
+    const html = `<!DOCTYPE html><html><head><title>Service Unavailable</title><style>${siteHeaderCSS()}</style></head><body>${siteHeaderHTML()}<h1>Service Unavailable</h1><p>Please try again later.</p><!-- err: ${errMsg.replace(/</g,"&lt;").slice(0,200)} -->${siteFooterHTML()}</body></html>`;
     return new Response(html, {
       status: 503,
       headers: {

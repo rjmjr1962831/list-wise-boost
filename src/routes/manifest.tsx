@@ -119,10 +119,12 @@ const NeighborhoodApply = lazy(() => import("@/pages/NeighborhoodApply"));
 
 const SandboxStep1 = lazy(() => import("@/pages/sandbox/SandboxStep1"));
 const SandboxStep2 = lazy(() => import("@/pages/sandbox/SandboxStep2"));
+const SandboxStep2Accordion = lazy(() => import("@/pages/sandbox/SandboxStep2Accordion"));
 const SandboxStep3Cities = lazy(() => import("@/pages/sandbox/SandboxStep3Cities"));
 const SandboxStep4Neighborhoods = lazy(() => import("@/pages/sandbox/SandboxStep4Neighborhoods"));
 const SandboxStep5Tier = lazy(() => import("@/pages/sandbox/SandboxStep5Tier"));
 const SandboxSuccess = lazy(() => import("@/pages/sandbox/SandboxSuccess"));
+const SandboxInvoiceSent = lazy(() => import("@/pages/sandbox/SandboxInvoiceSent"));
 
 const AdminDashboard = lazy(() => import("@/pages/AdminDashboard"));
 /** Demo walkthrough: staging-only internal document; never on www. */
@@ -246,9 +248,11 @@ export const routeManifest: RouteObject[] = [
   { path: "/funnel-test/:token", element: React.createElement(SimpleFunnelTest, null) },
   { path: "/funnel/:token", element: React.createElement(SandboxStep1, null) },
   { path: "/funnel/:token/contact", element: React.createElement(SandboxStep2, null) },
+  { path: "/funnel/:token/profile", element: React.createElement(SandboxStep2Accordion, null) },
   { path: "/funnel/:token/cities", element: React.createElement(SandboxStep3Cities, null) },
   { path: "/funnel/:token/neighborhoods", element: React.createElement(SandboxStep4Neighborhoods, null) },
   { path: "/funnel/:token/tier", element: React.createElement(SandboxStep5Tier, null) },
+  { path: "/funnel/:token/invoice-sent", element: React.createElement(SandboxInvoiceSent, null) },
   { path: "/funnel/:token/success", element: React.createElement(SandboxSuccess, null) },
   { path: "/funnel/:token/payment-success", element: React.createElement(AgentPaymentSuccess, null) },
   { path: "/profile/:token", element: React.createElement(FunnelStep0, null) },
@@ -280,6 +284,7 @@ export const routeManifest: RouteObject[] = [
   { path: "/sandbox/:token/cities", element: React.createElement(SandboxStep3Cities, null) },
   { path: "/sandbox/:token/neighborhoods", element: React.createElement(SandboxStep4Neighborhoods, null) },
   { path: "/sandbox/:token/tier", element: React.createElement(SandboxStep5Tier, null) },
+  { path: "/sandbox/:token/invoice-sent", element: React.createElement(SandboxInvoiceSent, null) },
   { path: "/sandbox/:token/success", element: React.createElement(SandboxSuccess, null) },
   { path: "/coming-soon/:stateSlug/:citySlug", element: React.createElement(CityComingSoon, null) },
   { path: "/albuquerque/:categorySlug", element: React.createElement(AlbuquerqueRedirect, null) },

@@ -151,7 +151,7 @@ serve(async (req) => {
     const { data: neighborhoods, error: fetchError } = await supabase
       .from('neighborhood_catalog')
       .select('id, neighborhood, neighborhood_slug, city_area, city_area_slug, state, tier, median_home_value, median_income')
-      .eq('state', 'AZ')
+      .in('state', ['Arizona', 'California', 'Texas'])
       .is('writeup_html', null)
       .eq('is_active', true)
       .order('score', { ascending: false, nullsFirst: false })
@@ -176,7 +176,7 @@ serve(async (req) => {
     const { count: totalRemaining } = await supabase
       .from('neighborhood_catalog')
       .select('*', { count: 'exact', head: true })
-      .eq('state', 'AZ')
+      .in('state', ['Arizona', 'California', 'Texas'])
       .is('writeup_html', null)
       .eq('is_active', true);
 

@@ -125,9 +125,19 @@ export default function HotLeadsPanel() {
 
   async function markTaskDone(taskId: string) {
     setCompletingTask(taskId);
+    const task = tasks.find(t => t.id === taskId);
     await supabase.from("crm_tasks")
       .update({ status: "completed", completed_at: new Date().toISOString() })
       .eq("id", taskId);
+
+    // If bounce task resolved, clear lead_status so agent is eligible for campaigns
+    if (task?.task_type === "email_bounced" && task?.professional_id) {
+      await supabase.from("professionals")
+        .update({ lead_status: "warm" })
+        .eq("id", task.professional_id)
+        .eq("lead_status", "email_bounced");
+    }
+
     setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: "completed" } : t));
     setCompletingTask(null);
   }

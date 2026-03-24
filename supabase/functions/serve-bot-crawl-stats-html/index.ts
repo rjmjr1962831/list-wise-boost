@@ -151,6 +151,7 @@ serve(async (req) => {
       },
     });
   } catch (err) {
+    console.error("serve-bot-crawl-stats-html error:", err);
     return new Response(JSON.stringify({ error: "Failed to serve", detail: String(err) }), {
       status: 500,
       headers: { ...CORS, "Content-Type": "application/json" },

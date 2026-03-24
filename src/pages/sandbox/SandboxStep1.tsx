@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { SafeHead } from '@/components/SafeHead';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -29,6 +29,8 @@ type PageState = 'loading' | 'valid' | 'expired' | 'invalid';
 export default function SandboxStep1() {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const modeParam = searchParams.get('mode') === 'sales' ? '?mode=sales' : '';
   const basePath = useBasePath();
   const { trackEvent } = useGA4Tracking();
   const [pageState, setPageState] = useState<PageState>('loading');
@@ -43,6 +45,12 @@ export default function SandboxStep1() {
     validateToken(token).then(async (result) => {
       if (result.status === 'valid') {
         const p = result.professional;
+        // Redirect paid/certified agents to their dashboard — they shouldn't re-enter the funnel
+        const agentTier = (p.current_tier || p.badge_tier || 'listed').toLowerCase();
+        if (['certified', 'audited', 'underwritten'].includes(agentTier)) {
+          navigate(`/dashboard/${p.verification_token || p.id}`, { replace: true });
+          return;
+        }
         setProfessional(p);
         setPageState('valid');
 
@@ -267,7 +275,7 @@ export default function SandboxStep1() {
             className="w-full sm:w-auto sm:min-w-[280px] bg-primary hover:bg-primary/90 text-lg py-6"
             onClick={() => {
               trackEvent('sandbox_step1_claim_click', { professional_id: professional.id });
-              navigate(`${basePath}/${token}/contact`);
+              navigate(`${basePath}/${token}/contact${modeParam}`);
             }}
           >
             Certify Your Listing

@@ -104,6 +104,116 @@
       "permanent": false
     },
     {
+      "source": "/arizona/chandler-gilbert/allen-ranch/top10realestateagents",
+      "destination": "/arizona/gilbert/allen-ranch/top10realestateagents",
+      "permanent": true
+    },
+    {
+      "source": "/arizona/chandler-gilbert/gilbert-commons/top10realestateagents",
+      "destination": "/arizona/gilbert/gilbert-commons/top10realestateagents",
+      "permanent": true
+    },
+    {
+      "source": "/arizona/chandler-gilbert/gilbert-ranch/top10realestateagents",
+      "destination": "/arizona/gilbert/gilbert-ranch/top10realestateagents",
+      "permanent": true
+    },
+    {
+      "source": "/arizona/chandler-gilbert/higley-park/top10realestateagents",
+      "destination": "/arizona/gilbert/higley-park/top10realestateagents",
+      "permanent": true
+    },
+    {
+      "source": "/arizona/chandler-gilbert/jakes-ranch/top10realestateagents",
+      "destination": "/arizona/gilbert/jakes-ranch/top10realestateagents",
+      "permanent": true
+    },
+    {
+      "source": "/arizona/chandler-gilbert/morrison-ranch/top10realestateagents",
+      "destination": "/arizona/gilbert/morrison-ranch/top10realestateagents",
+      "permanent": true
+    },
+    {
+      "source": "/arizona/chandler-gilbert/ray-ranch/top10realestateagents",
+      "destination": "/arizona/gilbert/ray-ranch/top10realestateagents",
+      "permanent": true
+    },
+    {
+      "source": "/arizona/chandler-gilbert/silverado/top10realestateagents",
+      "destination": "/arizona/gilbert/silverado/top10realestateagents",
+      "permanent": true
+    },
+    {
+      "source": "/arizona/chandler-gilbert/sun-terra-acres/top10realestateagents",
+      "destination": "/arizona/gilbert/sun-terra-acres/top10realestateagents",
+      "permanent": true
+    },
+    {
+      "source": "/arizona/chandler-gilbert/the-spectrum-at-val-vista/top10realestateagents",
+      "destination": "/arizona/gilbert/the-spectrum-at-val-vista/top10realestateagents",
+      "permanent": true
+    },
+    {
+      "source": "/arizona/chandler-gilbert/vintage-ranch/top10realestateagents",
+      "destination": "/arizona/gilbert/vintage-ranch/top10realestateagents",
+      "permanent": true
+    },
+    {
+      "source": "/arizona/chandler-gilbert/:neighborhood/top10realestateagents",
+      "destination": "/arizona/chandler/:neighborhood/top10realestateagents",
+      "permanent": true
+    },
+    {
+      "source": "/arizona/chandler-gilbert/top10realestateagents",
+      "destination": "/arizona/chandler/top10realestateagents",
+      "permanent": true
+    },
+    {
+      "source": "/arizona/chandler-gilbert",
+      "destination": "/arizona/chandler/top10realestateagents",
+      "permanent": true
+    },
+    {
+      "source": "/arizona/peoria-surprise/coldwater-ranch/top10realestateagents",
+      "destination": "/arizona/peoria/coldwater-ranch/top10realestateagents",
+      "permanent": true
+    },
+    {
+      "source": "/arizona/peoria-surprise/crossriver/top10realestateagents",
+      "destination": "/arizona/peoria/crossriver/top10realestateagents",
+      "permanent": true
+    },
+    {
+      "source": "/arizona/peoria-surprise/dos-rios/top10realestateagents",
+      "destination": "/arizona/peoria/dos-rios/top10realestateagents",
+      "permanent": true
+    },
+    {
+      "source": "/arizona/peoria-surprise/parkview-estates/top10realestateagents",
+      "destination": "/arizona/peoria/parkview-estates/top10realestateagents",
+      "permanent": true
+    },
+    {
+      "source": "/arizona/peoria-surprise/pleasant-valley/top10realestateagents",
+      "destination": "/arizona/peoria/pleasant-valley/top10realestateagents",
+      "permanent": true
+    },
+    {
+      "source": "/arizona/peoria-surprise/:neighborhood/top10realestateagents",
+      "destination": "/arizona/surprise/:neighborhood/top10realestateagents",
+      "permanent": true
+    },
+    {
+      "source": "/arizona/peoria-surprise/top10realestateagents",
+      "destination": "/arizona/surprise/top10realestateagents",
+      "permanent": true
+    },
+    {
+      "source": "/arizona/peoria-surprise",
+      "destination": "/arizona/surprise/top10realestateagents",
+      "permanent": true
+    },
+    {
       "source": "/arizona",
       "destination": "/arizona/top10realestateagents",
       "permanent": true
@@ -411,6 +521,14 @@
     {
       "source": "/ai-citation-whitepaper/",
       "destination": "/api/serve-clean-html?fn=serve-bot-pages-html&path=%2Fai-citation-whitepaper"
+    },
+    {
+      "source": "/about/zlip-whitepaper",
+      "destination": "/api/serve-clean-html?fn=serve-bot-pages-html&path=%2Fabout%2Fzlip-whitepaper"
+    },
+    {
+      "source": "/about/zlip-whitepaper/",
+      "destination": "/api/serve-clean-html?fn=serve-bot-pages-html&path=%2Fabout%2Fzlip-whitepaper"
     },
     {
       "source": "/ai-liability",

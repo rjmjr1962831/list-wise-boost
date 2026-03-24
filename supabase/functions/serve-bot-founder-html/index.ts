@@ -842,6 +842,7 @@ serve(async (req) => {
       },
     });
   } catch (err) {
+    console.error("serve-bot-founder-html error:", err);
     return new Response(
       JSON.stringify({
         error: "Failed to render founder page",

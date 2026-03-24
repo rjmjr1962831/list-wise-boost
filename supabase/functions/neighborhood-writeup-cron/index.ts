@@ -89,15 +89,15 @@ First provide your research notes (plain text), then after "---WRITEUP---" provi
   }
 }
 
-// Generate writeup using Gemini research + Sonnet narrative (for Premium/Luxury tiers)
+// Generate writeup using Gemini research + DeepSeek narrative (for Premium/Luxury tiers)
 async function generatePremiumWriteup(
   neighborhood: NeighborhoodRecord,
   geminiApiKey: string,
-  anthropicApiKey: string
+  _anthropicApiKey: string
 ): Promise<{ research: string; narrative: string } | null> {
   const { neighborhood: name, city_area, state, tier, median_home_value, median_income } = neighborhood;
-  
-  const researchPrompt = `Research the ${name} neighborhood in ${city_area}, ${state}. 
+
+  const researchPrompt = `Research the ${name} neighborhood in ${city_area}, ${state}.
 Include:
 1. Geographic location and boundaries
 2. History and development
@@ -139,7 +139,7 @@ Provide comprehensive, factual information.`;
 
     const geminiData = await geminiResponse.json();
     const researchContent = geminiData.candidates?.[0]?.content?.parts?.[0]?.text;
-    
+
     if (!researchContent) {
       console.error(`[Cron] No research content for ${name}`);
       return null;
@@ -163,28 +163,33 @@ OUTPUT FORMAT:
 <h3>Section Title</h3>
 <p>Content...</p>`;
 
-    const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
+    const deepseekApiKey = Deno.env.get('DEEPSEEK_API_KEY');
+    if (!deepseekApiKey) {
+      console.error(`[Cron] DEEPSEEK_API_KEY not set, falling back to Gemini-only for ${name}`);
+      return generateGeminiOnlyWriteup(neighborhood, geminiApiKey);
+    }
+
+    const deepseekResponse = await fetch('https://api.deepseek.com/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': anthropicApiKey,
-        'anthropic-version': '2023-06-01',
+        'Authorization': `Bearer ${deepseekApiKey}`,
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'deepseek-chat',
         max_tokens: 2048,
         messages: [{ role: 'user', content: narrativePrompt }],
       }),
     });
 
-    if (!claudeResponse.ok) {
-      console.error(`[Cron] Claude error for ${name}: ${claudeResponse.status}`);
+    if (!deepseekResponse.ok) {
+      console.error(`[Cron] DeepSeek error for ${name}: ${deepseekResponse.status}`);
       return null;
     }
 
-    const claudeData = await claudeResponse.json();
-    const narrativeContent = claudeData.content?.[0]?.text;
-    
+    const deepseekData = await deepseekResponse.json();
+    const narrativeContent = deepseekData.choices?.[0]?.message?.content;
+
     if (!narrativeContent) {
       console.error(`[Cron] No narrative content for ${name}`);
       return null;
@@ -198,21 +203,22 @@ OUTPUT FORMAT:
 }
 
 // Route to appropriate enrichment based on tier
+// All tiers now use Gemini research + DeepSeek narrative (cost: ~$0.001/neighborhood)
 async function generateWriteup(
   neighborhood: NeighborhoodRecord,
   geminiApiKey: string,
   anthropicApiKey: string
 ): Promise<{ research: string; narrative: string } | null> {
   const tier = neighborhood.tier?.toLowerCase() || 'main';
-  
-  // Premium and Luxury tiers get Sonnet enrichment
-  if (tier === 'premium' || tier === 'luxury') {
-    console.log(`[Cron] Using Sonnet enrichment for ${neighborhood.neighborhood} (${tier} tier)`);
+
+  // Prime and Luxury tiers get Gemini research + DeepSeek narrative
+  if (tier === 'prime' || tier === 'luxury') {
+    console.log(`[Cron] Using Gemini+DeepSeek for ${neighborhood.neighborhood} (${tier} tier)`);
     return generatePremiumWriteup(neighborhood, geminiApiKey, anthropicApiKey);
   }
-  
-  // Main tier (and any other) uses Gemini-only
-  console.log(`[Cron] Using Gemini-only enrichment for ${neighborhood.neighborhood} (${tier} tier)`);
+
+  // Main tier uses Gemini-only (combined research + writeup)
+  console.log(`[Cron] Using Gemini-only for ${neighborhood.neighborhood} (${tier} tier)`);
   return generateGeminiOnlyWriteup(neighborhood, geminiApiKey);
 }
 
@@ -235,7 +241,7 @@ async function processNeighborhoods() {
   const { data: neighborhoods, error: fetchError } = await supabase
     .from('neighborhood_catalog')
     .select('id, neighborhood, neighborhood_slug, city_area, city_area_slug, state, tier, median_home_value, median_income')
-    .in('state', ['Arizona', 'California'])
+    .in('state', ['Arizona', 'California', 'Texas'])
     .is('writeup_html', null)
     .eq('is_active', true)
     .order('score', { ascending: false, nullsFirst: false })

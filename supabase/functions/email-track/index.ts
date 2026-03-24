@@ -54,7 +54,7 @@ serve(async (req) => {
   // ── Look up the crm_email record to get context ───────────────────────────
   const { data: emailRow } = await supabase
     .from("crm_emails")
-    .select("id, to_address, subject, from_address, account_email, opened_at, clicked_at")
+    .select("id, to_address, subject, from_address, account_email, opened_at, clicked_at, sent_at")
     .eq("gmail_message_id", emailId)
     .maybeSingle();
 
@@ -79,7 +79,7 @@ serve(async (req) => {
     const recipientEmail = emailRow.to_address;
     const { data: proData } = await supabase
       .from("professionals")
-      .select("id, name")
+      .select("id, name, email_unsubscribed")
       .ilike("email", recipientEmail)
       .maybeSingle();
     pro = proData;
@@ -129,17 +129,42 @@ serve(async (req) => {
       }
     }
 
-    // ── Create follow-up task ─────────────────────────────────────────────────
-    if (pro?.id) {
+    // ── Create follow-up task (skip if unsubscribed) ───────────────────────────
+    if (pro?.id && !pro.email_unsubscribed) {
       if (isClick) {
-        await supabase.from("crm_tasks").upsert({
-          professional_id: pro.id,
-          task_type: "email_clicked",
-          title: `Follow up: ${pro.name} clicked your email`,
-          description: `Clicked link in "${emailRow.subject}". Go to their funnel or call them directly.`,
-          status: "pending",
-          priority: "high",
-        }, { onConflict: "professional_id,task_type", ignoreDuplicates: true });
+        const sentAt = emailRow.sent_at ? new Date(emailRow.sent_at).getTime() : 0;
+        const elapsed = sentAt ? (Date.now() - sentAt) / 1000 : 9999;
+        const isHuman = elapsed > 60;
+        const isUnsub = linkUrl && /unsubscribe/i.test(linkUrl);
+        const isFunnel = linkUrl && /\/funnel\//.test(linkUrl);
+
+        if (!isHuman) {
+          console.log(`[email-track] Scanner click for ${pro.name}: ${elapsed}s after send`);
+        } else if (isUnsub) {
+          console.log(`[email-track] Unsubscribe click for ${pro.name}`);
+        } else {
+          // Human clicked a real link (funnel, homepage, etc.) — create follow-up task
+          await supabase.from("crm_tasks").upsert({
+            professional_id: pro.id,
+            task_type: "email_clicked",
+            title: `Follow up: ${pro.name} clicked your email`,
+            description: `Clicked link in "${emailRow.subject}" (${Math.round(elapsed / 60)}m after send). Go to their funnel or call them directly.`,
+            status: "pending",
+            priority: "high",
+          }, { onConflict: "professional_id,task_type", ignoreDuplicates: true });
+        }
+
+        // Funnel link + human = funnel_landed task
+        if (isFunnel && isHuman) {
+          await supabase.from("crm_tasks").upsert({
+            professional_id: pro.id,
+            task_type: "funnel_landed",
+            title: `${pro.name} opened the verification funnel`,
+            description: `Agent clicked their funnel link from email (${Math.round(elapsed / 60)}m after send). Warm lead.`,
+            status: "pending",
+            priority: "normal",
+          }, { onConflict: "professional_id,task_type", ignoreDuplicates: true });
+        }
       } else if (isOpen && !emailRow.opened_at) {
         await supabase.from("crm_tasks").upsert({
           professional_id: pro.id,
@@ -156,7 +181,7 @@ serve(async (req) => {
   // ── Sequencer v2: look up in email_queue by tracking_pixel_id ──────────────
   const { data: queueRow } = await supabase
     .from("email_queue")
-    .select("id, campaign_id, agent_id, recipient_email, opened_at, clicked_at, open_count, click_count")
+    .select("id, campaign_id, agent_id, recipient_email, opened_at, clicked_at, open_count, click_count, sent_at")
     .eq("tracking_pixel_id", emailId)
     .maybeSingle();
 
@@ -217,25 +242,53 @@ serve(async (req) => {
         metadata: { source: "sequencer_v2", ip: ip.split(",")[0].trim(), user_agent: ua.substring(0, 200) },
       }).then(() => {});
 
-      // Create follow-up task for opens and clicks
+      // Create follow-up task for opens and clicks (skip if unsubscribed)
       const { data: agentData } = await supabase
-        .from("professionals").select("name").eq("id", queueRow.agent_id).maybeSingle();
+        .from("professionals").select("name, email_unsubscribed").eq("id", queueRow.agent_id).maybeSingle();
       const agentName = agentData?.name || queueRow.recipient_email;
+      const agentUnsub = agentData?.email_unsubscribed === true;
 
-      if (isClick) {
-        await supabase.from("crm_tasks").insert({
-          professional_id: queueRow.agent_id,
-          task_type: "email_clicked",
-          title: `Follow up: ${agentName} clicked your email`,
-          description: `Clicked link in campaign "${queueRow.campaign_id}". Call them while hot.`,
-          status: "pending",
-          priority: "high",
-        });
-        sendAlert(
-          `CLICK: ${agentName}`,
-          `${agentName} (${queueRow.recipient_email}) clicked a link in your campaign email.\n\nLink: ${linkUrl || "unknown"}\nCampaign: ${queueRow.campaign_id}\n\nThis is a hot lead — call them now.`
-        );
-      } else if (isOpen && !queueRow.opened_at) {
+      if (isClick && !agentUnsub) {
+        const sentAt = queueRow.sent_at ? new Date(queueRow.sent_at).getTime() : 0;
+        const elapsed = sentAt ? (Date.now() - sentAt) / 1000 : 9999;
+        const isHuman = elapsed > 60;
+        const isUnsub = linkUrl && /unsubscribe/i.test(linkUrl);
+        const isFunnel = linkUrl && /\/funnel\//.test(linkUrl);
+
+        if (!isHuman) {
+          console.log(`[email-track] Scanner click for ${agentName}: ${elapsed}s after send`);
+        } else if (isUnsub) {
+          console.log(`[email-track] Unsubscribe click for ${agentName}`);
+        } else {
+          // Human clicked a real link — create follow-up task and alert
+          await supabase.from("crm_tasks").insert({
+            professional_id: queueRow.agent_id,
+            task_type: "email_clicked",
+            title: `Follow up: ${agentName} clicked your email`,
+            description: `Clicked link in campaign "${queueRow.campaign_id}" (${Math.round(elapsed / 60)}m after send). Call them while hot.`,
+            status: "pending",
+            priority: "high",
+          });
+          sendAlert(
+            `CLICK: ${agentName}`,
+            `${agentName} (${queueRow.recipient_email}) clicked a link in your campaign email.\n\nLink: ${linkUrl || "unknown"}\nCampaign: ${queueRow.campaign_id}\nTime after send: ${Math.round(elapsed / 60)}m\n\nThis is a hot lead — call them now.`
+          );
+        }
+
+        // Funnel link + human = funnel_landed task
+        if (isFunnel && isHuman) {
+          await supabase.from("crm_tasks").upsert({
+            professional_id: queueRow.agent_id,
+            task_type: "funnel_landed",
+            title: `${agentName} opened the verification funnel`,
+            description: `Agent clicked funnel link from campaign "${queueRow.campaign_id}" (${Math.round(elapsed / 60)}m after send). Warm lead.`,
+            status: "pending",
+            priority: "normal",
+          }, { onConflict: "professional_id,task_type", ignoreDuplicates: true });
+        }
+      } else if (isClick && agentUnsub) {
+        console.log(`[email-track] Skipping task for unsubscribed agent ${agentName}`);
+      } else if (isOpen && !queueRow.opened_at && !agentUnsub) {
         await supabase.from("crm_tasks").insert({
           professional_id: queueRow.agent_id,
           task_type: "email_opened",

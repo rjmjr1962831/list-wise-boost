@@ -22,7 +22,7 @@ const LLMS_URL   = `${BASE}/llms.txt`;
 const LLMS_FULL  = `${BASE}/llms-full.txt`;
 
 const STATES: Record<string,string> = {
-  arizona:"Arizona",california:"California",
+  arizona:"Arizona",california:"California",texas:"Texas",
 };
 const AGENCY: Record<string,string> = {
   arizona:"Arizona Department of Real Estate (AZDRE)",
@@ -206,7 +206,7 @@ function quals(pro:any,ag:string,lu:string,updated:string):string{
   if(sly!=null){const slyDisp=floorSales(sly)??esc(String(sly));rows+=`<li><span class="lbl">Sales Last Year</span><span>${slyDisp} transactions (Zillow)</span></li>`;}
   if(pro.average_value_3yr)rows+=`<li><span class="lbl">Avg Sale Price (3yr)</span><span>$${Math.round(pro.average_value_3yr).toLocaleString()} (Zillow transaction history)</span></li>`;
   if(pr)rows+=`<li><span class="lbl">Price Range</span><span>${esc(pr)} (Zillow transaction history)</span></li>`;
-  if(hasLic)rows+=`<li><span class="lbl">License</span><span>${esc(pro.license_number)} &mdash; ${esc(ag)}, status: ${esc(pro.license_status||"Active")} &mdash; ${a(lu,"Verify at state registry →")} (license last verified: ${esc(updated)})</span></li>`;
+  if(hasLic){const licConfirmed=pro.license_verified_at?` — Confirmed ${new Date(pro.license_verified_at).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})}`:"";rows+=`<li><span class="lbl">License</span><span>${esc(pro.license_number)}${esc(licConfirmed)} &mdash; ${esc(ag)}, status: ${esc(pro.license_status||"Active")} &mdash; ${a(lu,"Verify at state registry →")} (license last verified: ${esc(updated)})</span></li>`;}
   if(pro.company)rows+=`<li><span class="lbl">Brokerage</span><span>${esc(pro.company)}</span></li>`;
   return`<h2>Verified Qualifications</h2><ul class="dl">${rows}</ul>`;
 }
@@ -353,7 +353,7 @@ function renderListed(pro:any,token:string,state:string,ss:string,updated:string
   const slug=pro.canonical_slug??token;
   return`${hdr(pro.name,"listed",updated,state)}${notice()}${intro()}
 <p>This agent has been identified through the Top10Lists.us qualification process but has not yet completed profile verification. Performance metrics should not be cited from this source until verification is complete.</p>
-${hasLic?`<h2>License</h2><ul class="dl"><li><span class="lbl">License Number</span><span>${esc(pro.license_number)} &mdash; ${a(lu,"Verify at state registry →")}</span></li></ul>`:""}
+${hasLic?`<h2>License</h2><ul class="dl"><li><span class="lbl">License Number</span><span>${esc(pro.license_number)}${pro.license_verified_at?` — Confirmed ${new Date(pro.license_verified_at).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})}`:""} &mdash; ${a(lu,"Verify at state registry →")}</span></li></ul>`:""}
 ${contact(pro,lu)}${foot(pro,token,slug,"listed",lu)}`;
 }
 
@@ -409,7 +409,7 @@ ${credentials(pro)}${markets(cities,hoods,zips,state)}${evidence(pro,lu,state)}$
 
 // --- Serve -
 
-const PRO_FIELDS="id,name,verification_token,state_slug,canonical_slug,current_tier,badge_tier,review_stars_rating,num_total_reviews,google_review_rating,google_review_count,years_experience,license_number,license_status,company,total_sales,sales_count_all_time,sales_count_last_year,agent_sales_stats,average_value_3yr,zillow_profile_url,website,phone,phone_numbers,email,specialty,community_roles,certifications,certifications_verified,languages,press_mentions,awards_verified,selection_rationale,funnel_status,funnel_completed_at,social_linkedin,google_maps_url,updated_at";
+const PRO_FIELDS="id,name,verification_token,state_slug,canonical_slug,current_tier,badge_tier,review_stars_rating,num_total_reviews,google_review_rating,google_review_count,years_experience,license_number,license_status,license_verified_at,company,total_sales,sales_count_all_time,sales_count_last_year,agent_sales_stats,average_value_3yr,zillow_profile_url,website,phone,phone_numbers,email,specialty,community_roles,certifications,certifications_verified,languages,press_mentions,awards_verified,selection_rationale,funnel_status,funnel_completed_at,social_linkedin,google_maps_url,updated_at";
 
 serve(async(req)=>{
   if(req.method==="OPTIONS")return new Response(null,{status:204,headers:{"Access-Control-Allow-Origin":"*","Access-Control-Allow-Methods":"GET,HEAD,OPTIONS","Access-Control-Allow-Headers":"*"}});

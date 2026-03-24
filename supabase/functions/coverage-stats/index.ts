@@ -11,8 +11,8 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const STATES = ['arizona', 'california'];
-const STATE_NAME_MAP: Record<string, string> = { arizona: 'Arizona', california: 'California' };
+const STATES = ['arizona', 'california', 'texas'];
+const STATE_NAME_MAP: Record<string, string> = { arizona: 'Arizona', california: 'California', texas: 'Texas' };
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -38,10 +38,10 @@ serve(async (req) => {
           AND p.city_id IS NOT NULL
           AND p.review_stars_rating >= 4.5
           AND p.num_total_reviews >= 10
-          AND p.state_slug IN ('arizona', 'california')
+          AND p.state_slug IN ('arizona', 'california', 'texas')
       `
     });
-    const qualifiedCityIdsByState: Record<string, Set<string>> = { arizona: new Set(), california: new Set() };
+    const qualifiedCityIdsByState: Record<string, Set<string>> = { arizona: new Set(), california: new Set(), texas: new Set() };
     for (const row of qualifiedCityRows || []) {
       if (qualifiedCityIdsByState[row.state_slug]) {
         qualifiedCityIdsByState[row.state_slug].add(row.city_id);
@@ -53,13 +53,13 @@ serve(async (req) => {
     const { data: qualifiedNhRows } = await supabase.rpc('run_sql', {
       query: `
         SELECT
-          CASE WHEN nc.state = 'Arizona' THEN 'arizona' ELSE 'california' END AS state_slug,
+          LOWER(REPLACE(nc.state, ' ', '_')) AS state_slug,
           COUNT(*) AS nh_count
         FROM neighborhood_catalog nc
-        JOIN cities c ON c.slug = nc.city_area_slug AND c.state_slug = CASE WHEN nc.state = 'Arizona' THEN 'arizona' ELSE 'california' END
+        JOIN cities c ON c.slug = nc.city_area_slug AND c.state_slug = LOWER(REPLACE(nc.state, ' ', '_'))
         WHERE nc.is_active = true
           AND nc.primary_zip IS NOT NULL
-          AND nc.state IN ('Arizona', 'California')
+          AND nc.state IN ('Arizona', 'California', 'Texas')
           AND c.active = true
           AND c.id IN (
             SELECT DISTINCT p.city_id
@@ -68,12 +68,12 @@ serve(async (req) => {
               AND p.city_id IS NOT NULL
               AND p.review_stars_rating >= 4.5
               AND p.num_total_reviews >= 10
-              AND p.state_slug IN ('arizona', 'california')
+              AND p.state_slug IN ('arizona', 'california', 'texas')
           )
         GROUP BY 1
       `
     });
-    const qualifiedNhByState: Record<string, number> = { arizona: 0, california: 0 };
+    const qualifiedNhByState: Record<string, number> = { arizona: 0, california: 0, texas: 0 };
     if (qualifiedNhRows) {
       for (const row of qualifiedNhRows) {
         qualifiedNhByState[row.state_slug] = parseInt(row.nh_count, 10) || 0;

@@ -140,7 +140,12 @@ serve(async (req) => {
 
     for (const row of rows) {
       const cells = outputFields.map((f) => {
-        if (f === "magic_link") return escape(row.verification_token ? `${baseUrl}/funnel/${row.verification_token}` : "");
+        if (f === "magic_link") {
+          if (!row.verification_token) return escape("");
+          const tier = (row.current_tier || row.badge_tier || "listed").toLowerCase();
+          const path = ["certified", "audited", "underwritten"].includes(tier) ? "dashboard" : "funnel";
+          return escape(`${baseUrl}/${path}/${row.verification_token}`);
+        }
         if (f === "first_name" && row[f] == null) {
           const parts = String(row.name || "").trim().split(/\s+/);
           return escape(parts[0] || "");
@@ -246,6 +251,8 @@ async function queryStandard(
       query = query.not("license_number", "is", null).neq("license_number", "");
     if (criteria.exclude_teams === true)
       query = query.neq("lead_status", "team");
+    if (criteria.exclude_bounced === true)
+      query = query.neq("lead_status", "email_bounced");
 
     const { data: rows, error } = await query
       .order("state_slug")
@@ -332,6 +339,10 @@ async function queryWithJoin(
 
   if (criteria.exclude_teams === true) {
     conditions.push("p.lead_status != 'team'");
+  }
+
+  if (criteria.exclude_bounced === true) {
+    conditions.push("p.lead_status != 'email_bounced'");
   }
 
   const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";

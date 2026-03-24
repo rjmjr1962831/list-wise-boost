@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/popover";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { CheckCircle, XCircle, Clock, Flame, Mail, Phone, Search } from "lucide-react";
+import { CheckCircle, XCircle, Clock, Flame, Mail, Phone, Search, PhoneCall } from "lucide-react";
 
 interface ChangeRequest {
   id: string;
@@ -47,6 +47,7 @@ interface EngagementTask {
   verification_token?: string;
   magic_link?: string;
   professional_raw_scraper_data?: { website_contact?: { email?: string | null } } | null;
+  professional_current_tier?: string | null;
 }
 
 interface Template { id: string; subject: string; body: string; label: string; }
@@ -139,7 +140,7 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
     if (!eligible.length) { setEngagementTasks([]); return; }
     const ids = [...new Set(eligible.map((t: any) => t.professional_id).filter(Boolean))];
     const { data: pros } = await supabase
-      .from("professionals").select("id, name, phone, cell_phone, email, verification_token, magic_link, raw_scraper_data").in("id", ids);
+      .from("professionals").select("id, name, phone, cell_phone, email, verification_token, magic_link, raw_scraper_data, current_tier, badge_tier").in("id", ids);
     const proMap: Record<string, any> = {};
     (pros ?? []).forEach((p: any) => { proMap[p.id] = p; });
     // Prefer mobile (cell_phone) or business (phone); do not use Zillow number
@@ -152,6 +153,7 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
       verification_token: proMap[t.professional_id]?.verification_token ?? null,
       magic_link:         proMap[t.professional_id]?.magic_link ?? null,
       professional_raw_scraper_data: proMap[t.professional_id]?.raw_scraper_data ?? null,
+      professional_current_tier: proMap[t.professional_id]?.current_tier ?? proMap[t.professional_id]?.badge_tier ?? null,
     })));
   };
 
@@ -198,6 +200,15 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
         toast.error("Failed to mark done: " + (updateErr.message ?? "unknown"));
         return;
       }
+
+      // If this was a bounce task, clear the bounced lead_status so agent is eligible for campaigns
+      if (task.task_type === "email_bounced" && task.professional_id) {
+        await supabase.from("professionals")
+          .update({ lead_status: "warm" })
+          .eq("id", task.professional_id)
+          .eq("lead_status", "email_bounced");
+      }
+
       const n = parseInt(followUpDays.trim(), 10);
       if (n > 0) {
         const dueAt = new Date();
@@ -336,7 +347,22 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
     return <Badge variant="outline" className="text-red-600 border-red-400"><XCircle className="h-3 w-3 mr-1" />Rejected</Badge>;
   };
 
-  const totalPending = engagementTasks.filter(t => t.status === "pending").length + tasks.filter(t => t.status === "pending").length;
+  // Sales = link clicks, funnel activity, tier selection, checkout, purchase
+  const SALES_TYPES = new Set([
+    "email_clicked", "funnel_landed", "funnel_engaged",
+    "funnel_pricing_viewed", "funnel_tier_selected",
+    "funnel_checkout", "funnel_completed",
+  ]);
+
+  const [category, setCategory] = useState<"sales" | "ops">("sales");
+
+  const salesTasks = engagementTasks.filter(t => SALES_TYPES.has(t.task_type));
+  const opsTasks = engagementTasks.filter(t => !SALES_TYPES.has(t.task_type));
+  const activeTasks = category === "sales" ? salesTasks : opsTasks;
+
+  const salesPending = salesTasks.filter(t => t.status === "pending").length;
+  const opsPending = opsTasks.filter(t => t.status === "pending").length + tasks.filter(t => t.status === "pending").length;
+  const totalPending = salesPending + opsPending;
 
   return (
     <div className="space-y-6">
@@ -396,7 +422,11 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
                 {[
                   { key: "{{first_name}}", label: "First Name" },
                   { key: "{{agent_name}}", label: "Full Name" },
-                  { key: "{{profile_url}}", label: "Magic Link" },
+                  { key: "{{tier}}", label: "Tier" },
+                  { key: "{{city}}", label: "City" },
+                  { key: "{{profile_url}}", label: "Dashboard" },
+                  { key: "{{aifs_score}}", label: "AIFS Score" },
+                  { key: "{{ai_surfaces_total_7d}}", label: "Crawl Stats 7d" },
                 ].map(v => (
                   <button key={v.key} type="button" onClick={() => setComposeBody(b => b + v.key)}
                     className="text-[10px] px-2 py-1 rounded border border-input hover:bg-muted transition-colors">
@@ -460,16 +490,28 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
         </div>
       )}
 
-      {/* Filter tabs */}
-      <div className="flex items-center gap-3">
-        <button onClick={() => setFilter("pending")}
-          className={`text-sm px-3 py-1.5 rounded-md font-medium transition-colors ${filter === "pending" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"}`}>
-          Pending {filter === "pending" && totalPending > 0 ? `(${totalPending})` : ""}
-        </button>
-        <button onClick={() => setFilter("all")}
-          className={`text-sm px-3 py-1.5 rounded-md font-medium transition-colors ${filter === "all" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"}`}>
-          All
-        </button>
+      {/* Category tabs: Sales / Ops + status filter */}
+      <div className="flex items-center gap-3 flex-wrap">
+        <div className="flex rounded-lg border overflow-hidden">
+          <button onClick={() => setCategory("sales")}
+            className={`text-sm px-4 py-1.5 font-medium transition-colors ${category === "sales" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"}`}>
+            Sales {salesPending > 0 ? `(${salesPending})` : ""}
+          </button>
+          <button onClick={() => setCategory("ops")}
+            className={`text-sm px-4 py-1.5 font-medium transition-colors border-l ${category === "ops" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"}`}>
+            Ops {opsPending > 0 ? `(${opsPending})` : ""}
+          </button>
+        </div>
+        <div className="flex items-center gap-1.5 ml-2">
+          <button onClick={() => setFilter("pending")}
+            className={`text-xs px-2.5 py-1 rounded font-medium transition-colors ${filter === "pending" ? "bg-muted text-foreground" : "text-muted-foreground hover:bg-muted"}`}>
+            Pending
+          </button>
+          <button onClick={() => setFilter("all")}
+            className={`text-xs px-2.5 py-1 rounded font-medium transition-colors ${filter === "all" ? "bg-muted text-foreground" : "text-muted-foreground hover:bg-muted"}`}>
+            All
+          </button>
+        </div>
       </div>
 
       {isLoading && (
@@ -478,12 +520,12 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
         </div>
       )}
 
-      {!isLoading && engagementTasks.length > 0 && (
+      {!isLoading && activeTasks.length > 0 && (
         <div className="space-y-3">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-            <Flame className="h-4 w-4 text-red-500" /> Agent Engagement
+            <Flame className="h-4 w-4 text-red-500" /> {category === "sales" ? "Sales Pipeline" : "Operations"}
           </h2>
-          {engagementTasks.map(task => {
+          {activeTasks.map(task => {
             const isClick = task.task_type === "email_clicked";
             return (
               <Card key={task.id} className={isClick ? "border-red-200 bg-red-50/30" : "border-yellow-200 bg-yellow-50/20"}>
@@ -633,18 +675,35 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
                         <Mail className="h-3.5 w-3.5" /> Email
                       </Button>
                     )}
+                    {category === "sales" && task.verification_token && (
+                      <Button size="sm" variant="default"
+                        className="inline-flex items-center gap-1.5 bg-green-600 hover:bg-green-700 text-white"
+                        onClick={() => {
+                          const tier = (task.professional_current_tier || 'listed').toLowerCase();
+                          const vt = task.verification_token;
+                          const url = (tier === 'listed')
+                            ? `/funnel/${vt}/contact?mode=sales`
+                            : `/dashboard/${vt}?mode=sales`;
+                          window.open(url, '_blank');
+                        }}
+                      >
+                        <PhoneCall className="h-3.5 w-3.5" /> Phone Sale
+                      </Button>
+                    )}
+                    {task.professional_id && (
                     <button onClick={() => setSelectedContact({
                         id: task.professional_id,
                         name: task.professional_name ?? "",
                         email: task.professional_email ?? "",
                         phone: task.professional_phone ?? null,
                         company: null, business_city: null, state_slug: null,
-                        current_tier: null, review_stars_rating: null,
+                        current_tier: task.professional_current_tier ?? null, review_stars_rating: null,
                         num_total_reviews: null, canonical_slug: null,
                       })}
                       className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-800 text-white text-sm rounded-md font-medium hover:bg-gray-900">
                       Contact
                     </button>
+                    )}
                     {task.status !== "done" && task.status !== "completed" && (
                       <Button size="sm" variant="outline" disabled={processing === task.id}
                         onClick={() => openMarkDoneModal(task)}
@@ -660,7 +719,7 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
         </div>
       )}
 
-      {!isLoading && tasks.length > 0 && (
+      {!isLoading && category === "ops" && tasks.length > 0 && (
         <div className="space-y-3">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Field Change Requests</h2>
           {tasks.map(task => (
@@ -704,8 +763,8 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
         </div>
       )}
 
-      {!isLoading && engagementTasks.length === 0 && tasks.length === 0 && (
-        <Card><CardContent className="py-12 text-center text-muted-foreground">No {filter === "pending" ? "pending " : ""}tasks.</CardContent></Card>
+      {!isLoading && activeTasks.length === 0 && (category === "sales" || tasks.length === 0) && (
+        <Card><CardContent className="py-12 text-center text-muted-foreground">No {filter === "pending" ? "pending " : ""}{category} tasks.</CardContent></Card>
       )}
       </>)}
     </div>

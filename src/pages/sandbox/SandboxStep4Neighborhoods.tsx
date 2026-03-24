@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useParams, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { SafeHead } from '@/components/SafeHead';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -58,6 +58,8 @@ export default function SandboxStep4Neighborhoods() {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
+  const modeParam = searchParams.get('mode') === 'sales' ? '?mode=sales' : '';
   const navState = location.state as any;
 
   const basePath = useBasePath();
@@ -136,23 +138,30 @@ export default function SandboxStep4Neighborhoods() {
     if (textPairs.length === 0) return;
     setNearbyLoading(true);
     try {
+      // Build OR filter for fuzzy matching — nearby text names may not exactly match DB names
       const names = textPairs.map(p => p.name);
+      const orFilter = names.map(n => `neighborhood.ilike.%${n.replace(/[\/\-]/g, '%')}%`).join(',');
       const { data } = await supabase
         .from('neighborhood_catalog')
         .select('id, neighborhood, neighborhood_slug, city_area, city_area_slug')
         .eq('state', agentState!)
         .eq('is_active', true)
-        .in('neighborhood', names)
+        .or(orFilter)
         .limit(50);
 
       if (data) {
         const matched: NearbyItem[] = [];
+        const norm = (s: string) => s.toLowerCase().replace(/[\/\-_]/g, ' ').replace(/\s+/g, ' ').trim();
         for (const pair of textPairs) {
+          const pairNorm = norm(pair.name);
+          const pairCity = norm(pair.city);
           const match = data.find(d =>
-            d.neighborhood === pair.name &&
-            d.city_area === pair.city &&
             !excludeIds.includes(d.id) &&
-            (allowedCityNames.length === 0 || allowedCityNames.includes(d.city_area))
+            (allowedCityNames.length === 0 || allowedCityNames.includes(d.city_area)) &&
+            (norm(d.neighborhood) === pairNorm ||
+             norm(d.neighborhood).includes(pairNorm) ||
+             pairNorm.includes(norm(d.neighborhood))) &&
+            (!pair.city || norm(d.city_area).includes(pairCity) || pairCity.includes(norm(d.city_area)))
           );
           if (match) {
             matched.push({
@@ -215,7 +224,7 @@ export default function SandboxStep4Neighborhoods() {
       professional_id: professional?.id,
       neighborhood_count: selectedList.length,
     });
-    navigate(`${basePath}/${token}/tier`, {
+    navigate(`${basePath}/${token}/tier${modeParam}`, {
       state: {
         selectedCityIds: navState?.selectedCityIds,
         selectedNeighborhoods: selectedList,
@@ -398,7 +407,7 @@ export default function SandboxStep4Neighborhoods() {
           </p>
 
           <div className="flex justify-between pt-2">
-            <Button variant="ghost" onClick={() => navigate(`${basePath}/${token}/cities`)}>
+            <Button variant="ghost" onClick={() => navigate(`${basePath}/${token}/cities${modeParam}`)}>
               Back
             </Button>
             <Button onClick={handleContinue} disabled={selectedList.length === 0}>

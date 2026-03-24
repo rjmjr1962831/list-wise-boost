@@ -240,7 +240,7 @@ export default function Step6Neighborhoods() {
         }
       } catch { /* continue anyway */ }
     }
-    navigate(`/funnel/${token}/pricing`, {
+    navigate(`/funnel/${token}/tier`, {
       state: { ...(location.state || {}), selectedNeighborhoods: selectedList.map(n => n.id) },
     });
   };
