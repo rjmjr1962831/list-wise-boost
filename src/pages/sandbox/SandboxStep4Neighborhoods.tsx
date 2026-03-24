@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useParams, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { SafeHead } from '@/components/SafeHead';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -58,6 +58,8 @@ export default function SandboxStep4Neighborhoods() {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
+  const modeParam = searchParams.get('mode') === 'sales' ? '?mode=sales' : '';
   const navState = location.state as any;
 
   const basePath = useBasePath();
@@ -222,7 +224,7 @@ export default function SandboxStep4Neighborhoods() {
       professional_id: professional?.id,
       neighborhood_count: selectedList.length,
     });
-    navigate(`${basePath}/${token}/tier`, {
+    navigate(`${basePath}/${token}/tier${modeParam}`, {
       state: {
         selectedCityIds: navState?.selectedCityIds,
         selectedNeighborhoods: selectedList,
@@ -405,7 +407,7 @@ export default function SandboxStep4Neighborhoods() {
           </p>
 
           <div className="flex justify-between pt-2">
-            <Button variant="ghost" onClick={() => navigate(`${basePath}/${token}/cities`)}>
+            <Button variant="ghost" onClick={() => navigate(`${basePath}/${token}/cities${modeParam}`)}>
               Back
             </Button>
             <Button onClick={handleContinue} disabled={selectedList.length === 0}>

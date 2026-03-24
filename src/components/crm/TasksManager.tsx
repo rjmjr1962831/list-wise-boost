@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/popover";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { CheckCircle, XCircle, Clock, Flame, Mail, Phone, Search } from "lucide-react";
+import { CheckCircle, XCircle, Clock, Flame, Mail, Phone, Search, PhoneCall } from "lucide-react";
 
 interface ChangeRequest {
   id: string;
@@ -47,6 +47,7 @@ interface EngagementTask {
   verification_token?: string;
   magic_link?: string;
   professional_raw_scraper_data?: { website_contact?: { email?: string | null } } | null;
+  professional_current_tier?: string | null;
 }
 
 interface Template { id: string; subject: string; body: string; label: string; }
@@ -139,7 +140,7 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
     if (!eligible.length) { setEngagementTasks([]); return; }
     const ids = [...new Set(eligible.map((t: any) => t.professional_id).filter(Boolean))];
     const { data: pros } = await supabase
-      .from("professionals").select("id, name, phone, cell_phone, email, verification_token, magic_link, raw_scraper_data").in("id", ids);
+      .from("professionals").select("id, name, phone, cell_phone, email, verification_token, magic_link, raw_scraper_data, current_tier, badge_tier").in("id", ids);
     const proMap: Record<string, any> = {};
     (pros ?? []).forEach((p: any) => { proMap[p.id] = p; });
     // Prefer mobile (cell_phone) or business (phone); do not use Zillow number
@@ -152,6 +153,7 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
       verification_token: proMap[t.professional_id]?.verification_token ?? null,
       magic_link:         proMap[t.professional_id]?.magic_link ?? null,
       professional_raw_scraper_data: proMap[t.professional_id]?.raw_scraper_data ?? null,
+      professional_current_tier: proMap[t.professional_id]?.current_tier ?? proMap[t.professional_id]?.badge_tier ?? null,
     })));
   };
 
@@ -673,6 +675,21 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
                         <Mail className="h-3.5 w-3.5" /> Email
                       </Button>
                     )}
+                    {category === "sales" && task.verification_token && (
+                      <Button size="sm" variant="default"
+                        className="inline-flex items-center gap-1.5 bg-green-600 hover:bg-green-700 text-white"
+                        onClick={() => {
+                          const tier = (task.professional_current_tier || 'listed').toLowerCase();
+                          const vt = task.verification_token;
+                          const url = (tier === 'listed')
+                            ? `/funnel/${vt}/contact?mode=sales`
+                            : `/dashboard/${vt}?mode=sales`;
+                          window.open(url, '_blank');
+                        }}
+                      >
+                        <PhoneCall className="h-3.5 w-3.5" /> Phone Sale
+                      </Button>
+                    )}
                     {task.professional_id && (
                     <button onClick={() => setSelectedContact({
                         id: task.professional_id,
@@ -680,7 +697,7 @@ export const TasksManager = ({ onTaskResolved }: TasksManagerProps) => {
                         email: task.professional_email ?? "",
                         phone: task.professional_phone ?? null,
                         company: null, business_city: null, state_slug: null,
-                        current_tier: null, review_stars_rating: null,
+                        current_tier: task.professional_current_tier ?? null, review_stars_rating: null,
                         num_total_reviews: null, canonical_slug: null,
                       })}
                       className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-800 text-white text-sm rounded-md font-medium hover:bg-gray-900">

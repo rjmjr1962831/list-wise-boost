@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { SafeHead } from '@/components/SafeHead';
 import { supabase } from '@/integrations/supabase/client';
 import { BundlesPanel, type CityBundle } from '@/components/visibility/BundlesPanel';
@@ -16,6 +16,8 @@ import { validateToken, getStateFromProfessional, useBasePath } from './utils';
 export default function SandboxStep3Cities() {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const modeParam = searchParams.get('mode') === 'sales' ? '?mode=sales' : '';
   const basePath = useBasePath();
   const { trackEvent } = useGA4Tracking();
   const [loading, setLoading] = useState(true);
@@ -144,7 +146,7 @@ export default function SandboxStep3Cities() {
       body: { professionalId: professional.id, cityId: primaryCityId },
     }).catch(() => { /* best effort */ });
 
-    navigate(`${basePath}/${token}/neighborhoods`, {
+    navigate(`${basePath}/${token}/neighborhoods${modeParam}`, {
       state: {
         selectedCityIds: Array.from(selectedCityIds),
         professionalId: professional.id,
@@ -200,7 +202,7 @@ export default function SandboxStep3Cities() {
           </p>
 
           <div className="flex justify-between pt-2">
-            <Button variant="ghost" onClick={() => navigate(`${basePath}/${token}/contact`)}>
+            <Button variant="ghost" onClick={() => navigate(`${basePath}/${token}/contact${modeParam}`)}>
               Back
             </Button>
             <Button onClick={handleContinue} disabled={selectedCityIds.size === 0}>

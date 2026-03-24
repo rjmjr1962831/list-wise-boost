@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   Mail, Phone, Star, ArrowLeft, Plus, Check, Clock, CreditCard, Send,
   Activity, ListTodo, X, AlertCircle, ExternalLink, Copy, Link, Edit2,
-  Save, StickyNote, User, Shield, BarChart3, Power, Eye
+  Save, StickyNote, User, Shield, BarChart3, Power, Eye, PhoneCall
 } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -442,6 +442,21 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
             <Button size="sm" variant="outline" onClick={() => window.open(profileUrl, "_blank")}><Eye className="h-3.5 w-3.5 mr-1" />Profile</Button>
           )}
           <Button size="sm" variant="outline" onClick={() => setShowCompose(!showCompose)}><Send className="h-3.5 w-3.5 mr-1" />Email</Button>
+          {pro?.verification_token && (
+            <Button size="sm" variant="outline"
+              className="border-green-300 text-green-700 hover:bg-green-50"
+              onClick={() => {
+                const tier = (pro?.current_tier || pro?.badge_tier || 'listed').toLowerCase();
+                const vt = pro.verification_token;
+                const url = (tier === 'listed')
+                  ? `/funnel/${vt}/contact?mode=sales`
+                  : `/dashboard/${vt}?mode=sales`;
+                window.open(url, '_blank');
+              }}
+            >
+              <PhoneCall className="h-3.5 w-3.5 mr-1" />Phone Sale
+            </Button>
+          )}
           <Button size="sm" variant={pro.active ? "destructive" : "default"} onClick={toggleActive}>
             <Power className="h-3.5 w-3.5 mr-1" />{pro.active ? "Deactivate" : "Activate"}
           </Button>
