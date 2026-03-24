@@ -174,7 +174,7 @@ export default function VisibilityTiersPage() {
   const handleUpgrade = (tierId: string) => {
     const token = professional?.verification_token || professional?.id;
     if (token && (tierId === 'audited' || tierId === 'underwritten')) {
-      navigate(`/funnel/${token}/pricing`);
+      navigate(`/funnel/${token}/tier`);
     }
   };
 
