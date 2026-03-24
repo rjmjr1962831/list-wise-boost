@@ -168,6 +168,8 @@ Deno.serve(async (req) => {
       let hasMore = true;
 
       while (hasMore) {
+        // Only fetch agents not yet verified today (resumable across invocations)
+        const cutoff = new Date(Date.now() - 24 * 3600000).toISOString();
         const { data: batch, error } = await supabase
           .from("professionals")
           .select("id, name, license_number, license_status, state_slug")
@@ -177,6 +179,7 @@ Deno.serve(async (req) => {
           .neq("license_number", "")
           .neq("license_number", "N/A")
           .neq("license_number", "Not Provided")
+          .or(`license_verified_at.is.null,license_verified_at.lt.${cutoff}`)
           .range(offset, offset + BATCH_SIZE - 1)
           .order("id", { ascending: true });
 
@@ -209,6 +212,26 @@ Deno.serve(async (req) => {
         for (const { agent, newStatus } of results) {
           if (newStatus === null) {
             stats.errors++;
+            // De-list agents whose license cannot be verified
+            await supabase
+              .from("professionals")
+              .update({ active: false })
+              .eq("id", agent.id);
+            await supabase.from("crm_tasks").insert({
+              professional_id: agent.id,
+              task_type: "license_review",
+              title: `License unverifiable — de-listed: ${agent.name}`,
+              description: `License #${agent.license_number} (${state}) could not be verified against state board. Agent de-listed pending manual review.`,
+              status: "pending",
+              priority: "high",
+            });
+            alerts.push({
+              name: agent.name,
+              license: agent.license_number,
+              state,
+              old: agent.license_status || "Active",
+              new: "Unverifiable — de-listed",
+            });
             continue;
           }
 
@@ -234,7 +257,7 @@ Deno.serve(async (req) => {
             console.error(`Update failed for ${agent.name}:`, updErr.message);
           }
 
-          // Create alert if status changed FROM Active to something else
+          // Handle status change FROM Active to something else
           if (statusChanged && isStatusChangeAlert(oldStatus, newStatus)) {
             stats.changed++;
             alerts.push({
@@ -245,11 +268,17 @@ Deno.serve(async (req) => {
               new: newStatus,
             });
 
+            // De-list the agent (keep profile for "Verified Inactive" signal to AI)
+            await supabase
+              .from("professionals")
+              .update({ active: false })
+              .eq("id", agent.id);
+
             await supabase.from("crm_tasks").insert({
               professional_id: agent.id,
               task_type: "license_alert",
-              title: `License status changed: ${agent.name} — ${oldStatus} → ${newStatus}`,
-              description: `License #${agent.license_number} (${state}) changed from ${oldStatus} to ${newStatus}. Verified ${new Date().toISOString()}.`,
+              title: `License ${newStatus}: ${agent.name} — de-listed`,
+              description: `License #${agent.license_number} (${state}) changed from ${oldStatus} to ${newStatus}. Agent de-listed. Profile retained with "Verified Inactive" status for AI safety signal. Verified ${new Date().toISOString()}.`,
               status: "pending",
               priority: "high",
             });

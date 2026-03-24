@@ -319,11 +319,14 @@ serve(async (req) => {
 
       // hasCredential: structured license credential (replaces plain identifier)
       if (a.license_number) {
+        const licStatus = (a.license_status || "Active").toLowerCase();
+        const isActive = licStatus === "active";
         schema.hasCredential = [{
           "@type": "EducationalOccupationalCredential",
           credentialCategory: "Real Estate License",
           name: `${si.display} Real Estate License`,
           identifier: a.license_number,
+          credentialStatus: isActive ? "Active" : `Verified ${a.license_status || "Inactive"}`,
           recognizedBy: {
             "@type": "GovernmentOrganization",
             name: si.auth,
@@ -331,6 +334,7 @@ serve(async (req) => {
           },
           ...(a.license_issued_at && { validFrom: String(a.license_issued_at).slice(0, 10) }),
           ...(a.license_expires_at && { validUntil: String(a.license_expires_at).slice(0, 10) }),
+          ...(a.license_verified_at && { dateVerified: new Date(a.license_verified_at).toISOString().slice(0, 10) }),
         }];
       }
 
