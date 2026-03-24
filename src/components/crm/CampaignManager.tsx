@@ -2007,6 +2007,8 @@ interface QueueStats {
   failed: number;
   unsubscribed: number;
   sending: number;
+  humanOpens: number;
+  humanClicks: number;
 }
 
 const SEND_HOURS_PER_DAY = 15; // 5am-8pm = 15 hours
@@ -2060,18 +2062,32 @@ function CampaignMonitor({
     if (visible.length === 0) return;
     const stats: Record<string, QueueStats> = {};
     for (const c of visible) {
-      const base = { sent: 0, approved: 0, failed: 0, unsubscribed: 0, sending: 0 };
+      const base: QueueStats = { sent: 0, approved: 0, failed: 0, unsubscribed: 0, sending: 0, humanOpens: 0, humanClicks: 0 };
       const statuses = ["sent", "approved", "failed", "unsubscribed", "sending"] as const;
-      await Promise.all(
-        statuses.map(async (s) => {
+      await Promise.all([
+        ...statuses.map(async (s) => {
           const { count } = await supabase
             .from("email_queue" as any)
             .select("id", { count: "exact", head: true })
             .eq("campaign_id", c.id)
             .eq("status", s);
           base[s] = count ?? 0;
-        })
-      );
+        }),
+        // Count human opens: opened_at > 60s after sent_at
+        (async () => {
+          const { data } = await supabase.rpc("run_sql" as any, {
+            query: `SELECT COUNT(DISTINCT agent_id)::int as cnt FROM email_queue WHERE campaign_id = '${c.id}' AND opened_at IS NOT NULL AND sent_at IS NOT NULL AND EXTRACT(EPOCH FROM (opened_at - sent_at)) > 60`,
+          });
+          base.humanOpens = data?.[0]?.cnt ?? 0;
+        })(),
+        // Count human clicks: clicked_at > 60s after sent_at
+        (async () => {
+          const { data } = await supabase.rpc("run_sql" as any, {
+            query: `SELECT COUNT(DISTINCT agent_id)::int as cnt FROM email_queue WHERE campaign_id = '${c.id}' AND clicked_at IS NOT NULL AND sent_at IS NOT NULL AND EXTRACT(EPOCH FROM (clicked_at - sent_at)) > 60`,
+          });
+          base.humanClicks = data?.[0]?.cnt ?? 0;
+        })(),
+      ]);
       stats[c.id] = base;
     }
     setQueueStats(stats);
@@ -2154,18 +2170,18 @@ function CampaignMonitor({
                   <div>
                     <p className="text-muted-foreground text-xs">Opens</p>
                     <p className="font-semibold">
-                      {c.total_opens}{" "}
+                      {qs?.humanOpens ?? "—"}{" "}
                       <span className="text-xs text-muted-foreground">
-                        ({pct(c.total_opens, qs?.sent ?? c.total_sent)})
+                        ({pct(qs?.humanOpens ?? 0, qs?.sent ?? c.total_sent)})
                       </span>
                     </p>
                   </div>
                   <div>
                     <p className="text-muted-foreground text-xs">Clicks</p>
                     <p className="font-semibold">
-                      {c.total_clicks}{" "}
+                      {qs?.humanClicks ?? "—"}{" "}
                       <span className="text-xs text-muted-foreground">
-                        ({pct(c.total_clicks, qs?.sent ?? c.total_sent)})
+                        ({pct(qs?.humanClicks ?? 0, qs?.sent ?? c.total_sent)})
                       </span>
                     </p>
                   </div>
