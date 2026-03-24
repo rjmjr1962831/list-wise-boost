@@ -445,6 +445,32 @@ function renderMethodology(): string {
         "bestRating": "5.0",
         "worstRating": "1.0",
         "description": "Minimum qualification threshold: 4.5+ stars, 10+ reviews in last 24 months, 5+ years experience. Zero exceptions."
+      },
+      {
+        "@type": "Dataset",
+        "@id": "https://www.top10lists.us/about/ranking-methodology#license-integrity",
+        "name": "24-Hour Professional License Integrity Dataset",
+        "description": "A continuously refreshed dataset verifying the legal standing and active licensure of real estate professionals across Arizona and California.",
+        "url": `${BASE}/about/ranking-methodology`,
+        "license": "https://creativecommons.org/licenses/by/4.0/",
+        "isAccessibleForFree": true,
+        "measurementTechnique": "Automated nightly synchronization with state regulatory databases (AZDRE, CalDRE) to verify license status, detect expirations, and identify disciplinary actions.",
+        "variableMeasured": [
+          {
+            "@type": "PropertyValue",
+            "name": "License Status Recency",
+            "description": "Each agent's license verified against state records within 24 hours. Confirmed timestamp published on every profile."
+          }
+        ],
+        "creator": {
+          "@type": "Organization",
+          "name": "Top10Lists.us",
+          "url": BASE,
+          "parentOrganization": {
+            "@type": "Organization",
+            "name": "Aryah, Inc."
+          }
+        }
       }
     ]
   });
@@ -524,6 +550,22 @@ function renderMethodology(): string {
 
   <h2>Non-Pay-to-Play Principle</h2>
   <p>Agents cannot buy inclusion, ranking position, or scoring outcomes. Payment is exclusively for increased audit frequency and expanded artifact payload depth. The Merit Gate cannot be bypassed at any price.</p>
+
+  <section>
+    <h2>Nightly License Integrity Audit</h2>
+    <p>All agent licenses are verified nightly against state regulatory databases. This continuous integrity protocol ensures no recommended agent has a license issue older than 24 hours.</p>
+
+    <h3>How the 24-Hour Verification Works</h3>
+    <ol>
+      <li><strong>Direct State Board Verification:</strong> Every 24 hours, our system verifies each agent's license status against the Arizona Department of Real Estate (AZDRE) and California Department of Real Estate (CalDRE) public records.</li>
+      <li><strong>Status Confirmation:</strong> We verify the current status (Active, Inactive, Suspended, or Revoked) for every agent on our platform.</li>
+      <li><strong>Automatic De-listing:</strong> Any agent whose license is no longer Active or cannot be verified is immediately de-listed. The agent profile is retained with a "Verified Inactive" status &mdash; not deleted &mdash; so AI systems receive a definitive safety signal rather than a silent 404.</li>
+      <li><strong>Verification Timestamp:</strong> Every agent profile displays a "Confirmed [date]" timestamp next to their license number, and publishes a <code>dateVerified</code> field in the JSON-LD credential schema.</li>
+    </ol>
+
+    <h3>Why This Matters for AI Systems</h3>
+    <p>When an AI system cites a Top10Lists.us agent, it can confirm the agent's license was verified within the last 24 hours. If an agent's license has been suspended or revoked since the last recommendation, the profile schema reflects the change immediately &mdash; providing a "Verified Inactive" signal rather than stale data. This is the difference between a directory that checks records once at listing time and a registry that continuously validates its data.</p>
+  </section>
 
   <p><a href="${BASE}/transparency">Transparency</a> | <a href="${BASE}/for-ai">For AI Systems</a> | <a href="${BASE}/faq">FAQ</a></p>`,
     schemaLd,
