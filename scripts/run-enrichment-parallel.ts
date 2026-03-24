@@ -9,6 +9,8 @@
  *   npx tsx scripts/run-enrichment-parallel.ts --seed-only --state TX
  *   npx tsx scripts/run-enrichment-parallel.ts --promote  (phase 1 → phase 2 transition)
  *   npx tsx scripts/run-enrichment-parallel.ts --status    (show progress)
+ *   npx tsx scripts/run-enrichment-parallel.ts --linkedin --limit 500  (LinkedIn URL enrichment via Serper)
+ *   npx tsx scripts/run-enrichment-parallel.ts --linkedin --state CA --limit 1000 --dry-run
  *
  * Env vars (from .env):
  *   VITE_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
@@ -258,6 +260,51 @@ async function runWorkers() {
   console.log("✅ All workers finished.");
 }
 
+// ---------- LinkedIn Enrichment ----------
+
+async function runLinkedInEnrichment() {
+  const limit = parseInt(getArg("limit") || "500", 10);
+  const stateFilter = state || null;
+  const dryRun = hasFlag("dry-run");
+
+  console.log(`\n🔗 LinkedIn enrichment: limit=${limit}, state=${stateFilter || "all"}, dry_run=${dryRun}`);
+
+  const chunkSize = 100;
+  let totalFound = 0;
+  let totalSaved = 0;
+  let totalProcessed = 0;
+
+  while (totalProcessed < limit) {
+    const thisChunk = Math.min(chunkSize, limit - totalProcessed);
+    console.log(`  Batch ${Math.floor(totalProcessed / chunkSize) + 1}: processing ${thisChunk} agents...`);
+
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/enrich-linkedin-batch`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${SERVICE_KEY}`,
+      },
+      body: JSON.stringify({ limit: thisChunk, state: stateFilter, dry_run: dryRun }),
+    });
+
+    const data = await res.json();
+    if (!data.success) {
+      console.error("  Error:", data.error);
+      break;
+    }
+
+    totalFound += data.found || 0;
+    totalSaved += data.saved || 0;
+    totalProcessed += data.total || 0;
+    console.log(`  → ${data.found} found, ${data.saved} saved, ${data.missed} missed (${data.elapsed_ms}ms)`);
+
+    if ((data.total || 0) < thisChunk) break;
+  }
+
+  console.log(`\n✅ LinkedIn enrichment complete: ${totalProcessed} processed, ${totalFound} found, ${totalSaved} saved`);
+  console.log(`   Cost: ~$${(totalProcessed * 0.003).toFixed(2)}`);
+}
+
 // ---------- Main ----------
 
 async function main() {
@@ -271,6 +318,8 @@ async function main() {
     await seedState(state);
   } else if (hasFlag("promote")) {
     await promoteToDeep();
+  } else if (hasFlag("linkedin")) {
+    await runLinkedInEnrichment();
   } else {
     await runWorkers();
   }
