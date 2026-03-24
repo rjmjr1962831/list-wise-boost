@@ -198,8 +198,9 @@ serve(async (req) => {
     if (!botName) { dbg_not_bot++; continue; }
 
     let path = entry.proxy?.path || entry.path || "";
-    // After clean-room migration, Vercel rewrites resolve to /api/serve-clean-html?path=...
-    // Extract the original path from the query string if needed
+    // Vercel rewrites go direct to Supabase edge functions now (no proxy).
+    // Logs show the original path (e.g. /arizona/phoenix/top10realestateagents).
+    // Legacy: if old log entries still have /api/serve-clean-html, extract the path.
     if (path.startsWith("/api/serve-clean-html") || path.startsWith("/api/for-ai")) {
       try {
         const u = new URL(path, "https://www.top10lists.us");

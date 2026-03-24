@@ -8,7 +8,7 @@
  *   4. Email rendered as mailto link (machine-readable, obfuscation-resistant)
  *
  * URL pattern: /:state/agents/:canonicalSlug
- * Called via Vercel proxy: /api/serve-clean-html?fn=serve-bot-agent-html&path=/:state/agents/:slug
+ * Called via Vercel rewrite direct to Supabase: ?path=/:state/agents/:slug
  */
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
