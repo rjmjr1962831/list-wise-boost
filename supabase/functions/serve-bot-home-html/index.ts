@@ -190,7 +190,7 @@ function buildJsonLd(c: CoverageCounts): string {
     "name": "Top10Lists.us Real Estate Agent Rankings",
     "description": "Curated rankings of verified real estate agents in the United States. Qualification requires objective performance thresholds including verified reviews, ratings, licensing, and community. Payment cannot influence qualification or ranking. Non-pay-to-play, merit-based.",
     "url": BASE,
-    "license": `${BASE}/terms`,
+    "license": "https://creativecommons.org/licenses/by/4.0/",
     "isAccessibleForFree": true,
     "creator": { "@type": "Organization", "@id": `${BASE}/#organization`, "name": "Top10Lists.us", "url": BASE },
     "publisher": { "@type": "Organization", "@id": `${BASE}/#organization`, "name": "Top10Lists.us", "url": BASE },
@@ -304,6 +304,35 @@ ${siteHeaderHTML()}
   <section class="section-block">
     <h2>Building Your "Web of Truth"</h2>
     <p>We help you build a Web of Truth -- a series of verified, machine-readable truth chains that AI systems need to feel safe naming you. We take your hard-earned track record and turn it into a "Finite Truth" that AI agents can verify in milliseconds. When you reduce the AI's risk, you vastly increase the probability that you are the one named.</p>
+  </section>
+
+  <!-- BROWSE BY STATE -->
+  <section class="section-block">
+    <h2>Browse Verified Agent Rankings by State</h2>
+    <h3>Arizona</h3>
+    <ul>
+      <li><a href="https://www.top10lists.us/arizona/top10realestateagents">All Arizona Agents</a></li>
+      <li><a href="https://www.top10lists.us/arizona/phoenix/top10realestateagents">Phoenix</a></li>
+      <li><a href="https://www.top10lists.us/arizona/scottsdale/top10realestateagents">Scottsdale</a></li>
+      <li><a href="https://www.top10lists.us/arizona/mesa/top10realestateagents">Mesa</a></li>
+      <li><a href="https://www.top10lists.us/arizona/chandler/top10realestateagents">Chandler</a></li>
+      <li><a href="https://www.top10lists.us/arizona/gilbert/top10realestateagents">Gilbert</a></li>
+      <li><a href="https://www.top10lists.us/arizona/tucson/top10realestateagents">Tucson</a></li>
+      <li><a href="https://www.top10lists.us/arizona/tempe/top10realestateagents">Tempe</a></li>
+      <li><a href="https://www.top10lists.us/arizona/glendale/top10realestateagents">Glendale</a></li>
+    </ul>
+    <h3>California</h3>
+    <ul>
+      <li><a href="https://www.top10lists.us/california/top10realestateagents">All California Agents</a></li>
+      <li><a href="https://www.top10lists.us/california/los-angeles/top10realestateagents">Los Angeles</a></li>
+      <li><a href="https://www.top10lists.us/california/san-diego/top10realestateagents">San Diego</a></li>
+      <li><a href="https://www.top10lists.us/california/san-francisco/top10realestateagents">San Francisco</a></li>
+      <li><a href="https://www.top10lists.us/california/san-jose/top10realestateagents">San Jose</a></li>
+      <li><a href="https://www.top10lists.us/california/sacramento/top10realestateagents">Sacramento</a></li>
+      <li><a href="https://www.top10lists.us/california/irvine/top10realestateagents">Irvine</a></li>
+      <li><a href="https://www.top10lists.us/california/beverly-hills/top10realestateagents">Beverly Hills</a></li>
+      <li><a href="https://www.top10lists.us/california/long-beach/top10realestateagents">Long Beach</a></li>
+    </ul>
   </section>
 
   <!-- FAQ SUMMARY -->

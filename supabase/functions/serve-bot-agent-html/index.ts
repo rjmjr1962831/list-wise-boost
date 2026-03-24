@@ -298,7 +298,11 @@ serve(async (req) => {
         name: a.name,
         url: canon,
         description: desc,
-        dateModified: a.updated_at ? String(a.updated_at).split("T")[0] : TODAY_ISO,
+        dateModified: [a.updated_at, a.license_verified_at]
+          .filter(Boolean)
+          .map((d: string) => new Date(d).toISOString().slice(0, 10))
+          .sort()
+          .pop() || TODAY_ISO,
         address: {
           "@type": "PostalAddress",
           addressLocality: city.name,
@@ -748,6 +752,10 @@ ${siteHeaderHTML()}
     o += AI_DISCLAIMER;
     o += siteFooterHTML();
     o += `</body>\n</html>`;
+
+    // Add nofollow to all external links (not top10lists.us)
+    o = o.replace(/<a\s+href="(https?:\/\/(?!www\.top10lists\.us)[^"]+)"/g,
+      '<a rel="nofollow noopener" href="$1"');
 
     // Bot crawl logging handled by Vercel proxy (api/serve-clean-html.js)
 

@@ -553,7 +553,7 @@ ${siteHeaderHTML()}
           dateModified: new Date().toISOString().slice(0, 10),
           creator: { "@type": "Organization", name: "Top10Lists.us", url: "https://www.top10lists.us" },
           isAccessibleForFree: true,
-          license: "https://www.top10lists.us/terms",
+          license: "https://creativecommons.org/licenses/by/4.0/",
           citation: { "@type": "CreativeWork", name: "U.S. Census Bureau: American Community Survey (ACS) 5-Year Estimates", url: "https://data.census.gov" },
         };
         o += `  <script type="application/ld+json">\n${JSON.stringify(dataset)}\n  </script>\n`;
@@ -607,7 +607,7 @@ ${siteHeaderHTML()}
             dateModified: new Date().toISOString().slice(0, 10),
             creator: { "@type": "Organization", name: "Top10Lists.us", url: "https://www.top10lists.us" },
             isAccessibleForFree: true,
-            license: "https://www.top10lists.us/terms",
+            license: "https://creativecommons.org/licenses/by/4.0/",
           };
           o += `  <script type="application/ld+json">\n${JSON.stringify(cityDataset)}\n  </script>\n`;
         }
@@ -719,7 +719,7 @@ ${siteHeaderHTML()}
       name: dsName,
       description: dsDesc,
       url: canon,
-      license: "https://www.top10lists.us/terms",
+      license: "https://creativecommons.org/licenses/by/4.0/",
       isAccessibleForFree: true,
       creator: { "@type": "Organization", "@id": "https://www.top10lists.us/#organization", name: "Top10Lists.us", url: "https://www.top10lists.us" },
       publisher: { "@type": "Organization", "@id": "https://www.top10lists.us/#organization", name: "Top10Lists.us", url: "https://www.top10lists.us" },
@@ -746,6 +746,10 @@ ${siteHeaderHTML()}
 
     o += siteFooterHTML();
     o += `</body>\n</html>`;
+
+    // Add nofollow to all external links (not top10lists.us)
+    o = o.replace(/<a\s+href="(https?:\/\/(?!www\.top10lists\.us)[^"]+)"/g,
+      '<a rel="nofollow noopener" href="$1"');
 
     // Bot crawl logging handled by Vercel proxy (api/serve-clean-html.js)
     // which has the original user-agent and runs on every request including CDN cache hits.
