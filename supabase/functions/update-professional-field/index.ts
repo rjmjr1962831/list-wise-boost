@@ -7,7 +7,8 @@ const corsHeaders = {
 };
 
 interface UpdateRequest {
-  token: string; // verification_token or professional ID
+  token?: string; // verification_token or professional ID
+  professional_id?: string; // direct ID (used by CRM)
   field: string;
   value: any;
 }
@@ -18,11 +19,11 @@ serve(async (req) => {
   }
 
   try {
-    const { token, field, value }: UpdateRequest = await req.json();
+    const { token, professional_id, field, value }: UpdateRequest = await req.json();
 
-    if (!token || !field) {
+    if ((!token && !professional_id) || !field) {
       return new Response(
-        JSON.stringify({ error: 'Missing token or field' }),
+        JSON.stringify({ error: 'Missing token/professional_id or field' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -52,6 +53,26 @@ serve(async (req) => {
       'cell_phone_visible',
       'phone_numbers',
       'website_visible',
+      // CRM agent editable fields
+      'name',
+      'license_number',
+      'license_status',
+      'current_tier',
+      'badge_tier',
+      'badge_status',
+      'lead_status',
+      'city_name',
+      'business_city',
+      'state_slug',
+      'community_roles',
+      'certifications',
+      'languages',
+      'selection_rationale',
+      'years_experience',
+      'review_stars_rating',
+      'num_total_reviews',
+      'total_sales',
+      'active',
     ];
 
     if (!allowedFields.includes(field)) {
@@ -66,29 +87,41 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // First, find the professional by token or ID
+    // First, find the professional by professional_id, token, or ID
     let professionalId: string | null = null;
-    
-    // Try verification_token first
-    const { data: byToken } = await supabase
-      .from('professionals')
-      .select('id')
-      .eq('verification_token', token)
-      .maybeSingle();
-    
-    if (byToken) {
-      professionalId = byToken.id;
-    } else {
-      // Check if token looks like a UUID
-      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(token);
-      if (isUUID) {
-        const { data: byId } = await supabase
-          .from('professionals')
-          .select('id')
-          .eq('id', token)
-          .maybeSingle();
-        if (byId) {
-          professionalId = byId.id;
+
+    // If professional_id is provided directly (CRM usage), use it
+    if (professional_id) {
+      const { data: byDirectId } = await supabase
+        .from('professionals')
+        .select('id')
+        .eq('id', professional_id)
+        .maybeSingle();
+      if (byDirectId) {
+        professionalId = byDirectId.id;
+      }
+    } else if (token) {
+      // Try verification_token first
+      const { data: byToken } = await supabase
+        .from('professionals')
+        .select('id')
+        .eq('verification_token', token)
+        .maybeSingle();
+
+      if (byToken) {
+        professionalId = byToken.id;
+      } else {
+        // Check if token looks like a UUID
+        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(token);
+        if (isUUID) {
+          const { data: byId } = await supabase
+            .from('professionals')
+            .select('id')
+            .eq('id', token)
+            .maybeSingle();
+          if (byId) {
+            professionalId = byId.id;
+          }
         }
       }
     }

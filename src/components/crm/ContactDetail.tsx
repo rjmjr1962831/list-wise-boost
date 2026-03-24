@@ -9,7 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import {
   Mail, Phone, Star, ArrowLeft, Plus, Check, Clock, CreditCard, Send,
   Activity, ListTodo, X, AlertCircle, ExternalLink, Copy, Link, Edit2,
-  Save, StickyNote, User, Shield, BarChart3, Power, Eye, PhoneCall
+  Save, StickyNote, User, Shield, BarChart3, Power, Eye, PhoneCall,
+  ChevronDown, ChevronUp
 } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -62,6 +63,12 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
   const [accounts, setAccounts] = useState<any[]>([]);
   const [templates, setTemplates] = useState<{ id: string; subject: string; body: string; label: string }[]>([]);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>("");
+
+  // Inline field editor state
+  const [fieldEditorOpen, setFieldEditorOpen] = useState(false);
+  const [selectedField, setSelectedField] = useState("");
+  const [fieldNewValue, setFieldNewValue] = useState("");
+  const [fieldSaving, setFieldSaving] = useState(false);
 
   useEffect(() => { loadAll(); }, [professional.id]);
 
@@ -358,6 +365,54 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
   const copyText = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
     toast.success(`${label} copied`);
+  };
+
+  // Inline field editor: curated fields shown first, then "all fields" from pro object
+  const CURATED_FIELDS = [
+    "name", "email", "phone", "cell_phone", "website", "company",
+    "license_number", "license_status", "current_tier", "badge_tier",
+    "badge_status", "lead_status", "city_name", "business_city",
+    "state_slug", "specialty", "community_roles", "certifications",
+    "languages", "selection_rationale", "years_experience",
+    "review_stars_rating", "num_total_reviews", "total_sales", "active",
+  ];
+  const LONG_TEXT_FIELDS = ["selection_rationale", "community_roles", "specialty", "certifications", "languages", "description"];
+
+  const allProFields = pro ? Object.keys(pro).filter(k => !k.startsWith("_") && k !== "id" && k !== "created_at" && k !== "updated_at") : [];
+  const extraFields = allProFields.filter(f => !CURATED_FIELDS.includes(f)).sort();
+
+  const currentFieldValue = pro && selectedField ? pro[selectedField] : undefined;
+
+  const handleFieldEditorSave = async () => {
+    if (!selectedField || !pro) return;
+    setFieldSaving(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("update-professional-field", {
+        body: {
+          professional_id: professional.id,
+          field: selectedField,
+          value: fieldNewValue,
+        },
+      });
+      if (error) { toast.error("Save failed: " + (error.message || "Unknown error")); return; }
+      // Best-effort audit log
+      try {
+        await supabase.from("crm_field_change_log" as any).insert({
+          professional_id: professional.id,
+          field_name: selectedField,
+          old_value: String(currentFieldValue ?? ""),
+          new_value: fieldNewValue,
+          changed_by: "crm_agent",
+          changed_at: new Date().toISOString(),
+        });
+      } catch (_) { /* table may not exist yet */ }
+      toast.success(`Updated ${selectedField.replace(/_/g, " ")}`);
+      loadFullPro();
+    } catch (err: any) {
+      toast.error("Save failed: " + (err?.message || "Unknown error"));
+    } finally {
+      setFieldSaving(false);
+    }
   };
 
   const tierColor = (tier: string | null) => {
@@ -695,6 +750,80 @@ export const ContactDetail = ({ professional, onBack }: Props) => {
               {pro.next_bill_date && <ReadField label="Next Bill" value={format(new Date(pro.next_bill_date), "MMM d, yyyy")} />}
               {pro.paid_cities?.length > 0 && <ReadField label="Paid Cities" value={pro.paid_cities.join(", ")} />}
             </CardContent>
+          </Card>
+
+          {/* Inline Field Editor */}
+          <Card>
+            <CardHeader className="py-3 px-4 pb-1 cursor-pointer" onClick={() => setFieldEditorOpen(!fieldEditorOpen)}>
+              <CardTitle className="text-sm font-semibold flex items-center justify-between">
+                <span className="flex items-center gap-1.5"><Edit2 className="h-3.5 w-3.5" />Edit Fields</span>
+                {fieldEditorOpen ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+              </CardTitle>
+            </CardHeader>
+            {fieldEditorOpen && (
+              <CardContent className="px-4 pb-3 space-y-3">
+                <div>
+                  <label htmlFor="field-editor-select" className="text-xs text-muted-foreground block mb-1">Select field</label>
+                  <select
+                    id="field-editor-select"
+                    name="field_select"
+                    className="w-full text-sm border rounded px-2 py-1.5 bg-background"
+                    value={selectedField}
+                    onChange={e => {
+                      const f = e.target.value;
+                      setSelectedField(f);
+                      setFieldNewValue(f && pro ? String(pro[f] ?? "") : "");
+                    }}
+                  >
+                    <option value="">-- Choose a field --</option>
+                    <optgroup label="Common Fields">
+                      {CURATED_FIELDS.map(f => (
+                        <option key={f} value={f}>{f.replace(/_/g, " ")}</option>
+                      ))}
+                    </optgroup>
+                    <optgroup label="All Fields">
+                      {extraFields.map(f => (
+                        <option key={f} value={f}>{f.replace(/_/g, " ")}</option>
+                      ))}
+                    </optgroup>
+                  </select>
+                </div>
+                {selectedField && (
+                  <>
+                    <div>
+                      <span className="text-xs text-muted-foreground">Current value:</span>
+                      <p className="text-sm bg-muted/30 rounded px-2 py-1 mt-0.5 break-all max-h-20 overflow-y-auto">
+                        {currentFieldValue != null && String(currentFieldValue) !== "" ? String(currentFieldValue) : <span className="text-muted-foreground italic">empty</span>}
+                      </p>
+                    </div>
+                    <div>
+                      <label htmlFor="field-editor-value" className="text-xs text-muted-foreground block mb-1">New value</label>
+                      {LONG_TEXT_FIELDS.includes(selectedField) ? (
+                        <Textarea
+                          id="field-editor-value"
+                          name="field_value"
+                          className="text-sm min-h-[80px]"
+                          value={fieldNewValue}
+                          onChange={e => setFieldNewValue(e.target.value)}
+                        />
+                      ) : (
+                        <Input
+                          id="field-editor-value"
+                          name="field_value"
+                          className="text-sm h-8"
+                          value={fieldNewValue}
+                          onChange={e => setFieldNewValue(e.target.value)}
+                          onKeyDown={e => { if (e.key === "Enter") handleFieldEditorSave(); }}
+                        />
+                      )}
+                    </div>
+                    <Button size="sm" onClick={handleFieldEditorSave} disabled={fieldSaving} className="w-full">
+                      <Save className="h-3.5 w-3.5 mr-1" />{fieldSaving ? "Saving..." : "Save"}
+                    </Button>
+                  </>
+                )}
+              </CardContent>
+            )}
           </Card>
         </div>
 

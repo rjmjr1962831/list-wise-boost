@@ -222,23 +222,16 @@ export default async function handler(req, res) {
 
   const ua = req.headers['user-agent'] || '';
 
-  // Determine if this request has dynamic params (search, token, etc.)
+  // Cache disabled — every request hits the edge function directly.
+  // Edge functions handle their own bot logging via logBotVisit.
   const hasDynamicParams = !!(req.query.agent || req.query.market || req.query.search_only || req.query.token || req.query.preview_tier || req.query.q);
-  const isCacheable = CACHEABLE_FNS.has(fn) && !hasDynamicParams;
 
   try {
     let html = null;
     let fromCache = false;
 
-    // 1. Check SSR cache (only for cacheable functions without dynamic params)
-    if (isCacheable) {
-      const ttl = TTL_HOURS[fn] || 24;
-      html = await getCachedPage(path, ttl, key);
-      if (html) fromCache = true;
-    }
-
-    // 2. Cache miss → call upstream edge function
-    if (!html) {
+    // Always call upstream edge function (cache disabled — logging depends on it)
+    {
       let url = `${SUPABASE_URL}/${fn}?path=${encodeURIComponent(path)}`;
       if (req.query.token) url += `&token=${encodeURIComponent(req.query.token)}`;
       if (req.query.preview_tier) url += `&preview_tier=${encodeURIComponent(req.query.preview_tier)}`;
@@ -260,12 +253,7 @@ export default async function handler(req, res) {
         return;
       }
 
-      // Store in cache (only successful responses for cacheable functions)
-      if (isCacheable && upstream.status >= 200 && upstream.status < 400) {
-        const pageType = PAGE_TYPE[fn] || 'other';
-        // Don't await cache write — it's not critical to the response
-        setCachedPage(path, html, pageType, key).catch(() => {});
-      }
+      // Cache write disabled — edge functions handle logging inline
 
       // Pass through custom headers
       const passHeaders = ['x-agents-count', 'x-cities-count', 'x-page-type', 'x-agent-name', 'x-agent-tier'];
