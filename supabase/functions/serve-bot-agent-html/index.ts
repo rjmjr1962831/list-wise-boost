@@ -194,7 +194,7 @@ serve(async (req) => {
         SELECT
           p.id, p.name, p.review_stars_rating, p.num_total_reviews,
           p.license_number, p.license_type, p.license_status,
-          p.license_issued_at, p.license_expires_at,
+          p.license_issued_at, p.license_expires_at, p.license_verified_at,
           p.company, p.phone, p.phone_numbers, p.email, p.website,
           p.zillow_profile_url, p.years_experience,
           p.current_tier, p.badge_tier, p.image_url,
@@ -651,7 +651,10 @@ ${siteHeaderHTML()}
     // ---- License information ----
     o += `<section>\n  <h2>License Information</h2>\n`;
     o += `  <table><thead><tr><th>Field</th><th>Value</th></tr></thead><tbody>\n`;
-    o += `    <tr><td>License Number</td><td>${lic}</td></tr>\n`;
+    const licVerified = a.license_verified_at
+      ? ` — Confirmed ${new Date(a.license_verified_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`
+      : "";
+    o += `    <tr><td>License Number</td><td>${lic}${esc(licVerified)}</td></tr>\n`;
     o += `    <tr><td>Issuing Authority</td><td><a href="${si.url}">${si.auth}</a></td></tr>\n`;
     if (a.license_type)   o += `    <tr><td>License Type</td><td>${esc(a.license_type)}</td></tr>\n`;
     if (a.license_status) o += `    <tr><td>Status</td><td>${esc(a.license_status)}</td></tr>\n`;

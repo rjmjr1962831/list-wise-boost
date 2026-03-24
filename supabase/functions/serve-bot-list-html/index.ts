@@ -247,7 +247,7 @@ serve(async (req) => {
     // served_cities, selection_rationale) are only rendered for non-listed tiers,
     // so we fetch them in a second query scoped to those agents only.
     // agent_sales_stats & press_mentions dropped entirely (never rendered).
-    const LEAN_COLS = "id,name,review_stars_rating,num_total_reviews,license_number,company,phone,email,website,zillow_profile_url,years_experience,total_sales,current_tier,badge_tier,rank,average_value_3yr,price_range_3yr_min,price_range_3yr_max,sales_count_last_year,canonical_slug,updated_at";
+    const LEAN_COLS = "id,name,review_stars_rating,num_total_reviews,license_number,company,phone,email,website,zillow_profile_url,years_experience,total_sales,current_tier,badge_tier,rank,average_value_3yr,price_range_3yr_min,price_range_3yr_max,sales_count_last_year,canonical_slug,updated_at,license_verified_at";
 
     let rawA: any[] | null = null;
     let neighborhoodFiltered = false;
@@ -381,6 +381,11 @@ serve(async (req) => {
     const TA_MAP: Record<string,string> = { AZ:"220,000+", CA:"450,000+" };
     const stateBoard = SB_MAP[si.abbr] || `${si.display} Department of Real Estate`;
     const totalAnalyzed = TA_MAP[si.abbr] || `${si.total}+`;
+    // Compute dateModified from the most recent license_verified_at among displayed agents
+    const maxVerifiedAt = agents.reduce((max: string, a: any) => {
+      const v = a.license_verified_at;
+      return v && v > max ? v : max;
+    }, "");
     const perfDataset: any = {
       "@context": "https://schema.org",
       "@type": "Dataset",
@@ -388,6 +393,7 @@ serve(async (req) => {
       name: `${nh.neighborhood} Professional Performance Audit & Certification Registry`,
       description: `A verified registry of professional real estate agent performance, licensing status, and consumer sentiment benchmarks within the ${nh.neighborhood} neighborhood of ${city.name}, ${si.abbr}.`,
       url: canon,
+      ...(maxVerifiedAt ? { dateModified: maxVerifiedAt } : {}),
       license: "https://creativecommons.org/licenses/by/4.0/",
       isAccessibleForFree: true,
       creator: {
@@ -405,7 +411,7 @@ serve(async (req) => {
         {
           "@type": "PropertyValue",
           name: "State Licensing Integrity",
-          description: `Cross-reference verification against ${stateBoard} state regulatory licensing database.`,
+          description: `Cross-reference verification against ${stateBoard} state regulatory licensing database. Agent licenses verified nightly.`,
         },
         {
           "@type": "PropertyValue",

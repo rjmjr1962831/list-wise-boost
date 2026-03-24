@@ -1,0 +1,293 @@
+/**
+ * verify-licenses-nightly — Nightly license verification for active professionals.
+ *
+ * For each state (AZ, CA), queries active professionals with a license_number,
+ * verifies each against the state licensing board via individual lookups,
+ * updates license_status + license_verified_at, and creates crm_tasks alerts
+ * when a license status changes away from Active.
+ *
+ * Processes agents in batches of 50, 10 concurrent lookups per batch,
+ * 1-second delay between batches. 10-second timeout per lookup.
+ */
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+const SUPABASE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36";
+const BATCH_SIZE = 50;
+const CONCURRENCY = 10;
+const LOOKUP_TIMEOUT_MS = 10_000;
+const INTER_BATCH_DELAY_MS = 1_000;
+
+interface StateStats {
+  total: number;
+  checked: number;
+  active: number;
+  changed: number;
+  errors: number;
+}
+
+interface Alert {
+  name: string;
+  license: string;
+  state: string;
+  old: string;
+  new: string;
+}
+
+// ---- Arizona lookup ----
+async function lookupAZ(licenseNumber: string): Promise<string | null> {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), LOOKUP_TIMEOUT_MS);
+  try {
+    const form = new URLSearchParams({
+      LastName: "",
+      FirstName: "",
+      LicenseNumber: licenseNumber,
+      Status: "",
+    });
+    const res = await fetch(
+      "https://services.azre.gov/PdbWeb/IndividualLicense/SearchIndividualLicenses",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded", "User-Agent": UA },
+        body: form.toString(),
+        signal: ctrl.signal,
+      },
+    );
+    if (!res.ok) return null;
+    const html = await res.text();
+    // Look for status keywords near the license number
+    const statusMatch = html.match(/Status\s*:?\s*<[^>]*>\s*(Active|Inactive|Suspended|Revoked|Expired|Cancelled)/i)
+      || html.match(/\b(Active|Inactive|Suspended|Revoked|Expired|Cancelled)\b/i);
+    return statusMatch ? statusMatch[1] : null;
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+// ---- California lookup ----
+async function lookupCA(licenseNumber: string): Promise<string | null> {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), LOOKUP_TIMEOUT_MS);
+  try {
+    const form = new URLSearchParams({
+      LICENSEE_NAME: "",
+      CITY_STATE: "",
+      LICENSE_ID: licenseNumber,
+    });
+    const res = await fetch(
+      "https://www2.dre.ca.gov/PublicASP/pplinfo.asp?start=1",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          "User-Agent": UA,
+          "Referer": "https://www2.dre.ca.gov/PublicASP/pplinfo.asp",
+          "Accept": "text/html,application/xhtml+xml",
+        },
+        body: form.toString(),
+        signal: ctrl.signal,
+      },
+    );
+    if (!res.ok) return null;
+    const html = await res.text();
+    // CalDRE pages show "License Status:" followed by the status
+    const statusMatch = html.match(/License\s+Status\s*:?\s*<[^>]*>\s*(Licensed|Restricted|Revoked|Expired|Suspended|Inactive|Cancelled)/i)
+      || html.match(/Status\s*:?\s*<[^>]*>\s*(Licensed|Restricted|Revoked|Expired|Suspended|Inactive|Cancelled)/i)
+      || html.match(/\b(Licensed|Restricted|Revoked|Expired|Suspended|Inactive|Cancelled)\b/i);
+    if (!statusMatch) return null;
+    // Normalize CalDRE "Licensed" to our standard "Active"
+    const raw = statusMatch[1];
+    return raw.toLowerCase() === "licensed" ? "Active" : raw;
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+// ---- Lookup dispatcher ----
+function lookupLicense(state: string, licenseNumber: string): Promise<string | null> {
+  switch (state) {
+    case "AZ": return lookupAZ(licenseNumber);
+    case "CA": return lookupCA(licenseNumber);
+    default: return Promise.resolve(null);
+  }
+}
+
+// ---- Run concurrent lookups with limited concurrency ----
+async function runConcurrent<T, R>(
+  items: T[],
+  limit: number,
+  fn: (item: T) => Promise<R>,
+): Promise<R[]> {
+  const results: R[] = new Array(items.length);
+  let idx = 0;
+  async function worker() {
+    while (idx < items.length) {
+      const i = idx++;
+      results[i] = await fn(items[i]);
+    }
+  }
+  const workers = Array.from({ length: Math.min(limit, items.length) }, () => worker());
+  await Promise.all(workers);
+  return results;
+}
+
+function isStatusChangeAlert(oldStatus: string | null, newStatus: string): boolean {
+  const norm = (s: string | null) => (s || "Active").toLowerCase();
+  return norm(oldStatus) === "active" && norm(newStatus) !== "active";
+}
+
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  const t0 = Date.now();
+  const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  const statsByState: Record<string, StateStats> = {};
+  const alerts: Alert[] = [];
+
+  try {
+    for (const state of ["AZ", "CA"]) {
+      const stats: StateStats = { total: 0, checked: 0, active: 0, changed: 0, errors: 0 };
+      statsByState[state] = stats;
+
+      // Fetch all active professionals with a license_number in this state
+      let offset = 0;
+      let hasMore = true;
+
+      while (hasMore) {
+        const { data: batch, error } = await supabase
+          .from("professionals")
+          .select("id, name, license_number, license_status, state_slug")
+          .eq("active", true)
+          .eq("state_slug", state === "AZ" ? "arizona" : "california")
+          .not("license_number", "is", null)
+          .neq("license_number", "")
+          .neq("license_number", "N/A")
+          .neq("license_number", "Not Provided")
+          .range(offset, offset + BATCH_SIZE - 1)
+          .order("id", { ascending: true });
+
+        if (error) {
+          console.error(`Error fetching ${state} agents at offset ${offset}:`, error.message);
+          stats.errors++;
+          break;
+        }
+
+        if (!batch || batch.length === 0) {
+          hasMore = false;
+          break;
+        }
+
+        stats.total += batch.length;
+        if (batch.length < BATCH_SIZE) hasMore = false;
+
+        // Verify this batch: 10 concurrent lookups
+        const results = await runConcurrent(batch, CONCURRENCY, async (agent: any) => {
+          try {
+            const newStatus = await lookupLicense(state, agent.license_number);
+            return { agent, newStatus };
+          } catch (err) {
+            console.error(`Lookup failed for ${agent.name} (${agent.license_number}):`, err);
+            return { agent, newStatus: null };
+          }
+        });
+
+        // Process results and update DB
+        for (const { agent, newStatus } of results) {
+          if (newStatus === null) {
+            stats.errors++;
+            continue;
+          }
+
+          stats.checked++;
+
+          if (newStatus.toLowerCase() === "active") {
+            stats.active++;
+          }
+
+          const oldStatus = agent.license_status || "Active";
+          const statusChanged = oldStatus.toLowerCase() !== newStatus.toLowerCase();
+
+          // Update the professional's license_status and license_verified_at
+          const { error: updErr } = await supabase
+            .from("professionals")
+            .update({
+              license_status: newStatus,
+              license_verified_at: new Date().toISOString(),
+            })
+            .eq("id", agent.id);
+
+          if (updErr) {
+            console.error(`Update failed for ${agent.name}:`, updErr.message);
+          }
+
+          // Create alert if status changed FROM Active to something else
+          if (statusChanged && isStatusChangeAlert(oldStatus, newStatus)) {
+            stats.changed++;
+            alerts.push({
+              name: agent.name,
+              license: agent.license_number,
+              state,
+              old: oldStatus,
+              new: newStatus,
+            });
+
+            await supabase.from("crm_tasks").insert({
+              professional_id: agent.id,
+              task_type: "license_alert",
+              title: `License status changed: ${agent.name} — ${oldStatus} → ${newStatus}`,
+              description: `License #${agent.license_number} (${state}) changed from ${oldStatus} to ${newStatus}. Verified ${new Date().toISOString()}.`,
+              status: "pending",
+              priority: "high",
+            });
+          }
+        }
+
+        offset += BATCH_SIZE;
+
+        // Inter-batch delay to avoid rate limiting
+        if (hasMore) {
+          await new Promise((r) => setTimeout(r, INTER_BATCH_DELAY_MS));
+        }
+      }
+
+      console.log(`${state} complete: ${JSON.stringify(stats)}`);
+    }
+
+    const elapsed = Date.now() - t0;
+    return new Response(
+      JSON.stringify({
+        success: true,
+        stats: statsByState,
+        alerts,
+        elapsed_ms: elapsed,
+      }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+    );
+  } catch (err) {
+    console.error("verify-licenses-nightly error:", err);
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: err instanceof Error ? err.message : "Unknown error",
+        stats: statsByState,
+        alerts,
+        elapsed_ms: Date.now() - t0,
+      }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+    );
+  }
+});
