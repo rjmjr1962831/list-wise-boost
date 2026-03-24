@@ -312,19 +312,19 @@
     },
     {
       "source": "/about/founder",
-      "destination": "/api/serve-clean-html?fn=serve-bot-founder-html&path=%2Fabout%2Ffounder"
+      "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/serve-bot-founder-html?path=%2Fabout%2Ffounder"
     },
     {
       "source": "/about/founder/",
-      "destination": "/api/serve-clean-html?fn=serve-bot-founder-html&path=%2Fabout%2Ffounder"
+      "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/serve-bot-founder-html?path=%2Fabout%2Ffounder"
     },
     {
       "source": "/crawl-stats",
-      "destination": "/api/serve-clean-html?fn=serve-bot-crawl-stats-html&path=%2Fcrawl-stats"
+      "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/serve-bot-crawl-stats-html?path=%2Fcrawl-stats"
     },
     {
       "source": "/crawl-stats/",
-      "destination": "/api/serve-clean-html?fn=serve-bot-crawl-stats-html&path=%2Fcrawl-stats"
+      "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/serve-bot-crawl-stats-html?path=%2Fcrawl-stats"
     },
     {
       "source": "/artifact/:token",
@@ -344,11 +344,11 @@
     },
     {
       "source": "/arizona/top10realestateagents",
-      "destination": "/api/serve-clean-html?fn=serve-bot-state-html&path=/arizona/top10realestateagents"
+      "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/serve-bot-state-html?path=/arizona/top10realestateagents"
     },
     {
       "source": "/california/top10realestateagents",
-      "destination": "/api/serve-clean-html?fn=serve-bot-state-html&path=/california/top10realestateagents"
+      "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/serve-bot-state-html?path=/california/top10realestateagents"
     },
     {
       "source": "/for-ai",
@@ -360,15 +360,15 @@
     },
     {
       "source": "/:state/:city/top10realestateagents",
-      "destination": "/api/serve-clean-html?fn=serve-bot-list-html&path=/:state/:city/top10realestateagents"
+      "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/serve-bot-list-html?path=/:state/:city/top10realestateagents"
     },
     {
       "source": "/:state/:city/:neighborhood/top10realestateagents",
-      "destination": "/api/serve-clean-html?fn=serve-bot-list-html&path=/:state/:city/:neighborhood/top10realestateagents"
+      "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/serve-bot-list-html?path=/:state/:city/:neighborhood/top10realestateagents"
     },
     {
       "source": "/:state/agents/:slug",
-      "destination": "/api/serve-clean-html?fn=serve-bot-agent-html&path=/:state/agents/:slug"
+      "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/serve-bot-agent-html?path=/:state/agents/:slug"
     },
     {
       "source": "/admin/founder-intake",
@@ -404,19 +404,19 @@
     },
     {
       "source": "/transparency",
-      "destination": "/api/serve-clean-html?fn=serve-bot-content-html&path=%2Ftransparency"
+      "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/serve-bot-content-html?path=%2Ftransparency"
     },
     {
       "source": "/transparency/",
-      "destination": "/api/serve-clean-html?fn=serve-bot-content-html&path=%2Ftransparency"
+      "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/serve-bot-content-html?path=%2Ftransparency"
     },
     {
       "source": "/faq",
-      "destination": "/api/serve-clean-html?fn=serve-bot-content-html&path=%2Ffaq"
+      "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/serve-bot-content-html?path=%2Ffaq"
     },
     {
       "source": "/faq/",
-      "destination": "/api/serve-clean-html?fn=serve-bot-content-html&path=%2Ffaq"
+      "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/serve-bot-content-html?path=%2Ffaq"
     },
     {
       "source": "/api/t",
@@ -428,147 +428,147 @@
     },
     {
       "source": "/",
-      "destination": "/api/serve-clean-html?fn=serve-bot-home-html&path=%2F"
+      "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/serve-bot-home-html?path=%2F"
     },
     {
       "source": "/about",
-      "destination": "/api/serve-clean-html?fn=serve-bot-pages-html&path=%2Fabout"
+      "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/serve-bot-pages-html?path=%2Fabout"
     },
     {
       "source": "/about/",
-      "destination": "/api/serve-clean-html?fn=serve-bot-pages-html&path=%2Fabout"
+      "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/serve-bot-pages-html?path=%2Fabout"
     },
     {
       "source": "/about/ranking-methodology",
-      "destination": "/api/serve-clean-html?fn=serve-bot-pages-html&path=%2Fabout%2Franking-methodology"
+      "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/serve-bot-pages-html?path=%2Fabout%2Franking-methodology"
     },
     {
       "source": "/about/ranking-methodology/",
-      "destination": "/api/serve-clean-html?fn=serve-bot-pages-html&path=%2Fabout%2Franking-methodology"
+      "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/serve-bot-pages-html?path=%2Fabout%2Franking-methodology"
     },
     {
       "source": "/privacy",
-      "destination": "/api/serve-clean-html?fn=serve-bot-pages-html&path=%2Fprivacy"
+      "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/serve-bot-pages-html?path=%2Fprivacy"
     },
     {
       "source": "/privacy/",
-      "destination": "/api/serve-clean-html?fn=serve-bot-pages-html&path=%2Fprivacy"
+      "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/serve-bot-pages-html?path=%2Fprivacy"
     },
     {
       "source": "/terms",
-      "destination": "/api/serve-clean-html?fn=serve-bot-pages-html&path=%2Fterms"
+      "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/serve-bot-pages-html?path=%2Fterms"
     },
     {
       "source": "/terms/",
-      "destination": "/api/serve-clean-html?fn=serve-bot-pages-html&path=%2Fterms"
+      "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/serve-bot-pages-html?path=%2Fterms"
     },
     {
       "source": "/sms-terms",
-      "destination": "/api/serve-clean-html?fn=serve-bot-pages-html&path=%2Fsms-terms"
+      "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/serve-bot-pages-html?path=%2Fsms-terms"
     },
     {
       "source": "/sms-terms/",
-      "destination": "/api/serve-clean-html?fn=serve-bot-pages-html&path=%2Fsms-terms"
+      "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/serve-bot-pages-html?path=%2Fsms-terms"
     },
     {
       "source": "/opt-in",
-      "destination": "/api/serve-clean-html?fn=serve-bot-pages-html&path=%2Fopt-in"
+      "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/serve-bot-pages-html?path=%2Fopt-in"
     },
     {
       "source": "/opt-in/",
-      "destination": "/api/serve-clean-html?fn=serve-bot-pages-html&path=%2Fopt-in"
+      "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/serve-bot-pages-html?path=%2Fopt-in"
     },
     {
       "source": "/payments-security",
-      "destination": "/api/serve-clean-html?fn=serve-bot-pages-html&path=%2Fpayments-security"
+      "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/serve-bot-pages-html?path=%2Fpayments-security"
     },
     {
       "source": "/payments-security/",
-      "destination": "/api/serve-clean-html?fn=serve-bot-pages-html&path=%2Fpayments-security"
+      "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/serve-bot-pages-html?path=%2Fpayments-security"
     },
     {
       "source": "/press",
-      "destination": "/api/serve-clean-html?fn=serve-bot-pages-html&path=%2Fpress"
+      "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/serve-bot-pages-html?path=%2Fpress"
     },
     {
       "source": "/press/",
-      "destination": "/api/serve-clean-html?fn=serve-bot-pages-html&path=%2Fpress"
+      "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/serve-bot-pages-html?path=%2Fpress"
     },
     {
       "source": "/join",
-      "destination": "/api/serve-clean-html?fn=serve-bot-pages-html&path=%2Fjoin"
+      "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/serve-bot-pages-html?path=%2Fjoin"
     },
     {
       "source": "/join/",
-      "destination": "/api/serve-clean-html?fn=serve-bot-pages-html&path=%2Fjoin"
+      "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/serve-bot-pages-html?path=%2Fjoin"
     },
     {
       "source": "/for-agents",
-      "destination": "/api/serve-clean-html?fn=serve-bot-pages-html&path=%2Ffor-agents"
+      "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/serve-bot-pages-html?path=%2Ffor-agents"
     },
     {
       "source": "/for-agents/",
-      "destination": "/api/serve-clean-html?fn=serve-bot-pages-html&path=%2Ffor-agents"
+      "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/serve-bot-pages-html?path=%2Ffor-agents"
     },
     {
       "source": "/q/:questionSlug",
-      "destination": "/api/serve-clean-html?fn=serve-bot-qa-html&path=%2Fq%2F:questionSlug"
+      "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/serve-bot-qa-html?path=%2Fq%2F:questionSlug"
     },
     {
       "source": "/ai-citation-whitepaper",
-      "destination": "/api/serve-clean-html?fn=serve-bot-pages-html&path=%2Fai-citation-whitepaper"
+      "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/serve-bot-pages-html?path=%2Fai-citation-whitepaper"
     },
     {
       "source": "/ai-citation-whitepaper/",
-      "destination": "/api/serve-clean-html?fn=serve-bot-pages-html&path=%2Fai-citation-whitepaper"
+      "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/serve-bot-pages-html?path=%2Fai-citation-whitepaper"
     },
     {
       "source": "/about/zlip-whitepaper",
-      "destination": "/api/serve-clean-html?fn=serve-bot-pages-html&path=%2Fabout%2Fzlip-whitepaper"
+      "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/serve-bot-pages-html?path=%2Fabout%2Fzlip-whitepaper"
     },
     {
       "source": "/about/zlip-whitepaper/",
-      "destination": "/api/serve-clean-html?fn=serve-bot-pages-html&path=%2Fabout%2Fzlip-whitepaper"
+      "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/serve-bot-pages-html?path=%2Fabout%2Fzlip-whitepaper"
     },
     {
       "source": "/ai-liability",
-      "destination": "/api/serve-clean-html?fn=serve-bot-pages-html&path=%2Fai-liability"
+      "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/serve-bot-pages-html?path=%2Fai-liability"
     },
     {
       "source": "/ai-liability/",
-      "destination": "/api/serve-clean-html?fn=serve-bot-pages-html&path=%2Fai-liability"
+      "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/serve-bot-pages-html?path=%2Fai-liability"
     },
     {
       "source": "/protocol-services",
-      "destination": "/api/serve-clean-html?fn=serve-bot-pages-html&path=%2Fprotocol-services"
+      "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/serve-bot-pages-html?path=%2Fprotocol-services"
     },
     {
       "source": "/protocol-services/",
-      "destination": "/api/serve-clean-html?fn=serve-bot-pages-html&path=%2Fprotocol-services"
+      "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/serve-bot-pages-html?path=%2Fprotocol-services"
     },
     {
       "source": "/zillow-explained",
-      "destination": "/api/serve-clean-html?fn=serve-bot-pages-html&path=%2Fzillow-explained"
+      "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/serve-bot-pages-html?path=%2Fzillow-explained"
     },
     {
       "source": "/zillow-explained/",
-      "destination": "/api/serve-clean-html?fn=serve-bot-pages-html&path=%2Fzillow-explained"
+      "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/serve-bot-pages-html?path=%2Fzillow-explained"
     },
     {
       "source": "/colorado",
-      "destination": "/api/serve-clean-html?fn=serve-bot-pages-html&path=%2Fcolorado"
+      "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/serve-bot-pages-html?path=%2Fcolorado"
     },
     {
       "source": "/florida",
-      "destination": "/api/serve-clean-html?fn=serve-bot-pages-html&path=%2Fflorida"
+      "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/serve-bot-pages-html?path=%2Fflorida"
     },
     {
       "source": "/texas",
-      "destination": "/api/serve-clean-html?fn=serve-bot-pages-html&path=%2Ftexas"
+      "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/serve-bot-pages-html?path=%2Ftexas"
     },
     {
       "source": "/new-york",
-      "destination": "/api/serve-clean-html?fn=serve-bot-pages-html&path=%2Fnew-york"
+      "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/serve-bot-pages-html?path=%2Fnew-york"
     },
     {
       "source": "/(admin|agent|dashboard|funnel|sandbox|profile|profile-view|verify|verify-listing|apply|claim|check-profile|check-agent|agent-info|agent-setup|agent-login|agent-onboarding|agent-payment-success|neighborhood|visibility|staging|badge-levels-preview|badge-demo|badge-instructions|migrate-data|og-preview|test-visibility-components|crm|clean-room|a/bot-analytics)(.*)",
@@ -667,7 +667,7 @@
       "headers": [
         {
           "key": "Cache-Control",
-          "value": "public, max-age=0, s-maxage=60, stale-while-revalidate=30"
+          "value": "public, max-age=0, must-revalidate"
         }
       ]
     },
@@ -676,7 +676,7 @@
       "headers": [
         {
           "key": "Cache-Control",
-          "value": "public, max-age=0, s-maxage=60, stale-while-revalidate=30"
+          "value": "public, max-age=0, must-revalidate"
         }
       ]
     },
@@ -685,7 +685,7 @@
       "headers": [
         {
           "key": "Cache-Control",
-          "value": "public, max-age=0, s-maxage=60, stale-while-revalidate=30"
+          "value": "public, max-age=0, must-revalidate"
         }
       ]
     },
