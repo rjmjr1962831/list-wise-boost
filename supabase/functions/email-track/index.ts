@@ -172,11 +172,14 @@ serve(async (req) => {
           }, { onConflict: "professional_id,task_type", ignoreDuplicates: true });
         }
       } else if (isOpen && !emailRow.opened_at) {
+        const openSentAt = emailRow.sent_at ? new Date(emailRow.sent_at).getTime() : 0;
+        const openElapsed = openSentAt ? (Date.now() - openSentAt) / 1000 : 0;
+        const openTimeStr = openElapsed > 3600 ? `${Math.round(openElapsed / 3600)}h` : `${Math.round(openElapsed / 60)}m`;
         await supabase.from("crm_tasks").upsert({
           professional_id: pro.id,
           task_type: "email_opened",
           title: `Follow up: ${pro.name} opened your email`,
-          description: `Opened "${emailRow.subject}". Consider a phone call while the interest is fresh.`,
+          description: `Opened "${emailRow.subject}" (${openTimeStr} after send). Consider a phone call while the interest is fresh.`,
           status: "pending",
           priority: "normal",
         }, { onConflict: "professional_id,task_type", ignoreDuplicates: true });
@@ -301,11 +304,14 @@ serve(async (req) => {
       } else if (isClick && agentUnsub) {
         console.log(`[email-track] Skipping task for unsubscribed agent ${agentName}`);
       } else if (isOpen && !queueRow.opened_at && !agentUnsub) {
+        const openSentAt = queueRow.sent_at ? new Date(queueRow.sent_at).getTime() : 0;
+        const openElapsed = openSentAt ? (Date.now() - openSentAt) / 1000 : 0;
+        const openTimeStr = openElapsed > 3600 ? `${Math.round(openElapsed / 3600)}h` : `${Math.round(openElapsed / 60)}m`;
         await supabase.from("crm_tasks").insert({
           professional_id: queueRow.agent_id,
           task_type: "email_opened",
           title: `Follow up: ${agentName} opened your email`,
-          description: `Opened campaign email "${queueRow.campaign_id}". Good time for a call.`,
+          description: `Opened campaign email "${queueRow.campaign_id}" (${openTimeStr} after send). Good time for a call.`,
           status: "pending",
           priority: "normal",
         });
