@@ -17,7 +17,7 @@ import * as path from 'path';
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL || 'https://wiotrvoirdgzfacuuiem.supabase.co';
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_PUBLISHABLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indpb3Rydm9pcmRnemZhY3V1aWVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk4MTcwNzcsImV4cCI6MjA4NTM5MzA3N30.BZAli-r81llqnq9xStghKNqK8MnrSNQMOIqkkE09mwI';
 
-const SITEMAP_STATES = ['arizona', 'california'];
+const SITEMAP_STATES = ['arizona', 'california', 'texas'];
 const HISTORICAL_AGENTS_ANALYZED = 670000; // Historical number — not from DB
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -64,7 +64,7 @@ async function countCities(): Promise<{ total: number; byState: Record<string, n
           AND p.city_id IS NOT NULL
           AND p.review_stars_rating >= 4.5
           AND p.num_total_reviews >= 10
-          AND p.state_slug IN ('arizona', 'california')
+          AND p.state_slug IN ('arizona', 'california', 'texas')
         GROUP BY p.state_slug
       `
     });
@@ -92,13 +92,13 @@ async function countNeighborhoods(): Promise<{ total: number; byState: Record<st
     const { data, error } = await supabase.rpc('run_sql', {
       query: `
         SELECT
-          CASE WHEN nc.state = 'Arizona' THEN 'arizona' ELSE 'california' END AS state_slug,
+          LOWER(REPLACE(nc.state, ' ', '_')) AS state_slug,
           COUNT(*) AS nh_count
         FROM neighborhood_catalog nc
-        JOIN cities c ON c.slug = nc.city_area_slug AND c.state_slug = CASE WHEN nc.state = 'Arizona' THEN 'arizona' ELSE 'california' END
+        JOIN cities c ON c.slug = nc.city_area_slug AND c.state_slug = LOWER(REPLACE(nc.state, ' ', '_'))
         WHERE nc.is_active = true
           AND nc.primary_zip IS NOT NULL
-          AND nc.state IN ('Arizona', 'California')
+          AND nc.state IN ('Arizona', 'California', 'Texas')
           AND c.active = true
           AND c.id IN (
             SELECT DISTINCT p.city_id
@@ -107,7 +107,7 @@ async function countNeighborhoods(): Promise<{ total: number; byState: Record<st
               AND p.city_id IS NOT NULL
               AND p.review_stars_rating >= 4.5
               AND p.num_total_reviews >= 10
-              AND p.state_slug IN ('arizona', 'california')
+              AND p.state_slug IN ('arizona', 'california', 'texas')
           )
         GROUP BY 1
       `

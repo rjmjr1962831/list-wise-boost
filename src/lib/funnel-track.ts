@@ -104,8 +104,8 @@ export async function trackFunnelEvent(
   // Log to crm_contact_activity
   supabase.from('crm_contact_activity').insert({
     professional_id: professional.id,
-    activity_type: event,
-    description: STEP_LABELS[event] || event,
+    event_type: event,
+    subject: STEP_LABELS[event] || event,
     metadata: metadata || {},
     created_at: new Date().toISOString(),
   }).then(() => {});

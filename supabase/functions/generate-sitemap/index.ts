@@ -11,6 +11,8 @@ const stateSlugMap: Record<string, string> = {
   'Arizona': 'arizona',
   'CA': 'california',
   'California': 'california',
+  'TX': 'texas',
+  'Texas': 'texas',
 };
 
 // North Star: 4.5+ threshold (CORE_RULES / governance.mdc)
@@ -105,7 +107,7 @@ Deno.serve(async (req) => {
       'id, slug, state_slug, name',
       [
         { column: 'active', op: 'eq', value: true },
-        { column: 'state_slug', op: 'in', value: ['arizona', 'california'] }
+        { column: 'state_slug', op: 'in', value: ['arizona', 'california', 'texas'] }
       ],
       'slug'
     );
@@ -126,7 +128,7 @@ Deno.serve(async (req) => {
       'id, neighborhood_slug, city_area_slug, state, primary_zip',
       [
         { column: 'is_active', op: 'eq', value: true },
-        { column: 'state', op: 'in', value: ['Arizona', 'California'] },
+        { column: 'state', op: 'in', value: ['Arizona', 'California', 'Texas'] },
         { column: 'primary_zip', op: 'not.is', value: null }
       ],
       'neighborhood_slug'
@@ -140,8 +142,10 @@ Deno.serve(async (req) => {
     // Count by state
     const azCities = cities.filter(c => c.state_slug === 'arizona');
     const caCities = cities.filter(c => c.state_slug === 'california');
+    const txCities = cities.filter(c => c.state_slug === 'texas');
     const azNeighborhoods = neighborhoods.filter(n => n.state === 'Arizona');
     const caNeighborhoods = neighborhoods.filter(n => n.state === 'California');
+    const txNeighborhoods = neighborhoods.filter(n => n.state === 'Texas');
 
     // Stats endpoint: ?type=stats
     if (type === 'stats') {
@@ -149,7 +153,8 @@ Deno.serve(async (req) => {
         timestamp: new Date().toISOString(),
         states: {
           arizona: { cities: azCities.length, neighborhoods: azNeighborhoods.length, status: 'active' },
-          california: { cities: caCities.length, neighborhoods: caNeighborhoods.length, status: 'expanding' }
+          california: { cities: caCities.length, neighborhoods: caNeighborhoods.length, status: 'active' },
+          texas: { cities: txCities.length, neighborhoods: txNeighborhoods.length, status: 'expanding' }
         },
         totals: { cities: cities.length, neighborhoods: neighborhoods.length }
       }, null, 2), {
@@ -170,7 +175,7 @@ Deno.serve(async (req) => {
         },
         "geographicCoverage": {
           "summary": {
-            "totalStates": 2,
+            "totalStates": 3,
             "totalCities": cities.length,
             "totalNeighborhoods": neighborhoods.length,
             "lastCalculated": today
@@ -193,14 +198,27 @@ Deno.serve(async (req) => {
               "name": "California",
               "slug": "california",
               "abbreviation": "CA",
-              "status": "expanding",
+              "status": "active",
               "cities": caCities.length,
               "neighborhoods": caNeighborhoods.length,
-              "note": "City infrastructure active. Neighborhood coverage expanding Q1 2026.",
               "cityList": caCities.slice(0, 100).map(c => ({
                 name: c.name,
                 slug: c.slug,
                 url: `${baseUrl}/california/${c.slug}/top10realestateagents`
+              }))
+            },
+            {
+              "name": "Texas",
+              "slug": "texas",
+              "abbreviation": "TX",
+              "status": "expanding",
+              "cities": txCities.length,
+              "neighborhoods": txNeighborhoods.length,
+              "note": "City and neighborhood coverage expanding Q2 2026.",
+              "cityList": txCities.slice(0, 100).map(c => ({
+                name: c.name,
+                slug: c.slug,
+                url: `${baseUrl}/texas/${c.slug}/top10realestateagents`
               }))
             }
           ]

@@ -232,7 +232,7 @@ serve(async (req) => {
     if (stateSlug) {
       query += ` AND state_slug = '${stateSlug.replace(/'/g, "''")}'`;
     } else {
-      query += ` AND state_slug IN ('arizona','california')`;
+      query += ` AND state_slug IN ('arizona','california','texas')`;
     }
     query += ` ORDER BY name LIMIT ${limit}`;
 

@@ -94,7 +94,7 @@ Deno.serve(async (req) => {
     }
 
     if (citiesNeedingContent.length === 0) {
-    for (const state of ['Arizona', 'California']) {
+    for (const state of ['Arizona', 'California', 'Texas']) {
       if (citiesNeedingContent.length >= BATCH_SIZE) break
       
       let offset = 0
