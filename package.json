@@ -15,7 +15,7 @@
     "generate:ai-feeds": "tsx scripts/generate-ai-feeds.ts",
     "backfill:licenses": "node scripts/backfill-license-numbers.mjs",
     "backfill:licenses:dry": "node scripts/backfill-license-numbers.mjs --dry-run",
-    "prebuild": "node scripts/guard-stale-html.mjs && node scripts/stamp-llms-dates.mjs && npm run generate:ai-feeds && npm run generate:faq && npm run generate:counts && npm run generate:sitemaps",
+    "prebuild": "node scripts/guard-stale-html.mjs && node scripts/stamp-llms-dates.mjs && node scripts/fetch-static-pages.mjs && npm run generate:ai-feeds && npm run generate:faq && npm run generate:counts && npm run generate:sitemaps",
     "build:dev": "vite build --mode development",
     "lint": "eslint . --max-warnings -1",
     "preview": "vite preview",
