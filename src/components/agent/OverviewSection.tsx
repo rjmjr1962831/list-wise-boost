@@ -248,7 +248,7 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
 
   const handleUpgrade = () => {
     const token = professional.verification_token || professional.id;
-    navigate(`/funnel/${token}/pricing`);
+    navigate(`/funnel/${token}/tier`);
   };
 
   const pctCurrent = Math.min(100, currentScore);

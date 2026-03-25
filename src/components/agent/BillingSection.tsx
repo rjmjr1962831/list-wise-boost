@@ -125,7 +125,7 @@ export function BillingSection({
             <p className="text-sm text-muted-foreground mb-4">
               Upgrade your profile to increase your AI Footprint Score.
             </p>
-            <Button onClick={onUpgradeClick ?? (() => navigate("/visibility/tiers?returnTo=dashboard"))}>
+            <Button onClick={onUpgradeClick ?? (() => { const t = professional?.verification_token || professional?.id; if (t) navigate(`/funnel/${t}/tier`); })}>
               Upgrade
             </Button>
           </div>

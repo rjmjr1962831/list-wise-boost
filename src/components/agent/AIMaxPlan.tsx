@@ -647,7 +647,7 @@ export function AIMaxPlan({ professional }: AIMaxPlanProps) {
                         {isActive ? (
                           <span className="inline-block mt-3 text-xs font-semibold text-green-600 bg-green-50 px-3 py-1 rounded-full">Active</span>
                         ) : (
-                          <a href={`/funnel/${token}/pricing`} className="inline-block mt-3 text-xs font-semibold text-primary bg-primary/10 hover:bg-primary/20 px-3 py-1 rounded-full transition-colors">
+                          <a href={`/funnel/${token}/tier`} className="inline-block mt-3 text-xs font-semibold text-primary bg-primary/10 hover:bg-primary/20 px-3 py-1 rounded-full transition-colors">
                             Upgrade
                           </a>
                         )}

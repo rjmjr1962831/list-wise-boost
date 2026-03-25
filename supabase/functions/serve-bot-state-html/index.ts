@@ -317,7 +317,7 @@ ${siteHeaderHTML()}
       headers: {
         "Content-Type": "text/html; charset=utf-8",
         "Cache-Control":
-          "public, max-age=86400, stale-while-revalidate=86400",
+          "public, max-age=0, s-maxage=43200",
         "X-Agents-Count": String(totalAgents),
         "X-Cities-Count": String(totalCities),
         "X-Page-Type": "state",

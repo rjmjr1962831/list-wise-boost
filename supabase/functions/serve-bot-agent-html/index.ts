@@ -763,7 +763,7 @@ ${siteHeaderHTML()}
       status: 200,
       headers: {
         "Content-Type": "text/html; charset=utf-8",
-        "Cache-Control": "public, max-age=0, s-maxage=60, stale-while-revalidate=30",
+        "Cache-Control": "public, max-age=0, s-maxage=43200",
         "X-Agent-Name": a.name,
         "X-Agent-Tier": tl(t),
         "X-Page-Type": "agent-profile",
