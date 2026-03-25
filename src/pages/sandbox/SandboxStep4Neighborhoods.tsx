@@ -102,6 +102,15 @@ export default function SandboxStep4Neighborhoods() {
         if (cityRows) {
           setAllowedCityNames(cityRows.map((c: any) => c.name));
         }
+      } else if (isDashboardEdit && prof?.served_cities?.length > 0) {
+        // Dashboard edit: filter to agent's served_cities slugs
+        const { data: cityRows } = await supabase
+          .from('cities')
+          .select('name')
+          .in('slug', prof.served_cities);
+        if (cityRows) {
+          setAllowedCityNames(cityRows.map((c: any) => c.name));
+        }
       }
 
       setLoading(false);
