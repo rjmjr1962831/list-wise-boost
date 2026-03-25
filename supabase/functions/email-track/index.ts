@@ -210,14 +210,16 @@ serve(async (req) => {
     }
     supabase.from("email_queue").update(updates).eq("id", queueRow.id).then(() => {});
 
-    // Increment campaign-level counters
+    // Increment campaign-level counters + get campaign name for task descriptions
+    let campaignName = queueRow.campaign_id || "unknown";
     if (queueRow.campaign_id) {
       const { data: camp } = await supabase
         .from("email_campaigns")
-        .select("total_opens, total_clicks")
+        .select("name, total_opens, total_clicks")
         .eq("id", queueRow.campaign_id)
         .maybeSingle();
       if (camp) {
+        campaignName = camp.name || queueRow.campaign_id;
         if (isOpen && !queueRow.opened_at) {
           supabase.from("email_campaigns").update({ total_opens: (camp.total_opens ?? 0) + 1 }).eq("id", queueRow.campaign_id).then(() => {});
         }
@@ -274,7 +276,7 @@ serve(async (req) => {
             professional_id: queueRow.agent_id,
             task_type: "email_clicked",
             title: `Follow up: ${agentName} clicked your email`,
-            description: `Clicked link in campaign "${queueRow.campaign_id}" (${Math.round(elapsed / 60)}m after send). Call them while hot.`,
+            description: `Clicked link in campaign "${campaignName}" (${Math.round(elapsed / 60)}m after send). Call them while hot.`,
             status: "pending",
             priority: "high",
           }, { onConflict: "professional_id,task_type", ignoreDuplicates: true });
@@ -286,7 +288,7 @@ serve(async (req) => {
             .eq("status", "pending");
           sendAlert(
             `CLICK: ${agentName}`,
-            `${agentName} (${queueRow.recipient_email}) clicked a link in your campaign email.\n\nLink: ${linkUrl || "unknown"}\nCampaign: ${queueRow.campaign_id}\nTime after send: ${Math.round(elapsed / 60)}m\n\nThis is a hot lead — call them now.`
+            `${agentName} (${queueRow.recipient_email}) clicked a link in your campaign email.\n\nLink: ${linkUrl || "unknown"}\nCampaign: ${campaignName}\nTime after send: ${Math.round(elapsed / 60)}m\n\nThis is a hot lead — call them now.`
           );
         }
 
@@ -296,7 +298,7 @@ serve(async (req) => {
             professional_id: queueRow.agent_id,
             task_type: "funnel_landed",
             title: `${agentName} opened the verification funnel`,
-            description: `Agent clicked funnel link from campaign "${queueRow.campaign_id}" (${Math.round(elapsed / 60)}m after send). Warm lead.`,
+            description: `Agent clicked funnel link from campaign "${campaignName}" (${Math.round(elapsed / 60)}m after send). Warm lead.`,
             status: "pending",
             priority: "normal",
           }, { onConflict: "professional_id,task_type", ignoreDuplicates: true });
@@ -306,12 +308,12 @@ serve(async (req) => {
       } else if (isOpen && !queueRow.opened_at && !agentUnsub) {
         const openSentAt = queueRow.sent_at ? new Date(queueRow.sent_at).getTime() : 0;
         const openElapsed = openSentAt ? (Date.now() - openSentAt) / 1000 : 0;
-        const openTimeStr = openElapsed > 3600 ? `${Math.round(openElapsed / 3600)}h` : `${Math.round(openElapsed / 60)}m`;
+        const openTimeStr = !openSentAt ? "" : openElapsed > 3600 ? ` (${Math.round(openElapsed / 3600)}h after send)` : ` (${Math.round(openElapsed / 60)}m after send)`;
         await supabase.from("crm_tasks").insert({
           professional_id: queueRow.agent_id,
           task_type: "email_opened",
           title: `Follow up: ${agentName} opened your email`,
-          description: `Opened campaign email "${queueRow.campaign_id}" (${openTimeStr} after send). Good time for a call.`,
+          description: `Opened campaign email "${campaignName}"${openTimeStr}. Good time for a call.`,
           status: "pending",
           priority: "normal",
         });

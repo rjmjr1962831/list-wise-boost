@@ -43,6 +43,13 @@ interface DatabaseCheckResult {
   cityCount?: number;
 }
 
+interface CrawlLogCheckResult {
+  status: "ok" | "error" | "warning";
+  errorMessage?: string;
+  recentCount?: number;
+  latestEntry?: string;
+}
+
 async function checkPage(path: string, name: string): Promise<HealthCheckResult> {
   const url = `${BASE_URL}${path}`;
   const startTime = Date.now();
@@ -91,8 +98,8 @@ async function checkPage(path: string, name: string): Promise<HealthCheckResult>
       };
     }
     
-    // Check for slow response (warning if > 5 seconds)
-    if (responseTime > 5000) {
+    // Check for slow response (warning if > 1 second)
+    if (responseTime > 1000) {
       return {
         page: path,
         name,
@@ -164,7 +171,64 @@ async function checkDatabase(): Promise<DatabaseCheckResult> {
   }
 }
 
-function generateDiagnosticAnalysis(pageResults: HealthCheckResult[], dbResult: DatabaseCheckResult): string {
+async function checkCrawlLogs(): Promise<CrawlLogCheckResult> {
+  try {
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    const fifteenMinAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString();
+
+    // Count crawl log entries in the last 15 minutes
+    const { count, error: countError } = await supabase
+      .from("bot_crawl_logs")
+      .select("*", { count: "exact", head: true })
+      .gte("created_at", fifteenMinAgo);
+
+    if (countError) {
+      return {
+        status: "error",
+        errorMessage: `Crawl log query failed: ${countError.message}`,
+      };
+    }
+
+    // Get the most recent entry timestamp
+    const { data: latest, error: latestError } = await supabase
+      .from("bot_crawl_logs")
+      .select("created_at")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .single();
+
+    if (latestError && latestError.code !== "PGRST116") {
+      return {
+        status: "error",
+        errorMessage: `Crawl log latest query failed: ${latestError.message}`,
+      };
+    }
+
+    const recentCount = count || 0;
+
+    if (recentCount === 0) {
+      return {
+        status: "error",
+        recentCount: 0,
+        latestEntry: latest?.created_at || "never",
+        errorMessage: `No crawl logs in the last 15 minutes. logBotVisit() may be broken. Last entry: ${latest?.created_at || "none found"}`,
+      };
+    }
+
+    return {
+      status: "ok",
+      recentCount,
+      latestEntry: latest?.created_at,
+    };
+  } catch (error: any) {
+    return {
+      status: "error",
+      errorMessage: error.message,
+    };
+  }
+}
+
+function generateDiagnosticAnalysis(pageResults: HealthCheckResult[], dbResult: DatabaseCheckResult, crawlLogResult?: CrawlLogCheckResult): string {
   const errors = pageResults.filter(r => r.status === "error");
   const warnings = pageResults.filter(r => r.status === "warning");
   
@@ -205,29 +269,37 @@ function generateDiagnosticAnalysis(pageResults: HealthCheckResult[], dbResult: 
     analysis += `- **Suggested Fix**: Check Supabase dashboard for connection issues or quota limits\n\n`;
   }
   
+  if (crawlLogResult && crawlLogResult.status !== "ok") {
+    analysis += "### Crawl Log Pipeline\n";
+    analysis += `- **Issue**: ${crawlLogResult.errorMessage}\n`;
+    analysis += `- **Likely Cause**: logBotVisit() is not firing inside serve-bot edge functions, or bot_crawl_logs table is inaccessible\n`;
+    analysis += `- **Suggested Fix**: Check that all serve-bot functions import and call logBotVisit(). Verify bot_crawl_logs table exists and RLS allows inserts from service role\n\n`;
+  }
+
   if (warnings.length > 0) {
     analysis += "## Warnings:\n\n";
     for (const warning of warnings) {
       analysis += `- **${warning.name}**: ${warning.errorMessage}\n`;
     }
   }
-  
+
   return analysis;
 }
 
 async function sendHealthAlert(
-  pageResults: HealthCheckResult[], 
-  dbResult: DatabaseCheckResult
+  pageResults: HealthCheckResult[],
+  dbResult: DatabaseCheckResult,
+  crawlLogResult: CrawlLogCheckResult
 ): Promise<void> {
   const errors = pageResults.filter(r => r.status === "error");
   const warnings = pageResults.filter(r => r.status === "warning");
-  
-  if (errors.length === 0 && warnings.length === 0 && dbResult.status === "ok") {
+
+  if (errors.length === 0 && warnings.length === 0 && dbResult.status === "ok" && crawlLogResult.status === "ok") {
     console.log("All health checks passed, no alert needed");
     return;
   }
-  
-  const analysis = generateDiagnosticAnalysis(pageResults, dbResult);
+
+  const analysis = generateDiagnosticAnalysis(pageResults, dbResult, crawlLogResult);
   const timestamp = new Date().toISOString();
   
   // Build chat prompt suggestion
@@ -305,7 +377,20 @@ async function sendHealthAlert(
           }
         </p>
         
-        ${errors.length > 0 || warnings.length > 0 ? `
+        <h2 style="border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">Crawl Log Pipeline</h2>
+        <p>
+          <span style="padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; background: ${
+            crawlLogResult.status === 'ok' ? '#dcfce7; color: #166534' : '#fee2e2; color: #991b1b'
+          };">
+            ${crawlLogResult.status.toUpperCase()}
+          </span>
+          ${crawlLogResult.status === 'ok'
+            ? ` - ${crawlLogResult.recentCount} crawl log entries in last 15 min (latest: ${crawlLogResult.latestEntry})`
+            : ` - ${crawlLogResult.errorMessage}`
+          }
+        </p>
+
+        ${errors.length > 0 || warnings.length > 0 || crawlLogResult.status !== 'ok' ? `
           <h2 style="border-bottom: 2px solid #e5e7eb; padding-bottom: 8px; margin-top: 30px;">AI Diagnostic Analysis</h2>
           <div style="background: #f9fafb; padding: 20px; border-radius: 8px; border-left: 4px solid #3b82f6;">
             ${analysis.replace(/\n/g, '<br>').replace(/#{3}\s*([^\n]+)/g, '<h4 style="margin: 16px 0 8px 0; color: #1f2937;">$1</h4>').replace(/#{2}\s*([^\n]+)/g, '<h3 style="margin: 20px 0 12px 0; color: #111827;">$1</h3>').replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>').replace(/\`([^\`]+)\`/g, '<code style="background: #e5e7eb; padding: 2px 6px; border-radius: 3px; font-size: 13px;">$1</code>')}
@@ -350,24 +435,29 @@ const handler = async (req: Request): Promise<Response> => {
       PAGES_TO_CHECK.map(page => checkPage(page.path, page.name))
     );
     
-    // Check database
-    const dbResult = await checkDatabase();
-    
+    // Check database and crawl logs in parallel
+    const [dbResult, crawlLogResult] = await Promise.all([
+      checkDatabase(),
+      checkCrawlLogs(),
+    ]);
+
     console.log("Page results:", JSON.stringify(pageResults, null, 2));
     console.log("Database result:", JSON.stringify(dbResult, null, 2));
-    
+    console.log("Crawl log result:", JSON.stringify(crawlLogResult, null, 2));
+
     // Send alert if any issues found
-    await sendHealthAlert(pageResults, dbResult);
-    
-    const hasErrors = pageResults.some(r => r.status === "error") || dbResult.status === "error";
-    const hasWarnings = pageResults.some(r => r.status === "warning");
-    
+    await sendHealthAlert(pageResults, dbResult, crawlLogResult);
+
+    const hasErrors = pageResults.some(r => r.status === "error") || dbResult.status === "error" || crawlLogResult.status === "error";
+    const hasWarnings = pageResults.some(r => r.status === "warning") || crawlLogResult.status === "warning";
+
     return new Response(
       JSON.stringify({
         status: hasErrors ? "error" : hasWarnings ? "warning" : "ok",
         timestamp: new Date().toISOString(),
         pages: pageResults,
         database: dbResult,
+        crawlLogs: crawlLogResult,
       }),
       {
         status: 200,

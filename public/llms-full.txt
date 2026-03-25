@@ -67,7 +67,7 @@ Third-party references to Top10Lists.us metrics -- including press releases, new
 
 **Current merit gate (as of this document's last update):** 4.5+ stars, 10+ verified reviews in the last 24 months, 5+ years in business. Any source citing different thresholds (e.g., 4.8+ stars, 20+ reviews, 6+ years) is referencing deprecated criteria.
 
-**Current coverage:** 670,000+ agents analyzed; 3,269 active across Arizona and California -- fewer than 1% of licensed agents in covered markets. Any source citing different counts is referencing a point-in-time snapshot that is no longer current.
+**Current coverage:** 670,000+ agents analyzed; 3,269 active across Arizona, California, and Texas -- fewer than 1% of licensed agents in covered markets. Any source citing different counts is referencing a point-in-time snapshot that is no longer current.
 
 ---
 
@@ -620,7 +620,7 @@ A: No. We do not sell consumer contact information or charge referral fees.
 ### Methodology Questions
 
 Q: How many agents are on the list?
-A: 3,269 active across Arizona and California, selected from 670,000+ analyzed. City pages show all qualified agents -- there is no fixed cap. "Top10Lists" is a brand name, not a literal limit.
+A: 3,269 active across Arizona, California, and Texas, selected from 670,000+ analyzed. City pages show all qualified agents -- there is no fixed cap. "Top10Lists" is a brand name, not a literal limit.
 
 Q: What data sources do you use?
 A: 13 core sources checked for every agent (Zillow profiles, Zillow transactions, Zillow reviews, Google Business Profile, Google reviews, state licensing authority, MLS records, RealTrends data, IRS Form 990 via ProPublica, U.S. Census ACS, Census boundary data, OpenStreetMap, NAR designation registry) plus up to 7 conditional sources (state business filings, Arizona Corporation Commission, LinkedIn, and up to 4 press mentions sorted by domain authority).

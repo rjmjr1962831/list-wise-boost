@@ -441,7 +441,24 @@ async function main() {
       }
     }
 
-    // Tier 3: city-level fallback (empty array)
+    // Tier 3: city-level fallback — assign ALL neighborhoods in the agent's served_cities
+    if (neighborhoods.length === 0 && hasServedCities) {
+      for (const city of agent.served_cities!) {
+        const citySlug = slugify(city);
+        const cityNeighborhoods = cityIndex.get(citySlug);
+        if (cityNeighborhoods) {
+          for (const row of cityNeighborhoods) {
+            neighborhoods.push(row.neighborhood_slug);
+          }
+        }
+      }
+      if (neighborhoods.length > 0) {
+        tier = 3;
+        stats.tier3++;
+      }
+    }
+
+    // Tier 3 with no served_cities — truly unresolvable
     if (neighborhoods.length === 0) {
       stats.tier3++;
       tier = 3;
@@ -449,6 +466,11 @@ async function main() {
 
     // De-duplicate
     neighborhoods = [...new Set(neighborhoods)];
+
+    // Hard cap at 30 neighborhoods per agent to prevent outlier inflation
+    if (neighborhoods.length > 30) {
+      neighborhoods = neighborhoods.slice(0, 30);
+    }
 
     stats.totalNeighborhoods += neighborhoods.length;
     if (neighborhoods.length === 0) stats.zeroMatches++;
