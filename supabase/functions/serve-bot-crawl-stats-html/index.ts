@@ -106,6 +106,100 @@ async function runSearch(sb: any, agentQ: string, marketQ: string): Promise<stri
   return html;
 }
 
+/* ── Range → SQL interval mapping ─────────────────────────────────── */
+const RANGE_MAP: Record<string, { interval: string; label: string }> = {
+  "24h": { interval: "24 hours", label: "24 hours" },
+  "7d":  { interval: "7 days",   label: "7 days" },
+  "30d": { interval: "30 days",  label: "30 days" },
+};
+
+const INTENT_BOTS_SET = new Set(["ChatGPT-User", "chatgpt-user", "PerplexityBot", "perplexitybot"]);
+
+interface BotRow { bot_name: string; visits: number; agents_covered: number; last_seen: string; }
+
+function mergeBots(bots: BotRow[]): BotRow[] {
+  const m = new Map<string, BotRow>();
+  for (const b of bots) {
+    if (!b.bot_name) continue;
+    const k = b.bot_name.toLowerCase();
+    const e = m.get(k);
+    if (e) { e.visits += b.visits; e.agents_covered = Math.max(e.agents_covered, b.agents_covered); if (b.last_seen > e.last_seen) e.last_seen = b.last_seen; }
+    else m.set(k, { ...b });
+  }
+  return Array.from(m.values()).sort((a, b) => b.visits - a.visits);
+}
+
+async function renderLiveStats(sb: any, range: string): Promise<string> {
+  const { interval, label } = RANGE_MAP[range] || RANGE_MAP["7d"];
+
+  const [botResult, summaryResult, mcpResult] = await Promise.all([
+    sb.rpc("run_sql", {
+      query: `SELECT bot_name, count(*)::int as visits, count(DISTINCT agent_id)::int as agents_covered, max(crawled_at)::text as last_seen
+              FROM bot_crawl_logs WHERE crawled_at >= now() - interval '${interval}' AND bot_name IS NOT NULL
+              GROUP BY bot_name ORDER BY visits DESC`,
+    }),
+    sb.rpc("run_sql", {
+      query: `SELECT count(*)::int as total_crawls, count(DISTINCT agent_id)::int as unique_agents, count(DISTINCT bot_name)::int as unique_bots
+              FROM bot_crawl_logs WHERE crawled_at >= now() - interval '${interval}' AND bot_name IS NOT NULL`,
+    }),
+    sb.rpc("run_sql", {
+      query: `SELECT count(*)::int as total_calls FROM mcp_request_logs WHERE created_at >= now() - interval '${interval}'`,
+    }),
+  ]);
+
+  const allBots = mergeBots(botResult.data || []);
+  const summary = (summaryResult.data || [])[0] || { total_crawls: 0, unique_agents: 0, unique_bots: 0 };
+  const mcpSummary = (mcpResult.data || [])[0] || { total_calls: 0 };
+
+  const userBots = allBots.filter(b => INTENT_BOTS_SET.has(b.bot_name));
+  const crawlerBots = allBots.filter(b => !INTENT_BOTS_SET.has(b.bot_name));
+  const userTotal = userBots.reduce((s, b) => s + b.visits, 0);
+  const crawlerTotal = crawlerBots.reduce((s, b) => s + b.visits, 0);
+
+  function botTable(list: BotRow[], total: number): string {
+    const top = list.slice(0, 10);
+    const other = total - top.reduce((s, b) => s + b.visits, 0);
+    let rows = top.map(b => {
+      const pct = total > 0 ? ((b.visits / total) * 100).toFixed(1) : "0";
+      return `<tr><td>${esc(BOT_DISPLAY[b.bot_name] || b.bot_name)} ${catBadge(b.bot_name)}</td><td class="num">${fmt(b.visits)}</td><td class="num">${pct}%</td><td class="num">${fmt(b.agents_covered)}</td><td class="timestamp">${fmtTs(b.last_seen)}</td></tr>`;
+    }).join("\n");
+    if (other > 0) rows += `\n<tr><td class="muted">Other</td><td class="num muted">${fmt(other)}</td><td class="num muted">${total > 0 ? ((other / total) * 100).toFixed(1) : "0"}%</td><td></td><td></td></tr>`;
+    rows += `\n<tr class="total-row"><td>Total</td><td class="num">${fmt(total)}</td><td class="num">100%</td><td></td><td></td></tr>`;
+    return rows;
+  }
+
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: Georgia, "Times New Roman", serif; line-height: 1.7; color: #1a1a1a; max-width: 960px; margin: 0 auto; padding: 1.5rem; }
+h1 { font-size: 1.6rem; margin-bottom: 0.5rem; } h2 { font-size: 1.3rem; margin: 1.5rem 0 0.8rem; border-bottom: 1px solid #ccc; padding-bottom: 0.4rem; }
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.2rem; text-align: center; margin: 1rem 0; }
+@media (max-width: 600px) { .stats { grid-template-columns: repeat(2, 1fr); } }
+.stat-number { font-size: 1.6rem; font-weight: bold; color: #1a56db; } .stat-label { color: #6b7280; font-size: 0.85rem; }
+table { width: 100%; border-collapse: collapse; margin: 0.8rem 0; }
+th { text-align: left; padding: 0.6rem; background: #f1f5f9; border-bottom: 2px solid #d1d5db; font-size: 0.85rem; }
+td { padding: 0.6rem; border-bottom: 1px solid #e5e7eb; } tr:hover { background: #f9fafb; }
+.badge { display: inline-block; padding: 0.1rem 0.4rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+.badge-ai { background: #dbeafe; color: #1e40af; } .badge-search { background: #dcfce7; color: #166534; }
+.badge-seo, .badge-other { background: #f3f4f6; color: #6b7280; }
+.num { text-align: right; font-variant-numeric: tabular-nums; } .muted { color: #6b7280; font-size: 0.85rem; }
+.timestamp { color: #9ca3af; font-size: 0.8rem; } .total-row td { font-weight: bold; border-top: 2px solid #d1d5db; background: #f8fafc; }
+</style></head><body>
+<h1>AI Crawl Statistics (${esc(label)})</h1>
+<div class="stats">
+  <div><div class="stat-number">${fmt(summary.total_crawls)}</div><div class="stat-label">Total Crawls</div></div>
+  <div><div class="stat-number">${fmt(summary.unique_agents)}</div><div class="stat-label">Agents Crawled</div></div>
+  <div><div class="stat-number">${fmt(userTotal)}</div><div class="stat-label">Consumer Queries</div></div>
+  <div><div class="stat-number">${fmt(mcpSummary.total_calls)}</div><div class="stat-label">MCP Calls</div></div>
+</div>
+<h2>Consumer-Triggered Crawls</h2>
+<table><thead><tr><th>Bot</th><th class="num">Crawls</th><th class="num">Share</th><th class="num">Agents</th><th>Last Seen</th></tr></thead>
+<tbody>${botTable(userBots, userTotal)}</tbody></table>
+<h2>Indexing &amp; Training Crawls</h2>
+<table><thead><tr><th>Bot</th><th class="num">Crawls</th><th class="num">Share</th><th class="num">Agents</th><th>Last Seen</th></tr></thead>
+<tbody>${botTable(crawlerBots, crawlerTotal)}</tbody></table>
+</body></html>`;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: CORS });
 
@@ -114,6 +208,7 @@ serve(async (req) => {
     const agentQ = url.searchParams.get("agent");
     const marketQ = url.searchParams.get("market");
     const searchOnly = url.searchParams.get("search_only") === "1";
+    const range = url.searchParams.get("range");
 
     const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 
@@ -126,7 +221,16 @@ serve(async (req) => {
       });
     }
 
-    // Serve pre-rendered static page
+    // If range param is present, run live queries for the requested time window
+    if (range && RANGE_MAP[range]) {
+      const html = await renderLiveStats(sb, range);
+      return new Response(html, {
+        status: 200,
+        headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store", ...CORS },
+      });
+    }
+
+    // Default: serve pre-rendered static page (7-day, for bots and no-range requests)
     const { data, error } = await sb
       .from("static_pages")
       .select("html, rendered_at")
@@ -134,10 +238,12 @@ serve(async (req) => {
       .single();
 
     if (error || !data) {
-      return new Response(
-        `<!DOCTYPE html><html><body><h1>Crawl Stats</h1><p>Stats page is being generated. Please check back in a few minutes.</p></body></html>`,
-        { status: 503, headers: { "Content-Type": "text/html; charset=utf-8", "Retry-After": "300", ...CORS } },
-      );
+      // Fallback: render live 7d if no pre-rendered page exists
+      const html = await renderLiveStats(sb, "7d");
+      return new Response(html, {
+        status: 200,
+        headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store", ...CORS },
+      });
     }
 
     return new Response(data.html, {
