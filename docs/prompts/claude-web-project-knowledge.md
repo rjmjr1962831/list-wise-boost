@@ -279,22 +279,58 @@ From `src/data/master-ssot.md`:
 ### Critical Architecture: No Caching, No Proxy
 
 **The Vercel proxy (`api/serve-clean-html.js`) has been permanently deleted.** All bot-facing Vercel rewrites go directly to Supabase edge functions. There is NO caching layer of any kind:
-- No Vercel CDN cache (s-maxage removed)
+- No Vercel CDN cache (`s-maxage` removed, `max-age=0, must-revalidate` on all bot pages)
 - No `rendered_pages` DB cache
 - No Cloudflare, no KV, no Prerender.io
 
+Root cause of Mar 24 logging incident: `rendered_pages` cache served pages without hitting edge functions. `logBotVisit()` was imported but never called in serve-bot functions (dead import). Proxy was the only thing logging -- when it was deleted, logging dropped 98%. Both issues fixed.
+
 **Vercel log drain disabled**: `vercel-log-drain` edge function returns 410 Gone. Still answers Vercel GET verification probes. Single source of truth: `logBotVisit()` in each serve-bot-* edge function.
 
-**Bot crawl logging**: `logBotVisit()` fires exactly once per edge function execution. Every serve-bot edge function must call it before returning. Fire-and-forget, 28 bot patterns.
+**Bot crawl logging**: `logBotVisit()` fires exactly once per edge function execution. Every serve-bot edge function must call it before returning. Fire-and-forget, 28 bot patterns, `x-forwarded-user-agent` support.
 
-**Architecture:**
+**Architecture (final):**
 ```
-Bot → Vercel CDN (pass-through) → Supabase edge function → logBotVisit() → Response
+Bot → Vercel CDN (pass-through, no cache) → Supabase edge function → logBotVisit() → Response
 ```
 
 ---
 
-### AI Surfaces & Bot Analytics
+### Bot Crawl Volume & Analytics
+
+**Canonical crawl volume: ~161K/day total, ~13K logged via `logBotVisit()`/day.**
+- The 146K/day log drain figure was artificially inflated by duplicates, CDN pass-throughs, multi-counted requests
+- Mar 17-21 backfill to "normalize to ~144K/day" was synthetic -- disregard
+- Each `logBotVisit()` fires exactly once per edge function execution
+- Vercel confirmed NOT caching (X-Vercel-Cache: MISS)
+- The ~161K/day total includes all crawler hits to Vercel CDN (most pass-through without triggering edge functions)
+
+**Bot breakdown (from server logs):**
+
+| Bot | Daily Crawls |
+|-----|-------------|
+| Meta AI (Llama) | 94,088 |
+| PerplexityBot | 22,573 |
+| Applebot | 17,086 |
+| Googlebot | 14,376 |
+| ByteSpider (TikTok) | 3,624 |
+| ChatGPT-User | 3,089 |
+| AhrefsBot | 2,231 |
+| OAI-SearchBot | 1,832 |
+| GPTBot | 1,408 |
+| Bingbot | 670 |
+| Others | 337 |
+| **Total** | **~161,314** |
+
+Meta alone is 58% of all crawler traffic. The 161K/day figure is a powerful proof point for agent outreach and whitepapers -- frame as reinforcement events.
+
+**Human vs Bot classification**: ChatGPT-User, OAI-SearchBot, PerplexityBot = human-initiated. Everything else = automated bot.
+
+**Robots.txt notes**: `Gemini-AI` user-agent may not be real (Google Gemini likely crawls via `Google-Extended`/`GoogleOther`). `Claude-Web` and `Anthropic-AI` may be dead entries (primary Anthropic crawler is `ClaudeBot`). Bytespider feeds ByteDance models, not consumer-facing AI.
+
+---
+
+### AI Surfaces & Rollup
 
 **Rollup -- Complete Rebuild**
 
@@ -307,9 +343,9 @@ Previous rollup had multiple compounding bugs:
 - Outlier agents with up to 349 neighborhoods inflating surface counts
 
 **Fixes deployed:**
-- `normalize_bot_name()` SQL function for consistent casing -- 17 canonical bot names
+- `normalize_bot_name()` SQL function -- 17 canonical bot names
 - Fixed date window: `CURRENT_DATE - 7` to `CURRENT_DATE` (excludes partial day)
-- **Neighborhood fallback matching page behavior**: thick NH (>=3 agents) uses `served_neighborhoods`; thin NH (<3 agents) falls back to city-level -- matches what `serve-bot-list-html` actually shows
+- Neighborhood fallback matches page behavior: thick NH (>=3 agents) uses `served_neighborhoods`; thin NH (<3 agents) falls back to city-level
 - Staging table approach: classifies crawls once, then sequential inserts by type
 - B2 (thin NH) split by state to stay within timeout
 - `SET statement_timeout = '600s'` on function
@@ -336,12 +372,6 @@ Previous rollup had multiple compounding bugs:
 | Bot names | 26 (duplicates) | 17 (normalized) |
 | NH coverage | 50% dropped | 100% attributed |
 
-**Crawl volume -- canonical:**
-- Log drain era (~146K/day) was artificially inflated by duplicates, CDN pass-throughs, multi-counted requests
-- Mar 17-21 backfill to "normalize to ~144K/day" was synthetic -- disregard those numbers
-- **Real volume: ~13K crawls/day** (each `logBotVisit()` fires exactly once)
-- Vercel confirmed NOT caching (X-Vercel-Cache: MISS, max-age=0)
-
 **AI Surfaces Definition (canonical):**
 - City page crawls → all agents in `served_cities`
 - Neighborhood page crawls (thick, >=3 agents) → agents in `served_neighborhoods`
@@ -357,46 +387,63 @@ Previous rollup had multiple compounding bugs:
 - Enabled RLS on `agent_ai_surfaces`, `agent_ai_surfaces_by_bot`, `page_bot_hits`
 - Changed `mcp_request_stats` view from SECURITY DEFINER to SECURITY INVOKER
 
-**Known issue:** `serve-bot-list-html` neighborhood agent selection now matches rollup logic (thick/thin split). `agent_neighborhood_subscriptions` table exists but isn't used.
+**Pending manual SQL**: `rollup_ai_surfaces_monthly` needs update: `> now() - interval '7 days'` → `>= CURRENT_DATE - 7 AND < CURRENT_DATE`.
 
 ---
 
 ### Email Infrastructure & Campaigns
 
 **Campaign Status**
-- "Listed 7d crawl" launched 2026-03-21: 2,986 agents queued, 251 sent initially, 90 opens (60% open rate), 5 clicks (3.6% CTR), 9 bounces (3.6%). Campaign paused then resumed -- 2,690 remaining across 4 sender accounts (~670 each).
-- Daily ramp: 40 base × 1.10^days. Day 3 = ~48/box, ~192/day total. Queue drains ~Mar 31 -- Apr 1.
-- Open rate inflated by Apple Mail Privacy Protection. CTR is 2x cold email benchmark. Bounce rate (3.6%) above ideal (<2%).
+- "Listed 7d crawl" launched 2026-03-21: 568 sent, 28 bounced, 12 unsubscribed.
+- Corrected metrics (after bot/scanner filter): ~37 real opens (6.5%), ~6 real clicks (1.1%).
+- Daily ramp: 40 base × 1.10^days. Queue drains ~Mar 31 -- Apr 1.
 - 30 team rows + 1 pending_email_verification row pulled from queue (set to `skipped`). Root cause: `CampaignManager.tsx` missing `exclude_teams: true` -- fixed.
+
+**Bot/Scanner Click Detection (deployed)**
+- Email security scanners (Barracuda, Proofpoint, Mimecast, Microsoft Defender) pre-fetch every link within 3-15 seconds of delivery, spoofing real browser user agents from AWS IPs.
+- `email-track` edge function: clicks < 60 seconds after `sent_at` = scanner → no task, no alert, logged to console only.
+- Unsubscribe link clicks → no task, no alert.
+- Human click on real link (>60s, not unsub) → creates `email_clicked` task + sends alert.
+- Human click on `/funnel/` link → also creates `funnel_landed` task server-side (no longer depends on SPA JS executing).
+- Unsubscribed agents (`email_unsubscribed = true`) skip all task creation.
+
+**Bounce Exclusion**
+- `exclude_bounced` defaulted `true` in `ListMakerCriteria`. Filter `lead_status != 'email_bounced'` in ListMaker, CampaignManager, and `list-maker-export`.
+- `gmail-sync` now sets `lead_status = 'email_bounced'` on professionals when bounce detected.
+- Completing a bounce task clears `lead_status` back to `'warm'` -- agent re-eligible for campaigns.
 
 **Sequencer Bugs Fixed (all deployed)**
 - UTC/MST date mismatch: `todayStr` used UTC, causing daily counter to reset at 5pm MST. Fixed with `getMSTDateStr()` helper.
-- No global daily cap: Each sender had independent limits. Added global cap summing all accounts' volume for the MST day.
+- No global daily cap: Added global cap summing all accounts' volume for the MST day.
 - Paused campaigns ignored: Sequencer now checks `email_campaigns.status` and enforces campaign-level `max_per_day`.
-- Base64 body parts: RFC 2045 compliant (76-char line wrapping) -- Proton Mail was silently rejecting.
-- HTML document wrapper: `<!DOCTYPE html><html><body>` required -- Gmail was rendering raw tags.
+- Campaign daily cap timezone bug fixed (hardcoded -07:00 offset replaced with explicit UTC boundaries from MST date).
+- Base64 body parts: RFC 2045 compliant (76-char line wrapping).
+- HTML document wrapper: `<!DOCTYPE html><html><body>` required.
 - Click tracking: Covers all links including our own domain. Only the tracker URL itself excluded.
 - Campaign counters: `run_sql` is SELECT-only, was silently failing -- replaced with `.update()`.
-- Bounce detection: Sequencer sweeps Gmail inboxes for mailer-daemon messages, marks queue rows as failed, creates CRM tasks. Bounce is post-delivery.
+- Bounce detection: Sequencer sweeps Gmail inboxes for mailer-daemon messages, marks queue rows as failed, creates CRM tasks.
 - HTML detection in gmail-send: Skips `textToHtml()` when input is already HTML.
+- `<p>` tag margins: Gmail/Outlook reset to 0. Fixed by injecting `style="margin:0 0 1em 0;"` on every `<p>` in both `sequencer-v2-tick` and `gmail-send`.
+- Plain text with HTML links: `\n→<br>` conversion in HTML mode.
 - Mark Garland display name added in From header for `mark@` accounts.
-- Campaign daily cap timezone bug fixed (hardcoded -07:00 offset).
-- `gmail-send` now tracks volume in `email_send_volume`.
-- Email line breaks: inline `<p>` margins + `\n→<br>` in HTML mode.
+- `gmail-send` tracks volume in `email_send_volume`.
+- `gmail-oauth-callback` edge function deployed (was missing).
 - Deprecated `sequence-processor` returns 410 Gone.
-- Funnel routing: Certified agents go to `/dashboard/`, not `/funnel/`.
-- Upgrade button: `/pricing` (dead) → `/tier` (correct).
+
+**Unsubscribe Fix**
+- `unsubscribe` edge function now marks `sent` queue items (not just pending) as `unsubscribed`.
+- Backfilled 12 unsubscribed agents in active campaign.
 
 **Sender Config**
-- 4 active sender accounts for campaigns (mark excluded). All 5 available for task emails.
+- 5 sender accounts total (mark@ now connected via OAuth). 4 active for campaigns, all 5 for task emails.
 - Send limits: 40/day start, +10% compound ramp. Campaign start date: 2026-03-21.
 - Send window: 5am-8pm MST, Mon-Sat. 3-minute minimum cooldown between sends per account.
 - Global daily cap = per-account limit × number of accounts.
 
 **Email Bounce Handling**
-- 9 post-delivery bounces flagged (Arsen Sarapinian, Brad Rawlins, Brenda Hayes, Brenda Reynolds, Brian Laughlin, Dianne Barrett, Farideh Farinpour, Frank Crandall, Freddy Cabral). All set to `lead_status = 'email_bounced'`. CRM tasks created.
+- 9 post-delivery bounces flagged. All set to `lead_status = 'email_bounced'`. CRM tasks created.
 - 45 new emails found via Serper. 22 corrected emails for wrong-person assignments. 161 agents flagged `pending_email_verification`. 34 teams identified, 31 team leaders written to `headline` field.
-- Auto-resolve bounces via ZeroBounce + Exa suggestions.
+- Auto-resolve bounces via ZeroBounce + Exa suggestions (`auto-resolve-bounces` edge function).
 
 **Campaign Wizard (7-step flow)**
 1. Create or Select Campaign
@@ -406,9 +453,9 @@ Previous rollup had multiple compounding bugs:
 5. Review -- email preview with sample data.
 6. Test -- send to Robert's addresses.
 7. Launch -- draft, immediate, or scheduled.
-- Variable interpolation at queue time -- launch fetches all agent data via `list-maker-export`, interpolates every `{{variable}}` per agent before queuing.
-- Campaign wizard now loads templates from `crm_email_templates`.
-- Merge variables standardized: First Name, Full Name, Tier, City, Dashboard, AIFS Score, Crawl Stats 7d across all compose surfaces.
+- Variable interpolation at queue time. Campaign wizard loads templates from `crm_email_templates`.
+- Merge variables standardized: First Name, Full Name, Tier, City, Dashboard, AIFS Score, Crawl Stats 7d across all compose surfaces. "Magic Link" renamed to "Dashboard" everywhere.
+- `Total Bot Crawls (7d)` added to ListMaker OUTPUT_FIELDS.
 
 **Post-deploy hook**: Auto-sends test email to `robert@aryah.ai` after email function deploys.
 
@@ -416,25 +463,17 @@ Previous rollup had multiple compounding bugs:
 
 ### CRM Improvements
 
-- **Tasks: Sales vs Ops tabs** -- Sales (clicks, funnel activity), Ops (opens, bounces, follow-ups, field changes).
-- **Click auto-closes open task** -- no duplicate tasks across Ops/Sales tabs.
-- **Inline field editor** on ContactDetail with audit log (`crm_field_change_log` table).
-- **Phone Sale button** on TasksManager sales tasks and ContactDetail.
-- `create-stripe-invoice` edge function: Stripe Invoice API, sends payment link by email.
-- `SandboxStep5Tier`: `?mode=sales` shows "Send Invoice" instead of Stripe Checkout.
-- Routes: Listed→`/funnel/{token}/contact?mode=sales`, Certified+→`/dashboard/{token}?mode=sales`.
-
----
-
-### Nightly License Verification
-
-- `verify-licenses-nightly` edge function: batch-verifies all 3,256 agents against AZDRE/CalDRE. Resumable (skips agents verified within 24h). 10 concurrent lookups per batch.
-- Agents with unverifiable licenses: auto de-listed (`active=false`), `license_review` task created.
-- Status changes (Active→Suspended/Revoked): agent de-listed, profile retained with "Verified Inactive" schema signal.
-- Agent profiles show "Confirmed [date]" next to license number.
-- JSON-LD `hasCredential` now includes `credentialStatus` and `dateVerified`.
-- `dateModified` on agent profiles uses max(updated_at, license_verified_at).
-- pg_cron: `*/30 8-11 * * *` (every 30 min, 1-4am MST). Needs manual creation in SQL editor.
+- **Tasks: Sales vs Ops tabs** -- Sales (email_clicked, funnel_landed, funnel_engaged, funnel_pricing_viewed, funnel_tier_selected, funnel_checkout, funnel_completed). Ops (email_opened, email_bounced, inbound_reply, follow_up, aifs_analysis, founder_contact, field change requests).
+- **Click auto-closes open task** -- `email_opened` Ops task auto-completed with note "promoted to Sales". Sequencer v2 click changed to `.upsert()` to prevent duplicates.
+- **Inline field editor** on ContactDetail: dropdown of 26 curated fields + all remaining, current value display, Save button. Saves via `update-professional-field` edge function.
+- **Audit log**: `crm_field_change_log` table (migration SQL created, needs manual run in Supabase SQL editor).
+- **Phone Sale button** on TasksManager sales tasks and ContactDetail. Routes by tier (Listed→funnel, others→dashboard) with `?mode=sales`.
+- `create-stripe-invoice` edge function: creates Stripe customer, generates invoice, sends via Stripe email. Agent pays via hosted link.
+- `SandboxStep5Tier`: `?mode=sales` shows "Send Invoice" instead of Stripe Checkout. `SandboxInvoiceSent` confirmation page added.
+- Routes: Listed→`/funnel/{token}/contact?mode=sales`, Certified+→`/dashboard/{token}?mode=sales`. Mode preserved across all funnel steps.
+- **Contact button hidden** when `professional_id` is null (fixes hang on review_request tasks with no matched professional).
+- **Live Activity Feed removed** from Campaign Monitor (first-name-only opens/clicks with no actionable context). Stats grid retained.
+- **CRM task cleanup**: Deleted 1,270 false-positive tasks (868 license_alerts, 374 scanner email_opened, 28 scanner email_clicked). 99 real pending tasks remain.
 
 ---
 
@@ -446,7 +485,7 @@ Replaced old 8-step flow with:
 1. **Your Listing** -- AI surface stats, value prop nugget, "Certify Your Listing" CTA
 2. **Contact** -- Email, 3 phone fields (mobile/business/other), website -- each with publish toggle sliders and per-field auto-save on blur. US phone formatting on blur.
 3. **Cities** -- Hierarchical city selector (region → sub-region → individual city checkboxes). AZ uses flat bundles; CA uses full 3-level hierarchy.
-4. **Neighborhoods** -- Search filtered to only cities selected in step 3. Nearby suggestions also filtered.
+4. **Neighborhoods** -- Search filtered to only cities selected in step 3. Nearby suggestions also filtered. Fuzzy matching for `nearby_neighborhoods` text field names.
 5. **Tier/Pricing** -- 3 tier cards with revenue calculator. Monthly/annual toggle inside each paid card.
 
 **Key Funnel Decisions**
@@ -456,20 +495,22 @@ Replaced old 8-step flow with:
 - No AIFS score context bar on tier page
 - Nugget always above title on every step
 - CTAs: "Stay with Free" / "Choose Audited" / "Choose Underwritten" (prices removed from button text)
-- Dev mode: success page auto-reverts agent to Listed, clears all changes, "Test Again" button. Snapshot on step 1 entry, restore on completion.
+- Dev mode: success page auto-reverts agent to Listed, clears all changes, "Test Again" button.
 
 **Routing**
 - `/funnel/:token/*` and `/sandbox/:token/*` serve same components via `useBasePath()` hook
-- `sandbox` added to Vercel SPA rewrite pattern
+- Certified/Audited/Underwritten agents routed to `/dashboard/:token` instead of `/funnel/:token`
+- `SandboxStep1` redirects paid-tier agents to dashboard on entry
+- Upgrade button fixed: `/funnel/:token/pricing` → `/funnel/:token/tier` (also fixed in `Step6Neighborhoods` and `VisibilityTiersPage`)
 
 **TierPricingCalculator:** Default deal size $750k, default close rate 20%, heading "Calculate your first year revenue uplift", hero label "1st Year Rev Uplift."
 
-**Funnel Instrumentation**: All steps tracked via `crm_contact_activity` + `crm_tasks` for high-signal events. Email alerts for click and tier selection to `rjmjr1@proton.me`.
+**Funnel Instrumentation**: All steps tracked via `crm_contact_activity` + `crm_tasks`. `funnel_landed` tasks created server-side in `email-track` (no longer depends on SPA JS). Column name fix in `funnel-track.ts` (`activity_type` → `event_type`, `description` → `subject`). Email alerts for click and tier selection to `rjmjr1@proton.me`.
 
 **Funnel Conversion Audit -- Pending:**
-1. Add "email me this link" + auto-save + DB persistence -- close tab = lose everything is #1 structural risk.
+1. Add "email me this link" + auto-save + DB persistence.
 2. Add testimonial + competitor comparison + product preview before pricing.
-3. StepSuccess needs Web of Truth badge setup as primary CTA, not "Go to Homepage."
+3. StepSuccess needs Web of Truth badge setup as primary CTA.
 
 ---
 
@@ -477,9 +518,10 @@ Replaced old 8-step flow with:
 
 - **stripe-webhook**: Fixed tier detection -- reads `badgeTier` from subscription metadata. SDK upgraded v14.21.0 → v18.5.0, API version `2025-08-27.basil`.
 - **complete-agent-subscription**: Sets `badge_tier` and `badge_status` from checkout session metadata on payment success.
-- **AgentDashboard**: "Upgrade Package" button navigates to `/funnel/:token/pricing`. Added `?section=` deep-link support for tabs.
+- **AgentDashboard**: "Upgrade Package" button navigates to `/funnel/:token/tier`. Added `?section=` deep-link support for tabs.
 - **Payment Success Page**: Shows tier badge, AIFS score, band label. Web of Truth CTA with pulsing tier orb. "What just changed" section. Inline question form submits to `field_change_requests` as CRM task.
 - **Certified tier added to `TIER_META`** (was missing -- Certified agents saw "Audited tier is active").
+- Robert Maynard: all 3 test rows updated to `current_tier = "certified"`.
 - Stripe secrets confirmed: STRIPE_SECRET_KEY and STRIPE_WEBHOOK_SECRET set in Supabase.
 
 ---
@@ -487,24 +529,66 @@ Replaced old 8-step flow with:
 ### GEO & Content Consistency
 
 - **Agent counts standardized**: 3,262 total (872 AZ + 2,390 CA) across mcp.json, ai-content-index.json, llms.txt, llms-full.txt, FAQ, React pages, edge functions, admin demos.
-- **Certified tier**: Active. "Invitation-only" language replaced with merit-based selection across 14 files. Refresh corrected to "quarterly" everywhere.
-- **Selection rationale**: 12 DB records updated -- "fewer than 1% of licensed agents in covered markets."
+- **Certified tier**: Active. "Invitation-only" language replaced with merit-based selection across 14 files. Refresh corrected to "quarterly" everywhere. Selection rationale: "fewer than 1% of licensed agents in covered markets."
 - **Source count language removed** (27 files, ~70 replacements): Listed/Certified = "Core credential verification", Audited = "Expanded background research", Underwritten = "Exhaustive background research".
 - **Coverage counts must match sitemaps**: coverage-stats, FAQ, /for-ai all use same filtered query (Sitemap Rule A).
-- **GEO audit remediations**: C1 coverage-stats counts only qualifying agents; H1 FAQ dynamic language; H2 `/why-ai-trusts-us` → 301 `/for-ai`; H3 `/login` → 301 `/agent-login`; H4 homepage OG image tag; H5 `get_founder_profiles` in mcp.json; M1 all 10 ai-feed dates bumped to 2026-03-21.
-- **GEO enhancements**: ItemList JSON-LD with `url`, `areaServed`, `itemListOrder`. Lead summary paragraph (`data-ai-summary="true"`). Dynamic `dateModified` from agent `updated_at`. Dataset JSON-LD on all neighborhood pages (Professional Performance Audit schema, CC BY 4.0, three variableMeasured). Homepage "Browse by State" section -- 18 links to AZ/CA hubs + top cities. Nofollow on all external links.
+- **GEO audit remediations (all deployed)**:
+  - Homepage "Browse by State" section -- 18 links to AZ/CA hubs + top cities. Addresses 6,104 "discovered but not indexed" pages.
+  - `rel="nofollow noopener"` on all external links in city/neighborhood/agent pages.
+  - `dateModified` freshness: agent profiles use max(updated_at, license_verified_at).
+  - CC BY 4.0 on all Dataset schemas (was `/terms`).
+  - H2 `/why-ai-trusts-us` → 301 `/for-ai`; H3 `/login` → 301 `/agent-login`; H4 homepage OG image tag; H5 `get_founder_profiles` in mcp.json; M1 all 10 ai-feed dates bumped to 2026-03-21.
+- **GEO enhancements**: ItemList JSON-LD with `url`, `areaServed`, `itemListOrder`. Lead summary paragraph (`data-ai-summary="true"`). Dataset JSON-LD on all neighborhood pages (Professional Performance Audit schema, CC BY 4.0, three variableMeasured, creator with parentOrganization Aryah Inc., spatialCoverage with GeoCoordinates). Homepage "Browse by State" section. Nofollow on all external links.
 - **`serve-stats-json`** edge function at `/stats.json` (1-hour cache): 3,262 agents, 1,738 cities, 10,144 neighborhoods.
 - **Founder → Cofounder**: All public-facing references updated (9 files). Schema.org arrays include both Robert Maynard and Mark Garland.
-- **Methodology page**: Nightly License Integrity Audit section + Dataset JSON-LD.
-- **llms-full.txt**: Nightly license verification section added.
+- **Methodology page**: Nightly License Integrity Audit section + Dataset JSON-LD (`#license-integrity`).
+- **llms-full.txt**: Nightly license verification section added (24-hour refresh cycle, de-listing policy, Verified Inactive signal).
+- **Homepage quote**: Changed from ChatGPT to Gemini: "Being on Top10Lists.us is the difference between being a 'Maybe' and being the 'Definitive Answer.'"
+- **Homepage hero**: Merit gate checklist added. "We don't sell leads" section moved above "AI has moved."
+- **ZLIP whitepaper page**: `/about/zlip-whitepaper` -- clean-room HTML with ScholarlyArticle JSON-LD.
+
+**GSC Coverage:**
+- Indexed pages: 11 (Jan 2) → 6,879 (Mar 15). 625x increase.
+- Mar 15-17 drop: 6,879 → 5,003 (lost 1,876 pages) -- needs investigation, cross-reference Vercel deploy history.
+- 6,104 "discovered, not indexed" pages -- homepage Browse by State (deployed) should start moving these. Monitor over next 2 weeks.
+- 529 "crawled, not indexed" -- content quality issue.
+
+**GSC Datasets:** Zero valid items Feb 25 -- Mar 20 (25 days). 1 item returned Mar 21. CC BY 4.0 and creator field fixes already deployed -- should restore valid items.
+
+**GEO Audit Score: 88/100.** Strengths: LLM Protocol Layer 98/100, Schema on City Pages 95/100, Agent Profile Schema 92/100. Remaining gap: no FAQPage schema on city/neighborhood pages (incremental opportunity). Page sizes (Phoenix 194KB, McCormick Ranch 213KB) worth monitoring as states expand.
+
+**Oracle/TVPR dual-domain strategy rejected.** Agreed direction: "Unified Oracle" -- deepen verification signals on Top10Lists.us itself. Subfolder architecture (top10lists.us/registry/agent-id-123) rather than a second domain. All 161K daily crawler hits compound on one domain.
 
 ---
 
-### Enrichment Pipeline
+### Nightly License Verification
 
-- **LinkedIn enrichment via Serper**: `enrich-linkedin-batch` edge function + `--linkedin` flag in orchestrator. 39 profiles found. ~30% hit rate on high-review agents.
-- **ZeroBounce integration**: email verification for bounce recovery. API key in Supabase secrets.
-- **Correct enrichment costs (canonical)**: Serper $0.003/search, Memo23 $0.03/agent, Exa $0.003/search, DeepSeek $0.0002/agent. Google Places/Maps NOT used. Prequalification pass rate ~2%.
+- `verify-licenses-nightly` edge function: batch-verifies all 3,256 agents against AZDRE/CalDRE. Resumable (skips agents verified within 24h). 10 concurrent lookups per batch, 1s inter-batch delay.
+- 3,156 of 3,256 agents verified on first run.
+- Agents with unverifiable licenses: auto de-listed (`active=false`), `license_review` task created.
+- Status changes (Active→Suspended/Revoked): agent de-listed, profile retained with "Verified Inactive" schema signal, `license_alert` task created.
+- Agent profiles show "Confirmed [date]" next to license number.
+- JSON-LD `hasCredential` now includes `credentialStatus` and `dateVerified`.
+- `dateModified` on agent profiles uses max(updated_at, license_verified_at).
+- pg_cron: `*/30 8-11 * * *` (every 30 min, 1-4am MST). Needs manual creation in SQL editor.
+
+---
+
+### Texas Expansion
+
+**47 cities, 1,140 neighborhoods added.**
+
+- 11 core cities (250k+ population): Houston, San Antonio, Dallas, Austin, Fort Worth, El Paso, Arlington, Corpus Christi, Plano, Lubbock, Laredo.
+- 36 satellite cities (50k+): 17 DFW, 12 Houston, 6 Austin, 1 San Antonio.
+- OSM Overpass API: 1,091 neighborhoods across 8 metro bounding boxes. Supplemented DFW (209) and SA (105) from web research. Final: 1,140 after dedup.
+- Census ACS 2023: 1,989 TX ZCTAs -- median income, home value, rent, tenure, vacancy.
+- HMDA 2022: 419,419 mortgage originations across 591 ZIPs.
+- Tier scores: Main (510), Prime (499), Luxury (135).
+- Nearby neighborhoods: haversine distance, 3mi radius, max 10 per neighborhood.
+- State config updated in 10 files: neighborhood-writeup-cron, batch-neighborhood-writeups, generate-sitemap, coverage-stats, city-content-enrichment, artifact-markdown, backfill-license-numbers, generate-static-sitemaps, generate-dynamic-counts, generate-ai-feeds.
+- Scripts created: `build-texas-catalog.ts`, `enrich-texas-catalog.ts`, `save-supplements.ts`, `ingest-texas-neighborhoods.ts`.
+- Writeups not yet triggered -- edge functions need deployment first.
+- Writeup generation switched to DeepSeek for Prime/Luxury tiers (was Claude Sonnet). Main tier still Gemini-only. Estimated cost for 1,140 TX neighborhoods: < $1.00.
 
 ---
 
@@ -520,13 +604,21 @@ Replaced old 8-step flow with:
 
 ---
 
+### Enrichment Pipeline
+
+- **LinkedIn enrichment via Serper**: `enrich-linkedin-batch` edge function + `--linkedin` flag in orchestrator. 39 profiles found. ~30% hit rate on high-review agents.
+- **ZeroBounce integration**: email verification for bounce recovery. API key in Supabase secrets. `auto-resolve-bounces` edge function: parses Exa suggestions from bounce tasks, validates via ZeroBounce (valid only, no catch-all), fuzzy name-matches, updates email + resets lead_status, marks task completed.
+- **Correct enrichment costs (canonical)**: Serper $0.003/search, Memo23 $0.03/agent, Exa $0.003/search, DeepSeek $0.0002/agent. Google Places/Maps NOT used. Prequalification pass rate ~2%.
+
+---
+
 ### Clean-Room & Site Infrastructure
 
 - **Clean-room migration**: All public pages migrated from React SPA to Supabase edge functions. React SPA now only for authenticated routes.
 - **Shared `_shared/site-chrome.ts`**: `breadcrumbJsonLd()` and `ogTags()` helpers integrated into all 9 serve-bot edge functions.
 - **MCP endpoint**: `api/mcp.js` Vercel proxy adds Supabase auth headers. AI systems call POST `/mcp` without auth.
 - **Sitemap automation**: Runs on every build via prebuild. Pages/states/cities/neighborhoods: `changefreq=daily`. Agent pages: Underwritten=daily, Audited=monthly, Certified=monthly, Listed=yearly.
-- **Vercel rewrites**: `/stats.json` → serve-stats-json; `/for-ai-systems` → `/for-ai`; `/methodology` → `/about/ranking-methodology`; `/crm` → /404 on production.
+- **Vercel rewrites**: `/stats.json` → serve-stats-json; `/for-ai-systems` → `/for-ai`; `/methodology` → `/about/ranking-methodology`; `/crm` → /404 on production. All 49 bot-facing rewrites now point directly to Supabase edge functions.
 - **`Link` header**: `</.well-known/mcp.json>; rel="mcp-server"` on all responses.
 - **prebuild**: Runs `generate:counts` + `generate:sitemaps` on every build.
 - **pg_cron jobs**: `sequencer-v2-tick` every 2 minutes. `rollup-ai-surfaces` daily 05:00 UTC (job 41). `purge-bot-crawl-logs` daily 03:00 UTC (30-day retention). `verify-licenses-nightly` every 30 min, 1-4am MST.
@@ -536,7 +628,7 @@ Replaced old 8-step flow with:
 - **Claude Web takeaways repo**: `rjmjr1962831/top10lists-knowledge` (not `list-wise-boost`).
 
 **Edge Function Updates**
-- `update-professional-field`: Added `phone_numbers` and `website_visible` to allowed fields. All funnel saves go through this function (not direct `.update()`) to bypass RLS.
+- `update-professional-field`: Added `phone_numbers` and `website_visible` to allowed fields. All funnel saves go through this function (not direct `.update()`) to bypass RLS. Allowlist expanded for CRM field editor.
 - `website_visible` boolean column added to `professionals` table (default true).
 
 **Founder Profile System**
@@ -544,9 +636,11 @@ Replaced old 8-step flow with:
 - `serve-bot-founder-html`: fetches live profiles, enriches JSON-LD Person schemas, renders claims with verification links.
 - Verifiable claims: `{ text, sourceUrl }` objects with verification URLs (SEC EDGAR, FTC, Delaware corp search, etc.).
 
-**DB Connection Note**: DATABASE_PASSWORD in .env is stale (auth fails). `supabase db query --linked` works (uses management API auth). DB direct connection is IPv6-only from Robert's machine.
+**Agent profile `preview_tier` param**: shows Community/Awards/Press sections with fallback content.
 
-**Rollup Fix (pending manual SQL)**: `rollup_ai_surfaces_monthly` needs update: `> now() - interval '7 days'` → `>= CURRENT_DATE - 7 AND < CURRENT_DATE`.
+**Homepage review form**: Added required fields (brokerage name, state dropdown), license number OR Zillow URL required. Privacy notice added.
+
+**DB Connection Note**: DATABASE_PASSWORD in .env is stale (auth fails). `supabase db query --linked` works (uses management API auth). DB direct connection is IPv6-only from Robert's machine.
 
 ---
 
@@ -559,64 +653,12 @@ Replaced old 8-step flow with:
 
 ---
 
-### gildi.ai Transition
+### Conversion Strategy
 
-Robert has decided to convert Top10Lists.us to **gildi.ai** over the next few months.
-- `ptgs` = push to gildi staging; `ptgm` = push to gildi main.
-- Unless Robert specifically says `ptgs` or `ptgm`, NO development for gildi.ai. All current work stays on Top10Lists.us codebase.
+**Core finding from deep research**: The conversion gap isn't the product -- it's the conversion architecture. Universal playbook: pre-populate profiles, surface something alarming about the unclaimed profile, offer a free "claim" (reframe from "sign up" to "claim"), gate premium features behind paywall after customization creates psychological ownership.
 
----
+**Benchmark rates**: Industry median 2-5% free-to-paid, 5-10% with sales-assisted models. Applied to 3,487 agents: 20% claim rate = ~700 claimed, 5-7% paid = 35-50 paying customers.
 
-### Standing Rules
+**Why cold email alone won't work**: B2B cold email reply rates 3-5%; for RE agents 0.1-0.3% for desired actions. At 100K contacts with optimistic assumptions: ~90 claimed profiles.
 
-- **NO CACHING ON BOT-FACING PAGES**: No rendered_pages, no CDN s-maxage, no KV, no Cloudflare, nothing. The Vercel proxy is dead. Do not recreate it.
-- **logBotVisit() is REQUIRED**: Every serve-bot edge function must call it before returning. If you create a new one, add the call.
-- **Vercel log drain is dead**: Returns 410 Gone. Do not re-enable. `logBotVisit()` is the only crawl logging mechanism.
-- **Real crawl volume is ~13K/day**: The 146K/day log drain numbers were inflated. Do not use old backfill data for benchmarks.
-- **TEST BEFORE DONE**: Never say "done" without verifying end-to-end with real data. Show receipts.
-- **DO NOT PUSH without Robert's express permission** -- all dev on localhost.
-- **run_sql is SELECT-only**: Use `.update()`/`.insert()` for writes.
-- **RLS blocks anonymous updates**: Funnel saves must go through edge functions with service role.
-- **Supabase 1,000-row limit**: Always paginate tables that can exceed 1,000 rows.
-- **Vercel SPA rewrite** must include any new client-side route prefix.
-- **HTML emails must be wrapped**: `<!DOCTYPE html><html><body>` on every body.
-- **Base64 must be line-wrapped**: 76 chars per line per RFC 2045.
-- **Sequencer send window is MST-aligned everywhere**: Both `isInSendWindow()` and volume tracking `todayStr` must use MST dates.
-- **Campaign pause enforced by sequencer**: Must check `email_campaigns.status` before sending.
-- **All links tracked**: Including our own domain. Only the tracker URL itself excluded.
-- **Bounce detection is post-delivery**: Sequencer sweeps inboxes for mailer-daemon messages.
-- **No source counts**: Never reference specific source counts. Use tier-appropriate depth language.
-- **Certified tier is ACTIVE**: 4 tiers: Listed / Certified / Audited / Underwritten.
-- **Agent selection model**: Merit-based by Top10Lists. Not "invitation-only," not "open signup."
-- **Coverage counts must match sitemaps** (Sitemap Rule A).
-- **AI surfaces are neighborhood-specific**: Thick NH (>=3 agents) → `served_neighborhoods`; thin NH (<3) → city-level fallback.
-- **`served_neighborhoods` is canonical** agent-to-neighborhood mapping. Re-run `assign-neighborhoods.ts` after enrichment. Hard cap: 30 neighborhoods per agent.
-- **Numbers must foot**: Any number on crawl-stats, dashboards, or emails must use same methodology and 7-day window.
-- **`@tailwindcss/typography` plugin** installed but NOT in tailwind.config.ts plugins. `prose` class does nothing -- use explicit child selectors like `[&_p]:mb-3`.
-- **Human vs Bot**: ChatGPT-User, OAI-SearchBot, PerplexityBot = human-initiated. Everything else = automated bot.
-- **gildi.ai**: No development unless Robert explicitly says `ptgs` or `ptgm`.
-
----
-
-### Deprecated or Removed
-
-- Vercel log drain -- disabled, returns 410 Gone. `logBotVisit()` is sole source of truth.
-- Mar 17-21 crawl backfill data (~144K/day) -- synthetic, do not use for benchmarks.
-- Old `rollup-agent-ai-surfaces` cron -- replaced with `rollup-ai-surfaces` (job 41, 05:00 UTC).
-- Duplicate rollup cron job 49 (04:00 UTC) -- unscheduled.
-- Old surface numbers (98-119M, then 10.3M) -- correct current range ~37.5M for 7-day window.
-- `mcp_request_stats` SECURITY DEFINER -- changed to SECURITY INVOKER.
-- Old PaymentSuccess page (light theme) -- replaced by `AgentPaymentSuccess`.
-- Original badge PNGs with black backgrounds -- replaced with transparent HAL 9000 orbs.
-- "1,000+ sources" / source count language everywhere.
-- "Founder" title -- now "Cofounder".
-- Old 8-step funnel (`/review-1`, `/review-credentials`, `/review-2`, `/review-final`, `/pricing`) -- replaced with 5-step flow.
-- Old CA city bundles (11 flat bundles, ~40 slugs) -- replaced with 36 sub-regional bundles, 467 slugs.
-- 30% close rate assumption. Old AIFS default of 42. Old deal size default of $500k.
-- Hardcoded coverage counts in FAQ.
-- Old daily limit formula (per-domain tiers) -- replaced with universal `40 × 1.10^days`.
-- `/compare` (AICompare.tsx) and `/why-ai-trusts-us` (WhyAITrustsUs.tsx) -- deleted.
-- "pre-rendered HTML" language in robots.txt -- replaced with "clean-room HTML".
-- All draft/active campaigns and 15,105 queued emails deleted (clean slate before relaunch).
-- "What AI sees" detail columns from tier page. AIFS score context bar from tier page. "Stay with your free listing" exit link.
-- Unlimited neighborhood assignment per agent (now capped at 30).
+**Five concrete
