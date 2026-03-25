@@ -251,7 +251,8 @@ export default function SandboxStep4Neighborhoods() {
           body: { professional_id: professional.id, field: 'neighborhoods', value: nhNames },
         }),
       ]);
-      window.location.href = `/agent/dashboard?id=${professional.id}`;
+      const dashToken = professional.verification_token || token;
+      window.location.href = `/dashboard/${dashToken}`;
       return;
     }
 
@@ -439,7 +440,7 @@ export default function SandboxStep4Neighborhoods() {
 
           <div className="flex justify-between pt-2">
             {isDashboardEdit ? (
-              <Button variant="ghost" onClick={() => window.location.href = `/agent/dashboard?id=${professional?.id}`}>
+              <Button variant="ghost" onClick={() => { const t = professional?.verification_token || token; window.location.href = `/dashboard/${t}`; }}>
                 Cancel
               </Button>
             ) : (
