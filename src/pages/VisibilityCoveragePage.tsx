@@ -113,20 +113,18 @@ export default function VisibilityCoveragePage() {
         if (isDashboardEdit && professionalId) {
           const { data: prof } = await supabase
             .from('professionals')
-            .select('state_slug, service_areas')
+            .select('state_slug, service_areas, served_cities')
             .eq('id', professionalId)
             .single();
-          
+
           if (prof?.state_slug) {
             stateFilter = prof.state_slug;
             setAgentStateSlug(prof.state_slug);
           }
 
-          // Pre-select existing service_areas
-          if (prof?.service_areas && Array.isArray(prof.service_areas)) {
-            // Will match after cities load below
-            var existingServiceAreas = prof.service_areas;
-          }
+          // Will match after cities load below
+          var existingServiceAreas = prof?.service_areas || [];
+          var existingServedCities = prof?.served_cities || [];
         }
 
         const { data, error } = await supabase
@@ -165,14 +163,17 @@ export default function VisibilityCoveragePage() {
           setBundles(resolvedBundles);
         }
 
-        // Pre-select existing service_areas (dashboard edit mode)
-        if (isDashboardEdit && existingServiceAreas) {
+        // Pre-select existing cities (dashboard edit mode)
+        if (isDashboardEdit && (existingServiceAreas?.length || existingServedCities?.length)) {
           const existingNames = new Set(
-            existingServiceAreas.map((a: string) => a.replace(/,\s*[A-Z]{2}$/, '').trim())
+            (existingServiceAreas || []).map((a: string) => a.replace(/,\s*[A-Z]{2}$/, '').trim().toLowerCase())
+          );
+          const existingSlugs = new Set(
+            (existingServedCities || []).map((s: string) => s.toLowerCase())
           );
           const preSelected = new Set<string>();
           cityOptions.forEach((city) => {
-            if (existingNames.has(city.name)) {
+            if (existingNames.has(city.name.toLowerCase()) || existingSlugs.has(city.slug?.toLowerCase())) {
               preSelected.add(city.id);
             }
           });
