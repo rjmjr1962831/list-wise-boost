@@ -351,6 +351,14 @@
       "destination": "/api/html?fn=serve-bot-state-html&path=/california/top10realestateagents"
     },
     {
+      "source": "/for-ai/performance-guarantee",
+      "destination": "/for-ai/performance-guarantee.html"
+    },
+    {
+      "source": "/for-ai/performance-guarantee/",
+      "destination": "/for-ai/performance-guarantee.html"
+    },
+    {
       "source": "/for-ai",
       "destination": "/api/for-ai"
     },
