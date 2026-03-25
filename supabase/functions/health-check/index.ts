@@ -84,7 +84,21 @@ async function checkPage(path: string, name: string): Promise<HealthCheckResult>
         responseTime,
       };
     }
-    
+
+    // Verify Content-Type is text/html — Supabase gateway can force text/plain,
+    // which makes browsers display raw HTML source instead of rendering the page
+    const contentType = response.headers.get("content-type") || "";
+    if (!contentType.includes("text/html")) {
+      return {
+        page: path,
+        name,
+        status: "error",
+        statusCode: response.status,
+        errorMessage: `Wrong Content-Type: "${contentType}" (expected text/html). Page will not render in browsers.`,
+        responseTime,
+      };
+    }
+
     if (hasRuntimeError || hasReactError) {
       // Try to extract error message
       const errorMatch = text.match(/(?:ReferenceError|TypeError|SyntaxError)[^<]*/);
