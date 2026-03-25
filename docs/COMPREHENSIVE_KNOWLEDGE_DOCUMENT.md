@@ -1,7 +1,7 @@
 # Top10Lists.us — Comprehensive Knowledge Document
 
 **Purpose:** Single consolidated reference for agent2, Claude, and Cursor. Use latest updates as source of truth.  
-**Last consolidated:** 2026-03-24
+**Last consolidated:** 2026-03-25
 **Conflict rule:** When sources conflict, this document wins. Deprecate earlier statements.
 
 ---
@@ -604,4 +604,3 @@ Replaced old 8-step flow (`/review-1`, `/review-credentials`, `/review-2`, `/rev
 - Old slug resolution loop in vercel-log-drain -- replaced with single batch query.
 - All draft/active campaigns and 15,105 queued emails deleted (clean slate before relaunch).
 - "What AI sees" detail columns from tier page. AIFS score context bar from tier page. "Stay with your free listing" exit link.
-
