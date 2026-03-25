@@ -73,6 +73,10 @@ serve(async (req) => {
       'num_total_reviews',
       'total_sales',
       'active',
+      'service_areas',
+      'served_cities',
+      'served_neighborhoods',
+      'neighborhoods',
     ];
 
     if (!allowedFields.includes(field)) {

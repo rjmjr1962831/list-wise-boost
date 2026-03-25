@@ -113,20 +113,18 @@ export default function VisibilityCoveragePage() {
         if (isDashboardEdit && professionalId) {
           const { data: prof } = await supabase
             .from('professionals')
-            .select('state_slug, service_areas')
+            .select('state_slug, service_areas, served_cities')
             .eq('id', professionalId)
             .single();
-          
+
           if (prof?.state_slug) {
             stateFilter = prof.state_slug;
             setAgentStateSlug(prof.state_slug);
           }
 
-          // Pre-select existing service_areas
-          if (prof?.service_areas && Array.isArray(prof.service_areas)) {
-            // Will match after cities load below
-            var existingServiceAreas = prof.service_areas;
-          }
+          // Will match after cities load below
+          var existingServiceAreas = prof?.service_areas || [];
+          var existingServedCities = prof?.served_cities || [];
         }
 
         const { data, error } = await supabase
@@ -165,14 +163,17 @@ export default function VisibilityCoveragePage() {
           setBundles(resolvedBundles);
         }
 
-        // Pre-select existing service_areas (dashboard edit mode)
-        if (isDashboardEdit && existingServiceAreas) {
+        // Pre-select existing cities (dashboard edit mode)
+        if (isDashboardEdit && (existingServiceAreas?.length || existingServedCities?.length)) {
           const existingNames = new Set(
-            existingServiceAreas.map((a: string) => a.replace(/,\s*[A-Z]{2}$/, '').trim())
+            (existingServiceAreas || []).map((a: string) => a.replace(/,\s*[A-Z]{2}$/, '').trim().toLowerCase())
+          );
+          const existingSlugs = new Set(
+            (existingServedCities || []).map((s: string) => s.toLowerCase())
           );
           const preSelected = new Set<string>();
           cityOptions.forEach((city) => {
-            if (existingNames.has(city.name)) {
+            if (existingNames.has(city.name.toLowerCase()) || existingSlugs.has(city.slug?.toLowerCase())) {
               preSelected.add(city.id);
             }
           });
@@ -271,11 +272,20 @@ export default function VisibilityCoveragePage() {
         const profId = professionalId || sessionStorage.getItem('visibility_professional_id');
         if (!profId) throw new Error('No professional ID');
 
-        const { error } = await supabase.functions.invoke('update-professional-field', {
-          body: { professional_id: profId, field: 'service_areas', value: serviceAreas },
-        });
+        // Save display names (service_areas) and slugs (served_cities)
+        const servedCitySlugs = selectedCityObjects.map(c => c.slug || c.name.toLowerCase().replace(/\s+/g, '-'));
 
-        if (error) throw error;
+        const [r1, r2] = await Promise.all([
+          supabase.functions.invoke('update-professional-field', {
+            body: { professional_id: profId, field: 'service_areas', value: serviceAreas },
+          }),
+          supabase.functions.invoke('update-professional-field', {
+            body: { professional_id: profId, field: 'served_cities', value: servedCitySlugs },
+          }),
+        ]);
+
+        if (r1.error) throw r1.error;
+        if (r2.error) throw r2.error;
 
         toast({
           title: 'Cities updated',
