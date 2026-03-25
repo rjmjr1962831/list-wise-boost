@@ -267,9 +267,12 @@ export default function VisibilityCoveragePage() {
         const stateName = stateData?.state || '';
         const serviceAreas = selectedCityObjects.map(c => `${c.name}, ${stateName}`);
 
-        const sessionToken = localStorage.getItem('agent_session_token');
-        const { error } = await supabase.functions.invoke('update-agent-profile', {
-          body: { sessionToken, updates: { service_areas: serviceAreas } },
+        // Use update-professional-field (bypasses RLS with service role)
+        const profId = professionalId || sessionStorage.getItem('visibility_professional_id');
+        if (!profId) throw new Error('No professional ID');
+
+        const { error } = await supabase.functions.invoke('update-professional-field', {
+          body: { professional_id: profId, field: 'service_areas', value: serviceAreas },
         });
 
         if (error) throw error;
