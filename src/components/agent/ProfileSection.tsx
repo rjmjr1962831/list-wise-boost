@@ -308,8 +308,8 @@ export function ProfileSection({
                   size="sm"
                   className="h-7 text-xs"
                   onClick={() => {
-                    sessionStorage.setItem('visibility_professional_id', professional.id);
-                    window.location.href = '/visibility/expertise?returnTo=dashboard';
+                    const token = professional.verification_token || professional.id;
+                    window.location.href = `/funnel/${token}/neighborhoods?returnTo=dashboard`;
                   }}
                 >
                   Edit

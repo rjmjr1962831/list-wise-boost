@@ -60,6 +60,8 @@ export default function SandboxStep4Neighborhoods() {
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const modeParam = searchParams.get('mode') === 'sales' ? '?mode=sales' : '';
+  const returnTo = searchParams.get('returnTo');
+  const isDashboardEdit = returnTo === 'dashboard';
   const navState = location.state as any;
 
   const basePath = useBasePath();
@@ -219,11 +221,31 @@ export default function SandboxStep4Neighborhoods() {
     setSelectedList(prev => prev.filter(n => n.id !== id));
   }, []);
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     trackEvent('sandbox_step4_neighborhoods_selected', {
       professional_id: professional?.id,
       neighborhood_count: selectedList.length,
     });
+
+    if (isDashboardEdit && professional?.id) {
+      // Save neighborhoods directly and return to dashboard
+      const nhSlugs = selectedList.map((n: Neighborhood) => n.neighborhood_slug);
+      const nhNames = selectedList.map((n: Neighborhood) => ({
+        neighborhood: n.neighborhood,
+        city_area: n.city_area,
+      }));
+      await Promise.all([
+        supabase.functions.invoke('update-professional-field', {
+          body: { professional_id: professional.id, field: 'served_neighborhoods', value: nhSlugs },
+        }),
+        supabase.functions.invoke('update-professional-field', {
+          body: { professional_id: professional.id, field: 'neighborhoods', value: nhNames },
+        }),
+      ]);
+      window.location.href = `/agent/dashboard?id=${professional.id}`;
+      return;
+    }
+
     navigate(`${basePath}/${token}/tier${modeParam}`, {
       state: {
         selectedCityIds: navState?.selectedCityIds,
@@ -407,11 +429,17 @@ export default function SandboxStep4Neighborhoods() {
           </p>
 
           <div className="flex justify-between pt-2">
-            <Button variant="ghost" onClick={() => navigate(`${basePath}/${token}/cities${modeParam}`)}>
-              Back
-            </Button>
+            {isDashboardEdit ? (
+              <Button variant="ghost" onClick={() => window.location.href = `/agent/dashboard?id=${professional?.id}`}>
+                Cancel
+              </Button>
+            ) : (
+              <Button variant="ghost" onClick={() => navigate(`${basePath}/${token}/cities${modeParam}`)}>
+                Back
+              </Button>
+            )}
             <Button onClick={handleContinue} disabled={selectedList.length === 0}>
-              Continue
+              {isDashboardEdit ? 'Save & Return to Dashboard' : 'Continue'}
             </Button>
           </div>
         </div>
