@@ -39,14 +39,10 @@ export default async function handler(req) {
     headers: { 'x-forwarded-user-agent': ua },
   });
 
-  if (!res.ok) {
-    return new Response(await res.text(), { status: res.status });
-  }
-
   const html = await res.text();
 
   return new Response(html, {
-    status: 200,
+    status: res.status,
     headers: {
       'Content-Type': 'text/html; charset=utf-8',
       'Cache-Control': 'public, max-age=0, must-revalidate',
