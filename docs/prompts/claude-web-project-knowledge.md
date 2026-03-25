@@ -283,7 +283,7 @@ From `src/data/master-ssot.md`:
 - No `rendered_pages` DB cache
 - No Cloudflare, no KV, no Prerender.io
 
-**Vercel log drain disabled (2026-03-25)**: `vercel-log-drain` edge function returns 410 Gone. Still answers Vercel GET verification probes. Single source of truth: `logBotVisit()` in each serve-bot-* edge function.
+**Vercel log drain disabled**: `vercel-log-drain` edge function returns 410 Gone. Still answers Vercel GET verification probes. Single source of truth: `logBotVisit()` in each serve-bot-* edge function.
 
 **Bot crawl logging**: `logBotVisit()` fires exactly once per edge function execution. Every serve-bot edge function must call it before returning. Fire-and-forget, 28 bot patterns.
 
@@ -296,7 +296,7 @@ Bot → Vercel CDN (pass-through) → Supabase edge function → logBotVisit() �
 
 ### AI Surfaces & Bot Analytics
 
-**Rollup -- Complete Rebuild (2026-03-25)**
+**Rollup -- Complete Rebuild**
 
 Previous rollup had multiple compounding bugs:
 - `served_neighborhoods` only covered 41% of crawled neighborhoods (4,872 of 11,850 slugs)
@@ -353,7 +353,7 @@ Previous rollup had multiple compounding bugs:
 - Agent Coverage tab: "Human" (ChatGPT-User, OAI-SearchBot, PerplexityBot) and "Bot" (all other automated crawlers) columns
 - Title: "Agent AI Surfaces (7-day)"
 
-**RLS Security Fixes (2026-03-25):**
+**RLS Security Fixes:**
 - Enabled RLS on `agent_ai_surfaces`, `agent_ai_surfaces_by_bot`, `page_bot_hits`
 - Changed `mcp_request_stats` view from SECURITY DEFINER to SECURITY INVOKER
 
