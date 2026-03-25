@@ -134,13 +134,13 @@ async function renderLiveStats(sb: any, range: string): Promise<string> {
 
   const [botResult, summaryResult, mcpResult] = await Promise.all([
     sb.rpc("run_sql", {
-      query: `SELECT bot_name, count(*)::int as visits, count(DISTINCT agent_id)::int as agents_covered, max(crawled_at)::text as last_seen
-              FROM bot_crawl_logs WHERE crawled_at >= now() - interval '${interval}' AND bot_name IS NOT NULL
+      query: `SELECT bot_name, SUM(visits)::int as visits, 0 as agents_covered, max(hour)::text as last_seen
+              FROM bot_crawl_hourly WHERE hour >= now() - interval '${interval}'
               GROUP BY bot_name ORDER BY visits DESC`,
     }),
     sb.rpc("run_sql", {
-      query: `SELECT count(*)::int as total_crawls, count(DISTINCT agent_id)::int as unique_agents, count(DISTINCT bot_name)::int as unique_bots
-              FROM bot_crawl_logs WHERE crawled_at >= now() - interval '${interval}' AND bot_name IS NOT NULL`,
+      query: `SELECT SUM(visits)::int as total_crawls, 0 as unique_agents, count(DISTINCT bot_name)::int as unique_bots
+              FROM bot_crawl_hourly WHERE hour >= now() - interval '${interval}'`,
     }),
     sb.rpc("run_sql", {
       query: `SELECT count(*)::int as total_calls FROM mcp_request_logs WHERE created_at >= now() - interval '${interval}'`,
@@ -250,7 +250,7 @@ serve(async (req) => {
       status: 200,
       headers: {
         "Content-Type": "text/html; charset=utf-8",
-        "Cache-Control": "public, max-age=3600, s-maxage=3600",
+        "Cache-Control": "public, max-age=0, s-maxage=43200",
         "X-Rendered": "static-page",
         "X-Rendered-At": data.rendered_at,
         ...CORS,

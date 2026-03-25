@@ -131,15 +131,15 @@ async function renderStaticHtml(sb: any): Promise<string> {
 
   const [botResult, summaryResult, mcpResult] = await Promise.all([
     sb.rpc("run_sql", {
-      query: `SELECT bot_name, count(*)::int as visits, count(DISTINCT agent_id)::int as agents_covered, max(crawled_at)::text as last_seen
-              FROM bot_crawl_logs WHERE crawled_at >= now() - interval '${interval}' AND bot_name IS NOT NULL
+      query: `SELECT bot_name, SUM(visits)::int as visits, 0 as agents_covered, max(hour)::text as last_seen
+              FROM bot_crawl_hourly WHERE hour >= now() - interval '${interval}'
               GROUP BY bot_name ORDER BY visits DESC`,
     }),
     sb.rpc("run_sql", {
-      query: `SELECT count(*)::int as total_crawls, count(DISTINCT agent_id)::int as unique_agents, count(DISTINCT bot_name)::int as unique_bots,
-              count(DISTINCT crawled_at::date)::int as days_counted,
-              min(crawled_at)::text as earliest, max(crawled_at)::text as latest
-              FROM bot_crawl_logs WHERE crawled_at >= now() - interval '${interval}' AND bot_name IS NOT NULL`,
+      query: `SELECT COALESCE(SUM(visits), 0)::int as total_crawls, 0 as unique_agents, count(DISTINCT bot_name)::int as unique_bots,
+              count(DISTINCT hour::date)::int as days_counted,
+              min(hour)::text as earliest, max(hour)::text as latest
+              FROM bot_crawl_hourly WHERE hour >= now() - interval '${interval}'`,
     }),
     sb.rpc("run_sql", {
       query: `SELECT count(*)::int as total_calls, max(created_at)::text as last_activity FROM mcp_request_logs WHERE created_at >= now() - interval '${interval}'`,

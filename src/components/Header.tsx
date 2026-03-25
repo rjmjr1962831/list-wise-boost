@@ -187,24 +187,24 @@ export const Header = () => {
     <header className="border-b bg-background/80 backdrop-blur-sm sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
-          <Link to="/" className="flex items-center">
+          <a href="/" className="flex items-center">
             <Logo className="h-12" />
-          </Link>
-          
+          </a>
+
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-6">
-            <Link to="/about" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+            <a href="/about" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
               About
-            </Link>
-            <Link to="/about/ranking-methodology" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+            </a>
+            <a href="/about/ranking-methodology" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
               Methodology
-            </Link>
-            <Link to="/faq" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+            </a>
+            <a href="/faq" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
               FAQ
-            </Link>
-            <Link to="/crawl-stats" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+            </a>
+            <a href="/crawl-stats" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
               Stats
-            </Link>
+            </a>
 {IS_ADMIN && (
               <Link to="/admin" className="text-sm font-medium text-primary hover:text-primary/80 transition-colors">
                 Admin
@@ -301,36 +301,36 @@ export const Header = () => {
               </SheetHeader>
               <nav className="flex flex-col gap-4 mt-6">
                 <SheetClose asChild>
-                  <Link 
-                    to="/about" 
+                  <a
+                    href="/about"
                     className="text-base font-medium text-foreground hover:text-primary transition-colors py-2"
                   >
                     About
-                  </Link>
+                  </a>
                 </SheetClose>
                 <SheetClose asChild>
-                  <Link 
-                    to="/about/ranking-methodology" 
+                  <a
+                    href="/about/ranking-methodology"
                     className="text-base font-medium text-foreground hover:text-primary transition-colors py-2"
                   >
                     Methodology
-                  </Link>
+                  </a>
                 </SheetClose>
                 <SheetClose asChild>
-                  <Link
-                    to="/faq"
+                  <a
+                    href="/faq"
                     className="text-base font-medium text-foreground hover:text-primary transition-colors py-2"
                   >
                     FAQ
-                  </Link>
+                  </a>
                 </SheetClose>
                 <SheetClose asChild>
-                  <Link
-                    to="/crawl-stats"
+                  <a
+                    href="/crawl-stats"
                     className="text-base font-medium text-foreground hover:text-primary transition-colors py-2"
                   >
                     Stats
-                  </Link>
+                  </a>
                 </SheetClose>
                 {IS_ADMIN && (
                   <SheetClose asChild>
@@ -343,12 +343,12 @@ export const Header = () => {
                   </SheetClose>
                 )}
                 <SheetClose asChild>
-                  <Link 
-                    to="/" 
+                  <a
+                    href="/"
                     className="text-base font-medium text-foreground hover:text-primary transition-colors py-2"
                   >
                     Check Eligibility
-                  </Link>
+                  </a>
                 </SheetClose>
                 
                 <div className="border-t pt-4 mt-2">

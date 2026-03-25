@@ -221,7 +221,7 @@ serve(async (req) => {
     status: 200,
     headers: {
       "Content-Type": "text/markdown; charset=utf-8",
-      "Cache-Control": "public, max-age=3600, stale-while-revalidate=86400",
+      "Cache-Control": "public, max-age=0, s-maxage=43200",
       "Access-Control-Allow-Origin": "*",
     },
   });

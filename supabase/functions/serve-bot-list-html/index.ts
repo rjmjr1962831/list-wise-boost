@@ -753,7 +753,7 @@ ${siteHeaderHTML()}
 
     logBotVisit(sb, req, path, null);
 
-    return new Response(o, { status: zeroAgents ? 404 : 200, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": zeroAgents ? "no-store" : "public, max-age=0, s-maxage=3600, stale-while-revalidate=300", "X-Agents-Count": String(na), "X-Page-Type": isNh ? "neighborhood" : "city", ...CORS } });
+    return new Response(o, { status: zeroAgents ? 404 : 200, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": zeroAgents ? "no-store" : "public, max-age=0, s-maxage=43200", "X-Agents-Count": String(na), "X-Page-Type": isNh ? "neighborhood" : "city", ...CORS } });
   } catch (_e: unknown) {
     console.error("serve-bot-list-html error:", pp.stateSlug, pp.citySlug, pp.neighborhoodSlug, _e instanceof Error ? _e.message : String(_e), _e instanceof Error ? _e.stack : "");
     // Build a proper clean-room error page with canonical + JSON-LD so crawlers

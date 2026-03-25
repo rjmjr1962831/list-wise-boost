@@ -66,22 +66,29 @@ export default function VisibilityExpertisePage() {
       setIsLoading(true);
       try {
         if (isDashboardEdit) {
-          // Dashboard mode: load from agent session and database
-          const sessionToken = localStorage.getItem('agent_session_token');
-          if (!sessionToken) { navigate('/agent/login'); return; }
+          // Dashboard mode: use professional ID from sessionStorage (set by dashboard edit button)
+          // or fall back to agent session token
+          const storedProfId = sessionStorage.getItem('visibility_professional_id');
+          let resolvedProfId: string | null = storedProfId;
 
-          const { data: sessionData } = await supabase.functions.invoke('validate-agent-session', {
-            body: { sessionToken },
-          });
-          if (!sessionData?.valid) { navigate('/agent/login'); return; }
+          if (!resolvedProfId) {
+            const sessionToken = localStorage.getItem('agent_session_token');
+            if (!sessionToken) { navigate('/agent/login'); return; }
+            const { data: sessionData } = await supabase.functions.invoke('validate-agent-session', {
+              body: { sessionToken },
+            });
+            if (!sessionData?.valid) { navigate('/agent/login'); return; }
+            resolvedProfId = resolvedProfId;
+          }
 
-          setProfessionalId(sessionData.professionalId);
+          if (!resolvedProfId) { navigate('/agent/login'); return; }
+          setProfessionalId(resolvedProfId);
 
           // Load professional's service_areas for city display
           const { data: prof } = await supabase
             .from('professionals')
             .select('service_areas, state_slug')
-            .eq('id', sessionData.professionalId)
+            .eq('id', resolvedProfId)
             .single();
 
           // Load city IDs from service_areas names
@@ -106,7 +113,7 @@ export default function VisibilityExpertisePage() {
           const { data: subs } = await supabase
             .from('agent_neighborhood_subscriptions')
             .select('*, neighborhood_catalog(id, neighborhood, city_area_name, state)')
-            .eq('professional_id', sessionData.professionalId)
+            .eq('professional_id', resolvedProfId)
             .eq('is_active', true);
 
           if (subs && subs.length > 0) {

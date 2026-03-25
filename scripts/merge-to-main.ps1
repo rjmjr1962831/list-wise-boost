@@ -60,10 +60,11 @@ function Merge-StagingToMain {
         git checkout main
         git pull origin main
 
-        # Merge staging (auto-resolve conflicts on internal docs by accepting staging's version,
-        # since they'll be removed from main in the next step anyway)
+        # Merge staging with --no-commit so we can remove internal docs WITHIN the
+        # merge commit itself. This prevents a separate deletion commit that could
+        # propagate back to staging if main is ever merged into staging.
         Write-Host "Merging staging into main..."
-        git merge staging -m "Merge staging into main" 2>$null
+        git merge staging --no-commit --no-ff 2>$null
         if ($LASTEXITCODE -ne 0) {
             # Check if conflicts are only in internal documents
             $conflicts = git diff --name-only --diff-filter=U
@@ -84,25 +85,25 @@ function Merge-StagingToMain {
                 }
             }
             if ($nonInternalConflicts.Count -gt 0) {
+                git merge --abort
                 Write-Error "Merge failed with non-internal conflicts: $($nonInternalConflicts -join ', '). Resolve and run again."
             }
-            # All conflicts are in internal docs -- accept staging version (will be removed anyway)
+            # All conflicts are in internal docs -- accept staging version (will be removed below)
             Write-Host "Auto-resolving conflicts in internal documents..."
             foreach ($conflict in $conflicts) {
                 git checkout --theirs $conflict
                 git add $conflict
             }
-            git commit --no-edit
         }
 
-        # Remove internal documents from main
+        # Remove internal documents from the merge (before committing)
         $paths = Get-InternalDocumentPaths
         $removed = @()
         foreach ($path in $paths) {
-            $fullPath = Join-Path $RepoRoot $path
             $isTracked = git ls-files $path 2>$null
             if ($isTracked) {
                 Write-Host "Excluding from main: $path"
+                $fullPath = Join-Path $RepoRoot $path
                 if (Test-Path $fullPath -PathType Container) {
                     git rm -r -f $path 2>$null
                 } else {
@@ -127,9 +128,12 @@ function Merge-StagingToMain {
             }
         }
 
+        # Single merge commit with internal docs already excluded
+        $removedNote = ""
         if ($removed.Count -gt 0) {
-            git commit -m "chore: exclude internal documents from main`n`nRemoved from production (staging-only): $($removed -join ', ')"
+            $removedNote = "`n`nExcluded from production: $($removed -join ', ')"
         }
+        git commit -m "Merge staging into main$removedNote"
 
         Write-Host ""
         Write-Host "Merge complete. Pushing main to origin..."

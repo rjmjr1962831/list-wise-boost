@@ -312,19 +312,19 @@
     },
     {
       "source": "/about/founder",
-      "destination": "/api/html?fn=serve-bot-founder-html&path=%2Fabout%2Ffounder"
+      "destination": "/about/founder.html"
     },
     {
       "source": "/about/founder/",
-      "destination": "/api/html?fn=serve-bot-founder-html&path=%2Fabout%2Ffounder"
+      "destination": "/about/founder.html"
     },
     {
       "source": "/crawl-stats",
-      "destination": "/api/html?fn=serve-bot-crawl-stats-html&path=%2Fcrawl-stats"
+      "destination": "/crawl-stats.html"
     },
     {
       "source": "/crawl-stats/",
-      "destination": "/api/html?fn=serve-bot-crawl-stats-html&path=%2Fcrawl-stats"
+      "destination": "/crawl-stats.html"
     },
     {
       "source": "/artifact/:token",
@@ -349,6 +349,14 @@
     {
       "source": "/california/top10realestateagents",
       "destination": "/api/html?fn=serve-bot-state-html&path=/california/top10realestateagents"
+    },
+    {
+      "source": "/for-ai/performance-guarantee",
+      "destination": "/for-ai/performance-guarantee.html"
+    },
+    {
+      "source": "/for-ai/performance-guarantee/",
+      "destination": "/for-ai/performance-guarantee.html"
     },
     {
       "source": "/for-ai",

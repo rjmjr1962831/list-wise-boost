@@ -1007,7 +1007,7 @@ serve(async (req) => {
     status,
     headers: {
       "Content-Type": "text/html; charset=utf-8",
-      "Cache-Control": "public, max-age=3600, s-maxage=3600",
+      "Cache-Control": "public, max-age=0, s-maxage=43200",
       "X-Rendered": "serve-bot-qa-html",
       ...CORS,
     },

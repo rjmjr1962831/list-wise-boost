@@ -56,13 +56,18 @@ export default function VisibilityCoveragePage() {
   // Gate: require professional context (from funnel or dashboard)
   useEffect(() => {
     if (isDashboardEdit) {
-      // Dashboard mode: validate via agent session
+      // Dashboard mode: use professional ID from sessionStorage (set by dashboard edit button)
+      // or fall back to agent session token
+      const storedProfId = sessionStorage.getItem('visibility_professional_id');
+      if (storedProfId) {
+        setProfessionalId(storedProfId);
+        return;
+      }
       const sessionToken = localStorage.getItem('agent_session_token');
       if (!sessionToken) {
         navigate('/agent/login');
         return;
       }
-      // Load professional from session
       (async () => {
         const { data } = await supabase.functions.invoke('validate-agent-session', {
           body: { sessionToken },
