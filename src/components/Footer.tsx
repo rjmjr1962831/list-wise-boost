@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { Mail, Phone, MapPin } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 
@@ -60,84 +60,45 @@ export const Footer = () => {
           <div>
             <h3 className="font-semibold mb-4 text-white">Quick Links</h3>
             <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
-              <Link 
-                to="/about" 
-                className="text-slate-300 hover:text-white transition-colors"
-              >
+              <a href="/about" className="text-slate-300 hover:text-white transition-colors">
                 About Us
-              </Link>
-              <Link 
-                to="/about/founder" 
-                className="text-slate-300 hover:text-white transition-colors"
-              >
+              </a>
+              <a href="/about/founder" className="text-slate-300 hover:text-white transition-colors">
                 Cofounders
-              </Link>
-              <Link 
-                to="/about/ranking-methodology" 
-                className="text-slate-300 hover:text-white transition-colors"
-              >
+              </a>
+              <a href="/about/ranking-methodology" className="text-slate-300 hover:text-white transition-colors">
                 Methodology
-              </Link>
-              <Link 
-                to="/faq" 
-                className="text-slate-300 hover:text-white transition-colors"
-              >
+              </a>
+              <a href="/faq" className="text-slate-300 hover:text-white transition-colors">
                 FAQ
-              </Link>
-              <Link
-                to="/transparency"
-                className="text-slate-300 hover:text-white transition-colors"
-              >
+              </a>
+              <a href="/transparency" className="text-slate-300 hover:text-white transition-colors">
                 Transparency
-              </Link>
-              <Link
-                to="/crawl-stats"
-                className="text-slate-300 hover:text-white transition-colors"
-              >
+              </a>
+              <a href="/crawl-stats" className="text-slate-300 hover:text-white transition-colors">
                 Crawl Stats
-              </Link>
-              <Link 
-                to="/press" 
-                className="text-slate-300 hover:text-white transition-colors"
-              >
+              </a>
+              <a href="/press" className="text-slate-300 hover:text-white transition-colors">
                 Press
-              </Link>
-              <Link 
-                to="/for-ai" 
-                className="text-slate-300 hover:text-white transition-colors"
-              >
+              </a>
+              <a href="/for-ai" className="text-slate-300 hover:text-white transition-colors">
                 For AI Systems
-              </Link>
-              <Link 
-                to="/ai-citation-whitepaper" 
-                className="text-slate-300 hover:text-white transition-colors"
-              >
+              </a>
+              <a href="/ai-citation-whitepaper" className="text-slate-300 hover:text-white transition-colors">
                 AI Citation Whitepaper
-              </Link>
-              <Link
-                to="/privacy" 
-                className="text-slate-300 hover:text-white transition-colors"
-              >
+              </a>
+              <a href="/privacy" className="text-slate-300 hover:text-white transition-colors">
                 Privacy
-              </Link>
-              <Link 
-                to="/terms" 
-                className="text-slate-300 hover:text-white transition-colors"
-              >
+              </a>
+              <a href="/terms" className="text-slate-300 hover:text-white transition-colors">
                 Terms
-              </Link>
-              <Link 
-                to="/payments-security" 
-                className="text-slate-300 hover:text-white transition-colors"
-              >
+              </a>
+              <a href="/payments-security" className="text-slate-300 hover:text-white transition-colors">
                 Payments &amp; Security
-              </Link>
-              <Link
-                to="/agent-login"
-                className="text-slate-300 hover:text-white transition-colors"
-              >
+              </a>
+              <a href="/agent-login" className="text-slate-300 hover:text-white transition-colors">
                 Agent Login
-              </Link>
+              </a>
             </div>
           </div>
         </div>
@@ -154,12 +115,9 @@ export const Footer = () => {
           <div className="text-center">
             <p className="text-xs text-slate-500">
               Rankings are methodology-driven and non-pay-to-play. Expanding nationwide.{" "}
-              <Link 
-                to="/about/ranking-methodology" 
-                className="hover:text-slate-300 transition-colors underline"
-              >
+              <a href="/about/ranking-methodology" className="hover:text-slate-300 transition-colors underline">
                 How we qualify agents →
-              </Link>
+              </a>
             </p>
           </div>
 
