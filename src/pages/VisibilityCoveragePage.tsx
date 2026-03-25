@@ -271,11 +271,20 @@ export default function VisibilityCoveragePage() {
         const profId = professionalId || sessionStorage.getItem('visibility_professional_id');
         if (!profId) throw new Error('No professional ID');
 
-        const { error } = await supabase.functions.invoke('update-professional-field', {
-          body: { professional_id: profId, field: 'service_areas', value: serviceAreas },
-        });
+        // Save display names (service_areas) and slugs (served_cities)
+        const servedCitySlugs = selectedCityObjects.map(c => c.slug || c.name.toLowerCase().replace(/\s+/g, '-'));
 
-        if (error) throw error;
+        const [r1, r2] = await Promise.all([
+          supabase.functions.invoke('update-professional-field', {
+            body: { professional_id: profId, field: 'service_areas', value: serviceAreas },
+          }),
+          supabase.functions.invoke('update-professional-field', {
+            body: { professional_id: profId, field: 'served_cities', value: servedCitySlugs },
+          }),
+        ]);
+
+        if (r1.error) throw r1.error;
+        if (r2.error) throw r2.error;
 
         toast({
           title: 'Cities updated',

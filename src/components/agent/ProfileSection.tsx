@@ -5,11 +5,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Save, 
-  Loader2, 
-  Edit2, 
-  Clock, 
+import {
+  Save,
+  Loader2,
+  Edit2,
+  Clock,
   AlertCircle,
   Phone,
   Globe,
@@ -20,7 +20,8 @@ import {
   MapPin,
   Mail,
   User,
-  Shield
+  Shield,
+  X
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -264,7 +265,27 @@ export function ProfileSection({
               <div className="flex flex-wrap gap-1.5 py-2 px-3 bg-muted/50 rounded-md min-h-[38px]">
                 {professional.service_areas && professional.service_areas.length > 0 ? (
                   professional.service_areas.map((area: string, i: number) => (
-                    <Badge key={i} variant="secondary" className="text-xs">{area}</Badge>
+                    <Badge key={i} variant="secondary" className="text-xs flex items-center gap-1 pr-1">
+                      {area}
+                      <button
+                        className="ml-0.5 rounded-full hover:bg-destructive/20 p-0.5"
+                        onClick={async () => {
+                          const updated = professional.service_areas.filter((_: string, j: number) => j !== i);
+                          const slugs = (professional.served_cities || []).filter((_: string, j: number) => j !== i);
+                          await Promise.all([
+                            supabase.functions.invoke('update-professional-field', {
+                              body: { professional_id: professional.id, field: 'service_areas', value: updated },
+                            }),
+                            supabase.functions.invoke('update-professional-field', {
+                              body: { professional_id: professional.id, field: 'served_cities', value: slugs },
+                            }),
+                          ]);
+                          onProfileUpdate();
+                        }}
+                      >
+                        <X className="h-3 w-3 text-muted-foreground hover:text-destructive" />
+                      </button>
+                    </Badge>
                   ))
                 ) : professional.city?.name ? (
                   <Badge variant="secondary" className="text-xs">
@@ -297,8 +318,20 @@ export function ProfileSection({
               <div className="flex flex-wrap gap-1.5 py-2 px-3 bg-muted/50 rounded-md min-h-[38px]">
                 {professional.neighborhoods && professional.neighborhoods.length > 0 ? (
                   professional.neighborhoods.map((n: any, i: number) => (
-                    <Badge key={i} variant="outline" className="text-xs">
+                    <Badge key={i} variant="outline" className="text-xs flex items-center gap-1 pr-1">
                       {typeof n === 'string' ? n : n.neighborhood || n.name}
+                      <button
+                        className="ml-0.5 rounded-full hover:bg-destructive/20 p-0.5"
+                        onClick={async () => {
+                          const updated = professional.neighborhoods.filter((_: any, j: number) => j !== i);
+                          await supabase.functions.invoke('update-professional-field', {
+                            body: { professional_id: professional.id, field: 'neighborhoods', value: updated },
+                          });
+                          onProfileUpdate();
+                        }}
+                      >
+                        <X className="h-3 w-3 text-muted-foreground hover:text-destructive" />
+                      </button>
                     </Badge>
                   ))
                 ) : (
