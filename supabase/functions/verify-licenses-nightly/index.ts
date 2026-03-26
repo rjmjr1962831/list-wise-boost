@@ -41,10 +41,32 @@ interface Alert {
 }
 
 // ---- Arizona lookup ----
+// AZDRE requires a session cookie from the homepage before search works.
+// Without it, the site returns "Session Expired" which the old regex
+// matched as license status "Expired" — causing mass false de-listings.
 async function lookupAZ(licenseNumber: string): Promise<string | null> {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), LOOKUP_TIMEOUT_MS);
   try {
+    // Step 1: GET the search page to establish a session cookie
+    const homeRes = await fetch(
+      "https://services.azre.gov/PdbWeb/IndividualLicense/SearchIndividualLicenses",
+      {
+        method: "GET",
+        headers: { "User-Agent": UA },
+        signal: ctrl.signal,
+        redirect: "follow",
+      },
+    );
+    if (!homeRes.ok) return null;
+    // Extract session cookies from response
+    const cookies = homeRes.headers.getSetCookie?.()
+      || [homeRes.headers.get("set-cookie")].filter(Boolean);
+    const cookieStr = cookies.map((c: string) => c.split(";")[0]).join("; ");
+    // Drain the body
+    await homeRes.text();
+
+    // Step 2: POST the search with the session cookie
     const form = new URLSearchParams({
       LastName: "",
       FirstName: "",
@@ -55,16 +77,27 @@ async function lookupAZ(licenseNumber: string): Promise<string | null> {
       "https://services.azre.gov/PdbWeb/IndividualLicense/SearchIndividualLicenses",
       {
         method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded", "User-Agent": UA },
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          "User-Agent": UA,
+          "Cookie": cookieStr,
+        },
         body: form.toString(),
         signal: ctrl.signal,
       },
     );
     if (!res.ok) return null;
     const html = await res.text();
-    // Look for status keywords near the license number
-    const statusMatch = html.match(/Status\s*:?\s*<[^>]*>\s*(Active|Inactive|Suspended|Revoked|Expired|Cancelled)/i)
-      || html.match(/\b(Active|Inactive|Suspended|Revoked|Expired|Cancelled)\b/i);
+
+    // Reject "Session Expired" pages — do NOT extract status from them
+    if (html.includes("Session Expired") || html.includes("session has expired")) {
+      console.warn(`[AZ] Session expired for ${licenseNumber} — skipping`);
+      return null;
+    }
+
+    // Only match status in a structured table cell or labeled field
+    const statusMatch = html.match(/Status\s*:?\s*<[^>]*>\s*(Active|Inactive|Suspended|Revoked|Expired|Cancelled)/i);
+    // DO NOT use a broad fallback regex — it matches page chrome like "Session Expired"
     return statusMatch ? statusMatch[1] : null;
   } catch {
     return null;
@@ -283,6 +316,12 @@ Deno.serve(async (req) => {
               priority: "high",
             });
           }
+
+          // NOTE: Safety net for pre-existing non-Active statuses REMOVED.
+          // The AZDRE scraper returns "Expired" for many valid AZ licenses
+          // (likely scraping the wrong field or interpreting renewal status).
+          // Do NOT auto-de-list based on stored license_status alone.
+          // Only de-list on verified status CHANGE from Active to non-Active.
         }
 
         offset += BATCH_SIZE;
