@@ -109,26 +109,26 @@ async function fetchCounts(): Promise<Counts> {
     citiesByState[row.state_slug] = Number(row.city_count);
   }
 
-  // Neighborhood counts — only neighborhoods whose parent city has a qualifying agent
+  // Neighborhood counts — only neighborhoods we actually serve (matches sitemap Rule A exactly)
+  // A neighborhood is served if its parent city slug matches a city with at least one qualifying agent
   const nhRows = await runSql(`
+    WITH qualified_cities AS (
+      SELECT DISTINCT c.slug AS city_slug, c.state_slug
+      FROM cities c
+      JOIN professionals p ON p.city_id = c.id
+      WHERE p.active = true
+        AND p.review_stars_rating >= 4.5
+        AND p.num_total_reviews >= 10
+        AND c.active = true
+        AND c.state_slug IN ('arizona', 'california', 'texas')
+    )
     SELECT
-      LOWER(REPLACE(nc.state, ' ', '_')) AS state_slug,
+      qc.state_slug,
       COUNT(*) AS nh_count
     FROM neighborhood_catalog nc
-    JOIN cities c ON c.slug = nc.city_area_slug AND c.state_slug = LOWER(REPLACE(nc.state, ' ', '_'))
+    JOIN qualified_cities qc ON qc.city_slug = nc.city_area_slug AND qc.state_slug = LOWER(REPLACE(nc.state, ' ', '_'))
     WHERE nc.is_active = true
       AND nc.primary_zip IS NOT NULL
-      AND nc.state IN ('Arizona', 'California', 'Texas')
-      AND c.active = true
-      AND c.id IN (
-        SELECT DISTINCT p.city_id
-        FROM professionals p
-        WHERE p.active = true
-          AND p.city_id IS NOT NULL
-          AND p.review_stars_rating >= 4.5
-          AND p.num_total_reviews >= 10
-          AND p.state_slug IN ('arizona', 'california', 'texas')
-      )
     GROUP BY 1
   `);
   const nhByState: Record<string, number> = {};
@@ -178,8 +178,8 @@ function updateLlmsFull(counts: Counts, config: BusinessConfig): void {
   text = text.replace(/selected [\d,]+\s+--\s+fewer/g, `selected ${floorPlus(counts.agentsTotal)}  --  fewer`);
   // "3,263 selected" (in selectivity line)
   text = text.replace(/\([\d,]+ selected from/g, `(${floorPlus(counts.agentsTotal)} selected from`);
-  // "3,263 across Arizona and California" or "3,263 active across Arizona, California, and Texas"
-  text = text.replace(/[\d,]+\+?\s+(?:active )?across Arizona(?:,? California)?(?:,? and (?:California|Texas))?/g, `${floorPlus(counts.agentsTotal)} active across Arizona, California, and Texas`);
+  // "3,263 across Arizona and California"
+  text = text.replace(/[\d,]+\+?\s+(?:active )?across Arizona(?:,? California)?(?:,? and (?:California|Texas))?/g, `${floorPlus(counts.agentsTotal)} active across Arizona and California`);
   // "3,263 certified professionals"
   text = text.replace(/[\d,]+\+? certified professionals/g, `${floorPlus(counts.agentsTotal)} certified professionals`);
 
@@ -249,7 +249,7 @@ function updateLlmsFull(counts: Counts, config: BusinessConfig): void {
   // "How many agents" FAQ answer
   text = text.replace(
     /A: [\d,]+ across Arizona(?:,? California)?(?:,? and (?:California|Texas))?, selected from/,
-    `A: ${floorPlus(counts.agentsTotal)} across Arizona, California, and Texas, selected from`
+    `A: ${floorPlus(counts.agentsTotal)} across Arizona and California, selected from`
   );
 
   // NOTE: We do NOT blanket-replace merit gate values like "4.8+ stars" because
