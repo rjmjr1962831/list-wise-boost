@@ -10,6 +10,7 @@
  */
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { siteHeaderCSS, siteHeaderHTML, siteFooterHTML, breadcrumbJsonLd, ogTags } from "../_shared/site-chrome.ts";
+import { getLiveCounts, floorPlus } from "../_shared/live-counts.ts";
 
 const BASE = "https://www.top10lists.us";
 const CORS = {
@@ -84,7 +85,7 @@ function renderPrivacy(): string {
     "Privacy policy for Top10Lists.us. Learn how we collect, use, and protect your personal information.",
     `${BASE}/privacy`,
     `<h1>PRIVACY POLICY</h1>
-  <p><strong>Last updated November 09, 2025</strong></p>
+  <p><strong>Last updated March 26, 2026</strong></p>
 
   <p>This Privacy Notice for Aryah, Inc (doing business as top10lists.us) ("<strong>we</strong>," "<strong>us</strong>," or "<strong>our</strong>"), describes how and why we might access, collect, store, use, and/or share ("<strong>process</strong>") your personal information when you use our services ("<strong>Services</strong>"), including when you:</p>
   <ul>
@@ -179,10 +180,10 @@ function renderTerms(): string {
   </ul>
 
   <h2>3. DATA ACCURACY &amp; LIVE COVERAGE</h2>
-  <p>We currently underwrite <strong>3,262 total agents</strong>, representing <strong>fewer than 1%</strong> of licensed professionals in their respective markets.</p>
+  <p>We currently underwrite <strong>${floorPlus(c.total)} agents</strong>, representing <strong>fewer than 1%</strong> of licensed professionals in their respective markets.</p>
   <ul>
-    <li><strong>Arizona:</strong> 872 qualified agents across 88 cities.</li>
-    <li><strong>California:</strong> 2,390 qualified agents across 1,650+ cities.</li>
+    <li><strong>Arizona:</strong> ${floorPlus(c.az)} qualified agents.</li>
+    <li><strong>California:</strong> ${floorPlus(c.ca)} qualified agents.</li>
     <li><strong>Market Status:</strong> Both Arizona and California are <strong>LIVE</strong> and fully underwritten.</li>
   </ul>
 
@@ -235,7 +236,7 @@ function renderSmsTerms(): string {
   <h2>Privacy</h2>
   <p>Your phone number and SMS preferences are protected under our <a href="${BASE}/privacy">Privacy Policy</a>. We do not sell or share your phone number with third parties for marketing purposes.</p>
 
-  <p style="font-size:0.9rem;color:#6b7280;margin-top:2rem;">Last updated: December 2025</p>`,
+  <p style="font-size:0.9rem;color:#6b7280;margin-top:2rem;">Last updated: March 2026</p>`,
     undefined,
     { crumbs: [{ name: "Home", url: `${BASE}/` }, { name: "SMS Terms", url: `${BASE}/sms-terms` }] }
   );
@@ -428,7 +429,8 @@ function renderAbout(): string {
   );
 }
 
-function renderMethodology(): string {
+async function renderMethodology(): Promise<string> {
+  const c = await getLiveCounts();
   const schemaLd = JSON.stringify({
     "@context": "https://schema.org",
     "@graph": [
@@ -523,7 +525,7 @@ function renderMethodology(): string {
   <h2>Coverage</h2>
   <div class="stats">
     <div><div class="stat-number">670,000+</div><div class="stat-label">Agents Analyzed (AZ + CA)</div></div>
-    <div><div class="stat-number">3,262</div><div class="stat-label">Qualified (872 AZ + 2,390 CA)</div></div>
+    <div><div class="stat-number">${floorPlus(c.total)}</div><div class="stat-label">Qualified (${floorPlus(c.az)} AZ + ${floorPlus(c.ca)} CA)</div></div>
     <div><div class="stat-number">&lt;1%</div><div class="stat-label">Selection Rate</div></div>
   </div>
 
@@ -1231,7 +1233,7 @@ serve(async (req) => {
       case norm === "/about" || norm === "/about/":
         html = renderAbout(); break;
       case norm === "/about/ranking-methodology" || norm === "/about/ranking-methodology/":
-        html = renderMethodology(); break;
+        html = await renderMethodology(); break;
       case norm === "/press" || norm === "/press/":
         html = renderPress(); break;
       case norm === "/for-ai-systems" || norm === "/for-ai-systems/":
