@@ -292,6 +292,7 @@ ${siteFooterHTML()}
 }
 
 async function renderFaq(): Promise<string> {
+  const c = await getLiveCounts();
   let data: { faqs?: Array<{ id: string; question: string; answer: string; categoryName: string }> } | null = null;
   try {
     const res = await fetch(`${BASE}/api/faq/full.json`);
