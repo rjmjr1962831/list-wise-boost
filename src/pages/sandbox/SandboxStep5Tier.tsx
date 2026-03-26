@@ -7,6 +7,7 @@ import { Loader2, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import { useGA4Tracking } from '@/hooks/useGA4Tracking';
 import { TierPricingCalculator } from '@/components/pricing/TierPricingCalculator';
+import { RevenueGapBanner } from '@/components/funnel/RevenueGapBanner';
 import { SandboxNugget } from './SandboxNugget';
 import { SandboxProgress } from './SandboxProgress';
 import { validateToken, useBasePath } from './utils';
@@ -222,6 +223,8 @@ export default function SandboxStep5Tier() {
       <div className="min-h-screen bg-background py-10 px-4">
         <div className="max-w-4xl mx-auto space-y-6">
           <SandboxProgress currentStep={5} />
+
+          <RevenueGapBanner professional={professional} />
 
           {isSalesMode && (
             <div className="rounded-lg border border-green-300 bg-green-50 px-4 py-3 flex items-center gap-3">

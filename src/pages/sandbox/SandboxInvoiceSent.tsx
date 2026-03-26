@@ -1,5 +1,6 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import { SafeHead } from '@/components/SafeHead';
+import { RevenueGapBanner } from '@/components/funnel/RevenueGapBanner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { CheckCircle2, Mail } from 'lucide-react';
@@ -36,6 +37,8 @@ export default function SandboxInvoiceSent() {
       <div className="min-h-screen bg-background py-10 px-4">
         <div className="max-w-lg mx-auto space-y-6 text-center">
           <CheckCircle2 className="h-16 w-16 text-green-500 mx-auto" />
+
+          <RevenueGapBanner professional={null} />
 
           <h1 className="text-2xl font-bold">Invoice Sent</h1>
 

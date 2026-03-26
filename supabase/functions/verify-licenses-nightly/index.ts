@@ -2,12 +2,14 @@
  * verify-licenses-nightly — Nightly license verification for active professionals.
  *
  * For each state (AZ, CA), queries active professionals with a license_number,
- * verifies each against the state licensing board via individual lookups,
- * updates license_status + license_verified_at, and creates crm_tasks alerts
- * when a license status changes away from Active.
+ * verifies each against the state licensing board, updates license_status +
+ * license_verified_at, and creates crm_tasks alerts when a license status
+ * changes away from Active.
  *
- * Processes agents in batches of 50, 10 concurrent lookups per batch,
- * 1-second delay between batches. 10-second timeout per lookup.
+ * Both AZ and CA use bulk CSV downloads (AZDRE CSV, CalDRE ZIP/CSV) parsed
+ * into in-memory Maps for instant lookups — no per-agent HTTP scraping.
+ *
+ * Processes agents in batches of 50 for DB reads. 1-second delay between batches.
  */
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -104,45 +106,159 @@ function lookupAZ(licenseNumber: string): Promise<string | null> {
   return Promise.resolve(status);
 }
 
-// ---- California lookup ----
-async function lookupCA(licenseNumber: string): Promise<string | null> {
-  const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), LOOKUP_TIMEOUT_MS);
-  try {
-    const form = new URLSearchParams({
-      LICENSEE_NAME: "",
-      CITY_STATE: "",
-      LICENSE_ID: licenseNumber,
-    });
-    const res = await fetch(
-      "https://www2.dre.ca.gov/PublicASP/pplinfo.asp?start=1",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-          "User-Agent": UA,
-          "Referer": "https://www2.dre.ca.gov/PublicASP/pplinfo.asp",
-          "Accept": "text/html,application/xhtml+xml",
-        },
-        body: form.toString(),
-        signal: ctrl.signal,
-      },
-    );
-    if (!res.ok) return null;
-    const html = await res.text();
-    // CalDRE pages show "License Status:" followed by the status
-    const statusMatch = html.match(/License\s+Status\s*:?\s*<[^>]*>\s*(Licensed|Restricted|Revoked|Expired|Suspended|Inactive|Cancelled)/i)
-      || html.match(/Status\s*:?\s*<[^>]*>\s*(Licensed|Restricted|Revoked|Expired|Suspended|Inactive|Cancelled)/i)
-      || html.match(/\b(Licensed|Restricted|Revoked|Expired|Suspended|Inactive|Cancelled)\b/i);
-    if (!statusMatch) return null;
-    // Normalize CalDRE "Licensed" to our standard "Active"
-    const raw = statusMatch[1];
-    return raw.toLowerCase() === "licensed" ? "Active" : raw;
-  } catch {
-    return null;
-  } finally {
-    clearTimeout(timer);
+// ---- California: bulk CSV download ----
+// CalDRE publishes a daily bulk CSV (~436K rows, ~73MB) as a ZIP at this URL.
+// We download once, parse lic_number → status into a Map, then lookupCA
+// becomes a simple Map.get() — no per-agent HTTP requests.
+const CA_ZIP_URL = "https://secure.dre.ca.gov/datafile/CurrList.zip";
+
+// Module-level map, populated by downloadCALicenseMap() before CA processing.
+let caLicenseMap: Map<string, string> | null = null;
+
+/**
+ * Parse a single CSV line respecting quoted fields (handles commas inside quotes).
+ * Returns an array of field values with quotes stripped.
+ */
+function parseCSVLine(line: string): string[] {
+  const fields: string[] = [];
+  let current = "";
+  let inQuotes = false;
+
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (inQuotes) {
+      if (ch === '"') {
+        if (i + 1 < line.length && line[i + 1] === '"') {
+          // Escaped quote
+          current += '"';
+          i++;
+        } else {
+          inQuotes = false;
+        }
+      } else {
+        current += ch;
+      }
+    } else {
+      if (ch === '"') {
+        inQuotes = true;
+      } else if (ch === ",") {
+        fields.push(current);
+        current = "";
+      } else {
+        current += ch;
+      }
+    }
   }
+  fields.push(current);
+  return fields;
+}
+
+/**
+ * Download the CalDRE ZIP, extract the CSV, and build a Map<lic_number, normalized_status>.
+ * The ZIP contains CurrList.csv with columns:
+ *   0: multiple_license_ind, 1: lastname, 2: firstname, 3: suffix,
+ *   4: lic_number, 5: lic_type, 6: lic_status, ...
+ * Statuses: "Licensed" and "Licensed NBA" → "Active"; others preserved as-is.
+ */
+async function downloadCALicenseMap(): Promise<Map<string, string>> {
+  console.log("[CA] Downloading bulk license ZIP from CalDRE...");
+  const t0 = Date.now();
+
+  const res = await fetch(CA_ZIP_URL, {
+    headers: { "User-Agent": UA },
+  });
+  if (!res.ok) {
+    throw new Error(`[CA] ZIP download failed: HTTP ${res.status}`);
+  }
+
+  // Read the ZIP into memory and decompress
+  const zipBytes = new Uint8Array(await res.arrayBuffer());
+
+  // --- Minimal ZIP extraction for a single-file archive ---
+  // Find the first local file header (PK\x03\x04), skip to compressed data,
+  // and inflate it. CurrList.zip contains a single deflated CSV.
+  const view = new DataView(zipBytes.buffer);
+
+  // Local file header signature = 0x04034b50
+  if (view.getUint32(0, true) !== 0x04034b50) {
+    throw new Error("[CA] Not a valid ZIP file");
+  }
+  const compressionMethod = view.getUint16(8, true);
+  const compressedSize = view.getUint32(18, true);
+  const fnameLen = view.getUint16(26, true);
+  const extraLen = view.getUint16(28, true);
+  const dataOffset = 30 + fnameLen + extraLen;
+  const compressedData = zipBytes.slice(dataOffset, dataOffset + compressedSize);
+
+  let csvText: string;
+  if (compressionMethod === 0) {
+    // Stored (no compression)
+    csvText = new TextDecoder().decode(compressedData);
+  } else if (compressionMethod === 8) {
+    // Deflate — use DecompressionStream (available in Deno)
+    const ds = new DecompressionStream("raw");
+    const writer = ds.writable.getWriter();
+    writer.write(compressedData);
+    writer.close();
+    const reader = ds.readable.getReader();
+    const chunks: Uint8Array[] = [];
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      chunks.push(value);
+    }
+    const totalLen = chunks.reduce((a, c) => a + c.length, 0);
+    const full = new Uint8Array(totalLen);
+    let off = 0;
+    for (const c of chunks) {
+      full.set(c, off);
+      off += c.length;
+    }
+    csvText = new TextDecoder().decode(full);
+  } else {
+    throw new Error(`[CA] Unsupported ZIP compression method: ${compressionMethod}`);
+  }
+
+  const dlElapsed = Date.now() - t0;
+  console.log(`[CA] ZIP downloaded and decompressed in ${dlElapsed}ms`);
+
+  // Parse CSV into map
+  const map = new Map<string, string>();
+  const lines = csvText.split("\n");
+
+  // Skip header row (index 0)
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line) continue;
+
+    const fields = parseCSVLine(line);
+    if (fields.length < 7) continue;
+
+    const licNumber = fields[4].trim();
+    const licStatus = fields[6].trim();
+
+    if (licNumber) {
+      // Normalize CalDRE "Licensed" / "Licensed NBA" to our standard "Active"
+      const normalized = licStatus.toLowerCase().startsWith("licensed")
+        ? "Active"
+        : licStatus;
+      map.set(licNumber, normalized);
+    }
+  }
+
+  const elapsed = Date.now() - t0;
+  console.log(`[CA] CSV parsed: ${map.size} licenses in ${elapsed}ms`);
+  return map;
+}
+
+// ---- California lookup (Map-based) ----
+function lookupCA(licenseNumber: string): Promise<string | null> {
+  if (!caLicenseMap) {
+    return Promise.resolve(null);
+  }
+  const trimmed = licenseNumber.trim();
+  const status = caLicenseMap.get(trimmed) ?? null;
+  return Promise.resolve(status);
 }
 
 // ---- Lookup dispatcher ----
@@ -194,7 +310,7 @@ Deno.serve(async (req) => {
       const stats: StateStats = { total: 0, checked: 0, active: 0, changed: 0, errors: 0 };
       statsByState[state] = stats;
 
-      // For AZ: download the bulk CSV once before processing any agents
+      // Download bulk CSV once before processing any agents in this state
       if (state === "AZ") {
         try {
           azLicenseMap = await downloadAZLicenseMap();
@@ -202,6 +318,15 @@ Deno.serve(async (req) => {
           console.error("[AZ] Failed to download license CSV:", err);
           stats.errors++;
           // Skip AZ entirely if CSV download fails — don't de-list everyone
+          continue;
+        }
+      } else if (state === "CA") {
+        try {
+          caLicenseMap = await downloadCALicenseMap();
+        } catch (err) {
+          console.error("[CA] Failed to download license ZIP:", err);
+          stats.errors++;
+          // Skip CA entirely if ZIP download fails — don't de-list everyone
           continue;
         }
       }

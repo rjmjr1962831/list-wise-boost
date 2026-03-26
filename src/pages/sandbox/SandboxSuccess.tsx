@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { CheckCircle2, Loader2, RotateCcw } from 'lucide-react';
 import { useGA4Tracking } from '@/hooks/useGA4Tracking';
+import { RevenueGapBanner } from '@/components/funnel/RevenueGapBanner';
 import { SandboxNugget } from './SandboxNugget';
 import { validateToken, useBasePath } from './utils';
 
@@ -106,6 +107,8 @@ export default function SandboxSuccess() {
       <div className="min-h-screen bg-background py-10 px-4">
         <div className="max-w-xl mx-auto space-y-6 text-center">
           <CheckCircle2 className="h-16 w-16 text-green-500 mx-auto" />
+
+          <RevenueGapBanner professional={professional} />
 
           <SandboxNugget>
             AI citation compounds. Each time a system references your profile successfully, it reinforces the pattern. Competitors who start later are catching up to a moving target.

@@ -166,7 +166,7 @@
         "status": "active",
         "cities": 38,
         "neighborhoods": 2233,
-        "agentsQualified": 879,
+        "agentsQualified": 878,
         "agentsAnalyzed": 220000,
         "sampleCities": [
           "Phoenix",
@@ -224,7 +224,7 @@
       "activeStates": 2,
       "totalCities": 447,
       "totalNeighborhoods": 8367,
-      "totalAgentsQualified": 3269,
+      "totalAgentsQualified": 3268,
       "totalAgentsAnalyzed": 670000,
       "expansionTimeline": "Arizona and California only."
     }

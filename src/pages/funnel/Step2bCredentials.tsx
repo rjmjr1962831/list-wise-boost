@@ -8,6 +8,7 @@ import { Loader2, ArrowRight, ArrowLeft, HelpCircle, CheckCircle } from 'lucide-
 import { trackFunnelEvent } from '@/lib/funnel-track';
 import InlineReviewForm from '@/components/funnel/InlineReviewForm';
 import { FunnelBreadcrumbs } from '@/components/funnel/FunnelBreadcrumbs';
+import { RevenueGapBanner } from '@/components/funnel/RevenueGapBanner';
 
 interface Professional {
   id: string;
@@ -89,6 +90,7 @@ export default function Step2bCredentials() {
       </SafeHead>
       <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 py-12 px-4">
         <div className="max-w-2xl mx-auto">
+          <RevenueGapBanner professional={professional} />
           <FunnelBreadcrumbs currentStep={3} />
           <Card className="!bg-white/5 border-white/10 mt-3">
             <CardHeader>

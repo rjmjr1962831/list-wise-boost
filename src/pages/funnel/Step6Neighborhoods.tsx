@@ -9,6 +9,7 @@ import { Loader2, ArrowRight, ArrowLeft, Search, X, Plus, MapPin } from 'lucide-
 import { cn } from '@/lib/utils';
 import { trackFunnelEvent } from '@/lib/funnel-track';
 import { FunnelBreadcrumbs } from '@/components/funnel/FunnelBreadcrumbs';
+import { RevenueGapBanner } from '@/components/funnel/RevenueGapBanner';
 
 interface Neighborhood {
   id: string;
@@ -259,6 +260,7 @@ export default function Step6Neighborhoods() {
       </SafeHead>
       <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 py-12 px-4">
         <div className="max-w-5xl mx-auto">
+          <RevenueGapBanner professional={(location.state as any)?.professional as any} />
           <FunnelBreadcrumbs currentStep={7} />
           <Card className="!bg-white/5 border-white/10 mt-3">
             <CardHeader>
