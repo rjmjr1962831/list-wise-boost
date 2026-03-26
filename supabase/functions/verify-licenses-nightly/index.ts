@@ -40,70 +40,68 @@ interface Alert {
   new: string;
 }
 
-// ---- Arizona lookup ----
-// AZDRE requires a session cookie from the homepage before search works.
-// Without it, the site returns "Session Expired" which the old regex
-// matched as license status "Expired" — causing mass false de-listings.
-async function lookupAZ(licenseNumber: string): Promise<string | null> {
-  const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), LOOKUP_TIMEOUT_MS);
-  try {
-    // Step 1: GET the search page to establish a session cookie
-    const homeRes = await fetch(
-      "https://services.azre.gov/PdbWeb/IndividualLicense/SearchIndividualLicenses",
-      {
-        method: "GET",
-        headers: { "User-Agent": UA },
-        signal: ctrl.signal,
-        redirect: "follow",
-      },
-    );
-    if (!homeRes.ok) return null;
-    // Extract session cookies from response
-    const cookies = homeRes.headers.getSetCookie?.()
-      || [homeRes.headers.get("set-cookie")].filter(Boolean);
-    const cookieStr = cookies.map((c: string) => c.split(";")[0]).join("; ");
-    // Drain the body
-    await homeRes.text();
+// ---- Arizona: bulk CSV download ----
+// AZDRE publishes a full licensee CSV (~220K rows, ~50MB) at this URL.
+// We download it once, parse license_number → status into a Map, then
+// lookupAZ becomes a simple Map.get() — no per-agent HTTP requests.
+const AZ_CSV_URL = "https://services.azre.gov/PdbWeb/List/DownloadList/1";
 
-    // Step 2: POST the search with the session cookie
-    const form = new URLSearchParams({
-      LastName: "",
-      FirstName: "",
-      LicenseNumber: licenseNumber,
-      Status: "",
-    });
-    const res = await fetch(
-      "https://services.azre.gov/PdbWeb/IndividualLicense/SearchIndividualLicenses",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-          "User-Agent": UA,
-          "Cookie": cookieStr,
-        },
-        body: form.toString(),
-        signal: ctrl.signal,
-      },
-    );
-    if (!res.ok) return null;
-    const html = await res.text();
+// Module-level map, populated by downloadAZLicenseMap() before AZ processing.
+let azLicenseMap: Map<string, string> | null = null;
 
-    // Reject "Session Expired" pages — do NOT extract status from them
-    if (html.includes("Session Expired") || html.includes("session has expired")) {
-      console.warn(`[AZ] Session expired for ${licenseNumber} — skipping`);
-      return null;
-    }
+/**
+ * Download the AZDRE CSV and build a Map<trimmed_license_number, LicStatus>.
+ * Streams the response and parses line-by-line to keep memory lean — we only
+ * store the two fields we need (columns 5 and 8: LicNumber, LicStatus).
+ */
+async function downloadAZLicenseMap(): Promise<Map<string, string>> {
+  console.log("[AZ] Downloading bulk license CSV from AZDRE...");
+  const t0 = Date.now();
 
-    // Only match status in a structured table cell or labeled field
-    const statusMatch = html.match(/Status\s*:?\s*<[^>]*>\s*(Active|Inactive|Suspended|Revoked|Expired|Cancelled)/i);
-    // DO NOT use a broad fallback regex — it matches page chrome like "Session Expired"
-    return statusMatch ? statusMatch[1] : null;
-  } catch {
-    return null;
-  } finally {
-    clearTimeout(timer);
+  const res = await fetch(AZ_CSV_URL, {
+    headers: { "User-Agent": UA },
+  });
+  if (!res.ok) {
+    throw new Error(`[AZ] CSV download failed: HTTP ${res.status}`);
   }
+
+  const map = new Map<string, string>();
+  const text = await res.text();
+  const lines = text.split("\n");
+
+  // Skip header row (index 0), process data rows
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i];
+    if (!line || line.length < 10) continue;
+
+    // CSV fields are quoted: "val1","val2",...
+    // We need field index 5 (LicNumber) and 8 (LicStatus) — 0-based.
+    // Simple quoted-CSV parse: split on "," boundary
+    const fields = line.split('","');
+    if (fields.length < 10) continue;
+
+    // First field has leading quote, last field has trailing quote
+    const licNumber = (fields[5] || "").replace(/"/g, "").trim();
+    const licStatus = (fields[8] || "").replace(/"/g, "").trim();
+
+    if (licNumber) {
+      map.set(licNumber, licStatus);
+    }
+  }
+
+  const elapsed = Date.now() - t0;
+  console.log(`[AZ] CSV parsed: ${map.size} licenses in ${elapsed}ms`);
+  return map;
+}
+
+// ---- Arizona lookup (Map-based) ----
+function lookupAZ(licenseNumber: string): Promise<string | null> {
+  if (!azLicenseMap) {
+    return Promise.resolve(null);
+  }
+  const trimmed = licenseNumber.trim();
+  const status = azLicenseMap.get(trimmed) ?? null;
+  return Promise.resolve(status);
 }
 
 // ---- California lookup ----
@@ -195,6 +193,18 @@ Deno.serve(async (req) => {
     for (const state of ["AZ", "CA"]) {
       const stats: StateStats = { total: 0, checked: 0, active: 0, changed: 0, errors: 0 };
       statsByState[state] = stats;
+
+      // For AZ: download the bulk CSV once before processing any agents
+      if (state === "AZ") {
+        try {
+          azLicenseMap = await downloadAZLicenseMap();
+        } catch (err) {
+          console.error("[AZ] Failed to download license CSV:", err);
+          stats.errors++;
+          // Skip AZ entirely if CSV download fails — don't de-list everyone
+          continue;
+        }
+      }
 
       // Fetch all active professionals with a license_number in this state
       let offset = 0;
