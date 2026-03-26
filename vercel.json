@@ -291,6 +291,10 @@
   ],
   "rewrites": [
     {
+      "source": "/sitemap_index.xml",
+      "destination": "/sitemap.xml"
+    },
+    {
       "source": "/security.txt",
       "destination": "/.well-known/security.txt"
     },
