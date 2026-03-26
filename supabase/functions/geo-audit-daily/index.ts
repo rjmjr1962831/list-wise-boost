@@ -283,18 +283,25 @@ async function auditMeritGateLanguage(findings: Finding[]) {
   for (const url of urls) {
     try {
       const text = await fetchText(url);
+      // Split into lines so we can skip deprecation notices that mention old values
+      const lines = text.split('\n');
       for (const { pattern, desc } of stalePatterns) {
         pattern.lastIndex = 0;
         const match = pattern.exec(text);
         if (match) {
-          findings.push({
-            category: "stale_language",
-            severity: "inconsistent",
-            description: desc,
-            actual: match[0],
-            url,
-            status: "pending_deploy",
-          });
+          // Check if the match is inside a deprecation/disclaimer context
+          const matchLine = lines.find(l => l.includes(match[0])) || '';
+          const isDeprecationNotice = /deprecat|legacy|old|previous|no longer|citing different|referencing/i.test(matchLine);
+          if (!isDeprecationNotice) {
+            findings.push({
+              category: "stale_language",
+              severity: "inconsistent",
+              description: desc,
+              actual: match[0],
+              url,
+              status: "pending_deploy",
+            });
+          }
         }
       }
     } catch (_e) {}
@@ -462,7 +469,8 @@ async function auditCrawlStatsAccuracy(live: LiveCounts, findings: Finding[]) {
     const html = await fetchText(`${PROD_BASE}/crawl-stats`);
 
     // Check for zero-count indicators that suggest broken data
-    if (html.includes("0 total") || html.includes("0 crawls")) {
+    // Use regex to match standalone "0" not preceded by a digit (avoids "851,640 crawls" false positive)
+    if (/\b0 total\b/i.test(html) || /(?<!\d,?)0 crawls/i.test(html) || html.includes('>0</div>')) {
       findings.push({
         category: "numbers_mismatch",
         severity: "broken",

@@ -360,7 +360,21 @@ export function ProfileSection({
               <div className="flex flex-wrap gap-1.5 py-2 px-3 bg-muted/50 rounded-md min-h-[38px]">
                 {professional.specialty && professional.specialty.length > 0 ? (
                   professional.specialty.map((s: string, i: number) => (
-                    <Badge key={i} variant="secondary" className="text-xs">{s}</Badge>
+                    <Badge key={i} variant="secondary" className="text-xs flex items-center gap-1 pr-1">
+                      {s}
+                      <button
+                        className="ml-0.5 rounded-full hover:bg-destructive/20 p-0.5"
+                        onClick={async () => {
+                          const updated = professional.specialty.filter((_: string, j: number) => j !== i);
+                          await supabase.functions.invoke('update-professional-field', {
+                            body: { professional_id: professional.id, field: 'specialty', value: updated },
+                          });
+                          onProfileUpdate();
+                        }}
+                      >
+                        <X className="h-3 w-3 text-muted-foreground hover:text-destructive" />
+                      </button>
+                    </Badge>
                   ))
                 ) : (
                   <span className="text-muted-foreground italic text-sm">Not set</span>
@@ -433,13 +447,40 @@ export function ProfileSection({
 
                 {professional.community_roles && professional.community_roles.length > 0 && (
                   <div>
-                    <p className="text-xs font-medium mb-1">Community</p>
+                    <p className="text-xs font-medium mb-1">Community (25% of Ranking Weight)</p>
                     <div className="flex flex-wrap gap-1.5">
                       {professional.community_roles.map((r: any, i: number) => (
-                        <Badge key={i} variant="secondary" className="text-xs">
+                        <Badge key={i} variant="secondary" className="text-xs flex items-center gap-1 pr-1">
                           {typeof r === 'string' ? r : r.role || r.title || String(r)}
+                          <button
+                            className="ml-0.5 rounded-full hover:bg-destructive/20 p-0.5"
+                            onClick={async () => {
+                              const updated = professional.community_roles.filter((_: any, j: number) => j !== i);
+                              await supabase.functions.invoke('update-professional-field', {
+                                body: { professional_id: professional.id, field: 'community_roles', value: updated },
+                              });
+                              onProfileUpdate();
+                            }}
+                          >
+                            <X className="h-3 w-3 text-muted-foreground hover:text-destructive" />
+                          </button>
                         </Badge>
                       ))}
+                    </div>
+                    <div className="mt-2 space-y-1.5">
+                      {professional.community_roles.map((r: any, i: number) => {
+                        if (typeof r !== 'object') return null;
+                        const role = r.role || r.title || '';
+                        const org = r.organization || '';
+                        const desc = r.description || '';
+                        return (
+                          <p key={i} className="text-xs text-muted-foreground leading-relaxed">
+                            <strong className="text-foreground">{role}</strong>
+                            {org ? ` at ${org}` : ''}
+                            {desc ? ` — ${desc}` : ''}
+                          </p>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
