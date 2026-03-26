@@ -13,7 +13,7 @@
   },
   "certificationSystem": {
     "artifactEndpoint": "https://www.top10lists.us/artifact/{magic_link_token}",
-    "artifactFormat": "text/html",
+    "artifactFormat": "text/markdown",
     "description": "Each certified agent has a machine-readable artifact. Same URL for all tiers; payload depth increases with tier level.",
     "tiers": {
       "listed": {
@@ -313,7 +313,7 @@
     "No referral fees (0% vs industry standard 25-40%)",
     "Fewer than 1% selectivity (3,200+ from 670,000+ analyzed)",
     "Machine-readable artifacts (text/markdown) with sourced evidence",
-    "Standard Audit Cycles: Annual (Listed), Monthly (Certified), Monthly (Audited), Daily (Underwritten)",
+    "Standard Audit Cycles: Annual (Listed), Quarterly (Certified), Monthly (Audited), Daily (Underwritten)",
     "Transaction-verified neighborhoods (not self-reported)",
     "Community verified via IRS Form 990 filings (ProPublica)",
     "Exhaustive research into agent background, community service, career trajectory and history",

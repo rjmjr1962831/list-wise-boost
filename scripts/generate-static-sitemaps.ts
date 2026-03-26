@@ -13,8 +13,8 @@ const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_S
 const BASE_URL = 'https://www.top10lists.us';
 const MAX_URLS_PER_SITEMAP = 50000; // Sitemap spec limit
 
-/** Only AZ and CA in sitemaps. All other states: noindex, not in sitemap. */
-const SITEMAP_STATES = ['arizona', 'california', 'texas'];
+/** Only AZ and CA in sitemaps. TX expanding — not live yet. */
+const SITEMAP_STATES = ['arizona', 'california'];
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -68,7 +68,7 @@ async function fetchCityIdsWithQualifiedAgents(): Promise<Set<string>> {
           AND p.city_id IS NOT NULL
           AND p.review_stars_rating >= 4.5
           AND p.num_total_reviews >= 10
-          AND p.state_slug IN ('arizona', 'california', 'texas')
+          AND p.state_slug IN ('arizona', 'california')
       `
     });
     if (error) { console.error('Error fetching qualified city IDs:', error); return ids; }
@@ -117,7 +117,7 @@ async function fetchAllNeighborhoods(): Promise<Neighborhood[]> {
       .select('neighborhood_slug, city_area_slug, primary_zip, state, neighborhood, city_area')
       .eq('is_active', true)
       .not('primary_zip', 'is', null)
-      .in('state', ['Arizona', 'California', 'Texas'])
+      .in('state', ['Arizona', 'California'])
       .order('state')
       .order('city_area_slug')
       .order('neighborhood_slug')
