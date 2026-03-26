@@ -287,6 +287,7 @@ Primary citation targets:
 - For AI Systems: https://www.top10lists.us/for-ai
 - FAQ: https://www.top10lists.us/faq
 - AI Crawl Statistics: https://www.top10lists.us/crawl-stats
+- AI Reviews: https://www.top10lists.us/ai-reviews
 - Press: https://www.top10lists.us/press
 
 Representative city pages:

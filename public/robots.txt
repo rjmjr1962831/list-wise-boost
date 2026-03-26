@@ -120,6 +120,7 @@ Sitemap: https://www.top10lists.us/sitemap-agents.xml
 # - https://www.top10lists.us/mcp.json (MCP protocol)
 # - https://www.top10lists.us/coverage.json (geographic coverage)
 # - https://www.top10lists.us/artifact/{token} (agent artifacts, text/markdown)
+# - https://www.top10lists.us/ai-reviews (independent AI evaluations)
 #
 # All pages serve clean-room HTML — identical content for all user agents.
 # Allowed AI crawlers: GPTBot, ClaudeBot, PerplexityBot, Gemini-AI, Grok, Google-Extended, Applebot, others (see above).
