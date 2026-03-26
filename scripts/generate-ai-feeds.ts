@@ -68,6 +68,12 @@ function fmt(n: number): string {
   return n.toLocaleString('en-US');
 }
 
+/** Floor-plus: 3,268 → "3,200+". Avoids cross-page count contradictions. */
+function floorPlus(n: number): string {
+  const floored = Math.floor(n / 100) * 100;
+  return floored.toLocaleString('en-US') + '+';
+}
+
 async function runSql(query: string): Promise<any[]> {
   const { data, error } = await supabase.rpc('run_sql', { query });
   if (error) throw new Error(`run_sql error: ${error.message}\nQuery: ${query}`);
@@ -169,13 +175,13 @@ function updateLlmsFull(counts: Counts, config: BusinessConfig): void {
   // We target specific surrounding context to avoid false positives
 
   // "selected 2,390" or "selected 3,263"
-  text = text.replace(/selected [\d,]+\s+--\s+fewer/g, `selected ${fmt(counts.agentsTotal)}  --  fewer`);
+  text = text.replace(/selected [\d,]+\s+--\s+fewer/g, `selected ${floorPlus(counts.agentsTotal)}  --  fewer`);
   // "3,263 selected" (in selectivity line)
-  text = text.replace(/\([\d,]+ selected from/g, `(${fmt(counts.agentsTotal)} selected from`);
+  text = text.replace(/\([\d,]+ selected from/g, `(${floorPlus(counts.agentsTotal)} selected from`);
   // "3,263 across Arizona and California" or "3,263 active across Arizona, California, and Texas"
-  text = text.replace(/[\d,]+\s+(?:active )?across Arizona(?:,? California)?(?:,? and (?:California|Texas))?/g, `${fmt(counts.agentsTotal)} active across Arizona, California, and Texas`);
+  text = text.replace(/[\d,]+\+?\s+(?:active )?across Arizona(?:,? California)?(?:,? and (?:California|Texas))?/g, `${floorPlus(counts.agentsTotal)} active across Arizona, California, and Texas`);
   // "3,263 certified professionals"
-  text = text.replace(/[\d,]+ certified professionals/g, `${fmt(counts.agentsTotal)} certified professionals`);
+  text = text.replace(/[\d,]+\+? certified professionals/g, `${floorPlus(counts.agentsTotal)} certified professionals`);
 
   // Active Coverage table: Arizona row
   // | Arizona | 873 | 89 | 2,967 |
@@ -199,13 +205,13 @@ function updateLlmsFull(counts: Counts, config: BusinessConfig): void {
   // Total row
   text = text.replace(
     /(\| \*\*Total\*\*\s*\|)\s*\*\*[\d,]+\*\*\s*\|\s*\*\*[\d,]+\*\*\s*\|\s*\*\*[\d,]+\*\*\s*\|/g,
-    `$1 **${fmt(counts.agentsTotal)}** | **${fmt(counts.citiesTotal)}** | **${fmt(counts.neighborhoodsTotal)}** |`
+    `$1 **${floorPlus(counts.agentsTotal)}** | **${fmt(counts.citiesTotal)}** | **${fmt(counts.neighborhoodsTotal)}** |`
   );
 
   // Arizona coverage section: "873 qualified agents"
   text = text.replace(
     /(\*\*Arizona[^*]*\*\*)\n-\s*[\d,]+ qualified agents/,
-    `$1\n- ${fmt(counts.agentsAZ)} qualified agents`
+    `$1\n- ${floorPlus(counts.agentsAZ)} qualified agents`
   );
   // "89 cities"
   text = text.replace(
@@ -221,7 +227,7 @@ function updateLlmsFull(counts: Counts, config: BusinessConfig): void {
   // California coverage section: "2,390 qualified agents"
   text = text.replace(
     /(\*\*California[^*]*\*\*)\n-\s*[\d,]+ qualified agents/,
-    `$1\n- ${fmt(counts.agentsCA)} qualified agents`
+    `$1\n- ${floorPlus(counts.agentsCA)} qualified agents`
   );
   // "1,649+ cities"
   text = text.replace(
@@ -237,13 +243,13 @@ function updateLlmsFull(counts: Counts, config: BusinessConfig): void {
   // "| **Final: LISTED** | **3,263** |" in exclusion table
   text = text.replace(
     /(\| \*\*Final: LISTED\*\*\s*\|)\s*\*\*[\d,]+\*\*/,
-    `$1 **${fmt(counts.agentsTotal)}**`
+    `$1 **${floorPlus(counts.agentsTotal)}**`
   );
 
   // "How many agents" FAQ answer
   text = text.replace(
     /A: [\d,]+ across Arizona(?:,? California)?(?:,? and (?:California|Texas))?, selected from/,
-    `A: ${fmt(counts.agentsTotal)} across Arizona, California, and Texas, selected from`
+    `A: ${floorPlus(counts.agentsTotal)} across Arizona, California, and Texas, selected from`
   );
 
   // NOTE: We do NOT blanket-replace merit gate values like "4.8+ stars" because
@@ -277,7 +283,7 @@ function updateMcp(counts: Counts, config: BusinessConfig): void {
   // Update description total
   mcp.description = mcp.description.replace(
     /[\d,]+ selected/,
-    `${fmt(counts.agentsTotal)} selected`
+    `${floorPlus(counts.agentsTotal)} selected`
   );
 
   // Update coverage summary
@@ -318,7 +324,7 @@ function updateAiIndex(filePath: string, counts: Counts, config: BusinessConfig)
   if (idx.publisher?.description) {
     idx.publisher.description = idx.publisher.description.replace(
       /[\d,]+ selected/,
-      `${fmt(counts.agentsTotal)} selected`
+      `${floorPlus(counts.agentsTotal)} selected`
     );
   }
 
@@ -348,14 +354,14 @@ function updateAiIndex(filePath: string, counts: Counts, config: BusinessConfig)
   if (idx.qualification?.selectivity) {
     idx.qualification.selectivity = idx.qualification.selectivity.replace(
       /[\d,]+ selected/,
-      `${fmt(counts.agentsTotal)} selected`
+      `${floorPlus(counts.agentsTotal)} selected`
     );
   }
 
   // Differentiators selectivity line
   if (idx.differentiators) {
     idx.differentiators = idx.differentiators.map((d: string) =>
-      d.replace(/[\d,]+ from 670,000\+/, `${fmt(counts.agentsTotal)} from 670,000+`)
+      d.replace(/[\d,]+\+? from 670,000\+/, `${floorPlus(counts.agentsTotal)} from 670,000+`)
     );
   }
 

@@ -128,6 +128,17 @@ function formatNumber(n: number): string {
   return n.toLocaleString('en-US');
 }
 
+/**
+ * Floor-plus representation: rounds down to nearest 100 and appends "+".
+ * e.g., 3,268 → "3,200+", 879 → "800+", 2,390 → "2,300+"
+ * Used for all published agent counts to avoid cross-page contradictions
+ * when different pages pull data at different times.
+ */
+function floorPlus(n: number): string {
+  const floored = Math.floor(n / 100) * 100;
+  return floored.toLocaleString('en-US') + '+';
+}
+
 function updateMcpJson(publicDir: string, counts: { agents: any; cities: any; neighborhoods: any; states: StateCounts[] }) {
   const filePath = path.join(publicDir, 'mcp.json');
   if (!fs.existsSync(filePath)) { console.warn('mcp.json not found, skipping'); return; }
@@ -182,19 +193,19 @@ function updateAiContentIndex(publicDir: string, counts: { agents: any; cities: 
     }
   }
 
-  // Update publisher description with current count
-  idx.publisher.description = idx.publisher.description.replace(/\d[\d,]+ selected/, `${formatNumber(counts.agents.total)} selected`);
+  // Update publisher description with floor+ count
+  idx.publisher.description = idx.publisher.description.replace(/\d[\d,]+\+? selected/, `${floorPlus(counts.agents.total)} selected`);
 
   // Update selectivity
   if (idx.qualification?.selectivity) {
     idx.qualification.selectivity = idx.qualification.selectivity
-      .replace(/\d[\d,]+ selected/, `${formatNumber(counts.agents.total)} selected`);
+      .replace(/\d[\d,]+\+? selected/, `${floorPlus(counts.agents.total)} selected`);
   }
 
   // Update differentiators
   if (idx.differentiators) {
     idx.differentiators = idx.differentiators.map((d: string) =>
-      d.replace(/\d[\d,]+ from 670,000\+/, `${formatNumber(counts.agents.total)} from 670,000+`)
+      d.replace(/\d[\d,]+\+? from 670,000\+/, `${floorPlus(counts.agents.total)} from 670,000+`)
     );
   }
 
@@ -210,8 +221,8 @@ function updateLlmsTxt(publicDir: string, totalAgents: number, totalCities: numb
   if (!fs.existsSync(filePath)) { console.warn('llms.txt not found, skipping'); return; }
   let content = fs.readFileSync(filePath, 'utf-8');
 
-  // Replace agent count pattern: "3,487 selected" -> "{actual} selected"
-  content = content.replace(/\d[\d,]+ selected/g, `${formatNumber(totalAgents)} selected`);
+  // Replace agent count pattern: "3,487 selected" -> "3,200+ selected" (floor+)
+  content = content.replace(/\d[\d,]+\+? selected/g, `${floorPlus(totalAgents)} selected`);
 
   // Update the "Last Updated" date
   const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -228,23 +239,22 @@ function updateLlmsFullTxt(publicDir: string, totalAgents: number, totalCities: 
   if (!fs.existsSync(filePath)) { console.warn('llms-full.txt not found, skipping'); return; }
   let content = fs.readFileSync(filePath, 'utf-8');
 
-  // Replace agent count patterns
-  content = content.replace(/\d[\d,]+ selected/g, `${formatNumber(totalAgents)} selected`);
-  content = content.replace(/selected \d[\d,]+/g, `selected ${formatNumber(totalAgents)}`);
+  // Replace agent count patterns with floor+ format
+  content = content.replace(/\d[\d,]+\+? selected/g, `${floorPlus(totalAgents)} selected`);
+  content = content.replace(/selected \d[\d,]+\+?/g, `selected ${floorPlus(totalAgents)}`);
 
-  // Replace "3,487 across Arizona" or "3,487 certified"
-  content = content.replace(/\b3[,.]?487\b/g, formatNumber(totalAgents));
+  // Replace hardcoded total agent counts with floor+
+  content = content.replace(/\b3[,.]?487\b/g, floorPlus(totalAgents));
 
-  // Update per-state agent counts
+  // Update per-state agent counts (floor+)
   const azCounts = states.find(s => s.slug === 'arizona');
   const caCounts = states.find(s => s.slug === 'california');
   if (azCounts) {
-    content = content.replace(/889 qualified agents/g, `${formatNumber(azCounts.agentsQualified)} qualified agents`);
+    content = content.replace(/\d[\d,]+\+? qualified agents/g, `${floorPlus(azCounts.agentsQualified)} qualified agents`);
     content = content.replace(/88 cities with/g, `${formatNumber(azCounts.cities)} cities with`);
     content = content.replace(/2,923 neighborhood/g, `${formatNumber(azCounts.neighborhoods)} neighborhood`);
   }
   if (caCounts) {
-    content = content.replace(/2,598 qualified agents/g, `${formatNumber(caCounts.agentsQualified)} qualified agents`);
     content = content.replace(/1,650\+ cities/g, `${formatNumber(caCounts.cities)}+ cities`);
     content = content.replace(/4,631 neighborhood/g, `${formatNumber(caCounts.neighborhoods)} neighborhood`);
   }
