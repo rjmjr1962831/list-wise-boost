@@ -205,6 +205,9 @@ export const Header = () => {
             <a href="/crawl-stats" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
               Stats
             </a>
+            <a href="/ai-reviews" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+              AI Reviews
+            </a>
 {IS_ADMIN && (
               <Link to="/admin" className="text-sm font-medium text-primary hover:text-primary/80 transition-colors">
                 Admin
@@ -330,6 +333,14 @@ export const Header = () => {
                     className="text-base font-medium text-foreground hover:text-primary transition-colors py-2"
                   >
                     Stats
+                  </a>
+                </SheetClose>
+                <SheetClose asChild>
+                  <a
+                    href="/ai-reviews"
+                    className="text-base font-medium text-foreground hover:text-primary transition-colors py-2"
+                  >
+                    AI Reviews
                   </a>
                 </SheetClose>
                 {IS_ADMIN && (
