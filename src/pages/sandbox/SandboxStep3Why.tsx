@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { SafeHead } from "@/components/SafeHead";
 import { supabase } from "@/integrations/supabase/client";
 import { useGA4Tracking } from "@/hooks/useGA4Tracking";
+import { RevenueGapBanner } from '@/components/funnel/RevenueGapBanner';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Loader2, ArrowLeft, ArrowRight, MessageCircle, Search, ListOrdered, Eye } from "lucide-react";
@@ -138,6 +139,8 @@ export default function SandboxStep3Why() {
       </SafeHead>
 
       <div className="max-w-2xl mx-auto px-4 py-8 sm:py-12">
+        <RevenueGapBanner professional={professional} />
+
         {/* Header */}
         <h1 className="text-2xl sm:text-3xl font-bold text-center mb-6">
           AI is replacing search. Here's what that means for you.

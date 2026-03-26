@@ -12,6 +12,7 @@ import { trackFunnelEvent } from '@/lib/funnel-track';
 import InlineReviewForm from '@/components/funnel/InlineReviewForm';
 import { floorSales, floorReviews } from '@/utils/floorDisplay';
 import { FunnelBreadcrumbs } from '@/components/funnel/FunnelBreadcrumbs';
+import { RevenueGapBanner } from '@/components/funnel/RevenueGapBanner';
 
 // Known specialties for autocomplete - kept in sync with DB
 const KNOWN_SPECIALTIES = [
@@ -268,6 +269,7 @@ export default function Step3Review2() {
       </SafeHead>
       <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 py-12 px-4">
         <div className="max-w-2xl mx-auto">
+          <RevenueGapBanner professional={professional} />
           <FunnelBreadcrumbs currentStep={4} />
           <Card className="!bg-white/5 border-white/10 mt-3">
             <CardHeader>

@@ -11,6 +11,7 @@ import { trackFunnelEvent } from '@/lib/funnel-track';
 import { REGIONAL_PACKAGES } from '@/data/arizonaPackages';
 import { CALIFORNIA_PACKAGES, CA_CATEGORY_LABELS, CA_CATEGORY_ORDER } from '@/data/californiaPackages';
 import { FunnelBreadcrumbs } from '@/components/funnel/FunnelBreadcrumbs';
+import { RevenueGapBanner } from '@/components/funnel/RevenueGapBanner';
 
 type LocationState = { professionalId?: string; state_slug?: string | null; license_state?: string | null; professional?: Record<string, unknown> } | null;
 
@@ -188,6 +189,7 @@ export default function Step5Cities() {
       </SafeHead>
       <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 py-12 px-4">
         <div className="max-w-4xl mx-auto">
+          <RevenueGapBanner professional={passedState?.professional as any} />
           <FunnelBreadcrumbs currentStep={6} />
           <Card className="!bg-white/5 border-white/10 mt-3">
             <CardHeader>

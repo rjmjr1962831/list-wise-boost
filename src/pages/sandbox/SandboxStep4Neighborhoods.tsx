@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Loader2, Search, X, Plus, MapPin } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useGA4Tracking } from '@/hooks/useGA4Tracking';
+import { RevenueGapBanner } from '@/components/funnel/RevenueGapBanner';
 import { SandboxNugget } from './SandboxNugget';
 import { SandboxProgress } from './SandboxProgress';
 import { validateToken, getStateFromProfessional, useBasePath } from './utils';
@@ -284,6 +285,8 @@ export default function SandboxStep4Neighborhoods() {
       <div className="min-h-screen bg-background py-10 px-4">
         <div className="max-w-4xl mx-auto space-y-6">
           <SandboxProgress currentStep={4} />
+
+          <RevenueGapBanner professional={professional} />
 
           <SandboxNugget>
             AI searches our neighborhood pages about 20 TIMES more than cities. Make sure you name all neighborhoods where you have at least 2 transactions in the last 2 years.

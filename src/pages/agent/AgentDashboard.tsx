@@ -30,6 +30,7 @@ import { UpgradeSection } from "@/components/agent/UpgradeSection";
 import { WebOfTruthSection } from "@/components/agent/WebOfTruthSection";
 import { getValidImageUrl } from "@/utils/imageUrlValidator";
 import { cn } from "@/lib/utils";
+import { RevenueGapBanner } from "@/components/funnel/RevenueGapBanner";
 
 type NavSection = "overview" | "ai-max-plan" | "upgrade" | "live-audit" | "profile" | "payload" | "billing" | "badge";
 
@@ -433,6 +434,7 @@ export default function AgentDashboard() {
         </div>
 
         <div className="container mx-auto px-4 max-w-7xl py-6">
+          <RevenueGapBanner professional={professional} />
           <div className="flex gap-6">
             {/* Sidebar (desktop) */}
             <aside className="hidden lg:block w-[220px] shrink-0">

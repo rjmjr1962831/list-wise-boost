@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Loader2, ArrowRight, Eye, TrendingUp, Shield, Zap } from 'lucide-react';
 import { FunnelBreadcrumbs } from '@/components/funnel/FunnelBreadcrumbs';
+import { RevenueGapBanner } from '@/components/funnel/RevenueGapBanner';
 
 interface Professional {
   id: string;
@@ -186,6 +187,7 @@ export default function Step1Intro() {
 
       <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
         <div className="max-w-2xl mx-auto px-4 py-8 sm:py-12">
+          <RevenueGapBanner professional={professional} />
           <FunnelBreadcrumbs currentStep={1} />
 
           {/* ═══ Hero: Their name + what's happening ═══ */}

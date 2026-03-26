@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { useGA4Tracking } from '@/hooks/useGA4Tracking';
 import { REGIONAL_PACKAGES } from '@/data/arizonaPackages';
 import { CALIFORNIA_PACKAGES, CA_CATEGORY_LABELS, CA_CATEGORY_ORDER } from '@/data/californiaPackages';
+import { RevenueGapBanner } from '@/components/funnel/RevenueGapBanner';
 import { SandboxNugget } from './SandboxNugget';
 import { SandboxProgress } from './SandboxProgress';
 import { validateToken, getStateFromProfessional, useBasePath } from './utils';
@@ -173,6 +174,8 @@ export default function SandboxStep3Cities() {
       <div className="min-h-screen bg-background py-10 px-4">
         <div className="max-w-4xl mx-auto space-y-6">
           <SandboxProgress currentStep={3} />
+
+          <RevenueGapBanner professional={professional} />
 
           <SandboxNugget>
             AI recommendations are geographic. It won't name you in a city unless it can verify you work there. Please list locations where you have verified recent transactions.

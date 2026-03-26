@@ -7,6 +7,7 @@ import { trackFunnelEvent } from '@/lib/funnel-track';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, Home, Phone, ExternalLink, Copy } from 'lucide-react';
 import { toast } from 'sonner';
+import { RevenueGapBanner } from '@/components/funnel/RevenueGapBanner';
 
 export default function StepSuccess() {
   const { token } = useParams<{ token: string }>();
@@ -78,6 +79,7 @@ export default function StepSuccess() {
       </SafeHead>
       <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 py-12 px-4">
         <div className="max-w-2xl mx-auto">
+          <RevenueGapBanner professional={null} />
           <Card>
             <CardHeader className="text-center">
               <div className="flex justify-center mb-6">

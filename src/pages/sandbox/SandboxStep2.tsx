@@ -18,6 +18,7 @@ import {
 import { Loader2, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { useGA4Tracking } from '@/hooks/useGA4Tracking';
+import { RevenueGapBanner } from '@/components/funnel/RevenueGapBanner';
 import { SandboxNugget } from './SandboxNugget';
 import { SandboxProgress } from './SandboxProgress';
 import { validateToken, useBasePath } from './utils';
@@ -302,6 +303,8 @@ export default function SandboxStep2() {
       <div className="min-h-screen bg-background py-10 px-4">
         <div className="max-w-xl mx-auto space-y-6">
           <SandboxProgress currentStep={2} />
+
+          <RevenueGapBanner professional={professional} />
 
           <SandboxNugget>
             <p className="mb-2">

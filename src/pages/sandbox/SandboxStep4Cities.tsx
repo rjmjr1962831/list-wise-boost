@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { SafeHead } from "@/components/SafeHead";
 import { supabase } from "@/integrations/supabase/client";
 import { useGA4Tracking } from "@/hooks/useGA4Tracking";
+import { RevenueGapBanner } from '@/components/funnel/RevenueGapBanner';
 import { BundlesPanel, type CityBundle } from "@/components/visibility/BundlesPanel";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -185,6 +186,8 @@ export default function SandboxStep4Cities() {
       </SafeHead>
 
       <div className="max-w-4xl mx-auto px-4 py-8 sm:py-12">
+        <RevenueGapBanner professional={professional} />
+
         <h1 className="text-2xl sm:text-3xl font-bold text-center mb-2">
           Where do you work?
         </h1>

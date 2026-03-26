@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Loader2 } from 'lucide-react';
 import { trackFunnelEvent } from '@/lib/funnel-track';
 import { FunnelBreadcrumbs } from '@/components/funnel/FunnelBreadcrumbs';
+import { RevenueGapBanner } from '@/components/funnel/RevenueGapBanner';
 import { TierPricingCalculator } from '@/components/pricing/TierPricingCalculator';
 import { toast } from 'sonner';
 
@@ -145,6 +146,7 @@ export default function Step7Pricing() {
 
       <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 py-10 px-4">
         <div className="max-w-4xl mx-auto space-y-8">
+          <RevenueGapBanner professional={professional} />
           <FunnelBreadcrumbs currentStep={8} />
 
           <div className="text-center py-2">

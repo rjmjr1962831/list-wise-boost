@@ -291,6 +291,10 @@
   ],
   "rewrites": [
     {
+      "source": "/security.txt",
+      "destination": "/.well-known/security.txt"
+    },
+    {
       "source": "/.well-known/mcp.json",
       "destination": "/mcp.json"
     },
