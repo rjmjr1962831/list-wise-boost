@@ -266,7 +266,7 @@
       "expandingStates": 3,
       "totalCities": 447,
       "totalNeighborhoods": 8367,
-      "totalAgentsQualified": 2390,
+      "totalAgentsQualified": 3268,
       "totalAgentsAnalyzed": 670000
     },
     "states": [
@@ -276,7 +276,7 @@
         "status": "active",
         "cities": 38,
         "neighborhoods": 2233,
-        "agentsQualified": 0,
+        "agentsQualified": 878,
         "agentsAnalyzed": 220000
       },
       {
