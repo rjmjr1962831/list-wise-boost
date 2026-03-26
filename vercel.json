@@ -308,7 +308,7 @@
     },
     {
       "source": "/stats.json",
-      "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/serve-stats-json"
+      "destination": "/stats.json"
     },
     {
       "source": "/about/founder",

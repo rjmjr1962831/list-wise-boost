@@ -1,0 +1,20 @@
+{
+  "agents_total": 3269,
+  "agents_by_state": {
+    "AZ": 879,
+    "CA": 2390
+  },
+  "cities_total": 1738,
+  "neighborhoods_total": 10199,
+  "states_live": [
+    "AZ",
+    "CA"
+  ],
+  "merit_gate": {
+    "min_rating": 4.5,
+    "min_reviews": 10,
+    "review_window_months": 24,
+    "min_years_experience": 5
+  },
+  "last_updated": "2026-03-26T16:32:14.312Z"
+}

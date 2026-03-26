@@ -53,6 +53,22 @@ try {
     writeFileSync(".coverage-counts.json", data[0].html);
     const snapshot = JSON.parse(data[0].html);
     console.log(`[fetch-static-pages] coverage-counts → .coverage-counts.json (agents: ${snapshot.agents?.total}, updated: ${snapshot.updated_at})`);
+
+    // Also generate static stats.json from the snapshot
+    const statsJson = JSON.stringify({
+      agents_total: snapshot.agents?.total || 0,
+      agents_by_state: {
+        AZ: snapshot.agents?.az || 0,
+        CA: snapshot.agents?.ca || 0,
+        TX: snapshot.agents?.tx || 0,
+      },
+      cities_total: snapshot.cities?.total || 0,
+      neighborhoods_total: snapshot.neighborhoods?.total || 0,
+      updated_at: snapshot.updated_at,
+      source: "daily-snapshot",
+    }, null, 2);
+    writeFileSync("public/stats.json", statsJson);
+    console.log(`[fetch-static-pages] stats.json → public/stats.json (from coverage snapshot)`);
   } else {
     console.warn("[fetch-static-pages] No coverage-counts snapshot found. Generators will query DB directly.");
   }
