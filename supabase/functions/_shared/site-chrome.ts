@@ -81,6 +81,7 @@ export function siteHeaderHTML(): string {
       <a href="${BASE}/about/ranking-methodology">Methodology</a>
       <a href="${BASE}/faq">FAQ</a>
       <a href="${BASE}/crawl-stats">Stats</a>
+      <a href="${BASE}/ai-reviews">AI Reviews</a>
     </nav>
   </div>
 </header>`;
@@ -156,6 +157,7 @@ export function siteFooterHTML(): string {
           <a href="${BASE}/press">Press</a>
           <a href="${BASE}/for-ai-systems">For AI Systems</a>
           <a href="${BASE}/ai-citation-whitepaper">AI Citation Whitepaper</a>
+          <a href="${BASE}/ai-reviews">AI Reviews</a>
           <a href="${BASE}/privacy">Privacy</a>
           <a href="${BASE}/terms">Terms</a>
           <a href="${BASE}/payments-security">Payments &amp; Security</a>
