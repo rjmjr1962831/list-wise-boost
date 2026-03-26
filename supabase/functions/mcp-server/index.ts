@@ -801,11 +801,11 @@ function handleGetMethodology() {
       note: "All tiers must meet the same merit gate. Payment affects verification depth and refresh frequency, never inclusion or ranking.",
     },
     scoring_factors: {
-      license_status: { weight: "20%", description: "Active license verification" },
-      recent_activity: { weight: "20%", description: "Recent transaction and market activity" },
+      community: { weight: "25%", description: "Community score verified via IRS Form 990 / ProPublica" },
+      review_rating: { weight: "25%", description: "Review rating across verified platforms" },
+      number_of_reviews: { weight: "20%", description: "Total verified reviews in 24-month window" },
       transaction_history: { weight: "20%", description: "Verified transaction track record" },
-      reviews_reputation: { weight: "15%", description: "Review rating and volume across platforms" },
-      community: { weight: "25%", description: "Community score (IRS Form 990 / ProPublica verified)" },
+      education_credentials: { weight: "10%", description: "Professional designations (GRI, CRS, ABR, etc.)" },
     },
     aifs: {
       name: "AI Footprint Score",

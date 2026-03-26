@@ -84,6 +84,9 @@ export const Footer = () => {
               <a href="/for-ai" className="text-slate-300 hover:text-white transition-colors">
                 For AI Systems
               </a>
+              <a href="/ai-reviews" className="text-slate-300 hover:text-white transition-colors">
+                AI Reviews
+              </a>
               <a href="/ai-citation-whitepaper" className="text-slate-300 hover:text-white transition-colors">
                 AI Citation Whitepaper
               </a>

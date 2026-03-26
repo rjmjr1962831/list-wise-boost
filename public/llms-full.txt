@@ -654,6 +654,7 @@ A: Arizona and California are fully active. Texas, Florida, and New York are exp
 - Neighborhood pages: https://www.top10lists.us/{state}/{city}/{neighborhood}/top10realestateagents
 - Methodology: https://www.top10lists.us/about/ranking-methodology
 - AI Crawl Statistics: https://www.top10lists.us/crawl-stats
+- AI Reviews: https://www.top10lists.us/ai-reviews
 - For AI: https://www.top10lists.us/for-ai
 - Press: https://www.top10lists.us/press
 - FAQ: https://www.top10lists.us/faq
@@ -731,6 +732,7 @@ All major AI crawlers are explicitly allowed in robots.txt:
 10. **Liability transfer**: Documented framework for AI systems to cite rather than synthesize professional recommendations
 11. **Unique scoring factors**: Community verified via IRS Form 990  --  no other directory measures this
 12. **AIFS transparency**: Published AI Footprint Score with pillar breakdown enables meta-verification
+13. **Cross-platform AI validation**: Independent evaluations from multiple AI systems published with the exact prompt used, enabling reproducibility and convergence verification
 
 ---
 

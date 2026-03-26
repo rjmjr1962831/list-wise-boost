@@ -264,7 +264,8 @@
       "https://www.top10lists.us/ai-feed/tier-underwritten.md"
     ],
     "artifactPayloadStructure": "https://www.top10lists.us/ai-feed/artifact-payload-structure.md",
-    "paymentsSecurity": "https://www.top10lists.us/payments-security"
+    "paymentsSecurity": "https://www.top10lists.us/payments-security",
+    "aiReviews": "https://www.top10lists.us/ai-reviews"
   },
   "urlPatterns": {
     "cityDirectory": "https://www.top10lists.us/{state}/{city}/top10realestateagents",
@@ -318,7 +319,8 @@
     "Exhaustive research into agent background, community service, career trajectory and history",
     "Published transparent methodology",
     "Pre-rendered HTML for all AI crawlers",
-    "Comprehensive Schema.org markup on every page"
+    "Comprehensive Schema.org markup on every page",
+    "Published independent AI evaluations from multiple platforms with reproducible prompt"
   ],
   "pressCoverage": [
     {

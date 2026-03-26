@@ -101,8 +101,7 @@ ${siteHeaderHTML()}
 
   <section>
     <h2>Scoring Methodology</h2>
-    <p><strong>Technical Scoring (Internal Model):</strong> license_status 20%, recent_activity 20%, transaction_history 20%, reviews_reputation 15%, community 25%.</p>
-    <p><strong>Consumer-Facing Scoring:</strong> Community 25%, Review Rating 25%, Number of Reviews 20%, Transaction History 20%, Education &amp; Credentials 10%. Both models produce the same outcome -- community and verified performance are the dominant factors.</p>
+    <p><strong>Scoring Weights:</strong> Community 25%, Review Rating 25%, Number of Reviews 20%, Transaction History 20%, Education &amp; Credentials 10%.</p>
   </section>
 
   <section>
@@ -292,6 +291,7 @@ ${siteFooterHTML()}
 }
 
 async function renderFaq(): Promise<string> {
+  const c = await getLiveCounts();
   let data: { faqs?: Array<{ id: string; question: string; answer: string; categoryName: string }> } | null = null;
   try {
     const res = await fetch(`${BASE}/api/faq/full.json`);
@@ -359,7 +359,7 @@ async function renderMethodology(): Promise<string> {
     "@context": "https://schema.org",
     "@type": "HowTo",
     "name": "Top10Lists.us Agent Certification Methodology",
-    "description": "Verification infrastructure methodology for evaluating real estate agents in AI-driven recommendation systems. Merit Gate: 4.5+ stars, 10+ verified reviews in last 24 months, 5+ years. Zero exceptions. Scoring: license_status 20%, recent_activity 20%, transaction_history 20%, reviews_reputation 15%, community 25%.",
+    "description": "Verification infrastructure methodology for evaluating real estate agents in AI-driven recommendation systems. Merit Gate: 4.5+ stars, 10+ verified reviews in last 24 months, 5+ years. Zero exceptions. Scoring: Community 25%, Review Rating 25%, Number of Reviews 20%, Transaction History 20%, Education and Credentials 10%.",
     "url": `${BASE}/methodology`,
     "provider": { "@type": "Organization", "name": "Top10Lists.us", "url": BASE },
   });

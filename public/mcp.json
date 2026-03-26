@@ -225,6 +225,13 @@
       "url": "https://www.top10lists.us/crawl-stats",
       "mimeType": "text/html",
       "refreshInterval": "15 minutes"
+    },
+    {
+      "name": "ai-reviews",
+      "description": "Independent AI evaluations of Top10Lists.us from multiple platforms (Perplexity, ChatGPT, Claude, Gemini, Grok). Same prompt, unedited responses, dated for reproducibility.",
+      "url": "https://www.top10lists.us/ai-reviews",
+      "mimeType": "text/html",
+      "refreshInterval": "quarterly"
     }
   ],
   "urlTemplates": {
