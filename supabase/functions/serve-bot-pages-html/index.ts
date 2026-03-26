@@ -10,7 +10,7 @@
  */
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { siteHeaderCSS, siteHeaderHTML, siteFooterHTML, breadcrumbJsonLd, ogTags } from "../_shared/site-chrome.ts";
-import { getLiveCounts, floorPlus } from "../_shared/live-counts.ts";
+import { getLiveCounts, floorPlus, fmtDate } from "../_shared/live-counts.ts";
 
 const BASE = "https://www.top10lists.us";
 const CORS = {

@@ -272,13 +272,30 @@ function updateLlmsFullTxt(publicDir: string, totalAgents: number, totalCities: 
 
 async function main() {
   const publicDir = path.join(process.cwd(), 'public');
-  console.log('Fetching current counts from Supabase...');
 
-  const [agents, cities, neighborhoods] = await Promise.all([
-    countAgents(),
-    countCities(),
-    countNeighborhoods(),
-  ]);
+  // Try to read from daily snapshot first (written by fetch-static-pages.mjs)
+  let snapshotUsed = false;
+  const snapshotPath = path.join(process.cwd(), '.coverage-counts.json');
+  if (fs.existsSync(snapshotPath)) {
+    try {
+      const snapshot = JSON.parse(fs.readFileSync(snapshotPath, 'utf-8'));
+      if (snapshot.agents?.total > 0) {
+        console.log(`Using daily coverage snapshot (updated ${snapshot.updated_at})`);
+        snapshotUsed = true;
+        // Fall through to use snapshot data below
+        var agents = { total: snapshot.agents.total, byState: { arizona: snapshot.agents.az, california: snapshot.agents.ca, texas: snapshot.agents.tx || 0 } };
+        var cities = { total: snapshot.cities.total, byState: { arizona: snapshot.cities.az, california: snapshot.cities.ca, texas: snapshot.cities.tx || 0 } };
+        var neighborhoods = { total: snapshot.neighborhoods.total, byState: { arizona: snapshot.neighborhoods.az, california: snapshot.neighborhoods.ca, texas: snapshot.neighborhoods.tx || 0 } };
+      }
+    } catch { /* fall through to live query */ }
+  }
+
+  if (!snapshotUsed) {
+    console.log('Fetching current counts from Supabase...');
+    var agents = await countAgents();
+    var cities = await countCities();
+    var neighborhoods = await countNeighborhoods();
+  }
 
   console.log(`Counts: ${agents.total} agents, ${cities.total} cities, ${neighborhoods.total} neighborhoods`);
 
