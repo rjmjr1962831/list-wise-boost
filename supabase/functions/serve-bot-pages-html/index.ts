@@ -498,18 +498,10 @@ async function renderMethodology(): Promise<string> {
   </ul>
   <p>Meeting the Merit Gate qualifies an agent for review, not for listing. Agents who pass undergo AI-assisted analysis and human editorial review.</p>
 
-  <h2>Internal Scoring Weights</h2>
-  <p>Each qualifying agent is scored using a weighted composite model (scale: 0.0 to 1.0).</p>
-  <div class="factor"><span>License Status</span><span class="factor-weight">20%</span></div>
-  <div class="factor"><span>Recent Activity</span><span class="factor-weight">20%</span></div>
-  <div class="factor"><span>Transaction History</span><span class="factor-weight">20%</span></div>
-  <div class="factor"><span>Reviews &amp; Reputation</span><span class="factor-weight">15%</span></div>
+  <h2>Scoring Weights</h2>
+  <p>Each qualifying agent is scored using a weighted composite model.</p>
   <div class="factor"><span>Community</span><span class="factor-weight">25%</span></div>
-  <p><strong>Formula:</strong> sum(component_value[k] x weight[k]) for all components. Missing data: redistribute weight proportionally.</p>
-
-  <h2>Consumer-Facing Scoring Weights</h2>
   <div class="factor"><span>Review Rating</span><span class="factor-weight">25%</span></div>
-  <div class="factor"><span>Community</span><span class="factor-weight">25%</span></div>
   <div class="factor"><span>Number of Reviews</span><span class="factor-weight">20%</span></div>
   <div class="factor"><span>Transaction History</span><span class="factor-weight">20%</span></div>
   <div class="factor"><span>Education &amp; Credentials</span><span class="factor-weight">10%</span></div>

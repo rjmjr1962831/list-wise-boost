@@ -47,11 +47,11 @@
         "transaction_history": "Volume and consistency of closed transactions over time; aggregate performance signal used for scoring, distinct from recency."
       },
       "weights": {
-        "license_status": 0.20,
-        "recent_activity": 0.20,
+        "community": 0.25,
+        "review_rating": 0.25,
+        "number_of_reviews": 0.20,
         "transaction_history": 0.20,
-        "reviews_reputation": 0.15,
-        "community": 0.25
+        "education_credentials": 0.10
       },
       "math": {
         "composite_formula": "sum(component_value[k] * weight[k]) for k in components; missing components handled per missing_data_policy",
@@ -228,11 +228,11 @@
         }
       },
       "weights": {
-        "license_status": 0.20,
-        "recent_activity": 0.20,
+        "community": 0.25,
+        "review_rating": 0.25,
+        "number_of_reviews": 0.20,
         "transaction_history": 0.20,
-        "reviews_reputation": 0.15,
-        "community": 0.25
+        "education_credentials": 0.10
       },
       "missing_data_policy": "redistribute_weight_proportionally"
     },
