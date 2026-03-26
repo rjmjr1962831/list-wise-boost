@@ -31,6 +31,9 @@ const BOT_PATTERNS: [string, RegExp][] = [
   ["YandexBot", /yandexbot/i],
   ["Baiduspider", /baiduspider/i],
   ["DuckDuckBot", /duckduckbot/i],
+  ["PetalBot", /petalbot/i],
+  ["SERankingBot", /serankingbacklinksbot|seranking/i],
+  ["TikTokSpider", /tiktokspider/i],
 ];
 
 function detectBot(ua: string): string | null {

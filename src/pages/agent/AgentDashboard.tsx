@@ -434,7 +434,7 @@ export default function AgentDashboard() {
         </div>
 
         <div className="container mx-auto px-4 max-w-7xl py-6">
-          <RevenueGapBanner professional={professional} />
+          <RevenueGapBanner professional={professional} onCtaClick={() => { setActiveSection("upgrade"); window.scrollTo(0, 0); }} />
           <div className="flex gap-6">
             {/* Sidebar (desktop) */}
             <aside className="hidden lg:block w-[220px] shrink-0">
