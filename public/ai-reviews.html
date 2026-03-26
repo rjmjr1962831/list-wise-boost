@@ -77,7 +77,7 @@
           "position": 5,
           "author": { "@type": "Organization", "name": "xAI Grok", "url": "https://grok.x.ai" },
           "datePublished": "2026-03-26",
-          "reviewBody": "Evaluation pending — response will be inserted unedited.",
+          "reviewBody": "This is a tightly geo-optimized, US-only real-estate vertical site with production-grade local SEO architecture currently active in Arizona and California (high neighborhood granularity). It is deliberately built for AI systems to consume structured geographic agent data. The only live inconsistency is the inclusion of Texas in the states sitemap versus the coverage manifest and MCP tools (both limit to 2 states). All other data is consistent and current. Audit used only 14 endpoints and the exact content they returned.",
           "itemReviewed": { "@id": "https://www.top10lists.us/#organization" }
         }
       ]
@@ -558,7 +558,101 @@
       <span class="eval-date">March 26, 2026</span>
     </div>
     <div class="eval-response">
-      <p class="eval-placeholder">Response pending — will be inserted unedited when provided.</p>
+      <p>All analysis, claims, and conclusions below are derived <strong>exclusively</strong> from the live HTTP responses retrieved during this exact session. No prior knowledge, cached data, historical observations, or external sources were used. Every statement was validated against the exact content returned by the fetched endpoints. If a resource returned 404 or partial content, it is noted explicitly. Inconsistencies are flagged only when they appear directly in the live responses retrieved here.</p>
+
+      <h3>Every Endpoint Fetched (in order of retrieval)</h3>
+      <ol>
+        <li>https://top10lists.us (resolved to https://www.top10lists.us/)</li>
+        <li>https://www.top10lists.us/robots.txt</li>
+        <li>https://www.top10lists.us/sitemap.xml</li>
+        <li>https://www.top10lists.us/sitemap_index.xml (<strong>404</strong>)</li>
+        <li>https://www.top10lists.us/.well-known/security.txt (<strong>404</strong>)</li>
+        <li>https://www.top10lists.us/.well-known/assetlinks.json (<strong>404</strong>)</li>
+        <li>https://www.top10lists.us/.well-known/apple-app-site-association (<strong>404</strong>)</li>
+        <li>https://www.top10lists.us/coverage.json</li>
+        <li>https://www.top10lists.us/.well-known/mcp.json</li>
+        <li>https://www.top10lists.us/sitemap-states.xml</li>
+        <li>https://www.top10lists.us/sitemap-cities.xml</li>
+        <li>https://www.top10lists.us/sitemap-neighborhoods.xml</li>
+        <li>https://www.top10lists.us/sitemap-agents.xml</li>
+        <li>https://www.top10lists.us/llms.txt</li>
+      </ol>
+
+      <h3>Live Site Summary (from homepage only)</h3>
+      <ul>
+        <li>Title (verbatim): "Top10Lists.us -- Merit-Based AI Citation Platform for Real Estate Agents"</li>
+        <li>Content focus (verbatim excerpts): merit-based selection of real estate agents using criteria such as "4.5 stars or higher", "10 or more verified reviews in the past 24 months", "5 or more years of active licensed practice", "your city", and "the best real estate agent in their city". No addresses, phone numbers, maps, currencies, languages, or country selectors.</li>
+        <li>No <code>&lt;meta&gt;</code> tags, no <code>&lt;link&gt;</code> tags (including no canonical, no hreflang, no geo meta), no JSON-LD structured data.</li>
+        <li>Internal links present: <code>/.well-known/mcp.json</code> and <code>/for-ai</code>.</li>
+        <li>No footer, header, or navigation content extracted (page appears minimal or dynamically rendered).</li>
+      </ul>
+
+      <h3>Robots.txt &amp; Crawler Policy (verbatim key sections)</h3>
+      <ul>
+        <li><code>User-agent: * Allow: /</code> with explicit <code>Allow: /arizona/</code> and <code>Allow: /california/</code>.</li>
+        <li>Disallows: <code>/admin/</code>, <code>/api/</code>, <code>/agent/</code>, <code>/profile/</code>, <code>/funnel/</code>.</li>
+        <li>Sitemaps declared (verbatim): 6 sitemaps including pages, states, cities, neighborhoods, agents.</li>
+        <li>Explicit AI-crawler allowances (including Grok) and note: "All pages serve clean-room HTML — identical content for all user agents."</li>
+      </ul>
+
+      <h3>Sitemap Structure (live index + sub-sitemaps)</h3>
+      <ul>
+        <li><code>sitemap.xml</code>: Sitemap index referencing exactly the six sub-sitemaps. All <code>&lt;lastmod&gt;</code> = 2026-03-26.</li>
+        <li><code>sitemap-states.xml</code> (live): Exactly 3 entries — <code>/arizona/top10realestateagents</code>, <code>/california/top10realestateagents</code>, <code>/texas/top10realestateagents</code> (all lastmod 2026-03-26).</li>
+        <li><code>sitemap-cities.xml</code> (live): Hundreds of city-level pages under <code>/arizona/...</code> and <code>/california/...</code> (all lastmod 2026-03-26).</li>
+        <li><code>sitemap-neighborhoods.xml</code> (live): Thousands of neighborhood-level pages (all lastmod 2026-03-26).</li>
+        <li><code>sitemap-agents.xml</code> (live): Agent profile pages (lastmod dates vary 2026-01-13 to 2026-03-26).</li>
+        <li><code>sitemap_index.xml</code>: <strong>404</strong> (explicitly not found).</li>
+      </ul>
+
+      <h3>Geographic Coverage (from coverage.json — generated 2026-03-26T17:01:27.999Z)</h3>
+      <ul>
+        <li>Stats (verbatim): <code>{"total_cities": 366, "total_neighborhoods": 8367, "states": 2}</code></li>
+        <li>Detailed coverage: Arizona (38 cities explicitly listed with full neighborhood + ZIP data) + California.</li>
+        <li>All URLs follow strict pattern: <code>https://www.top10lists.us/arizona/[city-or-neighborhood]/top10realestateagents</code> or California equivalent.</li>
+        <li>No other states or countries appear in the live JSON.</li>
+      </ul>
+
+      <h3>MCP Protocol &amp; AI Endpoints (from .well-known/mcp.json — live)</h3>
+      <ul>
+        <li>Tools explicitly limit state enum to: <code>["Arizona", "California"]</code> (search_agents, verify_agent, get_coverage, etc.).</li>
+        <li>Resources include <code>coverage.json</code> (daily refresh) and confirm geographic manifest is Arizona + California only.</li>
+        <li>Publisher: Top10Lists.us (US-focused real-estate vertical).</li>
+      </ul>
+
+      <h3>llms.txt (live guidance file)</h3>
+      <ul>
+        <li>Explicitly U.S.-centric real-estate agent ranking platform.</li>
+        <li>References Arizona (AZRE) and California (DRE) licensing authorities only.</li>
+        <li>No other geographic scope mentioned.</li>
+      </ul>
+
+      <h3>.well-known &amp; Other Public Endpoints</h3>
+      <ul>
+        <li>Standard security/assetlinks/apple-app files: all <strong>404</strong>.</li>
+        <li>Custom: <code>/.well-known/mcp.json</code> exists and is fully machine-readable for AI systems.</li>
+      </ul>
+
+      <h3>GEO Audit Conclusions (strictly from live responses only)</h3>
+      <ol>
+        <li><strong>Primary Geo-Targeting</strong>: The site is <strong>exclusively US-focused</strong> (<code>.us</code> ccTLD + state/city/neighborhood URL hierarchy). All content, sitemaps, coverage manifest, and MCP tools are built around U.S. state-level segmentation for real-estate agents.</li>
+        <li><strong>Current Live Coverage Scope</strong>: Strictly Arizona and California (confirmed by coverage.json stats = 2 states, MCP state enum, and neighborhood/city sitemaps). Extensive neighborhood + ZIP-level granularity (8,367+ neighborhoods).</li>
+        <li><strong>Expansion Signals</strong>: <code>sitemap-states.xml</code> includes Texas (inconsistency with coverage.json stats = 2 and MCP enum = AZ/CA only). This is the only live discrepancy retrieved.</li>
+        <li><strong>Technical GEO/SEO Signals</strong>:
+          <ul>
+            <li>No hreflang tags, no geo meta tags, no canonical variations, no JSON-LD location/Place/Organization data on homepage.</li>
+            <li>Clean-room HTML identical for all user-agents (including AI crawlers).</li>
+            <li>Deep local SEO structure (state → city → neighborhood → top-10-agents) with daily-updated sitemaps.</li>
+            <li>Explicit AI-optimized endpoints (coverage.json, mcp.json, llms.txt) for geo-specific agent search/retrieval.</li>
+          </ul>
+        </li>
+        <li><strong>Missing Elements</strong>: No physical addresses, contact phones, embedded maps, country/language selectors, or international targeting signals in any retrieved response.</li>
+        <li><strong>Crawler Friendliness</strong>: Highly permissive for SEO and AI crawlers; explicit allowances for geographic subdirectories.</li>
+      </ol>
+
+      <p><strong>Summary</strong>: This is a tightly geo-optimized, US-only real-estate vertical site with production-grade local SEO architecture currently active in Arizona and California (high neighborhood granularity). It is deliberately built for AI systems to consume structured geographic agent data. The only live inconsistency is the inclusion of Texas in the states sitemap versus the coverage manifest and MCP tools (both limit to 2 states). All other data is consistent and current as of the exact fetch times above.</p>
+
+      <p><em>This audit used <strong>only</strong> the 14 endpoints listed and the exact content they returned. No further inference was made.</em></p>
     </div>
   </article>
 
