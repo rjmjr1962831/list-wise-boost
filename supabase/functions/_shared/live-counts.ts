@@ -53,11 +53,13 @@ export async function getLiveCounts(): Promise<CoverageCounts> {
 }
 
 /**
- * Floor-plus representation: rounds down to nearest 100 and appends "+".
- * e.g., 3,268 → "3,200+", 879 → "800+"
+ * Floor-plus representation: rounds down and appends "+".
+ * Uses adaptive granularity: nearest 10 for n < 100, nearest 100 for n >= 100.
+ * e.g., 38 → "30+", 879 → "800+", 3,268 → "3,200+"
  */
 export function floorPlus(n: number): string {
-  const floored = Math.floor(n / 100) * 100;
+  const step = n < 100 ? 10 : 100;
+  const floored = Math.floor(n / step) * step;
   return floored.toLocaleString("en-US") + "+";
 }
 

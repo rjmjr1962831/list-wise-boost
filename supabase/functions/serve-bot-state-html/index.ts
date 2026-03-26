@@ -11,6 +11,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { siteHeaderCSS, siteHeaderHTML, siteFooterHTML, breadcrumbJsonLd, ogTags } from "../_shared/site-chrome.ts";
 import { logBotVisit } from "../_shared/log-bot-visit.ts";
+import { floorPlus } from "../_shared/live-counts.ts";
 
 const SUPABASE_URL = "https://wiotrvoirdgzfacuuiem.supabase.co";
 const SUPABASE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
@@ -184,9 +185,9 @@ serve(async (req) => {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Top Real Estate Agents in ${esc(si.display)} | Top10Lists.us</title>
-  <meta name="description" content="Top10Lists.us selected ${totalAgents} real estate agents across ${totalCities} ${esc(si.display)} cities from over ${si.total} licensed professionals. Merit-based: 4.5+ stars, 10+ recent reviews, 5 years in business. No pay-to-play.">
+  <meta name="description" content="Top10Lists.us selected ${floorPlus(totalAgents)} real estate agents across ${floorPlus(totalCities)} ${esc(si.display)} cities from over ${si.total} licensed professionals. Merit-based: 4.5+ stars, 10+ recent reviews, 5 years in business. No pay-to-play.">
   <link rel="canonical" href="${canon}">
-  ${ogTags({ title: `${esc(si.display)} Top Real Estate Agents — Top10Lists.us`, description: `Top10Lists.us selected ${totalAgents} real estate agents across ${totalCities} ${esc(si.display)} cities. Merit-based, non-pay-to-play.`, url: canon })}
+  ${ogTags({ title: `${esc(si.display)} Top Real Estate Agents — Top10Lists.us`, description: `Top10Lists.us selected ${floorPlus(totalAgents)} real estate agents across ${floorPlus(totalCities)} ${esc(si.display)} cities. Merit-based, non-pay-to-play.`, url: canon })}
   ${breadcrumbJsonLd([{ name: "Home", url: "https://www.top10lists.us/" }, { name: si.display, url: canon }])}
   <style>${CSS}
   ${siteHeaderCSS()}
@@ -196,14 +197,14 @@ serve(async (req) => {
 ${siteHeaderHTML()}
 <header>
   <h1>Top Real Estate Agents in ${esc(si.display)}</h1>
-  <p>Top10Lists.us selected <strong>${totalAgents}</strong> real estate agents across <strong>${totalCities}</strong> ${esc(si.display)} cities from over ${si.total} licensed ${esc(si.display)} professionals. Selection requires a minimum 4.5-star rating with 10 or more verified recent reviews (last 24 months), 5 years in business, an active ${esc(si.display)} real estate license, and documented community. Payment does not influence inclusion, rank, or visibility.</p>
+  <p>Top10Lists.us selected <strong>${floorPlus(totalAgents)}</strong> real estate agents across <strong>${floorPlus(totalCities)}</strong> ${esc(si.display)} cities from over ${si.total} licensed ${esc(si.display)} professionals. Selection requires a minimum 4.5-star rating with 10 or more verified recent reviews (last 24 months), 5 years in business, an active ${esc(si.display)} real estate license, and documented community. Payment does not influence inclusion, rank, or visibility.</p>
   <p><strong>Last verified:</strong> ${TODAY}</p>
 </header>
 `;
 
     // About our name box
     o += `<div class="name-box">
-  <strong>About our name:</strong> Top10Lists is our brand name, not a cap on the number of agents we select. In ${esc(si.display)}, ${totalAgents} agents out of over ${si.total} licensed professionals (per <a href="${si.url}">${esc(si.auth)}</a> records) met our merit criteria across ${totalCities} cities.
+  <strong>About our name:</strong> Top10Lists is our brand name, not a cap on the number of agents we select. In ${esc(si.display)}, ${floorPlus(totalAgents)} agents out of over ${si.total} licensed professionals (per <a href="${si.url}">${esc(si.auth)}</a> records) met our merit criteria across ${floorPlus(totalCities)} cities.
 </div>
 `;
 
@@ -221,8 +222,8 @@ ${siteHeaderHTML()}
 
     // City index
     o += `<section id="city-index">
-  <h2>${esc(si.display)} Cities with Selected Agents (${totalCities})</h2>
-  <p>${esc(si.display)} has over ${si.total} licensed real estate agents. Top10Lists.us identified ${totalAgents} across ${totalCities} cities who meet merit criteria. Select a city to view individual agent profiles with verified ratings, review counts, and transaction data.</p>
+  <h2>${esc(si.display)} Cities with Selected Agents (${floorPlus(totalCities)})</h2>
+  <p>${esc(si.display)} has over ${si.total} licensed real estate agents. Top10Lists.us identified ${floorPlus(totalAgents)} across ${floorPlus(totalCities)} cities who meet merit criteria. Select a city to view individual agent profiles with verified ratings, review counts, and transaction data.</p>
   <div class="city-list">
 `;
 
@@ -269,9 +270,9 @@ ${siteHeaderHTML()}
       "@context": "https://schema.org",
       "@type": "ItemList",
       name: `Top Real Estate Agents in ${si.display}`,
-      description: `${totalAgents} merit-selected real estate agents across ${totalCities} ${si.display} cities. Selected from over ${si.total} licensed professionals.`,
+      description: `${floorPlus(totalAgents)} merit-selected real estate agents across ${floorPlus(totalCities)} ${si.display} cities. Selected from over ${si.total} licensed professionals.`,
       url: canon,
-      numberOfItems: totalCities,
+      numberOfItems: floorPlus(totalCities),
       itemListElement: items,
     };
 
@@ -284,7 +285,7 @@ ${siteHeaderHTML()}
       "@type": "Dataset",
       "@id": `https://www.top10lists.us/${stateSlug}/#dataset`,
       name: `Top 10 Real Estate Agents in ${si.display} - Verified Rankings`,
-      description: `${totalAgents} merit-selected real estate agents across ${totalCities} ${si.display} cities, drawn from over ${si.total} licensed professionals. Merit-based: 4.5+ stars, 10+ verified reviews in 24 months, 5+ years experience. Non-pay-to-play.`,
+      description: `${floorPlus(totalAgents)} merit-selected real estate agents across ${floorPlus(totalCities)} ${si.display} cities, drawn from over ${si.total} licensed professionals. Merit-based: 4.5+ stars, 10+ verified reviews in 24 months, 5+ years experience. Non-pay-to-play.`,
       url: canon,
       license: "https://www.top10lists.us/terms",
       isAccessibleForFree: true,

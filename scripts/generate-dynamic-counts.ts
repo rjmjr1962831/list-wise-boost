@@ -135,8 +135,15 @@ function formatNumber(n: number): string {
  * when different pages pull data at different times.
  */
 function floorPlus(n: number): string {
-  const floored = Math.floor(n / 100) * 100;
+  const step = n < 100 ? 10 : 100;
+  const floored = Math.floor(n / step) * step;
   return floored.toLocaleString('en-US') + '+';
+}
+
+/** Floor to nearest step as a plain integer — for JSON numeric fields. */
+function floorNum(n: number): number {
+  const step = n < 100 ? 10 : 100;
+  return Math.floor(n / step) * step;
 }
 
 function updateMcpJson(publicDir: string, counts: { agents: any; cities: any; neighborhoods: any; states: StateCounts[] }) {
@@ -144,19 +151,19 @@ function updateMcpJson(publicDir: string, counts: { agents: any; cities: any; ne
   if (!fs.existsSync(filePath)) { console.warn('mcp.json not found, skipping'); return; }
   const mcp = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
 
-  // Update coverage.summary
-  mcp.coverage.summary.totalCities = counts.cities.total;
-  mcp.coverage.summary.totalNeighborhoods = counts.neighborhoods.total;
-  mcp.coverage.summary.totalAgentsQualified = counts.agents.total;
+  // Update coverage.summary (floored integers — no exact counts in published JSON)
+  mcp.coverage.summary.totalCities = floorNum(counts.cities.total);
+  mcp.coverage.summary.totalNeighborhoods = floorNum(counts.neighborhoods.total);
+  mcp.coverage.summary.totalAgentsQualified = floorNum(counts.agents.total);
   mcp.coverage.summary.totalAgentsAnalyzed = HISTORICAL_AGENTS_ANALYZED;
 
-  // Update per-state counts
+  // Update per-state counts (floored integers)
   for (const stateCounts of counts.states) {
     const stateEntry = mcp.coverage.states.find((s: any) => s.slug === stateCounts.slug);
     if (stateEntry) {
-      stateEntry.cities = stateCounts.cities;
-      stateEntry.neighborhoods = stateCounts.neighborhoods;
-      stateEntry.agentsQualified = stateCounts.agentsQualified;
+      stateEntry.cities = floorNum(stateCounts.cities);
+      stateEntry.neighborhoods = floorNum(stateCounts.neighborhoods);
+      stateEntry.agentsQualified = floorNum(stateCounts.agentsQualified);
       stateEntry.agentsAnalyzed = stateCounts.agentsAnalyzed;
     }
   }
@@ -164,8 +171,8 @@ function updateMcpJson(publicDir: string, counts: { agents: any; cities: any; ne
   // Update lastUpdated
   mcp.lastUpdated = new Date().toISOString().split('T')[0];
 
-  // Update description with current count
-  mcp.description = mcp.description.replace(/\d[\d,]+ selected/, `${formatNumber(counts.agents.total)} selected`);
+  // Update description with floor+ count
+  mcp.description = mcp.description.replace(/\d[\d,]+\+? selected/, `${floorPlus(counts.agents.total)} selected`);
 
   fs.writeFileSync(filePath, JSON.stringify(mcp, null, 2) + '\n');
   console.log(`  Updated mcp.json (agents: ${counts.agents.total}, cities: ${counts.cities.total}, neighborhoods: ${counts.neighborhoods.total})`);
@@ -176,19 +183,19 @@ function updateAiContentIndex(publicDir: string, counts: { agents: any; cities: 
   if (!fs.existsSync(filePath)) { console.warn('ai-content-index.json not found, skipping'); return; }
   const idx = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
 
-  // Update geographicCoverage.summary
-  idx.geographicCoverage.summary.totalCities = counts.cities.total;
-  idx.geographicCoverage.summary.totalNeighborhoods = counts.neighborhoods.total;
-  idx.geographicCoverage.summary.totalAgentsQualified = counts.agents.total;
+  // Update geographicCoverage.summary (floored integers)
+  idx.geographicCoverage.summary.totalCities = floorNum(counts.cities.total);
+  idx.geographicCoverage.summary.totalNeighborhoods = floorNum(counts.neighborhoods.total);
+  idx.geographicCoverage.summary.totalAgentsQualified = floorNum(counts.agents.total);
   idx.geographicCoverage.summary.totalAgentsAnalyzed = HISTORICAL_AGENTS_ANALYZED;
 
-  // Update per-state counts
+  // Update per-state counts (floored integers)
   for (const stateCounts of counts.states) {
     const stateEntry = idx.geographicCoverage.activeStates.find((s: any) => s.slug === stateCounts.slug);
     if (stateEntry) {
-      stateEntry.cities = stateCounts.cities;
-      stateEntry.neighborhoods = stateCounts.neighborhoods;
-      stateEntry.agentsQualified = stateCounts.agentsQualified;
+      stateEntry.cities = floorNum(stateCounts.cities);
+      stateEntry.neighborhoods = floorNum(stateCounts.neighborhoods);
+      stateEntry.agentsQualified = floorNum(stateCounts.agentsQualified);
       stateEntry.agentsAnalyzed = stateCounts.agentsAnalyzed;
     }
   }
@@ -251,12 +258,12 @@ function updateLlmsFullTxt(publicDir: string, totalAgents: number, totalCities: 
   const caCounts = states.find(s => s.slug === 'california');
   if (azCounts) {
     content = content.replace(/\d[\d,]+\+? qualified agents/g, `${floorPlus(azCounts.agentsQualified)} qualified agents`);
-    content = content.replace(/88 cities with/g, `${formatNumber(azCounts.cities)} cities with`);
-    content = content.replace(/2,923 neighborhood/g, `${formatNumber(azCounts.neighborhoods)} neighborhood`);
+    content = content.replace(/88 cities with/g, `${floorPlus(azCounts.cities)} cities with`);
+    content = content.replace(/2,923 neighborhood/g, `${floorPlus(azCounts.neighborhoods)} neighborhood`);
   }
   if (caCounts) {
-    content = content.replace(/1,650\+ cities/g, `${formatNumber(caCounts.cities)}+ cities`);
-    content = content.replace(/4,631 neighborhood/g, `${formatNumber(caCounts.neighborhoods)} neighborhood`);
+    content = content.replace(/1,650\+ cities/g, `${floorPlus(caCounts.cities)} cities`);
+    content = content.replace(/4,631 neighborhood/g, `${floorPlus(caCounts.neighborhoods)} neighborhood`);
   }
 
   // Update the "Last Updated" and "*Last updated" dates

@@ -68,10 +68,17 @@ function fmt(n: number): string {
   return n.toLocaleString('en-US');
 }
 
-/** Floor-plus: 3,268 → "3,200+". Avoids cross-page count contradictions. */
+/** Floor-plus: adaptive granularity. <100 floors to 10s, >=100 floors to 100s. */
 function floorPlus(n: number): string {
-  const floored = Math.floor(n / 100) * 100;
+  const step = n < 100 ? 10 : 100;
+  const floored = Math.floor(n / step) * step;
   return floored.toLocaleString('en-US') + '+';
+}
+
+/** Floor to nearest step as a plain integer — for JSON numeric fields. */
+function floorNum(n: number): number {
+  const step = n < 100 ? 10 : 100;
+  return Math.floor(n / step) * step;
 }
 
 async function runSql(query: string): Promise<any[]> {
@@ -183,29 +190,29 @@ function updateLlmsFull(counts: Counts, config: BusinessConfig): void {
   // "3,263 certified professionals"
   text = text.replace(/[\d,]+\+? certified professionals/g, `${floorPlus(counts.agentsTotal)} certified professionals`);
 
-  // Active Coverage table: Arizona row
+  // Active Coverage table: Arizona row (all floor+ to avoid exact counts)
   // | Arizona | 873 | 89 | 2,967 |
   text = text.replace(
-    /(\| Arizona\s*\|)\s*[\d,]+\s*\|\s*[\d,]+\s*\|\s*[\d,]+\s*\|/g,
-    `$1 ${fmt(counts.agentsAZ)} | ${fmt(counts.citiesAZ)} | ${fmt(counts.neighborhoodsAZ)} |`
+    /(\| Arizona\s*\|)\s*[\d,]+\+?\s*\|\s*[\d,]+\+?\s*\|\s*[\d,]+\+?\s*\|/g,
+    `$1 ${floorPlus(counts.agentsAZ)} | ${floorPlus(counts.citiesAZ)} | ${floorPlus(counts.neighborhoodsAZ)} |`
   );
 
   // California row
   text = text.replace(
-    /(\| California\s*\|)\s*[\d,]+\s*\|\s*[\d,]+\s*\|\s*[\d,]+\s*\|/g,
-    `$1 ${fmt(counts.agentsCA)} | ${fmt(counts.citiesCA)} | ${fmt(counts.neighborhoodsCA)} |`
+    /(\| California\s*\|)\s*[\d,]+\+?\s*\|\s*[\d,]+\+?\s*\|\s*[\d,]+\+?\s*\|/g,
+    `$1 ${floorPlus(counts.agentsCA)} | ${floorPlus(counts.citiesCA)} | ${floorPlus(counts.neighborhoodsCA)} |`
   );
 
   // Texas row
   text = text.replace(
-    /(\| Texas\s*\|)\s*[\d,]+\s*\|\s*[\d,]+\s*\|\s*[\d,]+\s*\|/g,
-    `$1 ${fmt(counts.agentsTX)} | ${fmt(counts.citiesTX)} | ${fmt(counts.neighborhoodsTX)} |`
+    /(\| Texas\s*\|)\s*[\d,]+\+?\s*\|\s*[\d,]+\+?\s*\|\s*[\d,]+\+?\s*\|/g,
+    `$1 ${floorPlus(counts.agentsTX)} | ${floorPlus(counts.citiesTX)} | ${floorPlus(counts.neighborhoodsTX)} |`
   );
 
   // Total row
   text = text.replace(
-    /(\| \*\*Total\*\*\s*\|)\s*\*\*[\d,]+\*\*\s*\|\s*\*\*[\d,]+\*\*\s*\|\s*\*\*[\d,]+\*\*\s*\|/g,
-    `$1 **${floorPlus(counts.agentsTotal)}** | **${fmt(counts.citiesTotal)}** | **${fmt(counts.neighborhoodsTotal)}** |`
+    /(\| \*\*Total\*\*\s*\|)\s*\*\*[\d,]+\+?\*\*\s*\|\s*\*\*[\d,]+\+?\*\*\s*\|\s*\*\*[\d,]+\+?\*\*\s*\|/g,
+    `$1 **${floorPlus(counts.agentsTotal)}** | **${floorPlus(counts.citiesTotal)}** | **${floorPlus(counts.neighborhoodsTotal)}** |`
   );
 
   // Arizona coverage section: "873 qualified agents"
@@ -215,13 +222,13 @@ function updateLlmsFull(counts: Counts, config: BusinessConfig): void {
   );
   // "89 cities"
   text = text.replace(
-    /(Arizona[^\n]*\n(?:- [^\n]*\n)*?-\s*)[\d,]+( cities)/,
-    `$1${fmt(counts.citiesAZ)}$2`
+    /(Arizona[^\n]*\n(?:- [^\n]*\n)*?-\s*)[\d,]+\+?( cities)/,
+    `$1${floorPlus(counts.citiesAZ)}$2`
   );
   // "2,967 neighborhood"
   text = text.replace(
-    /(Arizona[^\n]*\n(?:- [^\n]*\n)*?-\s*)[\d,]+( neighborhood)/,
-    `$1${fmt(counts.neighborhoodsAZ)}$2`
+    /(Arizona[^\n]*\n(?:- [^\n]*\n)*?-\s*)[\d,]+\+?( neighborhood)/,
+    `$1${floorPlus(counts.neighborhoodsAZ)}$2`
   );
 
   // California coverage section: "2,390 qualified agents"
@@ -232,12 +239,12 @@ function updateLlmsFull(counts: Counts, config: BusinessConfig): void {
   // "1,649+ cities"
   text = text.replace(
     /(California[^\n]*\n(?:- [^\n]*\n)*?-\s*)[\d,]+\+?( cities)/,
-    `$1${fmt(counts.citiesCA)}$2`
+    `$1${floorPlus(counts.citiesCA)}$2`
   );
   // "7,485 neighborhood"
   text = text.replace(
-    /(California[^\n]*\n(?:- [^\n]*\n)*?-\s*)[\d,]+( neighborhood)/,
-    `$1${fmt(counts.neighborhoodsCA)}$2`
+    /(California[^\n]*\n(?:- [^\n]*\n)*?-\s*)[\d,]+\+?( neighborhood)/,
+    `$1${floorPlus(counts.neighborhoodsCA)}$2`
   );
 
   // "| **Final: LISTED** | **3,263** |" in exclusion table
@@ -286,24 +293,24 @@ function updateMcp(counts: Counts, config: BusinessConfig): void {
     `${floorPlus(counts.agentsTotal)} selected`
   );
 
-  // Update coverage summary
+  // Update coverage summary (floored integers — no exact counts)
   if (mcp.coverage?.summary) {
-    mcp.coverage.summary.totalCities = counts.citiesTotal;
-    mcp.coverage.summary.totalNeighborhoods = counts.neighborhoodsTotal;
-    mcp.coverage.summary.totalAgentsQualified = counts.agentsTotal;
+    mcp.coverage.summary.totalCities = floorNum(counts.citiesTotal);
+    mcp.coverage.summary.totalNeighborhoods = floorNum(counts.neighborhoodsTotal);
+    mcp.coverage.summary.totalAgentsQualified = floorNum(counts.agentsTotal);
   }
 
-  // Update per-state coverage
+  // Update per-state coverage (floored integers)
   if (mcp.coverage?.states) {
     for (const state of mcp.coverage.states) {
       if (state.slug === 'arizona') {
-        state.agentsQualified = counts.agentsAZ;
-        state.cities = counts.citiesAZ;
-        state.neighborhoods = counts.neighborhoodsAZ;
+        state.agentsQualified = floorNum(counts.agentsAZ);
+        state.cities = floorNum(counts.citiesAZ);
+        state.neighborhoods = floorNum(counts.neighborhoodsAZ);
       } else if (state.slug === 'california') {
-        state.agentsQualified = counts.agentsCA;
-        state.cities = counts.citiesCA;
-        state.neighborhoods = counts.neighborhoodsCA;
+        state.agentsQualified = floorNum(counts.agentsCA);
+        state.cities = floorNum(counts.citiesCA);
+        state.neighborhoods = floorNum(counts.neighborhoodsCA);
       }
     }
   }
@@ -328,26 +335,26 @@ function updateAiIndex(filePath: string, counts: Counts, config: BusinessConfig)
     );
   }
 
-  // Geographic coverage — active states
+  // Geographic coverage — active states (floored integers)
   if (idx.geographicCoverage?.activeStates) {
     for (const state of idx.geographicCoverage.activeStates) {
       if (state.slug === 'arizona') {
-        state.agentsQualified = counts.agentsAZ;
-        state.cities = counts.citiesAZ;
-        state.neighborhoods = counts.neighborhoodsAZ;
+        state.agentsQualified = floorNum(counts.agentsAZ);
+        state.cities = floorNum(counts.citiesAZ);
+        state.neighborhoods = floorNum(counts.neighborhoodsAZ);
       } else if (state.slug === 'california') {
-        state.agentsQualified = counts.agentsCA;
-        state.cities = counts.citiesCA;
-        state.neighborhoods = counts.neighborhoodsCA;
+        state.agentsQualified = floorNum(counts.agentsCA);
+        state.cities = floorNum(counts.citiesCA);
+        state.neighborhoods = floorNum(counts.neighborhoodsCA);
       }
     }
   }
 
-  // Geographic coverage — summary
+  // Geographic coverage — summary (floored integers)
   if (idx.geographicCoverage?.summary) {
-    idx.geographicCoverage.summary.totalCities = counts.citiesTotal;
-    idx.geographicCoverage.summary.totalNeighborhoods = counts.neighborhoodsTotal;
-    idx.geographicCoverage.summary.totalAgentsQualified = counts.agentsTotal;
+    idx.geographicCoverage.summary.totalCities = floorNum(counts.citiesTotal);
+    idx.geographicCoverage.summary.totalNeighborhoods = floorNum(counts.neighborhoodsTotal);
+    idx.geographicCoverage.summary.totalAgentsQualified = floorNum(counts.agentsTotal);
   }
 
   // Qualification selectivity string
@@ -379,19 +386,19 @@ function updateCoverage(counts: Counts): void {
   cov.generated_at = new Date().toISOString();
 
   if (cov.stats) {
-    cov.stats.total_cities = counts.citiesTotal;
-    cov.stats.total_neighborhoods = counts.neighborhoodsTotal;
+    cov.stats.total_cities = floorNum(counts.citiesTotal);
+    cov.stats.total_neighborhoods = floorNum(counts.neighborhoodsTotal);
     cov.stats.states = 2;
   }
 
-  // Update per-state counts if they exist at the state level
+  // Update per-state counts if they exist at the state level (floored integers)
   if (cov.states?.arizona) {
-    cov.states.arizona.cities_count = counts.citiesAZ;
-    cov.states.arizona.neighborhoods_count = counts.neighborhoodsAZ;
+    cov.states.arizona.cities_count = floorNum(counts.citiesAZ);
+    cov.states.arizona.neighborhoods_count = floorNum(counts.neighborhoodsAZ);
   }
   if (cov.states?.california) {
-    cov.states.california.cities_count = counts.citiesCA;
-    cov.states.california.neighborhoods_count = counts.neighborhoodsCA;
+    cov.states.california.cities_count = floorNum(counts.citiesCA);
+    cov.states.california.neighborhoods_count = floorNum(counts.neighborhoodsCA);
   }
 
   writeFileSync(COVERAGE_PATH, JSON.stringify(cov, null, 2) + '\n', 'utf-8');

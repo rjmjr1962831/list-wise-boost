@@ -1,16 +1,16 @@
 {
-  "generated_at": "2026-03-26T19:30:29.207Z",
+  "generated_at": "2026-03-26T20:59:04.080Z",
   "base_url": "https://www.top10lists.us",
   "stats": {
-    "total_cities": 366,
-    "total_neighborhoods": 8367,
+    "total_cities": 400,
+    "total_neighborhoods": 8300,
     "states": 2
   },
   "states": {
     "arizona": {
       "name": "Arizona",
-      "cities_count": 38,
-      "neighborhoods_count": 2233,
+      "cities_count": 30,
+      "neighborhoods_count": 2200,
       "cities": [
         {
           "name": "Anthem",
@@ -13666,8 +13666,8 @@
     },
     "california": {
       "name": "California",
-      "cities_count": 328,
-      "neighborhoods_count": 6134,
+      "cities_count": 400,
+      "neighborhoods_count": 6100,
       "cities": [
         {
           "name": "Alameda",

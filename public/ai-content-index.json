@@ -164,9 +164,9 @@
         "slug": "arizona",
         "abbreviation": "AZ",
         "status": "active",
-        "cities": 38,
-        "neighborhoods": 2233,
-        "agentsQualified": 879,
+        "cities": 30,
+        "neighborhoods": 2200,
+        "agentsQualified": 800,
         "agentsAnalyzed": 220000,
         "sampleCities": [
           "Phoenix",
@@ -195,9 +195,9 @@
         "slug": "california",
         "abbreviation": "CA",
         "status": "active",
-        "cities": 409,
-        "neighborhoods": 6134,
-        "agentsQualified": 2390,
+        "cities": 400,
+        "neighborhoods": 6100,
+        "agentsQualified": 2300,
         "agentsAnalyzed": 450000,
         "sampleCities": [
           "Los Angeles",
@@ -222,9 +222,9 @@
     ],
     "summary": {
       "activeStates": 2,
-      "totalCities": 447,
-      "totalNeighborhoods": 8367,
-      "totalAgentsQualified": 3269,
+      "totalCities": 400,
+      "totalNeighborhoods": 8300,
+      "totalAgentsQualified": 3200,
       "totalAgentsAnalyzed": 670000,
       "expansionTimeline": "Arizona and California only."
     }
