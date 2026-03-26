@@ -276,16 +276,32 @@ serve(async (req) => {
       rawA = cityAgents;
     }
 
-    // Identify non-listed agents that need heavy columns
+    // Fetch selection_rationale for ALL agents (shown on list page regardless of tier)
     const allAgents = rawA || [];
+    const allIds = allAgents.map((a: any) => a.id);
+    if (allIds.length > 0) {
+      // Batch fetch in chunks of 500 to stay under Supabase limit
+      for (let i = 0; i < allIds.length; i += 500) {
+        const chunk = allIds.slice(i, i + 500);
+        const { data: ratRows } = await sb.from("professionals")
+          .select("id,selection_rationale")
+          .in("id", chunk);
+        if (ratRows) {
+          const rMap = new Map(ratRows.map((r: any) => [r.id, r.selection_rationale]));
+          for (const a of allAgents) {
+            if (!a.selection_rationale && rMap.has(a.id)) a.selection_rationale = rMap.get(a.id);
+          }
+        }
+      }
+    }
+
+    // Fetch heavy columns (community, achievements, specialties, cities) for non-listed tiers only
     const nonListedIds = allAgents
       .filter((a: any) => { const t = (a.current_tier || a.badge_tier || "listed").toLowerCase(); return ["underwritten","accredited","audited","certified"].includes(t); })
       .map((a: any) => a.id);
-
-    // Second query: fetch heavy columns only for non-listed agents
     if (nonListedIds.length > 0) {
       const { data: heavy } = await sb.from("professionals")
-        .select("id,community_roles,notable_achievements,selection_rationale,specialty,served_cities")
+        .select("id,community_roles,notable_achievements,specialty,served_cities")
         .in("id", nonListedIds);
       const hMap = new Map((heavy || []).map((h: any) => [h.id, h]));
       for (const a of allAgents) {
@@ -303,8 +319,8 @@ serve(async (req) => {
     const aw = na === 1 ? 'agent' : 'agents';
     const reaw = na === 1 ? 'real estate agent' : 'real estate agents';
 
-    // Compute dateModified from most recent agent updated_at, fallback to today
-    const agentDates = agents.map((a: any) => a.updated_at).filter(Boolean).map((d: string) => new Date(d).getTime()).filter((t: number) => !isNaN(t));
+    // Compute dateModified from most recent agent updated_at or license_verified_at, fallback to today
+    const agentDates = agents.flatMap((a: any) => [a.updated_at, a.license_verified_at]).filter(Boolean).map((d: string) => new Date(d).getTime()).filter((t: number) => !isNaN(t));
     const dateModified = agentDates.length > 0
       ? new Date(Math.max(...agentDates)).toISOString().slice(0, 10)
       : new Date().toISOString().slice(0, 10);

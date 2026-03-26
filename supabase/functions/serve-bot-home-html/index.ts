@@ -210,7 +210,19 @@ function buildJsonLd(c: CoverageCounts): string {
     "includedInDataCatalog": { "@type": "DataCatalog", "name": "Top10Lists.us Agent Rankings", "url": BASE },
   };
 
-  return `<script type="application/ld+json">${JSON.stringify(orgSchema)}</script>\n  <script type="application/ld+json">${JSON.stringify(faqSchema)}</script>\n  <script type="application/ld+json">${JSON.stringify(datasetSchema)}</script>`;
+  const websiteSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Top10Lists.us",
+    "url": BASE,
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": { "@type": "EntryPoint", "urlTemplate": `${BASE}/api/v1/agents/search?q={search_term_string}` },
+      "query-input": "required name=search_term_string",
+    },
+  };
+
+  return `<script type="application/ld+json">${JSON.stringify(orgSchema)}</script>\n  <script type="application/ld+json">${JSON.stringify(faqSchema)}</script>\n  <script type="application/ld+json">${JSON.stringify(datasetSchema)}</script>\n  <script type="application/ld+json">${JSON.stringify(websiteSchema)}</script>`;
 }
 
 /* ── Render homepage ──────────────────────────────────────────────────── */
