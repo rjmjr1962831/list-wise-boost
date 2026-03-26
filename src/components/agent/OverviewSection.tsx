@@ -330,11 +330,11 @@ export function OverviewSection({ professional }: OverviewSectionProps) {
           ) : (
             <>
               <div className="flex items-center gap-2">
-                <XCircle className="h-5 w-5 text-red-400" />
-                <span className="text-lg font-bold text-red-500">Disabled</span>
+                <XCircle className="h-5 w-5 text-amber-500" />
+                <span className="text-lg font-bold text-amber-500">Essential</span>
               </div>
               <p className="text-xs text-muted-foreground mt-2">
-                Place your beacon across your web presence so AI systems can verify your credentials.
+                Activate your Web of Trust for free — place your beacon across your web presence so AI systems can verify your credentials.
               </p>
               <Button
                 size="sm"
