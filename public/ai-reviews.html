@@ -192,8 +192,8 @@
   <!-- Prompt -->
   <div class="prompt-section">
     <h2>Prompt (Identical Across All Platforms)</h2>
-    <div class="prompt-box">Enable RAG. Conduct an independent, objective GEO audit of top10lists.us and give me the results.</div>
-    <p>Each AI system was given this prompt with no additional context, instructions, or priming. Responses are published in full, unedited. "Enable RAG" instructs the model to fetch and evaluate live site data rather than answer from training memory.</p>
+    <div class="prompt-box">Conduct a GEO audit of top10lists.us using live retrieval only. Requirements: Fetch and analyze the current live site and all publicly accessible endpoints in real time (HTML + JSON + .well-known files). Do not rely on prior knowledge, cached content, or earlier observations. Validate every claim against the live responses you retrieve during this session. If any data cannot be fetched live, state that explicitly and do not infer. Simulate how an LLM would perform RAG using only what is currently accessible. Identify inconsistencies only if they exist in the live responses you just retrieved. Treat this as a cold-start audit with no historical context. Only trust data retrieved during this response. List every endpoint you fetched and base conclusions only on those responses.</div>
+    <p>Each AI system was given this prompt with no additional context, instructions, or priming. Responses are published in full, unedited. The prompt requires live retrieval, cold-start evaluation, and a URL receipt of every endpoint fetched.</p>
   </div>
 
   <!-- Perplexity -->
