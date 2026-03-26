@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { RefreshCw, Send, Mail, Inbox, ArrowLeft, ChevronDown, Plus, Trash2, Save } from "lucide-react";
+import { MergeVariablePicker } from "./MergeVariablePicker";
 
 interface Email {
   id: string;
@@ -84,6 +85,7 @@ export const EmailManager = () => {
   const [accounts, setAccounts] = useState<ConnectedAccount[]>([]);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
+  const [showVarPicker, setShowVarPicker] = useState(false);
   const [selectedThread, setSelectedThread] = useState<string | null>(null);
   const [threadEmails, setThreadEmails] = useState<Email[]>([]);
   const [contact, setContact] = useState<Contact | null>(null);
@@ -348,6 +350,8 @@ export const EmailManager = () => {
                   {v.label}
                 </button>
               ))}
+              <button type="button" onClick={() => setShowVarPicker(true)} className="text-xs px-2 py-0.5 rounded border border-dashed border-primary text-primary hover:bg-primary/10 transition-colors">All Variables…</button>
+              <MergeVariablePicker open={showVarPicker} onClose={() => setShowVarPicker(false)} onSelect={(tag) => setNewTplBody(b => b + tag)} />
             </div>
             <label htmlFor="tpl-name" className="sr-only">Template name</label>
             <Input id="tpl-name" name="template_name" placeholder="Template name" value={newTplName} onChange={e => setNewTplName(e.target.value)} />

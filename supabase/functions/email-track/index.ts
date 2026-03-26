@@ -129,60 +129,75 @@ serve(async (req) => {
       }
     }
 
-    // ── Create follow-up task (skip if unsubscribed) ───────────────────────────
-    if (pro?.id && !pro.email_unsubscribed) {
-      if (isClick) {
-        const sentAt = emailRow.sent_at ? new Date(emailRow.sent_at).getTime() : 0;
-        const elapsed = sentAt ? (Date.now() - sentAt) / 1000 : 9999;
-        const isHuman = elapsed > 60;
-        const isUnsub = linkUrl && /unsubscribe/i.test(linkUrl);
-        const isFunnel = linkUrl && /\/funnel\//.test(linkUrl);
+    // ── Log activity + create CRM task (skip tasks if unsubscribed or scanner) ──
+    if (pro?.id) {
+      const sentAt = emailRow.sent_at ? new Date(emailRow.sent_at).getTime() : 0;
+      const elapsed = sentAt ? (Date.now() - sentAt) / 1000 : 9999;
+      const isScanner = elapsed < 60;
 
-        if (!isHuman) {
-          console.log(`[email-track] Scanner click for ${pro.name}: ${elapsed}s after send`);
-        } else if (isUnsub) {
-          console.log(`[email-track] Unsubscribe click for ${pro.name}`);
-        } else {
-          // Human clicked a real link — create Sales task and retire the Ops open task
+      // Always log to activity timeline (scanner and human)
+      let eventType: string;
+      if (isClick && isScanner) eventType = "scanner_click";
+      else if (isOpen && isScanner) eventType = "scanner_open";
+      else if (isClick) eventType = "email_click";
+      else eventType = "email_open";
+
+      supabase.from("crm_contact_activity").insert({
+        professional_id: pro.id,
+        professional_email: pro.email,
+        event_type: eventType,
+        subject: emailRow.subject,
+        email_id: emailId,
+        link_url: linkUrl || null,
+        metadata: { source: "legacy_email", ip: ip.split(",")[0].trim(), user_agent: ua.substring(0, 200), elapsed_seconds: Math.round(elapsed), is_scanner: isScanner },
+      }).then(() => {});
+
+      if (isScanner) {
+        console.log(`[email-track] Scanner ${isClick ? "click" : "open"} for ${pro.name}: ${Math.round(elapsed)}s after send — logged, no task`);
+      } else if (!pro.email_unsubscribed) {
+        if (isClick) {
+          const isUnsub = linkUrl && /unsubscribe/i.test(linkUrl);
+          const isFunnel = linkUrl && /\/funnel\//.test(linkUrl);
+
+          if (isUnsub) {
+            console.log(`[email-track] Unsubscribe click for ${pro.name}`);
+          } else {
+            await supabase.from("crm_tasks").upsert({
+              professional_id: pro.id,
+              task_type: "email_clicked",
+              title: `Follow up: ${pro.name} clicked your email`,
+              description: `Clicked link in "${emailRow.subject}" (${Math.round(elapsed / 60)}m after send). Go to their funnel or call them directly.`,
+              status: "pending",
+              priority: "high",
+            }, { onConflict: "professional_id,task_type", ignoreDuplicates: true });
+            await supabase.from("crm_tasks")
+              .update({ status: "completed", completed_at: new Date().toISOString(), notes: "Auto-closed: agent clicked (promoted to Sales)" })
+              .eq("professional_id", pro.id)
+              .eq("task_type", "email_opened")
+              .eq("status", "pending");
+          }
+
+          if (isFunnel && !isUnsub) {
+            await supabase.from("crm_tasks").upsert({
+              professional_id: pro.id,
+              task_type: "funnel_landed",
+              title: `${pro.name} opened the verification funnel`,
+              description: `Agent clicked their funnel link from email (${Math.round(elapsed / 60)}m after send). Warm lead.`,
+              status: "pending",
+              priority: "normal",
+            }, { onConflict: "professional_id,task_type", ignoreDuplicates: true });
+          }
+        } else if (isOpen && !emailRow.opened_at) {
+          const openTimeStr = elapsed > 3600 ? `${Math.round(elapsed / 3600)}h` : `${Math.round(elapsed / 60)}m`;
           await supabase.from("crm_tasks").upsert({
             professional_id: pro.id,
-            task_type: "email_clicked",
-            title: `Follow up: ${pro.name} clicked your email`,
-            description: `Clicked link in "${emailRow.subject}" (${Math.round(elapsed / 60)}m after send). Go to their funnel or call them directly.`,
-            status: "pending",
-            priority: "high",
-          }, { onConflict: "professional_id,task_type", ignoreDuplicates: true });
-          // Auto-complete the Ops "opened" task — click supersedes open
-          await supabase.from("crm_tasks")
-            .update({ status: "completed", completed_at: new Date().toISOString(), notes: "Auto-closed: agent clicked (promoted to Sales)" })
-            .eq("professional_id", pro.id)
-            .eq("task_type", "email_opened")
-            .eq("status", "pending");
-        }
-
-        // Funnel link + human = funnel_landed task
-        if (isFunnel && isHuman) {
-          await supabase.from("crm_tasks").upsert({
-            professional_id: pro.id,
-            task_type: "funnel_landed",
-            title: `${pro.name} opened the verification funnel`,
-            description: `Agent clicked their funnel link from email (${Math.round(elapsed / 60)}m after send). Warm lead.`,
+            task_type: "email_opened",
+            title: `Follow up: ${pro.name} opened your email`,
+            description: `Opened "${emailRow.subject}" (${openTimeStr} after send). Consider a phone call while the interest is fresh.`,
             status: "pending",
             priority: "normal",
           }, { onConflict: "professional_id,task_type", ignoreDuplicates: true });
         }
-      } else if (isOpen && !emailRow.opened_at) {
-        const openSentAt = emailRow.sent_at ? new Date(emailRow.sent_at).getTime() : 0;
-        const openElapsed = openSentAt ? (Date.now() - openSentAt) / 1000 : 0;
-        const openTimeStr = openElapsed > 3600 ? `${Math.round(openElapsed / 3600)}h` : `${Math.round(openElapsed / 60)}m`;
-        await supabase.from("crm_tasks").upsert({
-          professional_id: pro.id,
-          task_type: "email_opened",
-          title: `Follow up: ${pro.name} opened your email`,
-          description: `Opened "${emailRow.subject}" (${openTimeStr} after send). Consider a phone call while the interest is fresh.`,
-          status: "pending",
-          priority: "normal",
-        }, { onConflict: "professional_id,task_type", ignoreDuplicates: true });
       }
     }
   }
@@ -241,34 +256,44 @@ serve(async (req) => {
 
     // Log to crm_contact_activity + create CRM task
     if (queueRow.agent_id && ((isOpen && !queueRow.opened_at) || isClick)) {
+      // Compute elapsed time for scanner detection
+      const sentAt = queueRow.sent_at ? new Date(queueRow.sent_at).getTime() : 0;
+      const elapsed = sentAt ? (Date.now() - sentAt) / 1000 : 9999;
+      const isScanner = elapsed < 60;
+
+      // Determine event type — scanners get distinct event_type in activity log
+      let eventType: string;
+      if (isClick && isScanner) eventType = "scanner_click";
+      else if (isOpen && isScanner) eventType = "scanner_open";
+      else if (isClick) eventType = "email_click";
+      else eventType = "email_open";
+
+      // Always log to activity timeline (both scanner and human)
       supabase.from("crm_contact_activity").insert({
         professional_id: queueRow.agent_id,
         professional_email: queueRow.recipient_email,
-        event_type: isClick ? "email_click" : "email_open",
+        event_type: eventType,
         subject: null,
         email_id: emailId,
         link_url: linkUrl || null,
         from_account: null,
         sequence_name: queueRow.campaign_id,
-        metadata: { source: "sequencer_v2", ip: ip.split(",")[0].trim(), user_agent: ua.substring(0, 200) },
+        metadata: { source: "sequencer_v2", ip: ip.split(",")[0].trim(), user_agent: ua.substring(0, 200), elapsed_seconds: Math.round(elapsed), is_scanner: isScanner },
       }).then(() => {});
 
-      // Create follow-up task for opens and clicks (skip if unsubscribed)
+      // CRM tasks + alerts only for human events (> 60s after send)
       const { data: agentData } = await supabase
         .from("professionals").select("name, email_unsubscribed").eq("id", queueRow.agent_id).maybeSingle();
       const agentName = agentData?.name || queueRow.recipient_email;
       const agentUnsub = agentData?.email_unsubscribed === true;
 
-      if (isClick && !agentUnsub) {
-        const sentAt = queueRow.sent_at ? new Date(queueRow.sent_at).getTime() : 0;
-        const elapsed = sentAt ? (Date.now() - sentAt) / 1000 : 9999;
-        const isHuman = elapsed > 60;
+      if (isScanner) {
+        console.log(`[email-track] Scanner ${isClick ? "click" : "open"} for ${agentName}: ${Math.round(elapsed)}s after send — logged, no task`);
+      } else if (isClick && !agentUnsub) {
         const isUnsub = linkUrl && /unsubscribe/i.test(linkUrl);
         const isFunnel = linkUrl && /\/funnel\//.test(linkUrl);
 
-        if (!isHuman) {
-          console.log(`[email-track] Scanner click for ${agentName}: ${elapsed}s after send`);
-        } else if (isUnsub) {
+        if (isUnsub) {
           console.log(`[email-track] Unsubscribe click for ${agentName}`);
         } else {
           // Human clicked a real link — create Sales task, retire Ops open task, and alert
@@ -293,7 +318,7 @@ serve(async (req) => {
         }
 
         // Funnel link + human = funnel_landed task
-        if (isFunnel && isHuman) {
+        if (isFunnel && !isUnsub) {
           await supabase.from("crm_tasks").upsert({
             professional_id: queueRow.agent_id,
             task_type: "funnel_landed",
@@ -305,10 +330,8 @@ serve(async (req) => {
         }
       } else if (isClick && agentUnsub) {
         console.log(`[email-track] Skipping task for unsubscribed agent ${agentName}`);
-      } else if (isOpen && !queueRow.opened_at && !agentUnsub) {
-        const openSentAt = queueRow.sent_at ? new Date(queueRow.sent_at).getTime() : 0;
-        const openElapsed = openSentAt ? (Date.now() - openSentAt) / 1000 : 0;
-        const openTimeStr = !openSentAt ? "" : openElapsed > 3600 ? ` (${Math.round(openElapsed / 3600)}h after send)` : ` (${Math.round(openElapsed / 60)}m after send)`;
+      } else if (isOpen && !agentUnsub) {
+        const openTimeStr = elapsed > 3600 ? ` (${Math.round(elapsed / 3600)}h after send)` : ` (${Math.round(elapsed / 60)}m after send)`;
         await supabase.from("crm_tasks").insert({
           professional_id: queueRow.agent_id,
           task_type: "email_opened",

@@ -76,7 +76,7 @@ const SMSTerms = () => {
           
           <section className="pt-4 border-t">
             <p className="text-sm text-muted-foreground">
-              Last updated: December 2025
+              Last updated: March 2026
             </p>
           </section>
         </div>

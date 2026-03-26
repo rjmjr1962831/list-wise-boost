@@ -134,13 +134,22 @@ async function renderLiveStats(sb: any, range: string): Promise<string> {
 
   const [botResult, summaryResult, mcpResult] = await Promise.all([
     sb.rpc("run_sql", {
-      query: `SELECT bot_name, SUM(visits)::int as visits, 0 as agents_covered, max(hour)::text as last_seen
-              FROM bot_crawl_hourly WHERE hour >= now() - interval '${interval}'
-              GROUP BY bot_name ORDER BY visits DESC`,
+      query: `WITH combined AS (
+                SELECT bot_name, 1 as visits, agent_id, crawled_at as ts FROM bot_crawl_logs WHERE crawled_at >= now() - interval '${interval}' AND bot_name IS NOT NULL
+                UNION ALL
+                SELECT bot_name, visits, NULL as agent_id, hour as ts FROM bot_crawl_hourly WHERE hour >= now() - interval '${interval}'
+              )
+              SELECT bot_name, SUM(visits)::int as visits, count(DISTINCT agent_id)::int as agents_covered, max(ts)::text as last_seen
+              FROM combined GROUP BY bot_name ORDER BY visits DESC`,
     }),
     sb.rpc("run_sql", {
-      query: `SELECT SUM(visits)::int as total_crawls, 0 as unique_agents, count(DISTINCT bot_name)::int as unique_bots
-              FROM bot_crawl_hourly WHERE hour >= now() - interval '${interval}'`,
+      query: `WITH combined AS (
+                SELECT bot_name, 1 as visits, agent_id FROM bot_crawl_logs WHERE crawled_at >= now() - interval '${interval}' AND bot_name IS NOT NULL
+                UNION ALL
+                SELECT bot_name, visits, NULL FROM bot_crawl_hourly WHERE hour >= now() - interval '${interval}'
+              )
+              SELECT SUM(visits)::int as total_crawls, count(DISTINCT agent_id)::int as unique_agents, count(DISTINCT bot_name)::int as unique_bots
+              FROM combined`,
     }),
     sb.rpc("run_sql", {
       query: `SELECT count(*)::int as total_calls FROM mcp_request_logs WHERE created_at >= now() - interval '${interval}'`,

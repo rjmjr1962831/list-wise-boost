@@ -207,9 +207,12 @@ serve(async (req) => {
           p.community_roles, p.notable_achievements, p.press_mentions, p.awards_verified,
           p.rank,
           c.id AS city_id, c.name AS city_name, c.slug AS city_slug,
-          c.state_slug AS city_state_slug, c.state AS city_state
+          c.state_slug AS city_state_slug, c.state AS city_state,
+          g.score_listed, g.score_certified, g.score_audited, g.score_underwritten,
+          g.pillar_identity, g.pillar_authority, g.pillar_social, g.pillar_technical, g.pillar_citability
         FROM professionals p
         JOIN cities c ON c.id = p.city_id
+        LEFT JOIN geo_audit_results g ON g.agent_id = p.id
         WHERE p.state_slug = '${pp.stateSlug.replace(/'/g, "''")}'
           AND p.canonical_slug = '${pp.canonicalSlug.replace(/'/g, "''")}'
           AND p.active = true
@@ -351,6 +354,21 @@ serve(async (req) => {
       if (a.social_instagram) sameAs.push(a.social_instagram);
       if (zl) sameAs.push(zl); // Zillow profile
       if (sameAs.length > 0) schema.sameAs = sameAs;
+
+      // AIFS score as additionalProperty
+      {
+        const tierKey = tl(t);
+        const aifsScore = tierKey === "underwritten" ? a.score_underwritten
+          : tierKey === "audited" ? a.score_audited
+          : tierKey === "certified" ? a.score_certified
+          : a.score_listed;
+        if (aifsScore && aifsScore > 0) {
+          const band = aifsScore >= 86 ? "Authoritative" : aifsScore >= 66 ? "Established" : aifsScore >= 46 ? "Emerging" : aifsScore >= 31 ? "Developing" : "Invisible";
+          schema.additionalProperty = [
+            { "@type": "PropertyValue", name: "AI Footprint Score (AIFS)", value: aifsScore, unitText: "/100", description: `Band: ${band}. Measures AI platform visibility and citability across Identity, Citability, Social Proof, Authority, and Technical pillars.` },
+          ];
+        }
+      }
 
       // subjectOf: evidence source citations (tier-gated, matching HTML footnotes)
       const sources: any[] = [];
@@ -544,6 +562,34 @@ ${siteHeaderHTML()}
         for (const [k, v] of rows) o += `    <tr><td>${k}</td><td>${v}</td></tr>\n`;
         o += `  </tbody></table>\n`;
         o += `  <p>This agent passed the full merit gate (4.5+ stars, 10+ verified reviews in 24 months, 5+ years experience). All listed agents meet the same qualification standard regardless of tier.</p>\n`;
+        o += `</section>\n\n`;
+      }
+    }
+
+    // ---- AIFS Score ----
+    {
+      const tierKey = tl(t);
+      const aifsScore = tierKey === "underwritten" ? a.score_underwritten
+        : tierKey === "audited" ? a.score_audited
+        : tierKey === "certified" ? a.score_certified
+        : a.score_listed;
+      if (aifsScore && aifsScore > 0) {
+        const band = aifsScore >= 86 ? "Authoritative" : aifsScore >= 66 ? "Established" : aifsScore >= 46 ? "Emerging" : aifsScore >= 31 ? "Developing" : "Invisible";
+        o += `<section>\n  <h2>AI Footprint Score (AIFS)</h2>\n`;
+        o += `  <p><strong>${aifsScore}/100</strong> — ${band}</p>\n`;
+        o += `  <p>The AIFS measures how visible and citable this agent is across AI platforms. Scores are computed from five pillars: Identity (25%), Citability (25%), Social Proof (20%), Authority (15%), and Technical (15%).</p>\n`;
+        const pillars: [string, number | null][] = [
+          ["Identity", a.pillar_identity], ["Citability", a.pillar_citability],
+          ["Social Proof", a.pillar_social], ["Authority", a.pillar_authority], ["Technical", a.pillar_technical],
+        ];
+        const hasPillars = pillars.some(([, v]) => v != null && v > 0);
+        if (hasPillars) {
+          o += `  <table><thead><tr><th>Pillar</th><th>Score</th></tr></thead><tbody>\n`;
+          for (const [name, val] of pillars) {
+            if (val != null) o += `    <tr><td>${name}</td><td>${val}/25</td></tr>\n`;
+          }
+          o += `  </tbody></table>\n`;
+        }
         o += `</section>\n\n`;
       }
     }
